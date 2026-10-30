@@ -20,6 +20,10 @@ WALKIN = ("khách lẻ", "khach le", "lẻ", "le", "kl", "khách vãng lai", "v�
           "guest", "khách", "-", "none", "nan", "null")
 
 
+LINE_COLS = ("order_id", "order_time", "order_date", "item_name", "item_code", "unit", "qty", "qty_base", "unit_price",
+             "line_discount", "line_amount", "customer_name", "customer_id", "line_status", "status", "valid")
+
+
 def ingest_norm(x):
     import unicodedata, re
     return re.sub(r"\s+", " ", re.sub(r"[^\w\s]", " ", unicodedata.normalize("NFC", str(x)).lower())).strip()
@@ -170,6 +174,10 @@ def build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, st
     else:
         out["status"] = "hoàn thành"
     out["valid"] = ~out["status"].isin(["huỷ", "trả hàng"])
+    for c in LINE_COLS:                                                # every documented column exists (NaN when not recorded)
+        if c not in out.columns: out[c] = None
+    for c in L.columns:                                                # original columns stay usable under their own names
+        if not str(c).startswith("_") and c not in out.columns: out[c] = L[c]
     out = out.reset_index(drop=True)
     # orders
     agg = {"revenue": ("line_amount", "sum"), "n_lines": ("line_amount", "size"), "status": ("status", "first"), "valid": ("valid", "first")}

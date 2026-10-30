@@ -41,7 +41,7 @@ ENV_DOC = """Environment available to your program (already loaded, do NOT read 
 - Text columns may hold numbers or NaN: use `.astype(str).str...` (never `.str` directly on a column you have not checked is text). Check column names against the card; use only columns that exist."""
 
 ANSWER_DOC = """Finish by assigning `ANSWER = {"type": <one of number|percent|string|date|boolean|list|table|unanswerable>, "answer": <value>}`.
-   - number/percent: a Python number (money = integer VND; averages / percentages rounded to 2 decimals unless the rulebook says otherwise, with round_half_up). percent 12.4% -> 12.4.
+   - number/percent: a Python number. Money is integer VND, INCLUDING averages of money (giá trị trung bình một đơn, giá nhập bình quân, đơn giá bình quân): round_half_up(x). Other averages and percentages: round_half_up(x, 2) unless the rulebook says otherwise. percent 12.4% -> 12.4.
    - string: the name exactly as written in the data. date: "YYYY-MM-DD" (or "YYYY-MM" for month questions). boolean: True/False.
    - list: Python list in the order the question asks (one element is still a list). "top 3 khách / 5 mặt hàng bán chạy nhất / liệt kê ..." -> a list of the NAMES only; several numbers asked together -> a list of numbers.
    - table: ONLY when the question asks for each entity together with its value(s) ("... và số nợ của từng người", "kèm số tiền", "bảng ..."): {"columns": [...], "rows": [[...], ...]} with the entity name first, then the measures in the order the question asks.
@@ -49,7 +49,7 @@ ANSWER_DOC = """Finish by assigning `ANSWER = {"type": <one of number|percent|st
 
 HELPER_DOC = """
 - `build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, status=None, status_map=None, qty_base=None, factor=None, unit=None, unit_price=None, line_discount=None, item_code=None, customer=None, customer_id=None, time=None, header=None, header_key=None, keep=(), conv=None, conv_item=None, conv_unit=None, conv_factor=None, walkin=None)` -> `(orders, lines)`: tested implementation of the rulebook's recording rules. It fills blank order-level cells from the order's first line, keeps identical lines of one order once, gives each order one status (any returned line -> "trả hàng", else any cancelled line -> "huỷ", else its status), valid = not cancelled and not returned, revenue = sum of line amounts after line discounts. Arguments are column NAMES of `lines`, or of `header` (one row per order, joined on header_key == order_id) for order-level fields such as date / status / customer. status_map maps EVERY raw status label (inspect the unique values) to "hoàn thành" / "huỷ" / "trả hàng" / "đang giao". qty_base = column already converted to the base unit; otherwise pass the conversion table as conv=T[...], conv_item=, conv_unit=, conv_factor= (its column names), or factor = {unit: factor} / {(item, unit): factor} written from the README. Walk-in customers (khách lẻ, vãng lai, kl, blank; add others with walkin=[...]) get customer_name / customer_id None, so they are never counted or ranked as customers. Without an order id column every row is its own record.
-  orders: order_id, order_time, order_date, status, valid, revenue, n_lines, customer_name, customer_id + every header column. lines: order_id, order_time, order_date, item_name, item_code, unit, qty, qty_base, unit_price, line_discount, line_amount, customer_name, customer_id, line_status, status, valid.
+  orders: order_id, order_time, order_date, status, valid, revenue, n_lines, customer_name, customer_id + every header column. lines: order_id, order_time, order_date, item_name, item_code, unit, qty, qty_base, unit_price, line_discount, line_amount, customer_name, customer_id, line_status, status, valid (None when not given) + the original columns of the lines table under their own names.
   Example: `orders, lines = build_sales(T['ban_hang'], item='Tên hàng', qty='SL', qty_base='SL lẻ', amount='Thành tiền', date='Ngày', order_id='Mã HĐ', status='Trạng thái', status_map={'Xong': 'hoàn thành', 'Khách hủy': 'huỷ', 'Trả lại': 'trả hàng', 'Đang ship': 'đang giao'}, customer='Khách')`. Prefer it for anything about orders, revenue, quantities sold, statuses; use T directly for other tables. Revenue, order counts, quantities sold, buyers and rankings use only rows with `valid` True."""
 
 SYSTEM_RAW = f"""You are DataMate, an expert data analyst for Vietnamese small businesses. You answer a question by writing ONE Python program that computes the answer from the business's tables with pandas.
@@ -626,6 +626,7 @@ def main():
     ap.add_argument("--paths", default="", help="path of each sample: A = canonical C, B = raw T (default: all B, or AABB.. with --compile)")
     ap.add_argument("--compile", action="store_true"); ap.add_argument("--kc", type=int, default=4)
     ap.add_argument("--compile-scope", default="full", choices=["full", "sales"])
+    ap.add_argument("--compile-repairs", type=int, default=4, help="repair rounds of the compile stage (once per business: cheap)")
     ap.add_argument("--norm-q", action="store_true", help="show the question with chat abbreviations expanded (src/vnnorm.py)")
     ap.add_argument("--helpers", action="store_true", help="document build_sales (src/semantic.py) in the prompts")
     ap.add_argument("--repairs", type=int, default=2); ap.add_argument("--subset", type=int, default=0)
@@ -737,7 +738,7 @@ def compile_stage(engine, pool, a, rulebook, bizs, bids, clog):
              for b in bids for s in range(a.kc)}
     catt = generate_and_run(engine, pool, items, {k for k in items if k[1] == 0},
                             lambda k, code: (k, k[0], code, 300, os.path.join(cdir, f"{k[0]}.c{k[1]}.pkl")),
-                            run_compile, a.repairs, a.compile_tokens, a.temp, "compile")
+                            run_compile, getattr(a, "compile_repairs", a.repairs), a.compile_tokens, a.temp, "compile")
     for b in bids:
         cands = [(s, last_ok(catt[(b, s)])) for s in range(a.kc)]
         cands = [(s, r) for s, r in cands if r]

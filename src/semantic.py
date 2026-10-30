@@ -35,7 +35,7 @@ def _canon_label(v):
 def build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, status=None, status_map=None,
                 qty_base=None, factor=None, unit=None, unit_price=None, line_discount=None, item_code=None,
                 customer=None, customer_id=None, time=None, header=None, header_key=None, keep=(),
-                conv=None, conv_item=None, conv_unit=None, conv_factor=None, walkin=None):
+                conv=None, conv_item=None, conv_unit=None, conv_factor=None, walkin=None, tables=None):
     """lines: DataFrame of sale lines (one row per item sold). Column arguments are column names of `lines`, or of
     `header` (a DataFrame with one row per order, joined on header_key == order_id) for order-level fields.
     status_map: {raw status label: one of "hoàn thành", "huỷ", "trả hàng", "đang giao"} covering every raw label
@@ -45,6 +45,30 @@ def build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, st
     walkin: extra customer labels that mean a walk-in customer (khách lẻ / vãng lai / blank are always walk-in): their
     customer_name / customer_id become None (rulebook: walk-in orders are not a customer).
     Returns (orders, lines): canonical DataFrames (see agent.ENV_DOC)."""
+    line_cols = [c for c in (item, qty, amount, qty_base, unit, unit_price, line_discount, item_code) if c is not None]
+    order_cols = [c for c in (date, time, status, customer, customer_id) + tuple(keep) if c is not None]
+    if tables:                                                         # resolve a forgotten / swapped header table
+        def has(df, cols): return all(c in df.columns for c in cols)
+        if not has(lines, line_cols):
+            cand = [df for df in tables.values() if df is not lines and has(df, line_cols) and (order_id is None or order_id in df.columns or
+                    (header_key and header_key in lines.columns))]
+            if len(cand) == 1:
+                if header is None and has(lines, [c for c in order_cols if c not in cand[0].columns]):
+                    header, header_key = lines, header_key or order_id
+                lines = cand[0]
+        if header is None and order_id is not None and order_id in lines.columns:
+            miss = [c for c in order_cols if c not in lines.columns]
+            if miss:
+                ids = set(lines[order_id].dropna().astype(str).str.strip().head(5000))
+                best = None
+                for df in tables.values():
+                    if df is lines or not has(df, miss): continue
+                    for kc in df.columns:
+                        if str(kc).startswith("_"): continue
+                        v = df[kc].dropna().astype(str).str.strip()
+                        ov = len(ids & set(v.head(20000))) / max(len(ids), 1)
+                        if ov > 0.5 and v.is_unique and (best is None or ov > best[0]): best = (ov, df, kc)
+                if best: header, header_key = best[1], best[2]
     L = lines.copy()
     H = header.copy() if header is not None else None
     hkey = header_key or order_id
@@ -53,7 +77,8 @@ def build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, st
         if c is None: return None
         if c in L.columns: return "L"
         if H is not None and c in H.columns: return "H"
-        raise KeyError(f"build_sales: column {c!r} is in neither the lines table {list(L.columns)[:30]} nor the header table")
+        raise KeyError(f"build_sales: column {c!r} is in neither the lines table {list(L.columns)[:30]} nor " +
+                       ("the header table" if H is not None else "any table: pass header=T['<orders table>'], header_key='<its order id column>' for order-level columns"))
 
     for c in (item, qty, amount, qty_base, unit, unit_price, line_discount, item_code):
         if c is not None and where(c) != "L": raise KeyError(f"build_sales: line column {c!r} must be in the lines table")

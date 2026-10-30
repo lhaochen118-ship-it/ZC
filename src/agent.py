@@ -213,7 +213,8 @@ def _namespace(bid, as_of=None, canon_path=None):
          "math": math, "datetime": datetime, "parse_num": ingest.parse_num, "parse_date": ingest.parse_date, "norm_text": norm_text,
          "strip_accents": ingest.strip_accents, "match_names": match_names, "month_range": month_range, "round_half_up": round_half_up,
          "lunar_to_solar": lunar_to_solar, "add_months": add_months, "week_range": week_range,
-         "same_days_prev_month": same_days_prev_month, "build_sales": semantic.build_sales, "__name__": "__datamate__", "__builtins__": _SAFE_BUILTINS, "pd": _PD}
+         "same_days_prev_month": same_days_prev_month, "__name__": "__datamate__", "__builtins__": _SAFE_BUILTINS, "pd": _PD}
+    g["build_sales"] = lambda *x, **k: semantic.build_sales(*x, **{"tables": g["T"], **k})   # finds a forgotten header table
     if as_of is not None: g["TODAY"] = pd.Timestamp(as_of)
     if canon_path:
         can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))

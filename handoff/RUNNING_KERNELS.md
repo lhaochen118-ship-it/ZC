@@ -10,9 +10,9 @@ python3 automation/pull_kernels.py runs_pulled
 
 | Run | Kernel | GPU | Cấu hình | Code | Ghi chú |
 |---|---|---|---|---|---|
-| e1b | `mxuanquy/zc-e1b-1` | 2×T4 | Qwen3-14B-AWQ, TP=2, path B only, K=4, repairs 2, 300 câu train (10/DN) | trước mọi bản sửa (có lỗi `1,134tr`, thrash prefix, chưa có bảo vệ độ dài prompt) | baseline; chạy từ 12:04 UTC, rất chậm |
-| e1c | `anderson1202/zc-e1c-1` | 2×T4 | như e1b + `--think`, K=2, max-tokens 6144 | như e1b | baseline có thinking |
 | e2b | `nguyenhoa99/zc-e2b-1` | 4×L4 | `--compile --k 4 --kc 4 --dp 4`, 300 câu train | có tắt FlashInfer sampler; **chưa** có bảo vệ độ dài prompt / sinh theo nhóm prefix / chép model cục bộ | nếu 1 shard chết vì prompt > 24576 token thì thiếu ~1/4 câu (abstain) |
+
+Đã huỷ 30/10 ~20:40 UTC: `mxuanquy/zc-e1b-1`, `anderson1202/zc-e1c-1` (E1 baseline trên T4, code cũ có lỗi, chạy > 8 h, có nguy cơ chạm trần 12 h mà không ghi được kết quả vì code cũ chỉ ghi ở cuối; giải phóng quota T4 cho lần chạy lại). Không có số liệu E1.
 
 Đã xong (kết quả đã phân tích, xem `handoff/01_SCIENTIFIC_FINDINGS.md`): `nguyenhoa99/zc-e2c-1` (E2c public, code mới nhất: 1000/1000 câu, không có đáp án; **không tạo file nộp** theo yêu cầu user), `nguyenhoa99/zc-e2b-2` (E2b public: 746/1000
 câu do 1 shard chết), `nguyenhoa99/zc-e2-1`, `zc-e2-2` (E2 lần 1: hỏng toàn bộ vì FlashInfer JIT).

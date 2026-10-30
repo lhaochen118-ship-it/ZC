@@ -82,6 +82,9 @@ python3 automation/fanout.py <runs>/<run> <prefix> "<script> <args>;..." [n_kern
 |---|---|---|
 | `nhatlong1103/zc-2026` | Dữ liệu BTC (đã giải nén) + `data.txt` | **có**, public |
 | `nhatlong1103/zc-assets` (output kernel public, CPU) | `wheels/` (vLLM 0.32 + deps + python-calamine, 3.7 GB) và `models/Qwen3-14B-AWQ/` (9.4 GB); gắn bằng `--ks nhatlong1103/zc-assets`; `run_kaggle.py` tự dùng | **có** |
+| `nhatlong1103/zc-m-qwen3-14b-fp8` | `models/Qwen3-14B-FP8/` (16 GB): cho L4 / RTX 5090 | **có** |
+| `nhatlong1103/zc-m-qwen35-9b` | `models/Qwen3.5-9B/` (19 GB, bf16): không chạy được trên T4, thử trên L4 | **có** |
+| `nhatlong1103/zc-m-gemma4-12b-qat` | `models/gemma-4-12B-it-qat-w4a16-ct/` (9.6 GB) | **có** |
 | `nhatlong1103/zc-models-*` | Trọng số mô hình ứng viên (nếu không mount được từ Kaggle Models) | chưa |
 | `nhatlong1103/zc-cache-*` | Cache ingest/profile, đầu ra LLM theo câu để chấm lại offline | chưa |
 

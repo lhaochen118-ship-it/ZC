@@ -384,7 +384,12 @@ class Engine:
         tp = a.tp or max(1, torch.cuda.device_count())
         half = torch.cuda.get_device_capability()[0] < 8
         self.llm = LLM(model=a.model, tensor_parallel_size=tp, dtype="half" if half else "auto", max_model_len=a.max_len,
-                       gpu_memory_utilization=0.92, enable_prefix_caching=True, seed=0, enforce_eager=a.eager)
+                       gpu_memory_utilization=0.92, enable_prefix_caching=True, seed=0, enforce_eager=a.eager,
+                       **({"enable_lora": True, "max_lora_rank": 64} if a.lora else {}))
+        self.lora = None
+        if a.lora:                                                     # SFT adapter (src/train_sft.py) on the quantised base
+            from vllm.lora.request import LoRARequest
+            self.lora = LoRARequest("sft", 1, a.lora)
         self.tok = self.llm.get_tokenizer(); self.a = a
 
     def render(self, msgs):
@@ -409,7 +414,7 @@ class Engine:
         sps = [SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=fitted[i][1], seed=seeds[i]) for i in idx]
         texts = [""] * len(convs); ntok = 0
         if idx:
-            outs = self.llm.generate([fitted[i][0] for i in idx], sps, use_tqdm=False)
+            outs = self.llm.generate([fitted[i][0] for i in idx], sps, use_tqdm=False, lora_request=self.lora)
             for i, o in zip(idx, outs): texts[i] = o.outputs[0].text; ntok += len(o.outputs[0].token_ids)
         if len(idx) < len(convs): print(f"  {len(convs) - len(idx)} prompts too long for max_len={self.a.max_len}: skipped", flush=True)
         return texts, ntok
@@ -482,6 +487,7 @@ def main():
     ap.add_argument("--max-tokens", type=int, default=2048); ap.add_argument("--compile-tokens", type=int, default=4096)
     ap.add_argument("--timeout", type=int, default=60); ap.add_argument("--temp", type=float, default=0.7)
     ap.add_argument("--eager", action="store_true"); ap.add_argument("--no-reflect", action="store_true")
+    ap.add_argument("--lora", default="", help="LoRA adapter dir from train_sft.py")
     ap.add_argument("--dp", type=int, default=1, help="data parallel: one model copy per GPU, businesses split across them")
     ap.add_argument("--shard", default="", help="internal: i/N")
     ap.add_argument("--chunk", type=int, default=0, help="businesses per chunk (answers appended after each chunk)")

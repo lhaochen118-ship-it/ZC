@@ -24,9 +24,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 L4 = "--l4" in sys.argv; GPU = "--gpu" in sys.argv or L4
 EXTRA_DS = sys.argv[sys.argv.index("--ds") + 1].split(",") if "--ds" in sys.argv else []
 KS = sys.argv[sys.argv.index("--ks") + 1].split(",") if "--ks" in sys.argv else []   # kernel outputs to mount (e.g. vLLM wheels)
+MS = sys.argv[sys.argv.index("--ms") + 1].split(",") if "--ms" in sys.argv else []   # Kaggle Models, e.g. qwen-lm/qwen-3/transformers/14b/1
 NET = "--internet" in sys.argv and not L4                                  # L4 grant sessions refuse internet
 ENV = dict(kv.split("=", 1) for kv in sys.argv[sys.argv.index("--env") + 1].split(",")) if "--env" in sys.argv else {}
-VALUED = ("--owner", "--ds", "--env", "--ks")
+VALUED = ("--owner", "--ds", "--env", "--ks", "--ms")
 argv = [a for i, a in enumerate(sys.argv) if a not in ("--gpu", "--l4", "--internet") + VALUED and sys.argv[i - 1] not in VALUED]
 kdir, slug, jobs = argv[1], argv[2], [j.split() for j in argv[3].split(";") if j.strip()]
 
@@ -73,7 +74,7 @@ print("EVAL_DONE", rcs, f"{time.time()-t0:.0f}s", flush=True)
 os.makedirs(kdir, exist_ok=True); open(os.path.join(kdir, "run.py"), "w").write(runner)
 meta = {"id": f"{OWNER}/{slug}", "title": slug, "code_file": "run.py", "language": "python", "kernel_type": "script",
         "is_private": True, "enable_gpu": GPU, "enable_tpu": False, "enable_internet": NET,
-        "dataset_sources": [CODE_DS, DATA_DS] + EXTRA_DS, "competition_sources": [], "kernel_sources": KS, "model_sources": []}
+        "dataset_sources": [CODE_DS, DATA_DS] + EXTRA_DS, "competition_sources": [], "kernel_sources": KS, "model_sources": MS}
 if L4: meta.update(machine_shape="NvidiaL4", competition_sources=["gemma-4-developer-agent"])
 json.dump(meta, open(os.path.join(kdir, "kernel-metadata.json"), "w"), indent=2)
 shutil.rmtree(stage, ignore_errors=True)

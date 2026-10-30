@@ -13,6 +13,7 @@ ACCOUNTS = ["nhatlong1103"] + [a for a in ACCOUNTS if a != "nhatlong1103"]
 DSARG = ["--ds", sys.argv[sys.argv.index("--ds") + 1]] if "--ds" in sys.argv else []   # extra dataset sources for every kernel
 DSARG += (["--ks", sys.argv[sys.argv.index("--ks") + 1]] if "--ks" in sys.argv else []) + (["--internet"] if "--internet" in sys.argv else [])
 DSARG += ["--env", sys.argv[sys.argv.index("--env") + 1]] if "--env" in sys.argv else []
+DSARG += ["--ms", sys.argv[sys.argv.index("--ms") + 1]] if "--ms" in sys.argv else []
 L4 = "--l4" in sys.argv                                                   # 4x L4 sessions (competition grant)
 args = [a for a in sys.argv[1:] if not a.startswith("--") and a not in DSARG]
 if "--accounts" in sys.argv: ACCOUNTS = sys.argv[sys.argv.index("--accounts") + 1].split(","); args = [a for a in args if a != ",".join(ACCOUNTS)]

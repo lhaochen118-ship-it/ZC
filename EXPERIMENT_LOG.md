@@ -71,3 +71,21 @@ Kiểm trên biz_101/106/113/124 (phẳng có/không mã đơn, header+chi tiế
 Lỗi tự tin còn lại: viết tắt chat không hiểu (`hqua`, `hnay`, `bữa qua` → trả doanh thu toàn thời gian), khách lẻ bị xếp
 hạng như khách, quên lọc `valid`, đếm đợt giao theo dòng, quy đổi đơn vị. Sửa: `src/vnnorm.py` (`--norm-q`), khách lẻ →
 None trong build_sales, tham số bảng quy đổi `conv=`, `C['valid_orders']`/`C['valid_lines']`. E4 đang đo các sửa này.
+
+## Entry 4 — 2026-10-30 (21:00 UTC): sửa compile + few-shot truy hồi → PA +0.6
+
+Cùng giao thức (τ chọn trên dev biz_101–120, báo cáo holdout biz_121–130). Mọi so sánh trên **cùng tập DN**.
+
+| Run | Cấu hình | DN | top-answer đúng | PA dev | PA holdout |
+|---|---|---|---|---|---|
+| e3h (k1–3) | `--helpers --compile --compile-scope sales` AABB K=4 | 22 DN, 2251 câu | 1004/2251 | +0.187 (τ 0.75) | +0.101 |
+| e3b-1 | `--helpers` BBBB K=4 (không compile) | 16 DN, 1502 câu | 663/1502 (e3h cùng DN: 729) | +0.166 | +0.005 |
+| e3h-2 (cắt) | như e3h | 114,116,117,125 (316 câu) | 172/316 | +0.268 | +0.250 |
+| e4-2 | + `--norm-q`, khách lẻ, `conv=` | cùng 4 DN | 172/316 (biz_116 compile hỏng) | +0.185 | +0.325 |
+| **e7** | + compile 4 vòng sửa, build_sales giữ cột gốc / tự tìm header, `valid_*`, làm tròn tiền, list/table, **`--shots` (2 ví dụ, khác DN)** | cùng 4 DN | **253/316** | **+0.591 (τ 0.5)** | **+0.700** |
+
+Kết quả âm / trung tính (đã loại): ngưỡng τ theo type (holdout 0.096 vs 0.101 của τ chung); trọng số phiếu A > B (dev
+không đổi). B-only < AABB: giữ compile. Lỗi compile còn lại trước e7: quên `header=`, truyền nhầm bảng khách làm header,
+dùng tên cột gốc sau build_sales, merge theo tên mã đơn gốc → đã xử lý trong `semantic.build_sales`.
+
+Quota: `thnliu`, `phuongnehe` hết quota tuần lúc ~20:45 UTC. Public test chạy với cấu hình e7 (run `p1`, `lelynhan`).

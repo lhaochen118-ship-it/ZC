@@ -49,7 +49,7 @@ ANSWER_DOC = """Finish by assigning `ANSWER = {"type": <one of number|percent|st
 HELPER_DOC = """
 - `build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, status=None, status_map=None, qty_base=None, factor=None, unit=None, unit_price=None, line_discount=None, item_code=None, customer=None, customer_id=None, time=None, header=None, header_key=None, keep=(), conv=None, conv_item=None, conv_unit=None, conv_factor=None, walkin=None)` -> `(orders, lines)`: tested implementation of the rulebook's recording rules. It fills blank order-level cells from the order's first line, keeps identical lines of one order once, gives each order one status (any returned line -> "trả hàng", else any cancelled line -> "huỷ", else its status), valid = not cancelled and not returned, revenue = sum of line amounts after line discounts. Arguments are column NAMES of `lines`, or of `header` (one row per order, joined on header_key == order_id) for order-level fields such as date / status / customer. status_map maps EVERY raw status label (inspect the unique values) to "hoàn thành" / "huỷ" / "trả hàng" / "đang giao". qty_base = column already converted to the base unit; otherwise pass the conversion table as conv=T[...], conv_item=, conv_unit=, conv_factor= (its column names), or factor = {unit: factor} / {(item, unit): factor} written from the README. Walk-in customers (khách lẻ, vãng lai, kl, blank; add others with walkin=[...]) get customer_name / customer_id None, so they are never counted or ranked as customers. Without an order id column every row is its own record.
   orders: order_id, order_time, order_date, status, valid, revenue, n_lines, customer_name, customer_id + every header column. lines: order_id, order_time, order_date, item_name, item_code, unit, qty, qty_base, unit_price, line_discount, line_amount, customer_name, customer_id, line_status, status, valid.
-  Example: `orders, lines = build_sales(T['ban_hang'], item='Tên hàng', qty='SL', qty_base='SL lẻ', amount='Thành tiền', date='Ngày', order_id='Mã HĐ', status='Trạng thái', status_map={'Xong': 'hoàn thành', 'Khách hủy': 'huỷ', 'Trả lại': 'trả hàng', 'Đang ship': 'đang giao'}, customer='Khách')`. Prefer it for anything about orders, revenue, quantities sold, statuses; use T directly for other tables."""
+  Example: `orders, lines = build_sales(T['ban_hang'], item='Tên hàng', qty='SL', qty_base='SL lẻ', amount='Thành tiền', date='Ngày', order_id='Mã HĐ', status='Trạng thái', status_map={'Xong': 'hoàn thành', 'Khách hủy': 'huỷ', 'Trả lại': 'trả hàng', 'Đang ship': 'đang giao'}, customer='Khách')`. Prefer it for anything about orders, revenue, quantities sold, statuses; use T directly for other tables. Revenue, order counts, quantities sold, buyers and rankings use only rows with `valid` True."""
 
 SYSTEM_RAW = f"""You are DataMate, an expert data analyst for Vietnamese small businesses. You answer a question by writing ONE Python program that computes the answer from the business's tables with pandas.
 
@@ -70,6 +70,7 @@ SYSTEM_CANON = f"""You are DataMate, an expert data analyst for Vietnamese small
 
 Rules:
 1. Follow the RULEBOOK exactly (periods, ranking and tie-breaks, debt, cost, rounding, answer formats). In C, `valid` already marks the orders that count for revenue and `revenue` / `line_amount` follow the rulebook definition; re-check the rulebook for anything else.
+   C["valid_orders"] / C["valid_lines"] hold only the valid orders / their lines: use them for revenue, order counts, quantities sold, customers who bought and every ranking; use C["orders"] (all statuses) only for questions about cancelled / returned / all placed orders (e.g. cancellation rate) and for debt.
 2. Inspect values you rely on programmatically rather than guessing spellings. Use match_names for names written loosely in the question.
 3. {ANSWER_DOC}
 4. You may print() short diagnostics. Output only one ```python code block, no explanation."""
@@ -217,6 +218,9 @@ def _namespace(bid, as_of=None, canon_path=None):
     if canon_path:
         can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
         g["C"] = {k: v.copy() for k, v in can["C"].items()}; g["NOTES"] = can.get("notes", "")
+        for k in ("orders", "lines"):                                  # programs kept forgetting the valid filter
+            v = g["C"].get(k)
+            if v is not None and "valid" in v.columns: g["C"]["valid_" + k] = v[v["valid"].astype(bool)].copy()
     return g
 
 

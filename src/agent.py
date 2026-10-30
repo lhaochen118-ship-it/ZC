@@ -26,7 +26,8 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import ingest, semantic
+import ingest, semantic, vnnorm
+NORM_Q = False
 from score import norm
 
 ENV_DOC = """Environment available to your program (already loaded, do NOT read files):
@@ -46,7 +47,7 @@ ANSWER_DOC = """Finish by assigning `ANSWER = {"type": <one of number|percent|st
    - unanswerable: when the released data cannot answer (rulebook section on unanswerable questions), with "answer": None."""
 
 HELPER_DOC = """
-- `build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, status=None, status_map=None, qty_base=None, factor=None, unit=None, unit_price=None, line_discount=None, item_code=None, customer=None, customer_id=None, time=None, header=None, header_key=None, keep=())` -> `(orders, lines)`: tested implementation of the rulebook's recording rules. It fills blank order-level cells from the order's first line, keeps identical lines of one order once, gives each order one status (any returned line -> "trả hàng", else any cancelled line -> "huỷ", else its status), valid = not cancelled and not returned, revenue = sum of line amounts after line discounts. Arguments are column NAMES of `lines`, or of `header` (one row per order, joined on header_key == order_id) for order-level fields such as date / status / customer. status_map maps EVERY raw status label (inspect the unique values) to "hoàn thành" / "huỷ" / "trả hàng" / "đang giao". qty_base = column already converted to the base unit; otherwise factor = {unit: factor} or {(item, unit): factor} from the README / conversion table. Without an order id column every row is its own record.
+- `build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, status=None, status_map=None, qty_base=None, factor=None, unit=None, unit_price=None, line_discount=None, item_code=None, customer=None, customer_id=None, time=None, header=None, header_key=None, keep=(), conv=None, conv_item=None, conv_unit=None, conv_factor=None, walkin=None)` -> `(orders, lines)`: tested implementation of the rulebook's recording rules. It fills blank order-level cells from the order's first line, keeps identical lines of one order once, gives each order one status (any returned line -> "trả hàng", else any cancelled line -> "huỷ", else its status), valid = not cancelled and not returned, revenue = sum of line amounts after line discounts. Arguments are column NAMES of `lines`, or of `header` (one row per order, joined on header_key == order_id) for order-level fields such as date / status / customer. status_map maps EVERY raw status label (inspect the unique values) to "hoàn thành" / "huỷ" / "trả hàng" / "đang giao". qty_base = column already converted to the base unit; otherwise pass the conversion table as conv=T[...], conv_item=, conv_unit=, conv_factor= (its column names), or factor = {unit: factor} / {(item, unit): factor} written from the README. Walk-in customers (khách lẻ, vãng lai, kl, blank; add others with walkin=[...]) get customer_name / customer_id None, so they are never counted or ranked as customers. Without an order id column every row is its own record.
   orders: order_id, order_time, order_date, status, valid, revenue, n_lines, customer_name, customer_id + every header column. lines: order_id, order_time, order_date, item_name, item_code, unit, qty, qty_base, unit_price, line_discount, line_amount, customer_name, customer_id, line_status, status, valid.
   Example: `orders, lines = build_sales(T['ban_hang'], item='Tên hàng', qty='SL', qty_base='SL lẻ', amount='Thành tiền', date='Ngày', order_id='Mã HĐ', status='Trạng thái', status_map={'Xong': 'hoàn thành', 'Khách hủy': 'huỷ', 'Trả lại': 'trả hàng', 'Đang ship': 'đang giao'}, customer='Khách')`. Prefer it for anything about orders, revenue, quantities sold, statuses; use T directly for other tables."""
 
@@ -124,7 +125,9 @@ def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None, sh
             ex = "\n\n".join(f"Example question: {e['question']}\n```python\n{e['code'].strip()}\n```" for e in shots)
             parts.append("# QUESTION EXAMPLES: similar questions solved correctly for OTHER shops. Their tables and column names differ "
                          "from this shop's: reuse the rulebook logic (periods, valid orders, rounding, ranking), never their names.\n\n" + ex)
-        parts.append(f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}\n\nWrite the program.")
+        nq = vnnorm.normalize(q["question"]) if NORM_Q else q["question"]
+        alt = f"\n(same question with chat abbreviations / typing slips expanded: {nq})" if nq != q["question"] else ""
+        parts.append(f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}{alt}\n\nWrite the program.")
     return "\n\n".join(parts)
 
 
@@ -617,6 +620,7 @@ def main():
     ap.add_argument("--paths", default="", help="path of each sample: A = canonical C, B = raw T (default: all B, or AABB.. with --compile)")
     ap.add_argument("--compile", action="store_true"); ap.add_argument("--kc", type=int, default=4)
     ap.add_argument("--compile-scope", default="full", choices=["full", "sales"])
+    ap.add_argument("--norm-q", action="store_true", help="show the question with chat abbreviations expanded (src/vnnorm.py)")
     ap.add_argument("--helpers", action="store_true", help="document build_sales (src/semantic.py) in the prompts")
     ap.add_argument("--repairs", type=int, default=2); ap.add_argument("--subset", type=int, default=0)
     ap.add_argument("--tau", type=float, default=0.5); ap.add_argument("--cache", default="")
@@ -659,8 +663,10 @@ def run(a, engine=None):
     for b, z in bizs.items(): CARDS[b] = z.card()
     print(f"ingest {len(bids)} businesses {time.time() - t_start:.0f}s", flush=True)
 
-    global SHOTS
+    global SHOTS, NORM_Q
     if getattr(a, "helpers", False): use_helpers()
+    if getattr(a, "norm_q", False):                                    # vocabulary for telex repair: rulebook + this split's questions
+        NORM_Q = True; vnnorm.vocab(rulebook + " " + " ".join(q["question"] for q in load_questions(argparse.Namespace(split=a.split, biz="", subset=0))))
     if getattr(a, "shots", ""):
         sp = a.shots if os.path.isfile(a.shots) else next(iter(__import__("glob").glob(f"/kaggle/input/**/{os.path.basename(a.shots)}", recursive=True)), "")
         SHOTS = ShotIndex(sp); print(f"shots: {len(SHOTS.rows)} examples from {sp}", flush=True)

@@ -2,10 +2,9 @@
 """Local re-implementation of the DataMate scorer (docs/00_TASK.md §4): per-question correct / wrong / abstain and
 Penalized Accuracy PA = mean(s_i), s_i = +1 correct, 0 abstain (or missing), -1 wrong.
 
-The reference file format is a GUESS until the organisers' training data is inspected (docs/00_TASK.md §3): one JSON
-object per line with "id", "type", "answer"; a string answer may be one accepted form or a list of accepted forms
-(also read from "accepted_forms" / "accepted"); list elements may themselves be lists of accepted forms.
-Adjust `ref_forms` once the real format is known.
+Reference format (answers.jsonl): {"id", "type", "answer", "alias"}; alias = other accepted spellings + the code:
+a list of strings for `string`, one list per element for `list`, one list per row (entity-name column) for `table`.
+Format rules of the rulebook (§9): numbers must be JSON numbers (not strings), booleans JSON booleans.
 
 Usage: score.py <reference.jsonl> <submission.jsonl> [--by type|category] [--errors N]"""
 import sys, json, re, math, unicodedata
@@ -35,46 +34,51 @@ def forms(x):
     return [norm(f) for f in (x if isinstance(x, list) else [x])]
 
 
-def elem_eq(pred, ref):
-    """A list element / table cell: number rule if the reference is numeric, else string rule."""
-    if not isinstance(ref, list) and to_num(ref) is not None and not isinstance(ref, str): return num_eq(pred, ref)
-    if isinstance(ref, str) and to_num(ref) is not None and to_num(pred) is not None: return num_eq(pred, ref)
-    return norm(pred) in forms(ref)
+def elem_eq(pred, ref, extra=()):
+    """A list element / table cell: number rule if the reference is numeric, else string rule (with accepted aliases)."""
+    if isinstance(ref, (int, float)) and not isinstance(ref, bool): return num_eq(pred, ref)
+    if isinstance(ref, str) and to_num(ref) is not None and to_num(pred) is not None and not extra: return num_eq(pred, ref)
+    return norm(pred) in forms([ref] + list(extra))
 
 
-def table_eq(pred, ref):
+def table_eq(pred, ref, row_alias=None):
     try: pc, pr, rc, rr = pred["columns"], pred["rows"], ref["columns"], ref["rows"]
     except (TypeError, KeyError): return False
     if len(pc) != len(rc) or len(pr) != len(rr): return False
     pn, rn = [norm(c) for c in pc], [norm(c) for c in rc]
     perm = [pn.index(c) for c in rn] if sorted(pn) == sorted(rn) and len(set(pn)) == len(pn) else list(range(len(rc)))
-    left = [[row[i] for i in perm] for row in pr]                       # predicted rows in reference column order
-    for rrow in rr:                                                     # rows matched as a (multi)set
-        k = next((i for i, prow in enumerate(left) if len(prow) == len(rrow) and all(elem_eq(p, r) for p, r in zip(prow, rrow))), None)
+    left = [[row[i] for i in perm] if len(row) == len(rc) else row for row in pr]   # predicted rows in reference column order
+    for j, rrow in enumerate(rr):                                       # rows matched as a (multi)set
+        al = row_alias[j] if row_alias and j < len(row_alias) else []
+        k = next((i for i, prow in enumerate(left) if len(prow) == len(rrow) and
+                  all(elem_eq(p, r, al if c == 0 else ()) for c, (p, r) in enumerate(zip(prow, rrow)))), None)
         if k is None: return False
         left.pop(k)
     return True
 
 
 def ref_forms(ref):
+    """Accepted forms of a string reference: the answer plus every alias (other spellings in the data, the code)."""
     a = ref.get("answer")
-    for k in ("accepted_forms", "accepted"):
-        if k in ref: a = ref[k]
-    return a
+    extra = ref.get("alias") or ref.get("accepted_forms") or ref.get("accepted") or []
+    return ([a] if not isinstance(a, list) else a) + [x for x in extra if isinstance(x, str)]
 
 
 def judge(pred, ref):
-    """-> 'correct' | 'wrong' | 'abstain'"""
+    """-> 'correct' | 'wrong' | 'abstain'   (ref: {"type", "answer", "alias"} as in answers.jsonl)"""
     if pred is None or pred.get("type") in (None, "abstain"): return "abstain"
     t, rt = pred["type"], ref["type"]
     if t != rt: return "wrong"
     if t == "unanswerable": return "correct"
-    p, r = pred.get("answer"), ref_forms(ref)
-    if t in ("number", "percent"): ok = num_eq(p, r)
-    elif t == "string": ok = isinstance(p, (str, int, float)) and norm(p) in forms(r)
-    elif t in ("date", "boolean"): ok = str(p).strip().lower() == str(r).strip().lower()
-    elif t == "list": ok = isinstance(p, list) and len(p) == len(r) and all(elem_eq(a, b) for a, b in zip(p, r))
-    elif t == "table": ok = table_eq(p, r)
+    p, r, al = pred.get("answer"), ref.get("answer"), ref.get("alias") or []
+    if t in ("number", "percent"): ok = isinstance(p, (int, float)) and not isinstance(p, bool) and num_eq(p, r)
+    elif t == "string": ok = isinstance(p, str) and norm(p) in forms(ref_forms(ref))
+    elif t == "date": ok = isinstance(p, str) and p.strip() == str(r).strip()
+    elif t == "boolean": ok = isinstance(p, bool) and p == r
+    elif t == "list":
+        ok = isinstance(p, list) and len(p) == len(r) and all(elem_eq(a, b, al[i] if i < len(al) and isinstance(al[i], list) else ())
+                                                             for i, (a, b) in enumerate(zip(p, r)))
+    elif t == "table": ok = table_eq(p, r, al)
     else: ok = False
     return "correct" if ok else "wrong"
 

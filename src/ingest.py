@@ -251,23 +251,36 @@ class Biz:
         self.readme = open(rd, encoding="utf-8").read() if os.path.isfile(rd) else ""
 
     def card(self, max_examples=4):
-        L = []
-        for name, df in self.tables.items():
-            m = self.meta[name]
-            L.append(f"### TABLE `{name}`  rows={len(df)}  from: {', '.join(m['sources'][:6])}{' …' if len(m['sources']) > 6 else ''}")
-            if m.get("title_rows"): L.append(f"title rows above header (dropped): {' | '.join(m['title_rows'][:3])[:200]}")
-            for c in df.columns:
-                s = df[c]; t = m["types"].get(c, "text"); nn = s.notna().mean()
-                if t == "number": d = f"min={s.min():g} max={s.max():g}"
-                elif t == "datetime": d = f"{s.min()} .. {s.max()}"
-                else:
-                    vc = s.dropna().astype(str); nu = vc.nunique()
-                    ex = list(dict.fromkeys(vc.head(2000)))[:max_examples] if nu > 12 else list(vc.value_counts().index)
-                    d = f"n_unique={nu} " + ("values=" if nu <= 12 else "e.g.=") + json.dumps([e[:40] for e in ex], ensure_ascii=False)
-                L.append(f"- `{c}` [{t}{'' if nn > 0.999 else f', {nn:.0%} filled'}] {d}")
-            raw_ex = self.raw[name].head(2).to_dict("records")
-            L.append("raw first rows: " + json.dumps(raw_ex, ensure_ascii=False, default=str)[:600])
-        return "\n".join(L)
+        return "\n".join(table_card(name, df, self.meta[name]["types"], self.meta[name]["sources"], self.meta[name].get("title_rows"),
+                                     self.raw[name], max_examples) for name, df in self.tables.items())
+
+
+def col_type(s):
+    if pd.api.types.is_datetime64_any_dtype(s): return "datetime"
+    if pd.api.types.is_bool_dtype(s): return "bool"
+    if pd.api.types.is_numeric_dtype(s): return "number"
+    return "text"
+
+
+def table_card(name, df, types=None, sources=None, title_rows=None, raw=None, max_examples=4):
+    """Compact description of one DataFrame for the LLM prompt."""
+    L = [f"### TABLE `{name}`  rows={len(df)}" + (f"  from: {', '.join(sources[:6])}{' …' if len(sources) > 6 else ''}" if sources else "")]
+    if title_rows: L.append(f"title rows above header (dropped): {' | '.join(title_rows[:3])[:200]}")
+    for c in df.columns:
+        s = df[c]; t = (types or {}).get(c) or col_type(s); nn = s.notna().mean() if len(s) else 0
+        try:
+            if t == "number": d = f"min={s.min():g} max={s.max():g}"
+            elif t == "datetime": d = f"{s.min()} .. {s.max()}"
+            elif t == "bool": d = f"true={int(s.fillna(False).astype(bool).sum())}"
+            else:
+                vc = s.dropna().astype(str); nu = vc.nunique()
+                ex = list(dict.fromkeys(vc.head(2000)))[:max_examples] if nu > 12 else list(vc.value_counts().index)
+                d = f"n_unique={nu} " + ("values=" if nu <= 12 else "e.g.=") + json.dumps([e[:40] for e in ex], ensure_ascii=False)
+        except Exception as e: d = f"({type(e).__name__})"
+        L.append(f"- `{c}` [{t}{'' if nn > 0.999 else f', {nn:.0%} filled'}] {d}")
+    if raw is not None:
+        L.append("raw first rows: " + json.dumps(raw.head(2).to_dict("records"), ensure_ascii=False, default=str)[:600])
+    return "\n".join(L)
 
 
 def load_business(path):

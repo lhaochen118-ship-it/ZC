@@ -99,3 +99,7 @@ Quota: `thnliu`, `phuongnehe` hết quota tuần lúc ~20:45 UTC. Public test ch
 | e6a | e5 + `--shots` 2 ví dụ | **370/474** | **+0.584 (τ 0.5)** |
 
 → few-shot truy hồi (chương trình đúng của DN khác, train) là đòn bẩy lớn nhất (+0.23 PA); xác nhận độc lập trên e7.
+
+**E3t (thinking, T4 ×2, `--helpers --think` BB K=2, không shots, 100 câu dev):** trên 65 câu trùng với e3b (helpers,
+không think): độ đúng từng mẫu **77/130 (think) vs 52/130 (không think)**; lỗi chạy 11 vs 18. Rất chậm trên T4 (19,401 s cho
+100 câu × 2 mẫu). → thử `--think` trên L4 với cấu hình e7 (E10) để đo lợi ích / thời gian.

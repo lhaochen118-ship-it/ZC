@@ -103,3 +103,7 @@ Quota: `thnliu`, `phuongnehe` hết quota tuần lúc ~20:45 UTC. Public test ch
 **E3t (thinking, T4 ×2, `--helpers --think` BB K=2, không shots, 100 câu dev):** trên 65 câu trùng với e3b (helpers,
 không think): độ đúng từng mẫu **77/130 (think) vs 52/130 (không think)**; lỗi chạy 11 vs 18. Rất chậm trên T4 (19,401 s cho
 100 câu × 2 mẫu). → thử `--think` trên L4 với cấu hình e7 (E10) để đo lợi ích / thời gian.
+
+**E8 (holdout, cấu hình e7 + `--link`, shots v2): biz_121,122,124,127,129,130 — 708 câu, 6/6 DN compile được:
+PA holdout = +0.394 khi chạy (τ = 0.5)** (e3h trên 236 câu trùng: +0.114). Đây là ước lượng trung thực nhất hiện có.
+Thời gian: ~25 s/câu mỗi L4 (5,941 s cho 236 câu trên 1 GPU).

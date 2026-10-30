@@ -17,6 +17,9 @@ Stages
 Usage: agent.py <split_dir> <out_dir> --model <hf id or path> [--k 4] [--paths AABB] [--compile] [--kc 4]
                 [--repairs 2] [--subset N] [--tau 0.5] [--cache <dir>] [--tp N] [--dp N] [--think] [--workers N]"""
 import os, re, sys, json, time, math, signal, pickle, argparse, traceback
+# FlashInfer's sampler is JIT-compiled at start-up; on Kaggle L4 the build failed after 20 min (ld error). The PyTorch
+# sampler gives the same results without compiling anything.
+os.environ.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
 from collections import Counter, defaultdict
 from decimal import Decimal, ROUND_HALF_UP
 import numpy as np

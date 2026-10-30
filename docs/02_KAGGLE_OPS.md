@@ -115,3 +115,14 @@ Giới hạn metadata: title 6–50 ký tự, subtitle 20–80. Upload khoảng 
 - `pkill -f <pattern>` có thể giết luôn shell gọi nó → dùng PID cụ thể hoặc `TaskStop`.
 - Sửa file bằng Edit hoặc Python replace có `assert`, không dùng `sed` mù.
 - Gói: `pip install kaggle markdown xhtml2pdf`. md → pdf: `python3 automation/md2pdf.py <in.md> <out.pdf>`.
+
+## 7. Bài học DataMate (30/10)
+
+- vLLM 0.32 trên Kaggle: `pip install vllm` kéo torch 2.13 + CUDA 13 → gỡ `torchaudio torchcodec` (lệch CUDA).
+- **L4 (sm89): FlashInfer sampler JIT-compile lúc khởi động, mất 20 phút rồi lỗi `ld returned 1`** → cả run E2 đầu
+  trả toàn abstain. `agent.py` đặt sẵn `VLLM_USE_FLASHINFER_SAMPLER=0` (cũng có hiệu lực trong Docker).
+- 14B-AWQ trên **một** T4 không đủ KV cho prompt ~16k → T4 dùng `--tp 2`; L4 (24 GB) dùng `--dp 4`.
+- Qwen3.5-9B không khởi tạo được trên T4.
+- `run_kernel.py --logs-only` cho kernel tạo asset lớn (không kéo 14 GB output về container).
+- `pkill -f <pattern>` giết luôn shell gọi nó: dùng PID.
+

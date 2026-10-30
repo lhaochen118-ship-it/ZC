@@ -1,0 +1,47 @@
+{
+ "PA": 0.0,
+ "n": 300,
+ "abstain": 300,
+ "groups": {
+  "number": {
+   "abstain": 204,
+   "PA": 0.0,
+   "n": 204
+  },
+  "percent": {
+   "abstain": 39,
+   "PA": 0.0,
+   "n": 39
+  },
+  "string": {
+   "abstain": 12,
+   "PA": 0.0,
+   "n": 12
+  },
+  "list": {
+   "abstain": 14,
+   "PA": 0.0,
+   "n": 14
+  },
+  "unanswerable": {
+   "abstain": 3,
+   "PA": 0.0,
+   "n": 3
+  },
+  "date": {
+   "abstain": 25,
+   "PA": 0.0,
+   "n": 25
+  },
+  "table": {
+   "abstain": 2,
+   "PA": 0.0,
+   "n": 2
+  },
+  "boolean": {
+   "abstain": 1,
+   "PA": 0.0,
+   "n": 1
+  }
+ }
+}

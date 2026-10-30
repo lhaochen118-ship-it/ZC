@@ -36,6 +36,7 @@ ENV_DOC = """Environment available to your program (already loaded, do NOT read 
 - helpers: `parse_num(x)`, `parse_date(x)`, `norm_text(s)` (lowercase, no punctuation), `strip_accents(s)`, `match_names(query, candidates, k=5)` -> best matching candidate strings (accent/typo tolerant),
   `month_range(y, m)` -> (first_day, last_day), `add_months(ts, n)` (day clamped to the month's last day; never build dates like 2026-02-30 by hand), `week_range(ts)` -> (Monday, Sunday) of the week containing ts, `same_days_prev_month(TODAY)` -> (first_day, last_day) of the previous month cut at TODAY's day number (rulebook "tháng này so với tháng trước"), `lunar_to_solar(lunar_year, lunar_month, lunar_day)` -> Timestamp, `round_half_up(x, ndigits=0)` (rulebook rounding: half rounds up; Python's round() does not).
 - pandas as `pd`, numpy as `np`, `re`, `math`, `datetime`.
+- Datetime columns may carry a time of day: select days with `col.dt.normalize()` (or `col < last_day + pd.Timedelta(days=1)`), never `col <= last_day`.
 - Text columns may hold numbers or NaN: use `.astype(str).str...` (never `.str` directly on a column you have not checked is text). Check column names against the card; use only columns that exist."""
 
 ANSWER_DOC = """Finish by assigning `ANSWER = {"type": <one of number|percent|string|date|boolean|list|table|unanswerable>, "answer": <value>}`.

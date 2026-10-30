@@ -86,6 +86,8 @@ python3 automation/fanout.py <runs>/<run> <prefix> "<script> <args>;..." [n_kern
 | `nhatlong1103/zc-m-qwen3-14b-fp8` | `models/Qwen3-14B-FP8/` (16 GB): cho L4 / RTX 5090 | **có** |
 | `nhatlong1103/zc-m-qwen35-9b` | `models/Qwen3.5-9B/` (19 GB, bf16): không chạy được trên T4, thử trên L4 | **có** |
 | `nhatlong1103/zc-m-gemma4-12b-qat` | `models/gemma-4-12B-it-qat-w4a16-ct/` (9.6 GB) | **có** |
+| `nhatlong1103/zc-train-wheels` | `wheels_train/`: bitsandbytes 0.50.2 (+ peft, accelerate) cho fine-tune offline; image Kaggle đã có peft 0.20, accelerate 1.14, transformers 5.16, torch 2.11 | **có** |
+| Kaggle Models `qwen-lm/qwen-3/transformers/14b/1` | Qwen3-14B bf16 (28 GB), gắn bằng `--ms`, offline | **có** |
 | `nhatlong1103/zc-models-*` | Trọng số mô hình ứng viên (nếu không mount được từ Kaggle Models) | chưa |
 | `nhatlong1103/zc-cache-*` | Cache ingest/profile, đầu ra LLM theo câu để chấm lại offline | chưa |
 

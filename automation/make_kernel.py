@@ -7,7 +7,7 @@
 Then: python3 automation/run_kernel.py <kernel_dir> <out_dir>   (fanout.py does both steps for every account/slot).
 
 Usage: make_kernel.py <kernel_dir> <slug> "<script> <args>;<script> <args>;..." "" [--gpu|--l4] [--owner <user>]
-                      [--ds a/b,c/d] [--env K=V,K2=V2]
+                      [--ds a/b,c/d] [--ks owner/kernel,...] [--env K=V,K2=V2] [--internet]
   Tokens inside job args: DATA -> root of the mounted competition data dataset, INPUT -> /kaggle/input
                           (scripts look up model weights themselves), OUT -> results dir (also env ZC_OUT).
   --gpu : default T4 x2.  --l4 : 4x L4 via the gemma-4-developer-agent grant (rules accepted on the web, internet off).
@@ -19,13 +19,15 @@ OWNER = sys.argv[sys.argv.index("--owner") + 1] if "--owner" in sys.argv else "n
 CODE_DS = f"{OWNER}/zc-code"
 _tok = os.path.expanduser(f"~/.kaggle/tok_{OWNER}")                     # per-account token file
 if os.path.isfile(_tok): os.environ["KAGGLE_API_TOKEN"] = open(_tok).read().strip()
-DATA_DS = "nhatlong1103/zc-datamate-data"                                # PUBLIC copy of the organisers' data (docs/02 §4)
+DATA_DS = "nhatlong1103/zc-2026"                                         # PUBLIC copy of the organisers' data (docs/02 §4)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 L4 = "--l4" in sys.argv; GPU = "--gpu" in sys.argv or L4
 EXTRA_DS = sys.argv[sys.argv.index("--ds") + 1].split(",") if "--ds" in sys.argv else []
+KS = sys.argv[sys.argv.index("--ks") + 1].split(",") if "--ks" in sys.argv else []   # kernel outputs to mount (e.g. vLLM wheels)
+NET = "--internet" in sys.argv and not L4                                  # L4 grant sessions refuse internet
 ENV = dict(kv.split("=", 1) for kv in sys.argv[sys.argv.index("--env") + 1].split(",")) if "--env" in sys.argv else {}
-VALUED = ("--owner", "--ds", "--env")
-argv = [a for i, a in enumerate(sys.argv) if a not in ("--gpu", "--l4") + VALUED and sys.argv[i - 1] not in VALUED]
+VALUED = ("--owner", "--ds", "--env", "--ks")
+argv = [a for i, a in enumerate(sys.argv) if a not in ("--gpu", "--l4", "--internet") + VALUED and sys.argv[i - 1] not in VALUED]
 kdir, slug, jobs = argv[1], argv[2], [j.split() for j in argv[3].split(";") if j.strip()]
 
 # --- 1. code dataset
@@ -70,8 +72,8 @@ print("EVAL_DONE", rcs, f"{time.time()-t0:.0f}s", flush=True)
 ''' % (json.dumps(jobs), json.dumps(ENV), DATA_DS.split("/")[1])
 os.makedirs(kdir, exist_ok=True); open(os.path.join(kdir, "run.py"), "w").write(runner)
 meta = {"id": f"{OWNER}/{slug}", "title": slug, "code_file": "run.py", "language": "python", "kernel_type": "script",
-        "is_private": True, "enable_gpu": GPU, "enable_tpu": False, "enable_internet": False,
-        "dataset_sources": [CODE_DS, DATA_DS] + EXTRA_DS, "competition_sources": [], "kernel_sources": [], "model_sources": []}
+        "is_private": True, "enable_gpu": GPU, "enable_tpu": False, "enable_internet": NET,
+        "dataset_sources": [CODE_DS, DATA_DS] + EXTRA_DS, "competition_sources": [], "kernel_sources": KS, "model_sources": []}
 if L4: meta.update(machine_shape="NvidiaL4", competition_sources=["gemma-4-developer-agent"])
 json.dump(meta, open(os.path.join(kdir, "kernel-metadata.json"), "w"), indent=2)
 shutil.rmtree(stage, ignore_errors=True)

@@ -465,6 +465,9 @@ def main():
     ap.add_argument("--eager", action="store_true"); ap.add_argument("--no-reflect", action="store_true")
     ap.add_argument("--dp", type=int, default=1, help="data parallel: one model copy per GPU, businesses split across them")
     ap.add_argument("--shard", default="", help="internal: i/N")
+    ap.add_argument("--chunk", type=int, default=0, help="businesses per chunk (answers appended after each chunk)")
+    ap.add_argument("--budget", type=float, default=0, help="wall-clock budget in seconds: fast mode / abstain when running out")
+    ap.add_argument("--log-dir", default="", help="also write one JSON log per question here (Docker: /result/logs)")
     a = ap.parse_args()
     if a.dp > 1 and not a.shard: return run_dp(a)
     return run(a)
@@ -473,8 +476,6 @@ def main():
 def run(a, engine=None):
     t_start = time.time(); os.makedirs(a.out, exist_ok=True)
     cache = a.cache or os.path.join(a.out, "cache")
-    paths = a.paths or ("".join("A" if i % 2 == 0 else "B" for i in range(a.k)) if a.compile else "B" * a.k)
-    paths = (paths * a.k)[:a.k]
     qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
     if a.subset: qs = select_subset(qs, a.subset)
     if a.shard:
@@ -497,34 +498,82 @@ def run(a, engine=None):
     print(f"model ready {time.time() - t_start:.0f}s", flush=True)
     import multiprocessing as mp
     pool = mp.get_context("fork").Pool(nw, initializer=_init_worker, initargs=(cache, a.split), maxtasksperchild=100)
+    full_paths = (a.paths or ("".join("A" if i % 2 == 0 else "B" for i in range(a.k)) if a.compile else "B" * a.k))
+    full_paths = (full_paths * a.k)[:a.k]
 
-    # 2. compile canonical tables (once per business)
-    canon = {}
-    if a.compile and "A" in paths:
-        cdir = os.path.join(a.out, "canon"); os.makedirs(cdir, exist_ok=True)
-        items = {(b, s): [{"role": "system", "content": SYSTEM_COMPILE}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b])}]
-                 for b in bids for s in range(a.kc)}
-        catt = generate_and_run(engine, pool, items, {k for k in items if k[1] == 0}, lambda k, code: (k, k[0], code, 300, os.path.join(cdir, f"{k[0]}.c{k[1]}.pkl")),
-                                run_compile, a.repairs, a.compile_tokens, a.temp, "compile")
-        clog = open(os.path.join(a.out, "compile_logs.jsonl"), "w", encoding="utf-8")
-        for b in bids:
-            cands = [(s, last_ok(catt[(b, s)])) for s in range(a.kc)]
-            cands = [(s, r) for s, r in cands if r]
-            if cands:
-                best, scores = agreement([r["sig"] for _, r in cands])
-                s, r = cands[best]; canon[b] = r
-                print(f"  {b}: {len(cands)}/{a.kc} compiled, chose c{s} agreement {scores}", flush=True)
-            else: print(f"  {b}: compile failed", flush=True)
-            clog.write(json.dumps({"business_id": b, "chosen": canon[b]["path"] if b in canon else None,
-                                   "attempts": {s: catt[(b, s)] for s in range(a.kc)}}, ensure_ascii=False, default=str) + "\n")
-        clog.close()
-        print(f"compile done {time.time() - t_start:.0f}s: {len(canon)}/{len(bids)} businesses", flush=True)
+    # answers are appended chunk by chunk so that a time-out still leaves every finished answer scored (Rule 8)
+    sub = open(os.path.join(a.out, "submission.jsonl"), "w", encoding="utf-8")
+    logf = open(os.path.join(a.out, "logs.jsonl"), "w", encoding="utf-8")
+    clog = open(os.path.join(a.out, "compile_logs.jsonl"), "w", encoding="utf-8")
+    if a.log_dir: os.makedirs(a.log_dir, exist_ok=True)
+    chunks = [bids[i:i + a.chunk] for i in range(0, len(bids), a.chunk)] if a.chunk else [bids]
+    sec_per_q = None
+    for ci, cb in enumerate(chunks):
+        cq = [q for q in qs if q["business_id"] in set(cb)]; t_chunk = time.time(); elapsed = t_chunk - t_start
+        mode = "full"
+        if a.budget:
+            if elapsed > 0.97 * a.budget: mode = "abstain"
+            elif sec_per_q and elapsed + sec_per_q * len(cq) > 0.92 * a.budget: mode = "fast"
+        print(f"=== chunk {ci + 1}/{len(chunks)}: {len(cb)} businesses, {len(cq)} questions, mode={mode}, elapsed {elapsed:.0f}s", flush=True)
+        if mode == "abstain":
+            for q in cq: write_answer(sub, logf, a, q, {"type": "abstain"}, 0.0, Counter(), {}, {}, 0.0)
+            continue
+        paths = full_paths if mode == "full" else "B"
+        k = len(paths)
+        canon = compile_stage(engine, pool, a, rulebook, bizs, cb, clog) if (a.compile and "A" in paths) else {}
+        qatt, path_of, by_q = answer_stage(engine, pool, a, rulebook, bizs, cq, canon, paths, a.repairs if mode == "full" else 1)
+        per_q = (time.time() - t_chunk) / max(len(cq), 1)
+        for q in cq:
+            res = [(kk, last_ok(qatt[kk])) for kk in sorted(by_q[q["id"]])]
+            res = [(kk, r["answer"]) for kk, r in res if r]
+            votes = Counter(canon_of(x) for _, x in res); rep = {canon_of(x): x for _, x in res}
+            if votes:
+                top, n = votes.most_common(1)[0]; conf = n / k
+                final = rep[top] if conf >= a.tau else {"type": "abstain"}
+            else: conf, final = 0.0, {"type": "abstain"}
+            write_answer(sub, logf, a, q, final, conf, votes, {f"{kk[1]}{path_of[kk]}": qatt[kk] for kk in sorted(by_q[q["id"]])}, path_of, per_q)
+        sub.flush(); logf.flush()
+        sec_per_q = (time.time() - t_start) / max(1, sum(len([q for q in qs if q["business_id"] in set(c)]) for c in chunks[:ci + 1]))
+    pool.close(); sub.close(); logf.close(); clog.close()
+    print(f"DONE {len(qs)} questions in {time.time() - t_start:.0f}s", flush=True)
+    score_if_possible(a, qs)
 
-    # 3. answer
+
+def write_answer(sub, logf, a, q, final, conf, votes, samples, path_of, elapsed):
+    sub.write(json.dumps({"id": q["id"], **final}, ensure_ascii=False) + "\n")
+    rec = {"id": q["id"], "question": q["question"], "business_id": q["business_id"], "as_of_date": q["as_of_date"], "final": final,
+           "conf": conf, "elapsed_s": round(elapsed, 2), "votes": [[str(k), v] for k, v in votes.most_common()], "samples": samples}
+    logf.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
+    if a.log_dir:                                                      # one file per question (Docker log requirement)
+        json.dump(rec, open(os.path.join(a.log_dir, f"{q['id']}.json"), "w", encoding="utf-8"), ensure_ascii=False, default=str, indent=1)
+
+
+def compile_stage(engine, pool, a, rulebook, bizs, bids, clog):
+    cdir = os.path.join(a.cache or a.out, "canon_" + (a.shard.replace("/", "of") or "main")); os.makedirs(cdir, exist_ok=True); canon = {}
+    items = {(b, s): [{"role": "system", "content": SYSTEM_COMPILE}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b])}]
+             for b in bids for s in range(a.kc)}
+    catt = generate_and_run(engine, pool, items, {k for k in items if k[1] == 0},
+                            lambda k, code: (k, k[0], code, 300, os.path.join(cdir, f"{k[0]}.c{k[1]}.pkl")),
+                            run_compile, a.repairs, a.compile_tokens, a.temp, "compile")
+    for b in bids:
+        cands = [(s, last_ok(catt[(b, s)])) for s in range(a.kc)]
+        cands = [(s, r) for s, r in cands if r]
+        if cands:
+            best, scores = agreement([r["sig"] for _, r in cands])
+            s, r = cands[best]; canon[b] = r
+            print(f"  {b}: {len(cands)}/{a.kc} compiled, chose c{s} agreement {scores}", flush=True)
+        else: print(f"  {b}: compile failed", flush=True)
+        clog.write(json.dumps({"business_id": b, "chosen": canon[b]["path"] if b in canon else None,
+                               "attempts": {s: catt[(b, s)] for s in range(a.kc)}}, ensure_ascii=False, default=str) + "\n")
+    clog.flush()
+    return canon
+
+
+def answer_stage(engine, pool, a, rulebook, bizs, qs, canon, paths, repairs):
     qmap = {q["id"]: q for q in qs}; items = {}; path_of = {}; greedy = set()
     for q in qs:
         b = q["business_id"]
-        for s in range(a.k):
+        for s in range(len(paths)):
             p = paths[s] if (paths[s] == "B" or b in canon) else "B"
             if p == "A":
                 msgs = [{"role": "system", "content": SYSTEM_CANON},
@@ -534,31 +583,12 @@ def run(a, engine=None):
             key = (q["id"], s); items[key] = msgs; path_of[key] = p
             if paths.index(paths[s]) == s: greedy.add(key)              # first sample of each path decodes greedily
     def make_task(k, code):
-        q = qmap[k[0]]; p = path_of[k]
-        return (k, q["business_id"], q["as_of_date"], code, a.timeout, canon[q["business_id"]]["path"] if p == "A" else None)
-    qatt = generate_and_run(engine, pool, items, greedy, make_task, run_code, a.repairs, a.max_tokens, a.temp, "answer", reflect=not a.no_reflect)
-    pool.close()
-
-    # 4. vote + decide + write
-    sub = open(os.path.join(a.out, "submission.jsonl"), "w", encoding="utf-8")
-    logf = open(os.path.join(a.out, "logs.jsonl"), "w", encoding="utf-8")
+        q = qmap[k[0]]
+        return (k, q["business_id"], q["as_of_date"], code, a.timeout, canon[q["business_id"]]["path"] if path_of[k] == "A" else None)
+    qatt = generate_and_run(engine, pool, items, greedy, make_task, run_code, repairs, a.max_tokens, a.temp, "answer", reflect=not a.no_reflect)
     by_q = defaultdict(list)
     for k in items: by_q[k[0]].append(k)
-    for q in qs:
-        res = [(k, last_ok(qatt[k])) for k in sorted(by_q[q["id"]])]
-        res = [(k, r["answer"]) for k, r in res if r]
-        votes = Counter(canon_key for canon_key in (canon_of(x) for _, x in res)); rep = {canon_of(x): x for _, x in res}
-        if votes:
-            top, n = votes.most_common(1)[0]; conf = n / a.k
-            final = rep[top] if conf >= a.tau else {"type": "abstain"}
-        else: conf, final = 0.0, {"type": "abstain"}
-        sub.write(json.dumps({"id": q["id"], **final}, ensure_ascii=False) + "\n")
-        logf.write(json.dumps({"id": q["id"], "question": q["question"], "business_id": q["business_id"], "as_of_date": q["as_of_date"],
-                               "final": final, "conf": conf, "votes": [[str(k), v] for k, v in votes.most_common()],
-                               "samples": {f"{k[1]}{path_of[k]}": qatt[k] for k in sorted(by_q[q["id"]])}}, ensure_ascii=False, default=str) + "\n")
-    sub.close(); logf.close()
-    print(f"DONE {len(qs)} questions in {time.time() - t_start:.0f}s", flush=True)
-    score_if_possible(a, qs)
+    return qatt, path_of, by_q
 
 
 def canon_of(x): return str(canon(x))
@@ -588,13 +618,20 @@ def run_dp(a):
                ["--shard", f"{g}/{n}", "--cache", cache, "--tp", "1", "--workers", nw]
         procs.append(subprocess.Popen(args, env=dict(os.environ, CUDA_VISIBLE_DEVICES=str(g)),
                                       stdout=open(os.path.join(a.out, f"shard{g}.log"), "w"), stderr=subprocess.STDOUT))
+    def merge(files=("submission.jsonl",)):                           # atomic merge of the shards' (partial) outputs
+        for f in files:
+            tmp = os.path.join(a.out, f + ".tmp")
+            with open(tmp, "w", encoding="utf-8") as w:
+                for g in range(n):
+                    p = os.path.join(a.out, f"shard{g}", f)
+                    if os.path.isfile(p):
+                        txt = open(p, encoding="utf-8").read(); w.write(txt[:txt.rfind("\n") + 1])   # complete lines only
+            os.replace(tmp, os.path.join(a.out, f))
+    while any(p.poll() is None for p in procs):                        # keep the merged submission current (Rule 8: time-outs)
+        merge(); time.sleep(30)
     rcs = [p.wait() for p in procs]
     for g in range(n): print(f"--- shard{g} rc={rcs[g]}\n" + "".join(open(os.path.join(a.out, f"shard{g}.log")).readlines()[-12:]), flush=True)
-    for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"):
-        with open(os.path.join(a.out, f), "w", encoding="utf-8") as w:
-            for g in range(n):
-                p = os.path.join(a.out, f"shard{g}", f)
-                if os.path.isfile(p): w.write(open(p, encoding="utf-8").read())
+    merge(("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"))
     print(f"DP DONE {n} shards in {time.time() - t0:.0f}s", flush=True)
     qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
     score_if_possible(a, select_subset(qs, a.subset) if a.subset else qs)

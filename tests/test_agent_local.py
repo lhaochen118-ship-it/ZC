@@ -63,7 +63,13 @@ def responder(conv):
 
 args = argparse.Namespace(split=mini, out=os.path.join(scratch, "out"), model="fake", k=4, paths="", compile=True, kc=2, repairs=2, subset=0,
                           tau=0.5, cache=os.path.join(scratch, "cache"), tp=0, max_len=0, think=False, workers=2, max_tokens=0,
-                          compile_tokens=0, timeout=60, temp=0.7, eager=False, no_reflect=False, dp=1, shard="")
+                          compile_tokens=0, timeout=60, temp=0.7, eager=False, no_reflect=False, dp=1, shard="", chunk=0, budget=0, log_dir="")
+if "--budget-test" in sys.argv:                                      # out of time before the first chunk -> every answer abstains
+    args.budget = 1e-6; args.out = os.path.join(scratch, "out_budget")
+    agent.run(args, engine=agent.FakeEngine(responder))
+    rows = [json.loads(l) for l in open(os.path.join(args.out, "submission.jsonl"), encoding="utf-8")]
+    ok = len(rows) == len(want) and all(r["type"] == "abstain" for r in rows)
+    print("TEST", "PASS" if ok else "FAIL", "budget fallback:", [r["type"] for r in rows]); sys.exit(0)
 agent.run(args, engine=agent.FakeEngine(responder))
 res = json.load(open(os.path.join(args.out, "score.json")))
 clog = [json.loads(l) for l in open(os.path.join(args.out, "compile_logs.jsonl"), encoding="utf-8")]

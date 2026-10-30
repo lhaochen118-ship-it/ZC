@@ -310,7 +310,7 @@ def table_card(name, df, types=None, sources=None, title_rows=None, raw=None, ma
         except Exception as e: d = f"({type(e).__name__})"
         L.append(f"- `{c}` [{t}{'' if nn > 0.999 else f', {nn:.0%} filled'}] {d}")
     if raw is not None:
-        L.append("raw first rows: " + json.dumps(raw.head(2).to_dict("records"), ensure_ascii=False, default=str)[:600])
+        L.append("raw first row: " + json.dumps(raw.head(1).to_dict("records"), ensure_ascii=False, default=str)[:400])
     return "\n".join(L)
 
 

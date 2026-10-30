@@ -392,11 +392,27 @@ class Engine:
         try: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, **kw)
         except TypeError: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
 
+    def fit(self, conv, max_tokens):
+        """Render a conversation within max_len: drop older repair turns first, then shrink the output budget.
+        Returns (prompt, max_tokens) or (None, 0) when there is no room (never let one long prompt fail the batch)."""
+        for c in (conv, conv[:2] + conv[-2:] if len(conv) > 4 else None, conv[:2] if len(conv) > 2 else None):
+            if c is None: continue
+            p = self.render(c); n = len(self.tok.encode(p, add_special_tokens=False))
+            room = self.a.max_len - n - 16
+            if room >= min(max_tokens, 768): return p, min(max_tokens, room)
+        return None, 0
+
     def gen(self, convs, temps, seeds, max_tokens):
         from vllm import SamplingParams
-        sps = [SamplingParams(temperature=t, top_p=1.0 if t == 0 else 0.95, max_tokens=max_tokens, seed=s) for t, s in zip(temps, seeds)]
-        outs = self.llm.generate([self.render(c) for c in convs], sps, use_tqdm=False)
-        return [o.outputs[0].text for o in outs], sum(len(o.outputs[0].token_ids) for o in outs)
+        fitted = [self.fit(c, max_tokens) for c in convs]
+        idx = [i for i, (p, _) in enumerate(fitted) if p is not None]
+        sps = [SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=fitted[i][1], seed=seeds[i]) for i in idx]
+        texts = [""] * len(convs); ntok = 0
+        if idx:
+            outs = self.llm.generate([fitted[i][0] for i in idx], sps, use_tqdm=False)
+            for i, o in zip(idx, outs): texts[i] = o.outputs[0].text; ntok += len(o.outputs[0].token_ids)
+        if len(idx) < len(convs): print(f"  {len(convs) - len(idx)} prompts too long for max_len={self.a.max_len}: skipped", flush=True)
+        return texts, ntok
 
 
 class FakeEngine:

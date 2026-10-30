@@ -89,3 +89,13 @@ không đổi). B-only < AABB: giữ compile. Lỗi compile còn lại trước 
 dùng tên cột gốc sau build_sales, merge theo tên mã đơn gốc → đã xử lý trong `semantic.build_sales`.
 
 Quota: `thnliu`, `phuongnehe` hết quota tuần lúc ~20:45 UTC. Public test chạy với cấu hình e7 (run `p1`, `lelynhan`).
+
+**Ablation shots (cùng code, cùng kết quả compile: biz_105/115 có C, biz_108/118 không), biz_105,108,115,118 (474 câu dev):**
+
+| Run | Thay đổi | top-answer đúng | PA dev (τ chọn trên dev) |
+|---|---|---|---|
+| e3h-1 (cắt) | baseline helpers | 272/474 | +0.279 (τ 0.75) |
+| e5-1 | + norm-q, khách lẻ, conv, auto-header | 293/474 | +0.357 (τ 0.75) |
+| e6a | e5 + `--shots` 2 ví dụ | **370/474** | **+0.584 (τ 0.5)** |
+
+→ few-shot truy hồi (chương trình đúng của DN khác, train) là đòn bẩy lớn nhất (+0.23 PA); xác nhận độc lập trên e7.

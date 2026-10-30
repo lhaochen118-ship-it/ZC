@@ -13,4 +13,9 @@ print(f"setup {time.time() - t:.0f}s", flush=True)
 data = os.environ["ZC_DATA"]
 split = next(d for d in glob.glob(os.path.join(data, "**", sys.argv[1]), recursive=True) if os.path.isfile(os.path.join(d, "questions.jsonl")))
 out = sys.argv[2]
-os.execv(sys.executable, [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent.py"), split, out] + sys.argv[3:])
+args = sys.argv[3:]
+if "--model" in args:                                                 # prefer weights mounted from nhatlong1103/zc-assets (offline sessions)
+    i = args.index("--model") + 1
+    local = next(iter(glob.glob(f"/kaggle/input/**/models/{os.path.basename(args[i])}/config.json", recursive=True)), None)
+    if local: args[i] = os.path.dirname(local); print("model from mounted assets:", args[i], flush=True)
+os.execv(sys.executable, [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent.py"), split, out] + args)

@@ -23,3 +23,27 @@ liệu (split, số câu), kết quả (PA tổng và theo type / loại câu, %
 - Kaggle: kernel T4 có internet; `pip install vllm` (0.32, torch 2.13 + CUDA 13) mất ~6 phút và xung đột torchaudio →
   gỡ torchaudio; L4 grant không cho internet; `yuan1103` hết quota GPU tuần.
 - E1 đang chạy: Qwen3-14B-AWQ, không thinking, K = 4, 2 vòng sửa lỗi, DP trên 2 T4, 300 câu train (10/DN).
+
+## Entry 2 — 2026-10-30 (chiều): hạ tầng L4, E2 lần 1 hỏng, sửa bộ làm sạch, chuẩn bị E7
+
+**Giao thức kiểm định (cố định từ đây):** chọn cấu hình / ngưỡng trên `biz_101`–`biz_120` (dev); báo cáo riêng trên
+`biz_121`–`biz_130` (holdout, không dùng để chọn gì); public test chỉ để đối chiếu qua portal.
+
+- **E1b / E1c** (T4, Qwen3-14B-AWQ, TP=2, 300 câu): đang chạy (code trước các bản sửa ingest dưới đây).
+- **E2 lần 1** (2 phiên × 4 L4, DP=4, compile + 2 nhánh; 300 câu train + 1000 câu public): **hỏng**, mọi câu
+  abstain. FlashInfer sampler JIT-compile 20 phút rồi lỗi `ld` trên L4. Sửa: `VLLM_USE_FLASHINFER_SAMPLER=0` trong
+  `agent.py`. **E2b** chạy lại cùng cấu hình.
+- **Bộ làm sạch:**
+  - bộ test tổng hợp `tests/test_ingest_robust.py` (12 biến thể: `;`, UTF-16, header 2 tầng, dòng tổng/ghi chú, header
+    lặp, ngày `Ngày 1 tháng 6 năm 2025`, `VND 1,234,567`, `12,5%`, `(12.50)`, mã có số 0 đầu, thập phân `.`/`,`):
+    12/12;
+  - so từng giá trị cache cũ/mới trên dữ liệu thật → phát hiện **`1,134tr` bị đọc thành 1,134 tỷ** (13 DN:
+    dev_003/004/006/007/008/010/013/014, biz_117/124/129) → sửa (dấu trước hậu tố nhân là dấu thập phân). E1b/E1c và
+    E2b vẫn dùng code cũ có lỗi này.
+- **Độ dài prompt** (tokenizer Qwen3): prompt biên dịch dài nhất 17,974 token (dev_006); thêm bảo vệ trong
+  `Engine.fit` (bỏ vòng sửa cũ → giảm max_tokens → bỏ request, không làm hỏng lô).
+- **E7 chuẩn bị:** `harvest.py` (STaR), `train_sft.py` (QLoRA DDP), `agent --lora`; Kaggle Models
+  `qwen-lm/qwen-3/transformers/14b/1` gắn được bf16 offline (28 GB).
+- **Assets public (`nhatlong1103`):** `zc-assets` (wheels vLLM + Qwen3-14B-AWQ), `zc-m-qwen3-14b-fp8`,
+  `zc-m-qwen35-9b`, `zc-m-gemma4-12b-qat`.
+- **Docker:** `docker/` (build / run như BTC / export + sha256), hướng dẫn `docker/SETUP_DOCKER.md`.

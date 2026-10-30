@@ -9,9 +9,12 @@ MODEL=${MODEL:-/models/Qwen3-14B-FP8}
 NGPU=$(nvidia-smi -L | wc -l)
 mkdir -p "$RESULT/logs" /tmp/zc
 echo "split: $SPLIT  model: $MODEL  gpus: $NGPU  start: $(date -u +%FT%TZ)"
-# 6 h limit including model loading: budget 5 h 40 min for the agent, chunks of 4 businesses.
+# 6 h limit including model loading: budget 5 h 40 min for the agent, chunks of 2 businesses.
+# Configuration = best measured on train (EXPERIMENT_LOG entry 4): helpers + compile (sales) + chat normalisation +
+# entity linking + retrieved solved examples from the training split (src/shots/train_shots.jsonl).
 # overridable with docker run -e NAME=value (defaults = the submitted configuration)
 K=${K:-4}; KC=${KC:-4}; MAX_LEN=${MAX_LEN:-32768}; BUDGET=${BUDGET:-20400}; DP=${DP:-$NGPU}; EXTRA=${EXTRA:-}
-python3 /app/src/agent.py "$SPLIT" "$RESULT" --model "$MODEL" --dp "$DP" --compile --k "$K" --kc "$KC" --repairs 2 \
-    --chunk 4 --budget "$BUDGET" --cache /tmp/zc/cache --log-dir "$RESULT/logs" --max-len "$MAX_LEN" $EXTRA 2>&1 | tee "$RESULT/logs/run.log"
+python3 /app/src/agent.py "$SPLIT" "$RESULT" --model "$MODEL" --dp "$DP" --compile --compile-scope sales --k "$K" --kc "$KC" --repairs 2 \
+    --helpers --norm-q --link --shots /app/src/shots/train_shots.jsonl --n-shots 2 \
+    --chunk 2 --budget "$BUDGET" --cache /tmp/zc/cache --log-dir "$RESULT/logs" --max-len "$MAX_LEN" $EXTRA 2>&1 | tee "$RESULT/logs/run.log"
 echo "end: $(date -u +%FT%TZ)  answers: $(wc -l < "$RESULT/submission.jsonl")"

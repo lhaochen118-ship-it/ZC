@@ -75,6 +75,22 @@ Test đầu-cuối không GPU (`tests/test_agent_local.py`, FakeEngine): đúng 
 | Vòng tự kiểm tra (kết quả 0/rỗng) | 246 lần | cần đo xem có cải thiện không (chưa có đáp án) |
 | Thông lượng | 110–170 token/s mỗi L4 (kỳ vọng ≥ 1,500) | **tiêu cực**: prefix cache bị đẩy ra liên tục (đã sửa, chưa đo lại) |
 
+**E2c public test** (code mới nhất: bảo vệ độ dài prompt, sinh theo nhóm prefix, chép model cục bộ; 1000/1000 câu):
+
+| Đo | E2b | E2c |
+|---|---|---|
+| Câu có log | 746 (1 shard chết) | **1000** |
+| Nạp model (4 tiến trình) | 1320 s | **230 s** |
+| Thông lượng vòng trả lời đầu, mỗi L4 | 110–173 tok/s | 176–234 tok/s (chỉ +30 %, vẫn thấp hơn kỳ vọng nhiều lần) |
+| Thông lượng compile | 53–110 tok/s | 21–57 tok/s (sinh theo nhóm prefix → mỗi lần gọi chỉ 4 chuỗi) |
+| Mẫu chạy được (lần đầu / sau sửa) | 79 % / 93 % | 81 % / 95 % |
+| Tỷ lệ phiếu đáp án đầu 4/4, 3/4, 2/4, ≤ 1/4 | 20 / 25 / 46 / 9 % | 26 / 21 / 45 / 8 % |
+| Compile có bảng chuẩn | 3/14 DN | 3/14 DN (dev_002, dev_003, dev_009) |
+| Đáp án cuối: abstain / unanswerable | 71 / 12 (trên 746) | 78 / 14 |
+
+Lỗi chương trình hàng đầu ở E2c giống E2b: ngày ngoài phạm vi (231), sai tên cột (70), `.str` (68), không gán
+`ANSWER` (64), đọc file `orders.pkl` (29).
+
 **Lỗi chương trình phổ biến nhất (E2b):**
 
 | Lỗi | Số lần |

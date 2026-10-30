@@ -32,7 +32,7 @@ trong `hmm-develop`, giữ lịch sử; nội dung HMM đã bỏ, khôi phục �
 | Bộ làm sạch | Xong, đã kiểm chứng (audit 0 cột lỗi, 12/12 biến thể tổng hợp, chương trình viết tay khớp tuyệt đối) |
 | Agent v1 | Compile + 2 nhánh + sửa lỗi + tự kiểm tra + vote + ngân sách thời gian + DP. Test không GPU: đạt |
 | Hạ tầng Kaggle | fanout / make_kernel / run_kernel / watch_done; assets offline public; L4 đã xác nhận |
-| Đo độ chính xác | **Chưa có PA nào.** 4 kernel còn chạy (`handoff/RUNNING_KERNELS.md`) |
+| Đo độ chính xác | **Chưa có PA nào.** 3 kernel train/baseline còn chạy (`handoff/RUNNING_KERNELS.md`); E2c public xong (không có đáp án) |
 | Fine-tune | `harvest.py`, `train_sft.py` viết xong, chưa chạy |
 | Docker | File xong (`docker/`, hướng dẫn `docker/SETUP_DOCKER.md`); user sẽ build trên máy mình; chưa có Docker guideline của BTC |
 
@@ -78,7 +78,12 @@ Từ `01_SCIENTIFIC_FINDINGS.md` §3 và `02_ENGINEERING_OPS_NOTES.md` §5:
 3. **Độ đồng thuận thấp** (46 % câu chỉ 2/4 phiếu):
    - Chọn τ trên DN dev bằng `analyze.py`.
    - Thử "leo thang": chỉ câu đồng thuận ≤ 0.5 mới sinh thêm mẫu hoặc bật `--think`.
-4. **Thông lượng:** kiểm tra bản sửa sinh theo nhóm prefix và chép model cục bộ. Mục tiêu ≥ 1,000 token/s mỗi L4; in tok/s từ log shard.
+4. **Thông lượng** (E2c: chép model cục bộ hiệu quả, 230 s; sinh theo nhóm prefix chỉ +30 %, compile còn chậm hơn):
+   - gộp nhiều nhóm prefix vào một lần gọi trong giới hạn KV;
+   - đo tốc độ decode từng chuỗi;
+   - thử `kv_cache_dtype=fp8`, `max_num_seqs`.
+
+   Mục tiêu ≥ 1,000 token/s mỗi L4.
 5. **Mọi cấu hình mới:** chạy thử nhỏ trên đúng loại GPU trước (`--subset 8`, 1 phiên), rồi mới chạy full.
 
 ### Bước 2 — Chạy lại trên GPU đã cấp

@@ -29,8 +29,8 @@ tài khoản, dataset và lệnh chi tiết: `docs/02_KAGGLE_OPS.md`; nguyên t�
 | vLLM 0.32 | `pip install vllm` kéo torch 2.13 + CUDA 13 (driver 580 hỗ trợ) → **gỡ `torchaudio torchcodec`** (lệch CUDA làm `transformers` import lỗi) |
 | FlashInfer | Trên L4, sampler FlashInfer JIT-compile 20 phút rồi lỗi `ld` → run hỏng toàn bộ. `agent.py` đặt `VLLM_USE_FLASHINFER_SAMPLER=0` |
 | T4 | 14B-AWQ phải `--tp 2` (một T4 chỉ còn 1.3 GB KV); fp16; Qwen3.5-9B lỗi khởi tạo |
-| Nạp model | 4 tiến trình cùng đọc 9.4 GB từ `/kaggle/input` (ổ mạng) mất **18 phút** → `run_kaggle.py` chép model sang `/tmp/models` một lần |
-| Prefix cache | Gửi mọi DN cùng lúc làm các prefix 15k token đẩy nhau khỏi KV (thông lượng thấp ~12×) → `Engine.gen` sinh theo từng nhóm prefix + warm-up 1 token |
+| Nạp model | 4 tiến trình cùng đọc 9.4 GB từ `/kaggle/input` (ổ mạng) mất **18 phút** → `run_kaggle.py` chép model sang `/tmp/models` một lần → **230 s** (E2c, đã xác nhận) |
+| Prefix cache | Gửi mọi DN cùng lúc làm các prefix 15k token đẩy nhau khỏi KV → `Engine.gen` sinh theo từng nhóm prefix + warm-up 1 token. **Đo lại ở E2c: chỉ +30 %**; compile còn chậm hơn vì mỗi nhóm chỉ có `kc` = 4 chuỗi. Việc tiếp: gộp nhiều nhóm prefix vào một lần gọi trong giới hạn KV (vd ≤ 40k token prefix), tăng batch; đo per-sequence decode tok/s, thử `kv_cache_dtype=fp8`, `max_num_seqs`, profile |
 | Độ dài prompt | Prompt > `max_len` làm vLLM ném lỗi **cả lô** (một shard chết, mất 254 câu) → `Engine.fit`: bỏ vòng sửa cũ → giảm max_tokens → bỏ riêng request |
 | Tên kernel | title ≥ 5 ký tự (`e1-1` bị từ chối) |
 | Trần phiên | 2 GPU, 5 CPU mỗi acc; quota tuần 30 h; lỗi quota xuất hiện lúc push (không tốn quota) |

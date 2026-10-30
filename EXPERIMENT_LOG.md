@@ -47,3 +47,10 @@ liệu (split, số câu), kết quả (PA tổng và theo type / loại câu, %
 - **Assets public (`nhatlong1103`):** `zc-assets` (wheels vLLM + Qwen3-14B-AWQ), `zc-m-qwen3-14b-fp8`,
   `zc-m-qwen35-9b`, `zc-m-gemma4-12b-qat`.
 - **Docker:** `docker/` (build / run như BTC / export + sha256), hướng dẫn `docker/SETUP_DOCKER.md`.
+
+## Entry 3 — 2026-10-30 (tối): E2c public test
+
+Code mới nhất, 4×L4, `--compile --k 4 --kc 4 --dp 4`: 1000/1000 câu; nạp model 230 s (trước 1320 s); thông lượng
+vòng trả lời đầu 176–234 tok/s mỗi L4 (+30 %), compile 21–57 tok/s; 4/4 phiếu 26 %, 2/4 45 %; compile 3/14 DN; lỗi
+hàng đầu không đổi (ngày ngoài phạm vi, tên cột, `.str`, thiếu ANSWER, đọc file). Không tạo file nộp (user: chỉ khi
+kết quả tốt). Chi tiết: `handoff/01_SCIENTIFIC_FINDINGS.md` §3.

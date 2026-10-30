@@ -26,7 +26,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import ingest
+import ingest, semantic
 from score import norm
 
 ENV_DOC = """Environment available to your program (already loaded, do NOT read files):
@@ -43,6 +43,11 @@ ANSWER_DOC = """Finish by assigning `ANSWER = {"type": <one of number|percent|st
    - string: the name exactly as written in the data. date: "YYYY-MM-DD" (or "YYYY-MM" for month questions). boolean: True/False.
    - list: Python list in the order the question asks (one element is still a list). table: {"columns": [...], "rows": [[...], ...]} with the entity name first, then the measures in the order the question asks.
    - unanswerable: when the released data cannot answer (rulebook section on unanswerable questions), with "answer": None."""
+
+HELPER_DOC = """
+- `build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, status=None, status_map=None, qty_base=None, factor=None, unit=None, unit_price=None, line_discount=None, item_code=None, customer=None, customer_id=None, time=None, header=None, header_key=None, keep=())` -> `(orders, lines)`: tested implementation of the rulebook's recording rules. It fills blank order-level cells from the order's first line, keeps identical lines of one order once, gives each order one status (any returned line -> "trả hàng", else any cancelled line -> "huỷ", else its status), valid = not cancelled and not returned, revenue = sum of line amounts after line discounts. Arguments are column NAMES of `lines`, or of `header` (one row per order, joined on header_key == order_id) for order-level fields such as date / status / customer. status_map maps EVERY raw status label (inspect the unique values) to "hoàn thành" / "huỷ" / "trả hàng" / "đang giao". qty_base = column already converted to the base unit; otherwise factor = {unit: factor} or {(item, unit): factor} from the README / conversion table. Without an order id column every row is its own record.
+  orders: order_id, order_time, order_date, status, valid, revenue, n_lines, customer_name, customer_id + every header column. lines: order_id, order_time, order_date, item_name, item_code, unit, qty, qty_base, unit_price, line_discount, line_amount, customer_name, customer_id, line_status, status, valid.
+  Example: `orders, lines = build_sales(T['ban_hang'], item='Tên hàng', qty='SL', qty_base='SL lẻ', amount='Thành tiền', date='Ngày', order_id='Mã HĐ', status='Trạng thái', status_map={'Xong': 'hoàn thành', 'Khách hủy': 'huỷ', 'Trả lại': 'trả hàng', 'Đang ship': 'đang giao'}, customer='Khách')`. Prefer it for anything about orders, revenue, quantities sold, statuses; use T directly for other tables."""
 
 SYSTEM_RAW = f"""You are DataMate, an expert data analyst for Vietnamese small businesses. You answer a question by writing ONE Python program that computes the answer from the business's tables with pandas.
 
@@ -87,6 +92,25 @@ Rules:
 5. End with print() of a short summary: row count per table, status counts, valid revenue of the first 3 months.
 6. The tables are ALREADY loaded in T: never open, read or glob files. Assign the result to the variable `C` (a dict) and `NOTES` (a string).
 Keep the program compact (about 150 lines at most); output only one ```python code block, no explanation."""
+
+
+def use_helpers():
+    """--helpers: document build_sales in every system prompt and make the compile build orders / lines with it."""
+    global SYSTEM_RAW, SYSTEM_CANON, SYSTEM_COMPILE, SYSTEM_COMPILE_SALES
+    SYSTEM_RAW, SYSTEM_CANON, SYSTEM_COMPILE = (x.replace(ENV_DOC, ENV_DOC + HELPER_DOC) for x in (SYSTEM_RAW, SYSTEM_CANON, SYSTEM_COMPILE))
+    rule = "Rules:\n0. Build C[\"orders\"] and C[\"lines\"] with build_sales(...) (it already applies rules 1-2 below); add columns it does not produce from T.\n1. Map every raw status"
+    SYSTEM_COMPILE = SYSTEM_COMPILE.replace("Rules:\n1. Map every raw status", rule)
+    SYSTEM_COMPILE_SALES = _sales_only(SYSTEM_COMPILE)
+
+
+def _sales_only(prompt):
+    """--compile-scope sales: only C["orders"] and C["lines"] (a shorter program; E2b compiled 5/40 with the full scope)."""
+    a = prompt.index('- C["items"]'); b = prompt.index("Rules:\n")
+    p = prompt[:a] + "Build only these two tables; everything else stays in T.\n" + prompt[b:]
+    return p.replace("about 150 lines at most", "about 80 lines at most").replace(", no supplier, no customer address", "")
+
+
+SYSTEM_COMPILE_SALES = _sales_only(SYSTEM_COMPILE)
 
 
 def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None, shots=None):
@@ -184,7 +208,7 @@ def _namespace(bid, as_of=None, canon_path=None):
          "math": math, "datetime": datetime, "parse_num": ingest.parse_num, "parse_date": ingest.parse_date, "norm_text": norm_text,
          "strip_accents": ingest.strip_accents, "match_names": match_names, "month_range": month_range, "round_half_up": round_half_up,
          "lunar_to_solar": lunar_to_solar, "add_months": add_months, "week_range": week_range,
-         "same_days_prev_month": same_days_prev_month, "__name__": "__datamate__", "__builtins__": _SAFE_BUILTINS, "pd": _PD}
+         "same_days_prev_month": same_days_prev_month, "build_sales": semantic.build_sales, "__name__": "__datamate__", "__builtins__": _SAFE_BUILTINS, "pd": _PD}
     if as_of is not None: g["TODAY"] = pd.Timestamp(as_of)
     if canon_path:
         can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
@@ -591,6 +615,8 @@ def main():
     ap.add_argument("--model", default="Qwen/Qwen3-14B-AWQ"); ap.add_argument("--k", type=int, default=4)
     ap.add_argument("--paths", default="", help="path of each sample: A = canonical C, B = raw T (default: all B, or AABB.. with --compile)")
     ap.add_argument("--compile", action="store_true"); ap.add_argument("--kc", type=int, default=4)
+    ap.add_argument("--compile-scope", default="full", choices=["full", "sales"])
+    ap.add_argument("--helpers", action="store_true", help="document build_sales (src/semantic.py) in the prompts")
     ap.add_argument("--repairs", type=int, default=2); ap.add_argument("--subset", type=int, default=0)
     ap.add_argument("--tau", type=float, default=0.5); ap.add_argument("--cache", default="")
     ap.add_argument("--tp", type=int, default=0); ap.add_argument("--max-len", type=int, default=24576)
@@ -633,6 +659,7 @@ def run(a, engine=None):
     print(f"ingest {len(bids)} businesses {time.time() - t_start:.0f}s", flush=True)
 
     global SHOTS
+    if getattr(a, "helpers", False): use_helpers()
     if getattr(a, "shots", ""):
         sp = a.shots if os.path.isfile(a.shots) else next(iter(__import__("glob").glob(f"/kaggle/input/**/{os.path.basename(a.shots)}", recursive=True)), "")
         SHOTS = ShotIndex(sp); print(f"shots: {len(SHOTS.rows)} examples from {sp}", flush=True)
@@ -692,7 +719,8 @@ def write_answer(sub, logf, a, q, final, conf, votes, samples, path_of, elapsed)
 
 def compile_stage(engine, pool, a, rulebook, bizs, bids, clog):
     cdir = os.path.join(a.cache or a.out, "canon_" + (a.shard.replace("/", "of") or "main")); os.makedirs(cdir, exist_ok=True); canon = {}
-    items = {(b, s): [{"role": "system", "content": SYSTEM_COMPILE}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b])}]
+    sysc = SYSTEM_COMPILE_SALES if getattr(a, "compile_scope", "full") == "sales" else SYSTEM_COMPILE
+    items = {(b, s): [{"role": "system", "content": sysc}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b])}]
              for b in bids for s in range(a.kc)}
     catt = generate_and_run(engine, pool, items, {k for k in items if k[1] == 0},
                             lambda k, code: (k, k[0], code, 300, os.path.join(cdir, f"{k[0]}.c{k[1]}.pkl")),

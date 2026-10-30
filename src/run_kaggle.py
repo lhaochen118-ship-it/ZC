@@ -17,5 +17,10 @@ args = sys.argv[3:]
 if "--model" in args:                                                 # prefer weights mounted from nhatlong1103/zc-assets (offline sessions)
     i = args.index("--model") + 1
     local = next(iter(glob.glob(f"/kaggle/input/**/models/{os.path.basename(args[i])}/config.json", recursive=True)), None)
-    if local: args[i] = os.path.dirname(local); print("model from mounted assets:", args[i], flush=True)
+    if local:                                                          # copy once to local disk: 4 GPU processes reading the
+        src = os.path.dirname(local); dst = "/tmp/models/" + os.path.basename(src)   # network mount took 18 min in E2b
+        os.makedirs("/tmp/models", exist_ok=True)
+        if not os.path.isfile(os.path.join(dst, "config.json")):
+            t = time.time(); subprocess.run(["cp", "-r", src, dst]); print(f"model copied to {dst} in {time.time() - t:.0f}s", flush=True)
+        args[i] = dst
 os.execv(sys.executable, [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent.py"), split, out] + args)

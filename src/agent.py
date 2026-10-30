@@ -84,7 +84,8 @@ Rules:
 3. Use the README / conversion tables for qty_base. Keep codes as strings.
 4. Set `NOTES` (a string): what the canonical tables mean for this shop, every assumption you made, and which kinds of information are NOT recorded (e.g. no cost price, no supplier, no customer address), so that questions needing them are unanswerable.
 5. End with print() of a short summary: row count per table, status counts, valid revenue of the first 3 months.
-Output only one ```python code block, no explanation."""
+6. The tables are ALREADY loaded in T: never open, read or glob files. Assign the result to the variable `C` (a dict) and `NOTES` (a string).
+Keep the program compact (about 150 lines at most); output only one ```python code block, no explanation."""
 
 
 def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None):
@@ -104,7 +105,7 @@ def extract_code(text):
     m = CODE_RE.findall(text)
     if m: return max(m, key=len)
     m = re.search(r"```(?:python|py)?\s*\n(.*)$", text, re.S)                 # unterminated block (length cut)
-    if m and ("ANSWER" in m.group(1) or "C[" in m.group(1)): return m.group(1)
+    if m and ("ANSWER" in m.group(1) or re.search(r"\bC\s*(=|\[)", m.group(1))): return m.group(1)
     return None
 
 
@@ -189,8 +190,10 @@ def _exec(code, g, timeout):
 def _err(e, out=""):
     if isinstance(e, _Timeout): return {"ok": False, "error": "timeout: the program ran too long", "stdout": out[-800:]}
     tb = traceback.format_exc().splitlines()
-    tb = [l for l in tb if "<program>" in l or not l.startswith("  File")][-8:]
-    return {"ok": False, "error": "\n".join(tb)[-1500:], "stdout": out[-800:]}
+    where = [l.strip() for l in tb if 'File "<program>"' in l][-2:]        # program lines involved
+    msg = f"{type(e).__name__}: {e}"[:600]
+    if isinstance(e, FileNotFoundError): msg += "\n(Do not read files: every table is already loaded in T.)"
+    return {"ok": False, "error": msg + ("\nat " + " -> ".join(where) if where else ""), "stdout": out[-800:]}
 
 
 def run_code(task):
@@ -408,14 +411,24 @@ class Engine:
         return None, 0
 
     def gen(self, convs, temps, seeds, max_tokens):
+        """Requests are generated one prefix group at a time (rulebook + README + card of one business and path, ~10-18k
+        tokens): the group's prefix is prefilled once by a 1-token warm-up request and then served from the prefix
+        cache to every request of the group. Sending all businesses at once made the prefixes evict each other from the
+        KV cache (E2b: ~12x below the expected throughput)."""
         from vllm import SamplingParams
         fitted = [self.fit(c, max_tokens) for c in convs]
         idx = [i for i, (p, _) in enumerate(fitted) if p is not None]
-        sps = [SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=fitted[i][1], seed=seeds[i]) for i in idx]
+        groups = {}
+        for i in idx:
+            p = fitted[i][0]; cut = p.rfind("# QUESTION")
+            groups.setdefault(p[:cut] if cut > 0 else p, []).append(i)
         texts = [""] * len(convs); ntok = 0
-        if idx:
-            outs = self.llm.generate([fitted[i][0] for i in idx], sps, use_tqdm=False, lora_request=self.lora)
-            for i, o in zip(idx, outs): texts[i] = o.outputs[0].text; ntok += len(o.outputs[0].token_ids)
+        for prefix, members in groups.items():
+            if len(members) > 1:
+                self.llm.generate([fitted[members[0]][0]], [SamplingParams(max_tokens=1)], use_tqdm=False, lora_request=self.lora)
+            sps = [SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=fitted[i][1], seed=seeds[i]) for i in members]
+            outs = self.llm.generate([fitted[i][0] for i in members], sps, use_tqdm=False, lora_request=self.lora)
+            for i, o in zip(members, outs): texts[i] = o.outputs[0].text; ntok += len(o.outputs[0].token_ids)
         if len(idx) < len(convs): print(f"  {len(convs) - len(idx)} prompts too long for max_len={self.a.max_len}: skipped", flush=True)
         return texts, ntok
 
@@ -484,7 +497,7 @@ def main():
     ap.add_argument("--tau", type=float, default=0.5); ap.add_argument("--cache", default="")
     ap.add_argument("--tp", type=int, default=0); ap.add_argument("--max-len", type=int, default=24576)
     ap.add_argument("--think", action="store_true"); ap.add_argument("--workers", type=int, default=0)
-    ap.add_argument("--max-tokens", type=int, default=2048); ap.add_argument("--compile-tokens", type=int, default=4096)
+    ap.add_argument("--max-tokens", type=int, default=2048); ap.add_argument("--compile-tokens", type=int, default=6144)
     ap.add_argument("--timeout", type=int, default=60); ap.add_argument("--temp", type=float, default=0.7)
     ap.add_argument("--eager", action="store_true"); ap.add_argument("--no-reflect", action="store_true")
     ap.add_argument("--lora", default="", help="LoRA adapter dir from train_sft.py")

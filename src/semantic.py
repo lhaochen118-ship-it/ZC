@@ -51,18 +51,19 @@ def build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, st
     Returns (orders, lines): canonical DataFrames (see agent.ENV_DOC)."""
     line_cols = [c for c in (item, qty, amount, qty_base, unit, unit_price, line_discount, item_code) if c is not None]
     order_cols = [c for c in (date, time, status, customer, customer_id) + tuple(keep) if c is not None]
-    if tables:                                                         # resolve a forgotten / swapped header table
-        def has(df, cols): return all(c in df.columns for c in cols)
+    if tables:                                                         # resolve a forgotten / wrong / swapped header table
+        def has(df, cols): return df is not None and all(c in df.columns for c in cols)
         if not has(lines, line_cols):
-            cand = [df for df in tables.values() if df is not lines and has(df, line_cols) and (order_id is None or order_id in df.columns or
-                    (header_key and header_key in lines.columns))]
+            cand = [df for df in tables.values() if df is not lines and has(df, line_cols) and (order_id is None or order_id in df.columns)]
             if len(cand) == 1:
-                if header is None and has(lines, [c for c in order_cols if c not in cand[0].columns]):
-                    header, header_key = lines, header_key or order_id
-                lines = cand[0]
-        if header is None and order_id is not None and order_id in lines.columns:
-            miss = [c for c in order_cols if c not in lines.columns]
-            if miss:
+                old, lines = lines, cand[0]
+                need = [c for c in order_cols if c not in lines.columns]
+                if need and not has(header, need) and has(old, need) and (order_id is None or order_id in old.columns):
+                    header, header_key = old, order_id
+        if order_id is not None and order_id in lines.columns:
+            miss = [c for c in order_cols if c not in lines.columns and not (header is not None and c in header.columns)]
+            if miss or (header is not None and (header_key or order_id) not in header.columns):
+                miss = [c for c in order_cols if c not in lines.columns]
                 ids = set(lines[order_id].dropna().astype(str).str.strip().head(5000))
                 best = None
                 for df in tables.values():
@@ -189,4 +190,5 @@ def build_sales(lines, item, qty=None, amount=None, date=None, order_id=None, st
         orders = orders.merge(H[[hkey] + hc].drop_duplicates(hkey).rename(columns={hkey: "__k"}).assign(__k=lambda x: x["__k"].astype(str).str.strip()),
                               left_on="order_id", right_on="__k", how="left").drop(columns="__k")
     orders["valid"] = orders["valid"].astype(bool); out["valid"] = out["valid"].astype(bool)
+    if order_id != "__row" and order_id not in orders.columns: orders[order_id] = orders["order_id"]   # merges on the raw name keep working
     return orders, out

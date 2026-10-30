@@ -58,10 +58,31 @@ Một dòng `submission.jsonl` cho mỗi câu hỏi:
 
 ## 3. Dữ liệu (tab Data — chờ `data/data.txt`)
 
-> TODO khi user đẩy `data/data.txt` và 2 file zip: tóm tắt cấu trúc thư mục, các split (train / public test), định dạng
-> `questions.jsonl` và file đáp án, rulebook, lịch âm–dương, số doanh nghiệp, số câu hỏi, phân bố type, và vài giá trị
-> mẫu. Chỉ đọc cấu trúc và vài dòng, không đọc hết (tiết kiệm token). Sau đó sửa `src/score.py::ref_forms` cho đúng
-> định dạng đáp án thật.
+Nguồn: Kaggle dataset public `nhatlong1103/zc-2026` (gồm `data.txt` = tab Data, `train/`, `public_test/`).
+
+```
+<split>/data/<business_id>/  *.csv | *.xlsx | *.sqlite + README.md   rulebook.md   calendar.csv   questions.jsonl   answers.jsonl (train)
+```
+
+| Split | Doanh nghiệp | Câu hỏi | File dữ liệu | as_of_date |
+|---|---|---|---|---|
+| train | 30 (`biz_101`–`biz_130`), ~100 câu mỗi DN | 3,000 (có đáp án) | 107 xlsx, 20 csv, 1 sqlite | 2025-01-15 .. 2026-09-20 |
+| public_test | 14 (`dev_001`–`dev_014`) | 1,000 | 69 xlsx, 10 csv, 1 sqlite | 2025-02-04 .. 2026-09-30 |
+
+- **Phân bố type (train):** number 1884, percent 578, list 193, date 145, string 88, unanswerable 70, boolean 23, table 19.
+- `answers.jsonl`: `{"id", "type", "answer", "alias"}`; `alias` = các cách viết khác + mã (list/table: một list alias cho
+  mỗi phần tử/dòng); `unanswerable` có `"answer": null`.
+- **Ngành:** tạp hoá, cà phê/trà sữa, nhà hàng, nhà thuốc, vật liệu xây dựng, sửa xe, mẹ và bé, điện thoại… Mỗi DN
+  12–30 tháng, vài trăm đến ~300k dòng. **Private test có ngành không có trong train/public.**
+- **Rulebook mỗi split một bản, có khác nhau** (public thêm: khách trung thành, giờ cao điểm, nhà cung cấp chính, topping
+  ghi chung ô…). Agent phải đọc rulebook của split đang chạy, không hard-code luật train.
+- README mỗi DN chất lượng khác nhau: có DN đủ từ điển dữ liệu, có DN gần như trống.
+- **Dữ liệu bẩn thật:** dòng tiêu đề trước header, header lặp giữa dữ liệu, dòng "Tổng tháng"/"Ghi chú", số dạng
+  `10.000đ`, `105k`, `1tr440`, `531 500`, `1 bao 25kg`; ngày `01/01/2025`, `2025-01-01`, `1 thg 6 2025`, serial Excel
+  (cả dạng chuỗi `"46183"`), `1/1` không có năm (lấy năm của sheet); trạng thái viết nhiều kiểu (`Xong`, `ok`,
+  `Đã hoàn thành`, `hủy`, `Hủy`…); một danh sách tách nhiều file/sheet theo tháng.
+- Docker phải có `predict.sh` đọc `/data`, ghi `/result/submission.jsonl` và log từng câu ở `/result/logs/` (id, đáp
+  án, thời gian, cách ra đáp án: code sinh ra, output thực thi).
 
 Phần Rule cho biết: khi chấm, BTC mount test set vào `/data` (read-only) và lấy `/result/submission.jsonl`; image phải
 ghi log (chi tiết định dạng log nằm ở mục "Submission format" của tab Data).

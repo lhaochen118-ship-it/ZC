@@ -23,6 +23,12 @@ Token mỗi acc ở `~/.kaggle/tok_<username>` (chmod 600); `~/.kaggle/access_to
 public: không commit token, không ghi vào `~/.bashrc`.** Token lấy từ tin nhắn của user, thứ tự trùng bảng dưới. Kiểm
 tra: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels list --mine`.
 
+**Acc dùng cho DataMate (token user gửi 2026-10-30):** `yuan1103` (4×L4 + 2×T4; **hết quota GPU tuần 30 h** lúc
+30/10), `mxuanquy` (2×T4), `anderson1202` (2×T4). Chưa có token `nhatlong1103` → dataset tái sử dụng tạm đăng public
+trên acc khác hoặc dùng output của kernel public (`kernel_sources`).
+
+Bảng acc của dự án trước (tham khảo):
+
 | # | Username | Ghi chú (đến 2026-10-30) |
 |---|---|---|
 | 1 | `nhatlong1103` | Chủ mọi dataset public |
@@ -66,8 +72,8 @@ python3 automation/fanout.py <runs>/<run> <prefix> "<script> <args>;..." [n_kern
 
 | Slug (dự kiến) | Nội dung | Trạng thái |
 |---|---|---|
-| `nhatlong1103/zc-datamate-data` | Dữ liệu BTC (2 zip đã giải nén) | chờ dữ liệu + token |
-| `nhatlong1103/zc-wheels` | vLLM + deps cho CUDA của Kaggle (kernel L4 không có internet) | chưa |
+| `nhatlong1103/zc-2026` | Dữ liệu BTC (đã giải nén) + `data.txt` | **có**, public |
+| `anderson1202/zc-vllm-t4b` (output kernel public) | wheels vLLM 0.32 + deps (`wheels/`), gắn bằng `--ks` | đang tạo |
 | `nhatlong1103/zc-models-*` | Trọng số mô hình ứng viên (nếu không mount được từ Kaggle Models) | chưa |
 | `nhatlong1103/zc-cache-*` | Cache ingest/profile, đầu ra LLM theo câu để chấm lại offline | chưa |
 

@@ -1,6 +1,6 @@
 # 01 — Kế hoạch giải DataMate từ A đến Z
 
-*Bản 2026-10-30, trước khi xem dữ liệu. Các giả định về dữ liệu đánh dấu **(GĐ)** và phải kiểm lại ở Bước 1.*
+*Bản 2026-10-30, viết trước khi xem dữ liệu; giữ làm tài liệu tham khảo (tổng quan paper, kiến trúc). Trạng thái thực tế và việc tiếp theo: `handoff/03_HANDOFF.md`. Khác biệt đã biết: rulebook đổi theo split nên [B] "rulebook compiler" được thay bằng bước compile bảng chuẩn do LLM viết lúc chạy; planner DSL (E4) chưa làm.*
 
 ## 1. Mục tiêu và ràng buộc quyết định thiết kế
 

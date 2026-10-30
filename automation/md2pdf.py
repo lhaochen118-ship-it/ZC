@@ -14,11 +14,12 @@ html_body = markdown.markdown(
 
 import os as _os0, shutil as _sh0
 _DJ = "fonts/"; _fd = _os0.path.join(_os0.path.dirname(_os0.path.abspath(sys.argv[1])), "fonts")
-for _f in ("DejaVuSans.ttf", "DejaVuSans-Bold.ttf"):
+for _f in ("DejaVuSans.ttf", "DejaVuSans-Bold.ttf", "DejaVuSansMono.ttf"):
     if _os_path_exists("/usr/share/fonts/truetype/dejavu/" + _f) and not _os_path_exists(_os0.path.join(_fd, _f)):
         _os0.makedirs(_fd, exist_ok=True); _sh0.copy("/usr/share/fonts/truetype/dejavu/" + _f, _fd)
 FONTFACE = (f"@font-face {{ font-family: DejaVu; src: url('{_DJ}DejaVuSans.ttf'); }}\n"
-            f"@font-face {{ font-family: DejaVu; font-weight: bold; src: url('{_DJ}DejaVuSans-Bold.ttf'); }}\n") if _os_path_exists(_os0.path.join(_fd, "DejaVuSans.ttf")) else ""
+            f"@font-face {{ font-family: DejaVu; font-weight: bold; src: url('{_DJ}DejaVuSans-Bold.ttf'); }}\n"
+            f"@font-face {{ font-family: DejaVuMono; src: url('{_DJ}DejaVuSansMono.ttf'); }}\n") if _os_path_exists(_os0.path.join(_fd, "DejaVuSans.ttf")) else ""
 CSS = FONTFACE + """
 @page { size: A4; margin: 1.5cm 1.6cm; }
 body { font-family: DejaVu, Helvetica, Arial, sans-serif; font-size: 9.2pt; line-height: 1.38; color: #1b1b1b; }
@@ -28,8 +29,8 @@ h3 { font-size: 11pt; color: #14517f; margin: 10px 0 4px; }
 p  { margin: 4px 0; }
 em { color: #444; }
 strong { color: #0b2c4a; }
-code { font-family: Courier, monospace; font-size: 8.3pt; background: #eef2f6; color: #9b1d1d; padding: 0 2px; }
-pre { font-family: Courier, monospace; font-size: 7.9pt; background: #f4f6f8; border: 1px solid #d5dde4;
+code { font-family: DejaVuMono, Courier, monospace; font-size: 8.3pt; background: #eef2f6; color: #9b1d1d; padding: 0 2px; }
+pre { font-family: DejaVuMono, Courier, monospace; font-size: 7.9pt; background: #f4f6f8; border: 1px solid #d5dde4;
       padding: 6px 8px; margin: 5px 0; -pdf-keep-with-next: false; }
 pre code { background: transparent; color: #12303f; padding: 0; }
 table { border-collapse: collapse; margin: 6px 0; width: 100%; }

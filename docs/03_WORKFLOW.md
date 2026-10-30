@@ -56,7 +56,7 @@ tối đa trên private test, trong 6 giờ, tái lập được".*
 
 ## 4. Git
 
-- Branch làm việc: `datamate` (repo `lhaochen118-ship-it/ZC`). Không tạo PR nếu user không yêu cầu.
+- Branch làm việc: `datamate` (repo `lhaochen118-ship-it/ZC`). Không tạo PR nếu user không yêu cầu. Chỉ tạo file nộp thử khi kết quả tốt (user chốt).
 - Commit kèm trailer theo hướng dẫn của phiên; không ghi model ID vào commit.
 - Kết quả mới để file mới (`results/<run>/…`), không ghi đè kết quả cũ.
 - Không commit token, dữ liệu sinh ra lớn, cache (`.gitignore`).

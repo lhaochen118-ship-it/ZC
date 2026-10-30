@@ -18,3 +18,5 @@ src/cache/
 results/**/*.npz
 docs/fonts/
 models/
+results/*.json
+handoff/fonts/

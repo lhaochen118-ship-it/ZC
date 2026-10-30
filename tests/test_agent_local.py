@@ -6,7 +6,7 @@ import os, sys, json, shutil, argparse
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 import agent
 
-split, scratch = sys.argv[1], sys.argv[2]
+split, scratch = os.path.abspath(sys.argv[1]), os.path.abspath(sys.argv[2])
 mini = os.path.join(scratch, "mini"); shutil.rmtree(mini, ignore_errors=True); os.makedirs(os.path.join(mini, "data"))
 for f in ("rulebook.md", "calendar.csv"): shutil.copy(os.path.join(split, f), mini)
 os.symlink(os.path.join(split, "data", "biz_101"), os.path.join(mini, "data", "biz_101"))
@@ -63,7 +63,7 @@ def responder(conv):
 
 args = argparse.Namespace(split=mini, out=os.path.join(scratch, "out"), model="fake", k=4, paths="", compile=True, kc=2, repairs=2, subset=0,
                           tau=0.5, cache=os.path.join(scratch, "cache"), tp=0, max_len=0, think=False, workers=2, max_tokens=0,
-                          compile_tokens=0, timeout=60, temp=0.7, eager=False, no_reflect=False, lora="", dp=1, shard="", chunk=0, budget=0, log_dir="")
+                          compile_tokens=0, timeout=60, temp=0.7, eager=False, no_reflect=False, lora="", dp=1, shard="", chunk=0, budget=0, log_dir="", biz="", shots="", n_shots=3)
 if "--budget-test" in sys.argv:                                      # out of time before the first chunk -> every answer abstains
     args.budget = 1e-6; args.out = os.path.join(scratch, "out_budget")
     agent.run(args, engine=agent.FakeEngine(responder))

@@ -34,8 +34,9 @@ ENV_DOC = """Environment available to your program (already loaded, do NOT read 
 - `RAW`: same tables with the original cell strings (use only if a cleaned column looks wrong).
 - `CAL`: solar-lunar calendar DataFrame: date (datetime64), weekday, lunar_day, lunar_month, lunar_year, lunar_leap, holiday.
 - helpers: `parse_num(x)`, `parse_date(x)`, `norm_text(s)` (lowercase, no punctuation), `strip_accents(s)`, `match_names(query, candidates, k=5)` -> best matching candidate strings (accent/typo tolerant),
-  `month_range(y, m)` -> (first_day, last_day), `lunar_to_solar(lunar_year, lunar_month, lunar_day)` -> Timestamp, `round_half_up(x, ndigits=0)` (rulebook rounding: half rounds up; Python's round() does not).
-- pandas as `pd`, numpy as `np`, `re`, `math`, `datetime`."""
+  `month_range(y, m)` -> (first_day, last_day), `add_months(ts, n)` (day clamped to the month's last day; never build dates like 2026-02-30 by hand), `week_range(ts)` -> (Monday, Sunday) of the week containing ts, `same_days_prev_month(TODAY)` -> (first_day, last_day) of the previous month cut at TODAY's day number (rulebook "tháng này so với tháng trước"), `lunar_to_solar(lunar_year, lunar_month, lunar_day)` -> Timestamp, `round_half_up(x, ndigits=0)` (rulebook rounding: half rounds up; Python's round() does not).
+- pandas as `pd`, numpy as `np`, `re`, `math`, `datetime`.
+- Text columns may hold numbers or NaN: use `.astype(str).str...` (never `.str` directly on a column you have not checked is text). Check column names against the card; use only columns that exist."""
 
 ANSWER_DOC = """Finish by assigning `ANSWER = {"type": <one of number|percent|string|date|boolean|list|table|unanswerable>, "answer": <value>}`.
    - number/percent: a Python number (money = integer VND; averages / percentages rounded to 2 decimals unless the rulebook says otherwise, with round_half_up). percent 12.4% -> 12.4.
@@ -88,12 +89,17 @@ Rules:
 Keep the program compact (about 150 lines at most); output only one ```python code block, no explanation."""
 
 
-def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None):
+def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None, shots=None):
     parts = [f"# RULEBOOK\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}", f"# RAW TABLES (in T)\n{card}"]
     if canon_card is not None:
         parts.append(f"# CANONICAL TABLES (in C)\n{canon_card}\n\nNOTES:\n{notes or ''}")
     if q is None: parts.append("Write the program that builds C and NOTES.")
-    else: parts.append(f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}\n\nWrite the program.")
+    else:
+        if shots:                                                      # retrieved solved examples (other shops, training split)
+            ex = "\n\n".join(f"Example question: {e['question']}\n```python\n{e['code'].strip()}\n```" for e in shots)
+            parts.append("# QUESTION EXAMPLES: similar questions solved correctly for OTHER shops. Their tables and column names differ "
+                         "from this shop's: reuse the rulebook logic (periods, valid orders, rounding, ranking), never their names.\n\n" + ex)
+        parts.append(f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}\n\nWrite the program.")
     return "\n\n".join(parts)
 
 
@@ -112,6 +118,19 @@ def extract_code(text):
 # ------------------------------------------------------------------ helpers exposed to programs
 def month_range(y, m):
     s = pd.Timestamp(int(y), int(m), 1); return s, s + pd.offsets.MonthEnd(0)
+
+
+def add_months(ts, n):
+    ts = pd.Timestamp(ts); return ts + pd.DateOffset(months=int(n))      # pandas clamps the day (31/3 - 1 month = 28/2 or 29/2)
+
+
+def week_range(ts):
+    d = pd.Timestamp(ts).normalize(); s = d - pd.Timedelta(days=d.weekday()); return s, s + pd.Timedelta(days=6)
+
+
+def same_days_prev_month(today):
+    d = pd.Timestamp(today).normalize(); s, e = month_range(*(add_months(d.replace(day=1), -1).year, add_months(d.replace(day=1), -1).month))
+    return s, min(e, s + pd.Timedelta(days=d.day - 1))
 
 
 def round_half_up(x, ndigits=0):
@@ -160,15 +179,46 @@ def _namespace(bid, as_of=None, canon_path=None):
                 (cal.lunar_leap.astype(str).str.lower().eq("true") == bool(leap))]
         return r.date.iloc[0] if len(r) else pd.NaT
     import datetime
-    g = {"T": {k: v.copy() for k, v in biz.tables.items()}, "RAW": biz.raw, "CAL": cal.copy(), "pd": pd, "np": np, "re": re,
+    _CTX["cols"] = "; ".join(f"T[{k!r}]: {[c for c in v.columns if not str(c).startswith('_')]}" for k, v in biz.tables.items())
+    g = {"T": {k: v.copy() for k, v in biz.tables.items()}, "RAW": biz.raw, "CAL": cal.copy(), "np": np, "re": re,
          "math": math, "datetime": datetime, "parse_num": ingest.parse_num, "parse_date": ingest.parse_date, "norm_text": norm_text,
          "strip_accents": ingest.strip_accents, "match_names": match_names, "month_range": month_range, "round_half_up": round_half_up,
-         "lunar_to_solar": lunar_to_solar, "__name__": "__datamate__"}
+         "lunar_to_solar": lunar_to_solar, "add_months": add_months, "week_range": week_range,
+         "same_days_prev_month": same_days_prev_month, "__name__": "__datamate__", "__builtins__": _SAFE_BUILTINS, "pd": _PD}
     if as_of is not None: g["TODAY"] = pd.Timestamp(as_of)
     if canon_path:
         can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
         g["C"] = {k: v.copy() for k, v in can["C"].items()}; g["NOTES"] = can.get("notes", "")
     return g
+
+
+class _NoFiles(Exception): pass
+
+
+def _no_files(*a, **k):
+    raise _NoFiles("reading files is not allowed: every table is already loaded in the dict T (and RAW); use T['<table name>']")
+
+
+import builtins as _b, types as _types
+_SAFE_BUILTINS = dict(vars(_b)); _SAFE_BUILTINS["open"] = _no_files
+
+
+def _imp(name, *a, **k):
+    m = _b.__import__(name, *a, **k)
+    return _PD if name == "pandas" else m
+
+
+_SAFE_BUILTINS["__import__"] = _imp
+
+
+class _PandasNoIO(_types.ModuleType):
+    """pandas without its file readers (programs kept re-reading orders.csv instead of using T)."""
+    def __getattr__(self, name):
+        if name.startswith("read_"): return _no_files
+        return getattr(pd, name)
+
+
+_PD = _PandasNoIO("pandas")
 
 
 class _Timeout(Exception): pass
@@ -192,7 +242,13 @@ def _err(e, out=""):
     tb = traceback.format_exc().splitlines()
     where = [l.strip() for l in tb if 'File "<program>"' in l][-2:]        # program lines involved
     msg = f"{type(e).__name__}: {e}"[:600]
-    if isinstance(e, FileNotFoundError): msg += "\n(Do not read files: every table is already loaded in T.)"
+    if isinstance(e, (FileNotFoundError, _NoFiles)): msg += "\n(Do not read files: every table is already loaded in T.)"
+    low = msg.lower()
+    if "day is out of range" in low or "day out of range" in low:
+        msg += "\n(Hint: do not build dates by replacing the month/day; use add_months(ts, n), month_range(y, m), same_days_prev_month(TODAY), week_range(ts).)"
+    if ".str accessor" in low: msg += "\n(Hint: convert first: df[col].astype(str).str... ; the column is not text everywhere.)"
+    if isinstance(e, KeyError) and _CTX.get("cols"):
+        msg += "\n(Hint: use only names that exist. Tables and columns: " + _CTX["cols"][:1500] + ")"
     return {"ok": False, "error": msg + ("\nat " + " -> ".join(where) if where else ""), "stdout": out[-800:]}
 
 
@@ -203,7 +259,7 @@ def run_code(task):
     try:
         g = _namespace(bid, as_of, canon_path)
         out = _exec(code, g, timeout)
-        if "ANSWER" not in g: r = {"ok": False, "error": "the program did not assign ANSWER", "stdout": out[-1500:]}
+        if "ANSWER" not in g: r = {"ok": False, "error": "the program did not assign ANSWER (assign ANSWER = {\"type\": ..., \"answer\": ...} at top level, on every branch)", "stdout": out[-1500:]}
         else: r = {"ok": True, "answer": fmt_answer(g["ANSWER"]), "stdout": out[-1500:]}
     except BaseException as e: r = _err(e, out)
     r["t"] = time.time() - t0
@@ -353,6 +409,42 @@ def suspicious(a):
     return (t in ("number", "percent") and v == 0) or (t == "list" and len(v) == 0) or (t == "table" and len(v["rows"]) == 0)
 
 
+# ------------------------------------------------------------------ retrieval of solved examples (--shots)
+def _qtokens(text):
+    t = ingest.strip_accents(norm_text(text)); t = re.sub(r"\d+", "0", t); w = t.split()
+    return w + [a + "_" + b for a, b in zip(w, w[1:])]
+
+
+class ShotIndex:
+    """TF-IDF cosine over question words + bigrams (accents stripped, digits -> 0). Examples of the question's own
+    business are never used (at test time every business is new; on train this keeps the evaluation honest)."""
+    def __init__(self, path):
+        self.rows = [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
+        docs = [Counter(_qtokens(r["question"])) for r in self.rows]
+        df = Counter(w for d in docs for w in d); n = len(docs)
+        self.idf = {w: math.log((1 + n) / (1 + c)) + 1 for w, c in df.items()}
+        self.vecs = [self._vec(d) for d in docs]
+
+    def _vec(self, d):
+        v = {w: c * self.idf.get(w, 1.0) for w, c in d.items()}; z = math.sqrt(sum(x * x for x in v.values())) or 1.0
+        return {w: x / z for w, x in v.items()}
+
+    def get(self, q, n):
+        qv = self._vec(Counter(_qtokens(q["question"])))
+        sc = sorted(((sum(x * self.vecs[i].get(w, 0.0) for w, x in qv.items()), i) for i, r in enumerate(self.rows)
+                     if r["business_id"] != q["business_id"]), reverse=True)
+        out, seen = [], set()
+        for s_, i in sc:
+            r = self.rows[i]; key = (r["business_id"], r["question"])
+            if key in seen or any(r["business_id"] == o["business_id"] for o in out): continue   # one example per shop
+            seen.add(key); out.append(r)
+            if len(out) >= n: break
+        return out
+
+
+SHOTS = None
+
+
 # ------------------------------------------------------------------ data
 CARDS = {}
 
@@ -363,6 +455,12 @@ def load_biz(cache_dir, split_dir, bid):
     biz = ingest.load_business(os.path.join(split_dir, "data", bid))
     if p: os.makedirs(cache_dir, exist_ok=True); pickle.dump(biz, open(p, "wb"), protocol=4)
     return biz
+
+
+def load_questions(a):
+    qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    if getattr(a, "biz", ""): qs = [q for q in qs if re.fullmatch(a.biz, q["business_id"])]
+    return select_subset(qs, a.subset) if a.subset else qs
 
 
 def select_subset(qs, subset):
@@ -420,7 +518,7 @@ class Engine:
         idx = [i for i, (p, _) in enumerate(fitted) if p is not None]
         groups = {}
         for i in idx:
-            p = fitted[i][0]; cut = p.rfind("# QUESTION")
+            p = fitted[i][0]; cut = p.find("\n\n# QUESTION")             # shared prefix = rulebook + README + card(s)
             groups.setdefault(p[:cut] if cut > 0 else p, []).append(i)
         texts = [""] * len(convs); ntok = 0
         for prefix, members in groups.items():
@@ -506,6 +604,9 @@ def main():
     ap.add_argument("--chunk", type=int, default=0, help="businesses per chunk (answers appended after each chunk)")
     ap.add_argument("--budget", type=float, default=0, help="wall-clock budget in seconds: fast mode / abstain when running out")
     ap.add_argument("--log-dir", default="", help="also write one JSON log per question here (Docker: /result/logs)")
+    ap.add_argument("--shots", default="", help="jsonl of solved training examples (question, code, business_id) for retrieval")
+    ap.add_argument("--n-shots", type=int, default=3)
+    ap.add_argument("--biz", default="", help="regex: only businesses whose id matches (split a run across kernels)")
     a = ap.parse_args()
     if a.dp > 1 and not a.shard: return run_dp(a)
     return run(a)
@@ -514,8 +615,7 @@ def main():
 def run(a, engine=None):
     t_start = time.time(); os.makedirs(a.out, exist_ok=True)
     cache = a.cache or os.path.join(a.out, "cache")
-    qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
-    if a.subset: qs = select_subset(qs, a.subset)
+    qs = load_questions(a)
     if a.shard:
         i, n = map(int, a.shard.split("/")); sh = shard_of(qs, n); qs = [q for q in qs if sh[q["business_id"]] == i]
     rulebook = open(os.path.join(a.split, "rulebook.md"), encoding="utf-8").read()
@@ -532,6 +632,10 @@ def run(a, engine=None):
     for b, z in bizs.items(): CARDS[b] = z.card()
     print(f"ingest {len(bids)} businesses {time.time() - t_start:.0f}s", flush=True)
 
+    global SHOTS
+    if getattr(a, "shots", ""):
+        sp = a.shots if os.path.isfile(a.shots) else next(iter(__import__("glob").glob(f"/kaggle/input/**/{os.path.basename(a.shots)}", recursive=True)), "")
+        SHOTS = ShotIndex(sp); print(f"shots: {len(SHOTS.rows)} examples from {sp}", flush=True)
     engine = engine or Engine(a)
     print(f"model ready {time.time() - t_start:.0f}s", flush=True)
     import multiprocessing as mp
@@ -617,7 +721,8 @@ def answer_stage(engine, pool, a, rulebook, bizs, qs, canon, paths, repairs):
                 msgs = [{"role": "system", "content": SYSTEM_CANON},
                         {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q, canon[b]["card"], canon[b]["notes"])}]
             else:
-                msgs = [{"role": "system", "content": SYSTEM_RAW}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q)}]
+                shots = SHOTS.get(q, a.n_shots) if SHOTS is not None else None
+                msgs = [{"role": "system", "content": SYSTEM_RAW}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q, shots=shots)}]
             key = (q["id"], s); items[key] = msgs; path_of[key] = p
             if paths.index(paths[s]) == s: greedy.add(key)              # first sample of each path decodes greedily
     def make_task(k, code):
@@ -671,8 +776,7 @@ def run_dp(a):
     for g in range(n): print(f"--- shard{g} rc={rcs[g]}\n" + "".join(open(os.path.join(a.out, f"shard{g}.log")).readlines()[-12:]), flush=True)
     merge(("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"))
     print(f"DP DONE {n} shards in {time.time() - t0:.0f}s", flush=True)
-    qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
-    score_if_possible(a, select_subset(qs, a.subset) if a.subset else qs)
+    score_if_possible(a, load_questions(a))
 
 
 if __name__ == "__main__":

@@ -102,7 +102,7 @@ def use_helpers():
     """--helpers: document build_sales in every system prompt and make the compile build orders / lines with it."""
     global SYSTEM_RAW, SYSTEM_CANON, SYSTEM_COMPILE, SYSTEM_COMPILE_SALES
     SYSTEM_RAW, SYSTEM_CANON, SYSTEM_COMPILE = (x.replace(ENV_DOC, ENV_DOC + HELPER_DOC) for x in (SYSTEM_RAW, SYSTEM_CANON, SYSTEM_COMPILE))
-    rule = "Rules:\n0. Build C[\"orders\"] and C[\"lines\"] with build_sales(...) (it already applies rules 1-2 below); add columns it does not produce from T.\n1. Map every raw status"
+    rule = "Rules:\n0. Build C[\"orders\"] and C[\"lines\"] with build_sales(...) (it already applies rules 1-2 below); pass time= when the time of day is in its own column (shifts, peak hours need order_time); add columns it does not produce from T.\n1. Map every raw status"
     SYSTEM_COMPILE = SYSTEM_COMPILE.replace("Rules:\n1. Map every raw status", rule)
     SYSTEM_COMPILE_SALES = _sales_only(SYSTEM_COMPILE)
 
@@ -129,6 +129,9 @@ def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None, sh
                          "from this shop's: reuse the rulebook logic (periods, valid orders, rounding, ranking), never their names.\n\n" + ex)
         nq = vnnorm.normalize(q["question"]) if NORM_Q else q["question"]
         alt = f"\n(same question with chat abbreviations / typing slips expanded: {nq})" if nq != q["question"] else ""
+        if q["business_id"] in LINKS:
+            hits = LINKS[q["business_id"]].link(nq)
+            if hits: alt += "\n(values of this shop's data that the question mentions, with their exact spelling: " + "; ".join(hits) + ")"
         parts.append(f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}{alt}\n\nWrite the program.")
     return "\n\n".join(parts)
 
@@ -443,6 +446,41 @@ def suspicious(a):
     return (t in ("number", "percent") and v == 0) or (t == "list" and len(v) == 0) or (t == "table" and len(v["rows"]) == 0)
 
 
+# ------------------------------------------------------------------ entity linking (--link)
+def _sk(x): return " " + re.sub(r"\s+", " ", ingest.strip_accents(norm_text(x))).strip() + " "
+
+
+class EntityIndex:
+    """Text values of one shop (item / customer / group / staff names, ...) keyed by their accent-free normal form, so
+    that a name typed loosely in the question ("bon nuoc inox son ha") is shown to the model with the data's spelling."""
+    def __init__(self, biz):
+        self.vals = {}
+        for t, df in biz.tables.items():
+            for c in df.columns:
+                if str(c).startswith("_") or not (df[c].dtype == object or pd.api.types.is_string_dtype(df[c])): continue
+                u = df[c].dropna().astype(str).unique()
+                if not (2 <= len(u) <= 5000): continue
+                for v in u:
+                    k = _sk(v)
+                    if len(k.strip()) >= 4 and not k.strip().isdigit(): self.vals.setdefault(k, []).append((v, t, c))
+
+    def link(self, question, n=6):
+        qk = _sk(question); hits = []
+        for k in sorted((k for k in self.vals if k in qk), key=len, reverse=True):
+            if any(k in h for h in hits): continue                     # inside a longer match
+            hits.append(k)
+            if len(hits) >= n: break
+        out = []
+        for k in hits:
+            spell = list(dict.fromkeys(v for v, _, _ in self.vals[k]))[:3]
+            where = list(dict.fromkeys(f"T[{t!r}][{c!r}]" for _, t, c in self.vals[k]))[:3]
+            out.append(f"{' / '.join(repr(x) for x in spell)} in {', '.join(where)}")
+        return out
+
+
+LINKS = {}
+
+
 # ------------------------------------------------------------------ retrieval of solved examples (--shots)
 def _qtokens(text):
     t = ingest.strip_accents(norm_text(text)); t = re.sub(r"\d+", "0", t); w = t.split()
@@ -627,6 +665,7 @@ def main():
     ap.add_argument("--compile", action="store_true"); ap.add_argument("--kc", type=int, default=4)
     ap.add_argument("--compile-scope", default="full", choices=["full", "sales"])
     ap.add_argument("--compile-repairs", type=int, default=4, help="repair rounds of the compile stage (once per business: cheap)")
+    ap.add_argument("--link", action="store_true", help="entity linking: show data values mentioned in the question")
     ap.add_argument("--norm-q", action="store_true", help="show the question with chat abbreviations expanded (src/vnnorm.py)")
     ap.add_argument("--helpers", action="store_true", help="document build_sales (src/semantic.py) in the prompts")
     ap.add_argument("--repairs", type=int, default=2); ap.add_argument("--subset", type=int, default=0)
@@ -667,7 +706,9 @@ def run(a, engine=None):
     if todo:
         with ProcessPoolExecutor(nw) as ex: list(ex.map(ingest._cache_one, [(a.split, cache, b) for b in todo]))
     bizs = {b: load_biz(cache, a.split, b) for b in bids}
-    for b, z in bizs.items(): CARDS[b] = z.card()
+    for b, z in bizs.items():
+        CARDS[b] = z.card()
+        if getattr(a, "link", False): LINKS[b] = EntityIndex(z)
     print(f"ingest {len(bids)} businesses {time.time() - t_start:.0f}s", flush=True)
 
     global SHOTS, NORM_Q

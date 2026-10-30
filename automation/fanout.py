@@ -4,7 +4,7 @@ Tokens: ~/.kaggle/tok_<username> (one file per account). Jobs are split round-ro
 kernel goes to the next free (account, slot); kernels beyond 2 x #accounts become CPU kernels (use only for light jobs).
 Usage: fanout.py <work_dir> <slug_prefix> <jobs_file|"job;job;..."> [n_kernels=all GPU slots] [--accounts a,b,...] [--cpu|--l4]
 Each kernel: <work_dir>/<slug>/ (kernel dir), <work_dir>/<slug>_out/ (outputs), <work_dir>/<slug>.log (runner log).
-Prints one line per kernel; waits for all runners; then copies every results/*.json into analysis/results/."""
+Prints one line per kernel; waits for all runners; then copies every results/*.json into results/."""
 import sys, os, glob, subprocess, shutil, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,17 +22,17 @@ os.makedirs(work, exist_ok=True); procs = []
 for k in range(nk):
     part = jobs[k::nk]; acc, _ = slots[k % len(slots)]; gpu = k < len(slots) and "--cpu" not in sys.argv
     slug = f"{prefix}-{k + 1}"; kd = os.path.join(work, slug)
-    cmd = [sys.executable, os.path.join(ROOT, "automation", "make_eval_kernel.py"), kd, slug, ";".join(part), "", "--owner", acc] + ((["--l4"] if L4 else ["--gpu"]) if gpu else []) + DSARG
+    cmd = [sys.executable, os.path.join(ROOT, "automation", "make_kernel.py"), kd, slug, ";".join(part), "", "--owner", acc] + ((["--l4"] if L4 else ["--gpu"]) if gpu else []) + DSARG
     r = subprocess.run(cmd, capture_output=True, text=True)
     print(f"{slug}: {acc} {'GPU' if gpu else 'CPU'} {len(part)} jobs | {(r.stdout + r.stderr).strip().splitlines()[-1][:60]}", flush=True)
 time.sleep(30)                                                             # let the code datasets finish versioning
 for acc in sorted({slots[k % len(slots)][0] for k in range(nk)}):
     env = dict(os.environ, KAGGLE_API_TOKEN=open(os.path.expanduser(f"~/.kaggle/tok_{acc}")).read().strip())
     for _ in range(40):
-        if subprocess.run(["kaggle", "datasets", "status", f"{acc}/dive-vpr-analysis"], capture_output=True, text=True, env=env).stdout.strip().endswith("ready"): break
+        if subprocess.run(["kaggle", "datasets", "status", f"{acc}/zc-code"], capture_output=True, text=True, env=env).stdout.strip().endswith("ready"): break
         time.sleep(10)
 def make(kd, slug, part, acc, gpu):
-    cmd = [sys.executable, os.path.join(ROOT, "automation", "make_eval_kernel.py"), kd, slug, ";".join(part), "", "--owner", acc] + ((["--l4"] if L4 else ["--gpu"]) if gpu else []) + DSARG
+    cmd = [sys.executable, os.path.join(ROOT, "automation", "make_kernel.py"), kd, slug, ";".join(part), "", "--owner", acc] + ((["--l4"] if L4 else ["--gpu"]) if gpu else []) + DSARG
     return subprocess.run(cmd, capture_output=True, text=True)
 
 
@@ -58,6 +58,6 @@ while procs:
             make(os.path.join(work, slug), slug, jobs[k::nk], acc, gpu); time.sleep(40)
             print(f"{slug}: push failed -> retry on {acc}", flush=True); procs[k] = launch(k); continue
         res = glob.glob(os.path.join(work, slug + "_out", "results", "*.json"))
-        for f in res: shutil.copy(f, os.path.join(ROOT, "analysis", "results"))
+        for f in res: shutil.copy(f, os.path.join(ROOT, "results"))
         print(f"{slug}: {'OK' if 'STATUS=DONE:complete' in log else 'FAILED'} {len(res)} results, rc!=0: {log.count('rc=') - log.count('rc=0')}", flush=True)
     time.sleep(15)

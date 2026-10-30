@@ -1,34 +1,19 @@
 # Python
 __pycache__/
 *.py[cod]
-.pytest_cache/
-
-# Jupyter
 .ipynb_checkpoints/
 
-# Secrets và cấu hình cá nhân
+# Secrets (repo may be public): never commit Kaggle tokens
 .env
 .env.*
 *.pem
 *.key
 kaggle.json
-
-# Hệ điều hành
-Thumbs.db
-desktop.ini
-
-# Kaggle run artifacts (ephemeral)
-automation/run/
-analysis/cache/
-paper/fonts/
-analysis/logs/
-literature/fonts/
-paper/SelfCal_paper_full.md
-paper/tables.md
-analysis/results/summary_*.md
-analysis/results/*.npz
-paper/figs/
-handoff/fonts/
-
-# Kaggle tokens (local only, never commit: repo is public)
 KAGGLE_TOKENS.md
+
+# Data and run artefacts (large; live on Kaggle datasets)
+data/raw/
+runs/
+src/cache/
+results/**/*.npz
+docs/fonts/

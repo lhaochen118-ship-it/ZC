@@ -2,7 +2,7 @@
 """Generate kernel-metadata.json for a Kaggle kernel run.
 Three tiers (policy: iterate on T4, reserve RTX 6000 / L4x4 for large-scale/large-model runs):
   t4  (default): default GPU (T4 x2) -> allocated instantly, no competition/machine_shape/docker pin.
-  cpu          : no accelerator (analysis/evaluation jobs on descriptor dumps).
+  cpu          : no accelerator (light analysis / scoring jobs).
   rtx          : RTX PRO 6000 (96GB) via the ARC-Prize-2026 competition grant + byod docker image.
   l4           : 4x NVIDIA L4 (96GB total) via the gemma-4-developer-agent competition grant.
 
@@ -36,7 +36,7 @@ if tier == "rtx":
     if docker.lower() != "none":
         meta["docker_image"] = docker
 if tier == "l4":
-    meta["machine_shape"] = "NvidiaL4x4"
+    meta["machine_shape"] = "NvidiaL4"   # verified 2026-10-30 (4x L4)
     comps = sys.argv[6].split(",") if len(sys.argv) > 6 and sys.argv[6] else ["gemma-4-developer-agent"]
     meta["competition_sources"] = comps
 if tier == "cpu":

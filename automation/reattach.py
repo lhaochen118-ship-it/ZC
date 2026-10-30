@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Re-attach monitors to Kaggle kernels that keep running after the local runners died (container restart, network
-error), pull their outputs and copy results/*.json into analysis/results/.
+error), pull their outputs and copy results/*.json into results/.
 Usage: reattach.py [--skip <regex>] <kernel_dir> [...]
   kernel_dir : <work>/<slug> as made by fanout.py (outputs go to <work>/<slug>_out, log to <work>/<slug>.attach.log)
   --skip     : result files whose name matches are NOT copied (e.g. results superseded by a later run)."""
@@ -22,6 +22,6 @@ while procs:
         if p.poll() is None: continue
         del procs[kd]; log = open(kd + ".attach.log").read()
         res = [f for f in glob.glob(os.path.join(kd + "_out", "results", "*.json")) if not (skip and skip.search(os.path.basename(f)))]
-        for f in res: shutil.copy(f, os.path.join(ROOT, "analysis", "results"))
+        for f in res: shutil.copy(f, os.path.join(ROOT, "results"))
         print(f"{os.path.basename(kd)}: {'OK' if 'STATUS=DONE:complete' in log else 'FAILED'} {len(res)} results", flush=True)
     time.sleep(15)

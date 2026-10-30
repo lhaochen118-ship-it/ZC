@@ -47,3 +47,27 @@ liệu (split, số câu), kết quả (PA tổng và theo type / loại câu, %
 - **Assets public (`nhatlong1103`):** `zc-assets` (wheels vLLM + Qwen3-14B-AWQ), `zc-m-qwen3-14b-fp8`,
   `zc-m-qwen35-9b`, `zc-m-gemma4-12b-qat`.
 - **Docker:** `docker/` (build / run như BTC / export + sha256), hướng dẫn `docker/SETUP_DOCKER.md`.
+
+## Entry 3 — 2026-10-30 (tối): khởi động lại, helper ngữ nghĩa, PA đầu tiên
+
+**Hạ tầng.** Token mới của user (13 acc + `nhatlong1103` chỉ để đăng dataset) lưu ở `~/.kaggle/tok_<acc>`. Không có token
+`nguyenhoa99` → không kéo được e2b/e2c. Quota GPU tuần còn ở: `lelynhan`, `phuongnehe`, `linhmai24`, `thnliu` (cả 4 đều
+4×L4 thật, đã kiểm bằng kernel probe), `mxuanquy`, `anderson1202` (chỉ T4). Hết quota: yuan1103, synchan5704, mucnokieu,
+nguynduylm, yeshenhi, huyenco, loinguyentran.
+
+**Sửa lỗi (bước 1 của handoff).** Helper ngày an toàn (`add_months`, `week_range`, `same_days_prev_month`); sandbox chặn
+`open` / `pd.read_*`; gợi ý sửa theo loại lỗi (`.str`, day out of range, KeyError kèm danh sách cột, thiếu ANSWER);
+`--biz` (chia run theo DN), `--shots` (few-shot truy hồi, bỏ ví dụ cùng DN), `--compile-scope sales`, test cục bộ sửa lỗi symlink.
+
+**Smoke L4 (zc-smk2-2, path B ×4, 30 câu):** chạy đúng môi trường; **PA = −0.40**; câu đồng thuận 4/4 chỉ đúng 40 % → lỗi
+hệ thống, không phải nhiễu: đếm dòng thay vì đơn, lấy tổng sau giảm giá đơn làm doanh thu, `<= ngày cuối` trên cột có giờ.
+
+**`src/semantic.py: build_sales`** (mới): cài đúng luật ghi chép của rulebook (ô trống kế thừa dòng đầu đơn, dòng trùng
+trong cùng đơn tính một lần, trạng thái đơn từ các dòng, valid, doanh thu = tổng thành tiền dòng). LLM chỉ cần ánh xạ cột.
+Kiểm trên biz_101/106/113/124 (phẳng có/không mã đơn, header+chi tiết, có giờ): khớp đáp án doanh thu tháng của BTC.
+
+**E3h kernel 2** (`--helpers --compile --compile-scope sales`, AABB K=4, 752 câu của 9 DN): **PA +0.12 khi chạy (τ=0.5);
+τ=0.75 chọn trên dev → dev +0.19, holdout +0.25.** Đồng thuận 4/4: 80 % đúng (smoke: 40 %). Path A (bảng chuẩn) ≫ path B.
+Lỗi tự tin còn lại: viết tắt chat không hiểu (`hqua`, `hnay`, `bữa qua` → trả doanh thu toàn thời gian), khách lẻ bị xếp
+hạng như khách, quên lọc `valid`, đếm đợt giao theo dòng, quy đổi đơn vị. Sửa: `src/vnnorm.py` (`--norm-q`), khách lẻ →
+None trong build_sales, tham số bảng quy đổi `conv=`, `C['valid_orders']`/`C['valid_lines']`. E4 đang đo các sửa này.

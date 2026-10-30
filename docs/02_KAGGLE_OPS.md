@@ -31,6 +31,7 @@ tra: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels list --mine`.
 | `yuan1103` | 4×L4 + 2×T4 | **hết quota GPU tuần 30 h** |
 | `mxuanquy` | 2×T4 | dùng được |
 | `anderson1202` | 2×T4 | dùng được; output kernel public `zc-vllm-t4b` chứa wheels vLLM |
+| `nguyenhoa99` | 4×L4 + 2×T4 | thêm 30/10 13:40; L4 grant OK; **ưu tiên dùng cho mọi run nặng** (2 phiên × 4 L4) |
 
 Quota GPU Kaggle là 30 giờ/tuần mỗi acc và reset theo tuần. Lỗi khi hết: `Maximum weekly GPU quota of 30.00 hours
 reached` lúc push (không tốn quota). `~/.kaggle/access_token` = token `nhatlong1103`.

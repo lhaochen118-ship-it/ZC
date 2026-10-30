@@ -18,6 +18,20 @@ tối đa trên private test, trong 6 giờ, tái lập được".*
 - **Kiểm dữ liệu đầu vào trước khi kết luận** (header Excel, định dạng số/ngày, mã hoá tiếng Việt).
 - **Không vi phạm luật BTC:** không dùng test để train, không logic theo id, tổng tham số ≤ 15B, offline.
 
+## 1b. Nguyên tắc dùng Kaggle (user chốt 2026-10-30)
+
+- Dùng **tất cả** acc được cấp; token chỉ ở `~/.kaggle/tok_<acc>` / `access_token` (quyền 600), không đưa vào code,
+  prompt hay báo cáo; kiểm tra kết nối bằng `kaggle competitions list`.
+- Mỗi acc dùng **đủ 2 phiên GPU** trước khi sang acc khác. Acc có L4 → 2 phiên × 4 L4 (96 GB/phiên); không có L4 →
+  2 × T4. Hết GPU: việc rất nhẹ chạy CPU, việc nặng đợi GPU.
+- Phiên ~5 phút không có đầu ra (kẹt hàng đợi) → tự ngắt và tạo phiên mới, tối đa 4 lần (`run_kernel.py`, fanout dùng
+  stall 300 s, 4 lần); vẫn lỗi thì xem log, quota, cấu hình trước khi tiếp tục.
+- Tận dụng hết GPU trong phiên: inference dùng `agent.py --dp <số GPU>` (mỗi GPU một bản mô hình, chia doanh nghiệp
+  cân bằng theo số câu, prefix caching theo doanh nghiệp); mô hình không vừa 1 GPU thì `--tp`. Fine-tune dùng DDP trên
+  mọi GPU, bf16 (L4) / fp16 (T4), gradient accumulation để giữ batch hiệu dụng, gradient checkpointing chống OOM.
+- Định kỳ kiểm tra tiến trình treo / không cần nữa (kernel Kaggle và tiến trình nền cục bộ): ngắt rồi chạy lại; không
+  ngắt được thì báo user ngắt tay.
+
 ## 2. Tối ưu thời gian chạy
 
 - Cache mọi thứ tất định (ingest, profile, entity index) và đăng thành dataset public để acc nào cũng mount.

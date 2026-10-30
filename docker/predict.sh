@@ -10,6 +10,8 @@ NGPU=$(nvidia-smi -L | wc -l)
 mkdir -p "$RESULT/logs" /tmp/zc
 echo "split: $SPLIT  model: $MODEL  gpus: $NGPU  start: $(date -u +%FT%TZ)"
 # 6 h limit including model loading: budget 5 h 40 min for the agent, chunks of 4 businesses.
-python3 /app/src/agent.py "$SPLIT" "$RESULT" --model "$MODEL" --dp "$NGPU" --compile --k 4 --kc 4 --repairs 2 \
-    --chunk 4 --budget 20400 --cache /tmp/zc/cache --log-dir "$RESULT/logs" --max-len 32768 2>&1 | tee "$RESULT/logs/run.log"
+# overridable with docker run -e NAME=value (defaults = the submitted configuration)
+K=${K:-4}; KC=${KC:-4}; MAX_LEN=${MAX_LEN:-32768}; BUDGET=${BUDGET:-20400}; DP=${DP:-$NGPU}; EXTRA=${EXTRA:-}
+python3 /app/src/agent.py "$SPLIT" "$RESULT" --model "$MODEL" --dp "$DP" --compile --k "$K" --kc "$KC" --repairs 2 \
+    --chunk 4 --budget "$BUDGET" --cache /tmp/zc/cache --log-dir "$RESULT/logs" --max-len "$MAX_LEN" $EXTRA 2>&1 | tee "$RESULT/logs/run.log"
 echo "end: $(date -u +%FT%TZ)  answers: $(wc -l < "$RESULT/submission.jsonl")"

@@ -1,0 +1,10 @@
+# keep the build context small: only src/, docker/ and models/ are needed
+.git
+data
+results
+tests
+automation
+docs
+*.md
+!docker/*.md
+**/__pycache__

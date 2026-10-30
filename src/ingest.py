@@ -17,14 +17,16 @@ _CUR = re.compile(r"(vnđ|vnd|đồng|đ|₫|d)$")
 _NUM = re.compile(r"^[-+]?\(?\d[\d.,\s]*\)?")
 
 
-def parse_num(x):
+def parse_num(x, dec=None):
     """Vietnamese-style number -> float (nan if not a number). '10.000đ'->10000, '8,000.0000'->8000, '105k'->105000,
-    '1,5tr'->1500000, '3 ly'->3, '(1.000)'->-1000, '18.6'->18.6."""
+    '1,5tr'->1500000, '3 ly'->3, '(1.000)'->-1000, '18.6'->18.6. `dec` ('.' or ',') is the decimal separator inferred for
+    the whole column (see dec_mode); without it a single separator followed by exactly 3 digits means thousands."""
     if x is None: return np.nan
     if isinstance(x, (bool, np.bool_)): return np.nan
     if isinstance(x, (int, float, np.integer, np.floating)): return float(x)
     s = unicodedata.normalize("NFC", str(x)).strip().lower().replace(" ", " ")
     if not s or s in ("nan", "none", "null", "-", "—"): return np.nan
+    s = re.sub(r"^(vnđ|vnd|đ|₫|usd|\$)\s*", "", s)                       # currency written before the number
     m = re.fullmatch(r"(\d+)\s*(tr|triệu|trieu|k|nghìn|nghin|ngàn|ngan|tỷ|ty)\s*(\d{1,3})\s*(đ|vnđ|vnd|₫)?", s)
     if m:                                                              # shorthand money: 1tr440 = 1,440,000 ; 5k5 = 5,500 ; 2tr9 = 2,900,000
         mult = 1e6 if m.group(2).startswith("tr") else 1e3 if m.group(2)[0] in "kn" else 1e9
@@ -36,21 +38,26 @@ def parse_num(x):
     elif re.search(r"\d\s+\d", tok):                                    # '1 xe 4m3' is fine below, '1 6 2025' is not a number
         tok, rest = tok.split()[0], s[len(tok.split()[0]):].strip()
     if re.match(r"^[/:\-.]\s*\d", rest) or re.match(r"^(thg|tháng|th)\s*\d", rest): return np.nan   # dates / times
+    if re.match(r"^(tr|triệu|trieu|k|nghìn|nghin|ngàn|ngan|tỷ|ty)", rest) and tok.count(",") + tok.count(".") == 1:
+        dec = "," if "," in tok else "."                                 # '1,134tr' = 1.134 million: before a multiplier the separator is decimal
     neg = tok.startswith("-") or (tok.startswith("(") and tok.endswith(")"))
     tok = tok.strip("+-() ").replace(" ", "")
+    amb = re.fullmatch(r"\d{1,3}[.,]\d{3}", tok) is not None           # '1.500' / '1,500': thousands or decimal?
     if "," in tok and "." in tok:
-        dec = "," if tok.rfind(",") > tok.rfind(".") else "."
-        tok = tok.replace("." if dec == "," else ",", "").replace(dec, ".")
+        d_ = "," if tok.rfind(",") > tok.rfind(".") else "."
+        tok = tok.replace("." if d_ == "," else ",", "").replace(d_, ".")
     elif "," in tok:
-        tok = tok.replace(",", "") if re.fullmatch(r"\d{1,3}(,\d{3})+", tok) else tok.replace(",", ".")
-    elif "." in tok and re.fullmatch(r"\d{1,3}(\.\d{3})+", tok):
-        tok = tok.replace(".", "")
+        if tok.count(",") > 1 or (amb and dec != ","): tok = tok.replace(",", "")
+        else: tok = tok.replace(",", ".")
+    elif "." in tok:
+        if tok.count(".") > 1 or (amb and dec != "."): tok = tok.replace(".", "")
     try: v = float(tok)
     except ValueError: return np.nan
     rest = _CUR.sub("", rest).strip()
     if rest.startswith(("tr", "triệu", "trieu", "m ")) or rest == "m": v *= 1e6
     elif rest.startswith(("k", "nghìn", "nghin", "ngàn", "ngan")): v *= 1e3
     elif rest.startswith(("tỷ", "ty")): v *= 1e9
+    v = round(v, 6)                                                    # '65,079tr' -> 65079000, not 65078999.99999999
     return -v if neg else v
 
 
@@ -144,7 +151,16 @@ def _to_frame(rows):
     h = _find_header(rows)
     meta = [" ".join(str(v) for v in r if not _blank(v)) for r in rows[:h]]
     meta = [m for m in meta if m]
-    header = rows[h]; body = rows[h + 1:]
+    header = list(rows[h]); body = rows[h + 1:]
+    names = [str(v).strip() for v in header if not _blank(v)]
+    if h > 0 and len(names) != len(set(names)):                        # duplicated sub-headers: use the group row above
+        grp = list(rows[h - 1]) + [None] * (len(header) - len(rows[h - 1])); cur = None; filled = []
+        for j in range(len(header)):
+            if not _blank(grp[j]): cur = str(grp[j]).strip()
+            filled.append(cur)
+        if sum(not _blank(g) for g in grp) >= 2:
+            header = [f"{filled[j]} - {header[j]}" if filled[j] and not _blank(header[j]) else header[j] for j in range(len(header))]
+            meta = meta[:-1] if meta and meta[-1] == " ".join(str(v) for v in grp if not _blank(v)) else meta
     width = max(len(header), max((len(r) for r in body), default=0))
     cols, seen = [], {}
     for j in range(width):
@@ -195,6 +211,20 @@ def _num_tail(v):
     return _CUR.sub("", rest).strip(" .%")
 
 
+def dec_mode(strs):
+    """Decimal separator of a column from its own values: '.' if some values are clearly '.'-decimals (1.5, 2.25,
+    0.1234) and none are clearly '.'-thousands (1.234.567, 1.234,5); symmetric for ','. None if no evidence."""
+    money = strs.str.contains(r"\d\s*(?:đ|vnđ|vnd|₫|k|tr|triệu|nghìn|ngàn)\b|^(?:vnd|vnđ)", regex=True).mean()
+    if money >= 0.05: return None                                      # money columns: per-value rule (3 digits after a separator = thousands)
+    st = strs[strs.str.fullmatch(r"-?\d[\d.,]*") & ~strs.str.fullmatch(r"-?\d+[.,]0+")]   # plain numbers; '37000.0' is a float artefact
+    dd = st.str.fullmatch(r"-?\d+\.(\d{1,2}|\d{4,})").sum(); cd = st.str.fullmatch(r"-?\d+,(\d{1,2}|\d{4,})").sum()
+    dt_ = st.str.fullmatch(r"-?\d{1,3}(\.\d{3}){2,}").sum() + st.str.contains(r"\d\.\d{3},\d", regex=True).sum()
+    ct = st.str.fullmatch(r"-?\d{1,3}(,\d{3}){2,}").sum() + st.str.contains(r"\d,\d{3}\.\d", regex=True).sum()
+    if dd and not dt_ and not cd: return "."
+    if cd and not ct and not dd: return ","
+    return None
+
+
 def auto_type(df, year_hint=None):
     """Type every column from its values only (no column-name lists except generic code/address words):
     - datetime if >= 90% of values parse as dates (datetime cells, date strings, Excel serials mixed with date strings,
@@ -222,12 +252,13 @@ def auto_type(df, year_hint=None):
         strs = smp.astype(str).str.strip()
         codey = _CODEY.search(c) or strs.str.match(r"^0\d{3,}$").any() or strs.str.fullmatch(r"\d{12,}").mean() > 0.5
         if not codey and not _ADDR.search(c):
-            nums = smp.map(parse_num)
+            dm = dec_mode(nn.astype(str).str.strip().str.lower())
+            nums = smp.map(lambda v: parse_num(v, dm))
             if nums.notna().mean() >= 0.95:
                 tails = smp.map(_num_tail); tl = tails[tails != ""]
                 unit_like = len(tl) == 0 or (tl.nunique() <= max(30, 0.02 * len(smp)) and tl.str.split().str.len().max() <= 3)
                 if unit_like:
-                    out[c] = s.map(lambda v: np.nan if _blank(v) else parse_num(v)).astype(float); types[c] = "number"
+                    out[c] = s.map(lambda v: np.nan if _blank(v) else parse_num(v, dm)).astype(float); types[c] = "number"
                     if len(tl):
                         out[c + "__unit"] = s.map(lambda v: _num_tail(v) or None); types[c + "__unit"] = "text"
                     continue

@@ -23,9 +23,17 @@ Token mỗi acc ở `~/.kaggle/tok_<username>` (chmod 600); `~/.kaggle/access_to
 public: không commit token, không ghi vào `~/.bashrc`.** Token lấy từ tin nhắn của user, thứ tự trùng bảng dưới. Kiểm
 tra: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels list --mine`.
 
-**Acc dùng cho DataMate (token user gửi 2026-10-30):** `yuan1103` (4×L4 + 2×T4; **hết quota GPU tuần 30 h** lúc
-30/10), `mxuanquy` (2×T4), `anderson1202` (2×T4). Chưa có token `nhatlong1103` → dataset tái sử dụng tạm đăng public
-trên acc khác hoặc dùng output của kernel public (`kernel_sources`).
+**Acc dùng cho DataMate (token user gửi 2026-10-30, đã xác thực từng acc):**
+
+| Acc | GPU | Trạng thái 30/10 |
+|---|---|---|
+| `nhatlong1103` | — | chủ `zc-2026`; **hết quota GPU tuần 30 h** → dùng để đăng dataset public và chạy kernel CPU |
+| `yuan1103` | 4×L4 + 2×T4 | **hết quota GPU tuần 30 h** |
+| `mxuanquy` | 2×T4 | dùng được |
+| `anderson1202` | 2×T4 | dùng được; output kernel public `zc-vllm-t4b` chứa wheels vLLM |
+
+Quota GPU Kaggle là 30 giờ/tuần mỗi acc và reset theo tuần. Lỗi khi hết: `Maximum weekly GPU quota of 30.00 hours
+reached` lúc push (không tốn quota). `~/.kaggle/access_token` = token `nhatlong1103`.
 
 Bảng acc của dự án trước (tham khảo):
 

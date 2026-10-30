@@ -107,3 +107,6 @@ không think): độ đúng từng mẫu **77/130 (think) vs 52/130 (không thin
 **E8 (holdout, cấu hình e7 + `--link`, shots v2): biz_121,122,124,127,129,130 — 708 câu, 6/6 DN compile được:
 PA holdout = +0.394 khi chạy (τ = 0.5)** (e3h trên 236 câu trùng: +0.114). Đây là ước lượng trung thực nhất hiện có.
 Thời gian: ~25 s/câu mỗi L4 (5,941 s cho 236 câu trên 1 GPU).
+**E3t-1 (thinking, holdout 100 câu):** từng mẫu think không shots 26/60 vs không think không shots 20/60 (30 câu trùng e3b);
+so với cấu hình e8 (không think, có shots) trên 60 câu trùng: 54/120 (45 %) vs 123/240 (51 %). → shots > thinking; cộng dồn
+think + shots đang đo (E10, T4, 40 câu).

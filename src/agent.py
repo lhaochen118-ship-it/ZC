@@ -462,10 +462,10 @@ class ShotIndex:
         v = {w: c * self.idf.get(w, 1.0) for w, c in d.items()}; z = math.sqrt(sum(x * x for x in v.values())) or 1.0
         return {w: x / z for w, x in v.items()}
 
-    def get(self, q, n):
+    def get(self, q, n, path="B"):
         qv = self._vec(Counter(_qtokens(q["question"])))
         sc = sorted(((sum(x * self.vecs[i].get(w, 0.0) for w, x in qv.items()), i) for i, r in enumerate(self.rows)
-                     if r["business_id"] != q["business_id"]), reverse=True)
+                     if r["business_id"] != q["business_id"] and r.get("path", "B") == path), reverse=True)
         out, seen = [], set()
         for s_, i in sc:
             r = self.rows[i]; key = (r["business_id"], r["question"])
@@ -758,10 +758,11 @@ def answer_stage(engine, pool, a, rulebook, bizs, qs, canon, paths, repairs):
         for s in range(len(paths)):
             p = paths[s] if (paths[s] == "B" or b in canon) else "B"
             if p == "A":
+                shots = SHOTS.get(q, a.n_shots, "A") if SHOTS is not None else None
                 msgs = [{"role": "system", "content": SYSTEM_CANON},
-                        {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q, canon[b]["card"], canon[b]["notes"])}]
+                        {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q, canon[b]["card"], canon[b]["notes"], shots=shots)}]
             else:
-                shots = SHOTS.get(q, a.n_shots) if SHOTS is not None else None
+                shots = SHOTS.get(q, a.n_shots, "B") if SHOTS is not None else None
                 msgs = [{"role": "system", "content": SYSTEM_RAW}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q, shots=shots)}]
             key = (q["id"], s); items[key] = msgs; path_of[key] = p
             if paths.index(paths[s]) == s: greedy.add(key)              # first sample of each path decodes greedily

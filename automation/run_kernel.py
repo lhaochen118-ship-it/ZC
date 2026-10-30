@@ -9,6 +9,7 @@ STATUS: QUEUED for > STALL secs => stuck. A RUNNING kernel is NOT restarted for 
 
 Usage: run_kernel.py <kernel_dir> <out_dir> [stall=600] [max_restarts=4] [hard=10800] [silent_max=0] [--attach]
   --attach : do not push; wait for an already-running kernel (e.g. after a local restart), then pull.
+  --logs-only : pull only the kernel log, not the outputs (kernels whose outputs are large reusable assets).
 Last line: STATUS=DONE:<complete|error|stall|timeout>
 """
 import sys, subprocess, time, os, json, glob
@@ -19,6 +20,7 @@ MAXR = int(sys.argv[4]) if len(sys.argv) > 4 else 4
 HARD = int(sys.argv[5]) if len(sys.argv) > 5 else 10800
 SILENT_MAX = int(sys.argv[6]) if len(sys.argv) > 6 and sys.argv[6].isdigit() else 0
 ATTACH = "--attach" in sys.argv
+LOGS_ONLY = "--logs-only" in sys.argv
 kid = json.load(open(os.path.join(kdir, "kernel-metadata.json")))["id"]
 _tok = os.path.expanduser(f"~/.kaggle/tok_{kid.split('/')[0]}")       # per-account token file (see ENVIRONMENT_SUMMARY)
 if os.path.isfile(_tok): os.environ["KAGGLE_API_TOKEN"] = open(_tok).read().strip()
@@ -90,7 +92,7 @@ while True:
 
 os.makedirs(outdir, exist_ok=True)
 print(f"=== PULL ({state}) -> {outdir} ===", flush=True)
-print(kg("kernels", "output", kid, "-p", outdir, "-o")[-400:], flush=True)
+print(kg("kernels", "output", kid, "-p", outdir, "-o", *(["--file-pattern", r".*\.log$"] if LOGS_ONLY else []))[-400:], flush=True)
 for f in sorted(glob.glob(outdir + "/*.log")):
     try:
         recs = json.load(open(f, errors="ignore"))

@@ -1,17 +1,23 @@
-# Kernel đang chạy (cập nhật 2026-10-30 ~21:00 UTC, khung chat 2)
+# Kernel còn chạy lúc bàn giao (2026-10-31 01:10 UTC)
 
-Kéo kết quả một kernel đã xong: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels output <acc>/<slug> -p <dir>`;
-runner cục bộ của khung chat này (`<scratchpad>/runs/<run>/<slug>_out/`) tự kéo khi kernel xong.
+Runner cục bộ của khung chat 2 mất khi sang khung chat mới; kernel vẫn chạy trên Kaggle. Kéo output khi xong:
 
-| Run | Kernel | GPU | Cấu hình | DN | Ghi chú |
+```bash
+python3 automation/pull_kernels.py <scratch>/pulled
+```
+
+Cần token `~/.kaggle/tok_<acc>` của từng acc. Kernel chưa xong được báo `not finished`.
+
+| Run | Kernel | GPU | Cấu hình | Dữ liệu | Ghi chú |
 |---|---|---|---|---|---|
-| e3h | `linhmai24/zc-e3h-4` | 4×L4 | `--helpers --compile --compile-scope sales`, AABB K=4 | 101,103,112,121,124,127,129 | kernel 1–3 xong (`EXPERIMENT_LOG` entry 3–4) |
-| e3b | `thnliu/zc-e3b-2` | 4×L4 | `--helpers`, BBBB K=4 | nửa sau của train | kernel 1 xong |
-| e3t | `mxuanquy/zc-e3t-1`, `anderson1202/zc-e3t-2` | 2×T4 | `--helpers --think`, BB K=2, 100 câu holdout / 100 câu dev | | đo tác dụng thinking |
-| e5 | `phuongnehe/zc-e5-1` | 4×L4 | e3h + `--norm-q` + auto-header | 105,108,115,118 | |
-| e6a | `linhmai24/zc-e6a-1` | 4×L4 | e5 + `--shots` (thư viện v1) | 105,108,115,118 | so với e5-1 |
-| e7 | `lelynhan/zc-e7-1` | 4×L4 | mọi sửa đến 20:05 + shots | 114,116,117,125 | so với e3h-2, e4-2 |
-| e7b | `lelynhan/zc-e7b-1` | 4×L4 | mọi sửa đến 20:40 + shots | 102,106,107,111,113 | so với e3h-2, e4-1 |
+| p1 | `lelynhan/zc-p1-1` | 4×L4 | cấu hình tốt nhất (handoff 03 §5), shots v2 | **public test 1000 câu** | → file nộp; đẩy 20:57 UTC |
+| e10l | `lelynhan/zc-e10l-1` | 4×L4 | tốt nhất + `--think --max-tokens 8192`, shots v3 | train biz_114,116,117,125 | đang **QUEUED** (pool L4 bận); so với e7 |
+| e10 | `anderson1202/zc-e10-1` | 2×T4 | như e10l, `--tp 2 --subset 40` | train biz_114,116,117,125 (40 câu) | so với e7 |
+| e10b | `mxuanquy/zc-e10b-1` | 2×T4 | như e10 | train biz_121,124,129,130 (40 câu) | so với e8 |
+| e3h | `linhmai24/zc-e3h-4` | 4×L4 | `--helpers --compile --compile-scope sales`, không shots | train biz_101,103,112,121,124,127,129 | chạy > 7 giờ (nghi kẹt); chỉ để thêm shots |
+| e3b | `thnliu/zc-e3b-2` | 4×L4 | `--helpers`, BBBB | train nửa sau | chạy > 7 giờ (nghi kẹt); chỉ để thêm shots |
 
-**Cần user ngắt tay** (công cụ tự động bị chặn lệnh xoá): `mxuanquy/zc-e1b-1`, `anderson1202/zc-e1c-1` — baseline của khung
-chat cũ, code cũ có lỗi, đã chạy > 9 giờ, không còn giá trị; chỉ tốn quota T4.
+**Cần user ngắt tay** (công cụ tự động bị chặn lệnh xoá): `mxuanquy/zc-e1b-1`, `anderson1202/zc-e1c-1` — baseline cũ của khung
+chat 1, code cũ có lỗi, vô ích, chỉ tốn quota T4.
+
+Đã xong và đã phân tích (log trong `results/chat2_runs/`): smoke2, e3h-1/2/3, e3b-1, e3t-1/2, e4-1/2, e5-1/2, e6a, e7, e7b, e8, e9.

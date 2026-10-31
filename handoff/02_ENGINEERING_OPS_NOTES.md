@@ -1,89 +1,124 @@
 # 02 — Engineering & Operations Lessons (DataMate)
 
-*Bàn giao ngày 2026-10-30. Kinh nghiệm lập trình, môi trường, Kaggle, tổ chức thử nghiệm, lỗi đã gặp và cách sửa. Bảng
-tài khoản, dataset và lệnh chi tiết: `docs/02_KAGGLE_OPS.md`; nguyên tắc: `docs/03_WORKFLOW.md`.*
+*Cập nhật 2026-10-31 01:00 UTC (hết khung chat 2). Chỉ gồm kinh nghiệm lập trình, môi trường, Kaggle, tổ chức thử nghiệm,
+lỗi và bài học. Kết quả khoa học ở PDF 1, việc tiếp theo ở PDF 3.*
 
-## 1. Môi trường
+## 1. Môi trường container Claude
 
-- Container Claude: 4 CPU, không GPU, ~23 GB đĩa trống, **không có Docker daemon**.
-  - Chỉ dùng để kiểm tra nhanh (< 2 phút): test, audit, phân tích log.
-  - Gói: `pip install kaggle markdown xhtml2pdf tokenizers python-calamine`.
+- **Tài nguyên:** 4 CPU, ~15 GB RAM, không GPU, không Docker daemon.
+- **Gói:**
+  ```bash
+  pip install kaggle markdown xhtml2pdf tokenizers python-calamine
+  ```
+- **Dữ liệu:**
+  ```bash
+  kaggle datasets download nhatlong1103/zc-2026 -p data/raw --unzip
+  ```
+  (khoảng 1 phút). Cache ingest train: `ingest.cache_split(split, cache_dir, 4)`, khoảng 1 phút.
+- **Test không GPU** (chạy sau mọi thay đổi; cả hai phải PASS):
+  ```bash
+  python3 tests/test_ingest_robust.py
+  ```
+  ```bash
+  python3 tests/test_agent_local.py data/raw/train/train <scratch>
+  ```
+  Test 2 trước đây FAIL vì symlink tương đối, đã sửa bằng `abspath`. Khi thêm tham số mới vào agent, phải thêm vào
+  `argparse.Namespace` trong test.
 - **Token Kaggle:**
-  - Lưu ở `~/.kaggle/tok_<acc>` (quyền 600); `~/.kaggle/access_token` = `nhatlong1103`.
-  - Không đưa vào code, prompt hay báo cáo; kiểm tra kết nối bằng `kaggle competitions list`.
-  - Khung chat mới phải xin lại token từ user.
-- **Acc dùng được:**
-  - `nguyenhoa99`: 4×L4 + 2×T4, ưu tiên cho run nặng.
-  - `mxuanquy`, `anderson1202`: 2×T4.
-  - `nhatlong1103`: hết quota GPU tuần; dùng để đăng dataset public và chạy kernel CPU. Có 4 slot CPU đang bị các
-    kernel NCLT của dự án khác chiếm, **không được huỷ**.
-  - `yuan1103`: hết quota tuần.
-  - Quota GPU 30 h/tuần/acc.
+  - Lưu ở `~/.kaggle/tok_<username>` (quyền 600); `~/.kaggle/access_token` là của `nhatlong1103`.
+  - Map token → username: `KAGGLE_API_TOKEN=<tok> kaggle kernels list --mine` (cột ref = `username/slug`).
+  - Không đưa token vào repo, prompt hay báo cáo. Khung chat mới phải xin lại token từ user.
+- **Scratchpad mất khi sang khung chat mới.** Mọi thứ cần giữ phải commit:
+  - log các run: `results/chat2_runs/` (gzip);
+  - thư viện shots: `src/shots/`.
 
 ## 2. Kaggle
 
+### 2.1 Tài khoản (31/10 01:00 UTC)
+
+| Acc | GPU | Ghi chú |
+|---|---|---|
+| lelynhan | 4×L4 | còn quota (đang chạy `p1`, `e10l` xếp hàng) |
+| mxuanquy | chỉ T4 (xin L4 → không có GPU) | đang chạy `e10b`, `e1b` (cũ) |
+| anderson1202 | T4 (chưa accept rules gemma-4 → không L4) | đang chạy `e10`, `e1c` (cũ) |
+| phuongnehe, linhmai24, thnliu | 4×L4 | **hết quota tuần** lúc 20:45–23:00 UTC 30/10 |
+| yuan1103, synchan5704, mucnokieu, nguynduylm, yeshenhi, huyenco, loinguyentran | | hết quota tuần |
+| nhatlong1103 | | chỉ đăng dataset (user cấm chạy kernel) |
+
+- **Quota:** 30 giờ GPU / tuần / acc; lỗi hết quota hiện lúc push. Mỗi run 4×L4 trên 750 câu mất 1–2.5 giờ phiên.
+- **Probe nhanh loại GPU / quota:** kernel 1 dòng in `torch.cuda.get_device_name`, metadata L4 (xem `make_kernel.py`).
+  Chạy ~2 phút, phân biệt: L4 thật / không GPU / hết quota / chưa accept rules.
+
+### 2.2 Bài học vận hành
+
 | Bài học | Chi tiết |
 |---|---|
-| L4 grant | `machine_shape=NvidiaL4` + `competition_sources=["gemma-4-developer-agent"]` → 4×L4, 48 CPU; **không internet** (push với internet bị 400). Đã xác nhận GPU thật là L4 qua log |
-| Offline | vLLM wheels + trọng số lấy từ **output kernel public** (`kernel_sources`), ví dụ `nhatlong1103/zc-assets`; bf16 Qwen3-14B qua Kaggle Models `qwen-lm/qwen-3/transformers/14b/1` (`--ms`) |
-| vLLM 0.32 | `pip install vllm` kéo torch 2.13 + CUDA 13 (driver 580 hỗ trợ) → **gỡ `torchaudio torchcodec`** (lệch CUDA làm `transformers` import lỗi) |
-| FlashInfer | Trên L4, sampler FlashInfer JIT-compile 20 phút rồi lỗi `ld` → run hỏng toàn bộ. `agent.py` đặt `VLLM_USE_FLASHINFER_SAMPLER=0` |
-| T4 | 14B-AWQ phải `--tp 2` (một T4 chỉ còn 1.3 GB KV); fp16; Qwen3.5-9B lỗi khởi tạo |
-| Nạp model | 4 tiến trình cùng đọc 9.4 GB từ `/kaggle/input` (ổ mạng) mất **18 phút** → `run_kaggle.py` chép model sang `/tmp/models` một lần |
-| Prefix cache | Gửi mọi DN cùng lúc làm các prefix 15k token đẩy nhau khỏi KV (thông lượng thấp ~12×) → `Engine.gen` sinh theo từng nhóm prefix + warm-up 1 token |
-| Độ dài prompt | Prompt > `max_len` làm vLLM ném lỗi **cả lô** (một shard chết, mất 254 câu) → `Engine.fit`: bỏ vòng sửa cũ → giảm max_tokens → bỏ riêng request |
-| Tên kernel | title ≥ 5 ký tự (`e1-1` bị từ chối) |
-| Trần phiên | 2 GPU, 5 CPU mỗi acc; quota tuần 30 h; lỗi quota xuất hiện lúc push (không tốn quota) |
-| Output lớn | `run_kernel.py --logs-only` cho kernel asset (không kéo 14 GB về container) |
-| Kết quả chép đè | fanout chép `results/*.json` vào `results/` của repo; đã thêm `results/*.json` vào `.gitignore` |
+| L4 grant | `machine_shape=NvidiaL4` + `competition_sources=["gemma-4-developer-agent"]`. **Không internet**: cài vLLM từ wheels của output kernel `nhatlong1103/zc-assets` (`--ks`) |
+| Hàng đợi L4 | Có lúc QUEUED liên tục (e10l: 4 lần × 5 phút) khi pool L4 bận. `run_kernel.py` huỷ + đẩy lại; hết 4 lần thì **bản push cuối vẫn xếp hàng** → bám lại bằng `run_kernel.py <kdir> <out> 14400 0 43200 --attach` |
+| Ngắt kernel | Chỉ `kaggle kernels delete -y <acc>/<slug>` có tác dụng. Bộ phân loại an toàn của Claude **có lúc chặn** lệnh delete kernel do khung chat khác tạo → ghi vào handoff cho user ngắt tay |
+| fanout | `--accounts a,b` lấp (a,0), (a,1), (b,0)…. Push hỏng (hết slot / quota) → failover sang acc kế. Log runner bị ghi đè khi failover → watcher có thể đã báo PUSH_FAILED: xoá dòng đó khỏi `<runs>/.reported` rồi bật lại watcher |
+| Code tại lúc push | Kernel dùng version `<acc>/zc-code` tại lúc `make_kernel` (fanout gọi ngay). Sửa code sau đó không ảnh hưởng run đang chạy → ghi rõ run nào dùng code nào |
+| Thư viện shots trong code | `src/shots/train_shots.jsonl` (≈4 MB) đi cùng dataset code; agent tìm `--shots shots/train_shots.jsonl` tương đối cwd hoặc dưới `/kaggle/input` |
+| Log trễ | API chỉ trả log khi kernel xong; RUNNING lâu không có nghĩa là treo. Kernel e3h-4 / e3b-2 chạy > 7 giờ (khác hẳn các shard cùng loại 1.5–2.5 giờ): nghi chương trình kẹt → đã thêm `SafePool` |
+| Watcher | `watch_done.py <runs> --max 110` bằng `run_in_background`: thoát khi một kernel xong → xử lý → bật lại. **Không chạy bằng `nohup … &`** (không có thông báo) |
 
-## 3. Tổ chức chạy
+## 3. Pipeline và mã nguồn (điểm cần biết khi sửa)
 
-- `fanout.py <runs>/<run> <prefix> "<job>;<job>" <n> --accounts a --l4|--gpu --ks nhatlong1103/zc-assets [--internet] [--ms ...]`
-  → `make_kernel.py` (code dataset `<acc>/zc-code` từ `src/`, dữ liệu `nhatlong1103/zc-2026`) → `run_kernel.py`
-  (push, poll, tự huỷ + đẩy lại khi QUEUED > 5 phút, tối đa 4 lần, kéo output).
-- Job chuẩn: `run_kaggle.py <train|public_test> OUT --model Qwen/Qwen3-14B-AWQ --compile --k 4 --kc 4 --dp 4 --cache /tmp/zc_cache --max-len 24576 [--subset 300] [--chunk 4]`.
-- **Theo dõi không tốn token:**
-  - Ghi tên run vào `<runs>/active_runs.txt`.
-  - Chạy `python3 automation/watch_done.py <runs> --max 110` bằng Bash `run_in_background`: nó thoát khi có kernel xong, Claude được báo; xử lý xong thì bật lại.
-  - Watcher chỉ báo mỗi kernel một lần (`.reported`); chạy lại cùng slug thì dùng thư mục run mới.
-- Container khởi động lại hoặc khung chat mới: `automation/resume.py <runs>` (cùng scratchpad) hoặc `automation/pull_kernels.py` (đọc `handoff/RUNNING_KERNELS.md`).
-
-## 4. Code
-
-| Thành phần | Ghi chú |
+| File | Ghi chú |
 |---|---|
-| `ingest.py` | `load_business` → `Biz(tables, raw, meta, readme)`; `table_card`; cache pickle theo DN. **Pickle phải tạo khi import `ingest` như module** (chạy `ingest.py` trực tiếp từng làm `Biz` thành `__main__.Biz`) |
-| `agent.py` | `Engine` (vLLM) / `FakeEngine` (test); `generate_and_run` (sinh → chạy sandbox `signal.alarm` → sửa / tự kiểm tra); `compile_stage`, `answer_stage`, `write_answer`; `--dp` chạy 1 tiến trình / GPU và gộp `submission.jsonl` mỗi 30 s |
-| `score.py` | bộ chấm đúng luật; `analyze.py` phân tích offline log (PA theo type, theo mẫu / nhánh, hiệu chuẩn, chọn τ, vote lại) |
-| `harvest.py`, `train_sft.py` | dữ liệu SFT từ chương trình đúng (train) và QLoRA DDP; **train_sft chưa chạy thử lần nào** |
-| `docker/` | Dockerfile (`vllm/vllm-openai:v0.32.0`), `predict.sh`, script build / chạy như BTC / export; **chưa build thử** (container không có daemon) |
+| `src/agent.py` | Pipeline. Prompt là chuỗi module (`SYSTEM_RAW`, `SYSTEM_CANON`, `SYSTEM_COMPILE[_SALES]`); `use_helpers()` chèn `HELPER_DOC` khi `--helpers` |
+| | Sandbox: `__builtins__` riêng (`open` bị chặn), `pd` là proxy không có `read_*`, `import pandas` trả proxy |
+| | `SafePool`: kết quả có hạn chót; task kẹt → timeout, pool tạo lại |
+| | `ShotIndex`: TF-IDF, lọc khác DN, theo nhánh. `EntityIndex`, `DATA_RANGE`: hiển thị trong khối QUESTION |
+| | Nhóm prefix của vLLM cắt tại `"\n\n# QUESTION"` đầu tiên: mọi phần riêng của câu hỏi (shots, gợi ý) phải nằm **sau** dấu đó |
+| `src/semantic.py` | `build_sales(..., tables=T)`. Agent bọc sẵn `tables=T` trong namespace. Mọi lỗi phải nói rõ cách sửa (LLM đọc lỗi để sửa) |
+| `src/vnnorm.py` | Từ điển viết tắt **chỉ theo nguyên từ** (`(?<!\w)…(?!\w)`, để `NV001` không thành "nhân viên001"); bỏ các viết tắt mơ hồ (`a`, `e`, `v`, `kh`, `dt`) |
+| `src/compare.py` | So sánh run theo giao thức dev / holdout, vote lại offline |
+| `src/build_shots.py` | Gộp mọi log train → thư viện |
+| `docker/predict.sh` | Đã cập nhật cấu hình tốt nhất (`--helpers --norm-q --link --compile --compile-scope sales --shots …`) |
 
-## 5. Lỗi đã gặp và cách sửa
+**Cách làm hiệu quả:** mỗi lỗi lặp lại của LLM → (1) tìm ví dụ trong log, (2) sửa ở **code** (helper chịu lỗi, thông báo lỗi
+có hướng dẫn) trước, (3) prompt sau. Ví dụ: quên `header=` → `build_sales` tự tìm header, thay vì thêm một câu vào prompt.
+
+## 4. Tổ chức thử nghiệm
+
+- **Chia nhỏ theo DN:** `--biz '<regex>'` chia run train ra nhiều kernel. Mỗi kernel 4×L4 nên có ≤ ~750 câu (≈1.5–2 giờ).
+- **So sánh cặp trên cùng DN:**
+  - cắt log baseline theo tập `business_id` của run mới (xem lệnh trong `results/chat2_runs/README.md`);
+  - so **top-answer đúng** và **PA dev**;
+  - lật từng câu (correct → wrong và ngược lại) để biết thay đổi thật sự làm gì.
+- **Smoke** (`--subset 8` → 1 câu / DN) chỉ kiểm môi trường, **không đo được thông lượng**: mỗi nhóm prefix chỉ có 4 request
+  nên GPU bị prefill-bound (60 tok/s). Run thật: 150–260 tok/s mỗi L4.
+- **Thời gian:** ~25–35 s / câu / L4 với K=4 + compile. Ước lượng 2×RTX 5090 (nhanh hơn L4 ~3–4×): 1000–2000 câu ≈ 1.3–2.6 giờ.
+  Thinking làm chậm thêm nhiều (T4: 100 câu × 2 mẫu = 5.4 giờ).
+
+## 5. Lỗi đã gặp và cách sửa (khung chat 2)
 
 | Lỗi | Sửa |
 |---|---|
-| Kernel `e1-1`: title quá ngắn | tiền tố `zc-` |
-| E1 lần đầu `--dp 2` với 14B trên T4 | TP=2 |
-| E2 lần 1: FlashInfer JIT | tắt sampler FlashInfer |
-| E2b: shard chết vì prompt quá dài | `Engine.fit` |
-| E2b: nạp model 18 phút; thông lượng thấp | chép model cục bộ; sinh theo nhóm prefix |
-| Compile 5/40: chương trình bị cắt, đọc file, thiếu `C` | 6144 token, luật rõ, nhận khối code chưa đóng, thông báo lỗi đưa dòng ngoại lệ lên đầu |
-| `1,134tr` → 1,134 tỷ | dấu trước hậu tố nhân là dấu thập phân |
-| Quy ước thập phân theo cột làm hỏng cột tiền | chỉ áp cho giá trị mơ hồ; cột có ký hiệu tiền dùng quy tắc theo từng giá trị; bỏ `x.0` |
-| `pkill -f` giết shell gọi nó | kill theo PID |
-| Watcher chạy bằng `&` trong lệnh foreground không báo gì | luôn dùng `run_in_background` |
-| `check_canon` bỏ qua trạng thái NaN | báo lỗi trạng thái chưa ánh xạ |
+| Test cục bộ FAIL (symlink tương đối) | `os.path.abspath` |
+| Chương trình đọc file thay vì dùng T | sandbox chặn `open` / `pd.read_*` |
+| `day is out of range`, `.str` trên cột số, KeyError tên cột, thiếu ANSWER | helper ngày, gợi ý theo loại lỗi, danh sách cột trong thông báo |
+| Đếm dòng thay vì đơn, lấy tổng sau giảm giá làm doanh thu, `<= ngày cuối` trên cột có giờ | `build_sales` + gợi ý `.dt.normalize()` |
+| Compile: quên `header=`, truyền nhầm bảng khách làm header, dùng tên cột gốc sau build_sales, merge theo mã đơn gốc | tự tìm / sửa header, giữ cột gốc + cột chuẩn, giữ cột mã đơn gốc; 4 vòng sửa compile |
+| `hqua` / `hnay` không hiểu → trả doanh thu toàn thời gian | `vnnorm` |
+| Khách lẻ ("kl", "lẻ") bị xếp hạng như khách | `WALKIN` trong build_sales |
+| Quên lọc `valid` | `C['valid_orders']`, `C['valid_lines']` |
+| Trung bình tiền để lẻ (1298414.23) | prompt: tiền kể cả trung bình → số nguyên |
+| list vs table; unanswerable quá dễ dãi | định nghĩa rõ trong `ANSWER_DOC` |
+| Một chương trình kẹt chặn cả run (nghi) | `SafePool` |
+| Hai watcher / runner cho cùng kernel, log cũ làm watcher báo nhầm | đổi tên log cũ, xoá khỏi `.reported` |
 
 ## 6. Bài học
 
 - **Thành công:**
-  - Bộ test không GPU (FakeEngine) bắt lỗi đường ống trước khi tốn GPU.
-  - So từng giá trị cache cũ/mới bắt được lỗi dữ liệu nghiêm trọng.
-  - Bộ test tổng hợp kiểm tính tổng quát.
-  - Asset public dùng chung giữa các acc.
-  - Watcher nền thay cho kiểm tra định kỳ.
-- **Thất bại:**
-  - Khởi chạy cấu hình mới trên L4 mà không có phép thử nhỏ trước: 2 lần mất ~1 giờ L4 vì lỗi môi trường (FlashInfer, độ dài prompt).
-  - **Từ nay: luôn chạy thử 1 DN × vài câu (`--subset 8`) trên đúng loại GPU trước khi chạy full.**
-  - Các run E1 trên T4 khởi chạy trước khi sửa thứ tự prefix nên rất chậm và tốn quota T4.
+  - Đo trên dữ liệu có đáp án sớm (smoke 30 câu đã lộ lỗi hệ thống −0.40).
+  - Sửa ở code thay vì prompt.
+  - So sánh cặp trên cùng DN.
+  - Lưu đầu ra từng mẫu → vote lại / chọn τ / xây shots offline không tốn GPU.
+  - Few-shot từ chính log của các run trước (vòng lặp tự cải tiến).
+- **Thất bại / tốn kém:**
+  - Hai kernel baseline cũ chạy hơn 12 giờ vô ích.
+  - Smoke compile-đầy-đủ chạy 2 giờ cho 30 câu (huỷ).
+  - Quota 4 acc L4 hết trong khoảng 6 giờ vì chạy song song 8 phiên dài.
+  - **Lần sau:** giới hạn mỗi kernel ≤ 750 câu; ưu tiên thí nghiệm quyết định trên ~300–450 câu (4 DN) trước khi chạy toàn train.

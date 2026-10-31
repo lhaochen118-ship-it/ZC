@@ -19,47 +19,13 @@
 
 ## 2. Tài khoản
 
-Token mỗi acc ở `~/.kaggle/tok_<username>` (chmod 600); `~/.kaggle/access_token` là của `nhatlong1103`. **Repo
-public: không commit token, không ghi vào `~/.bashrc`.** Token lấy từ tin nhắn của user, thứ tự trùng bảng dưới. Kiểm
-tra: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels list --mine`.
-
-**Acc dùng cho DataMate (token user gửi 2026-10-30, đã xác thực từng acc):**
-
-| Acc | GPU | Trạng thái 30/10 |
-|---|---|---|
-| `nhatlong1103` | — | chủ `zc-2026`; **hết quota GPU tuần 30 h** → dùng để đăng dataset public và chạy kernel CPU |
-| `yuan1103` | 4×L4 + 2×T4 | **hết quota GPU tuần 30 h** |
-| `mxuanquy` | 2×T4 | dùng được |
-| `anderson1202` | 2×T4 | dùng được; output kernel public `zc-vllm-t4b` chứa wheels vLLM |
-| `nguyenhoa99` | 4×L4 + 2×T4 | thêm 30/10 13:40; L4 grant OK; **ưu tiên dùng cho mọi run nặng** (2 phiên × 4 L4) |
-
-Quota GPU Kaggle là 30 giờ/tuần mỗi acc và reset theo tuần. Lỗi khi hết: `Maximum weekly GPU quota of 30.00 hours
-reached` lúc push (không tốn quota). `~/.kaggle/access_token` = token `nhatlong1103`.
-
-Bảng acc của dự án trước (tham khảo):
-
-| # | Username | Ghi chú (đến 2026-10-30) |
-|---|---|---|
-| 1 | `nhatlong1103` | Chủ mọi dataset public |
-| 2 | `yuan1103` | **dành cho user** (không chạy job) |
-| 3 | `synchan5704` | L4×4 OK |
-| 4 | `loinguyentran` | |
-| 5 | `yeshenhi` | chỉ T4 (xin L4 thì rơi về CPU, không báo lỗi) |
-| 6 | `mucnokieu` | GPU hay bị người khác dùng → chủ yếu CPU; L4×4 OK |
-| 7 | `huyenco` | |
-| 8 | `nguynduylm` | L4: đã accept rules nhưng lần đầu không có GPU; thử lại |
-| 9 | `phuongnehe` | L4×4 OK |
-| 10 | `thnliu` | L4×4 OK |
-| 11 | `mxuanquy` | chỉ T4; **dành cho user** (không chạy job) |
-| 12 | `linhmai24` | L4×4 OK + T4 |
-
-**Trần phiên:** 2 GPU và 5 CPU mỗi acc. Acc chưa xác minh số điện thoại không được cấp GPU.
+Token: `~/.kaggle/tok_<username>` (chmod 600), `~/.kaggle/access_token` = `nhatlong1103` (chỉ đăng dataset). Không commit
+token. Danh sách acc, GPU và trạng thái quota hiện tại: `handoff/02_ENGINEERING_OPS_NOTES.md` §2.1 (bảng acc của dự án
+trước đã bỏ vì lỗi thời).
 
 **GPU L4×4:** kernel-metadata `"machine_shape": "NvidiaL4"`, `"competition_sources": ["gemma-4-developer-agent"]`
-(deadline grant 2026-11-25), `"enable_internet": false` → 4× L4 (23 GB mỗi GPU), 48 CPU, 197 GB RAM. Chỉ có tác dụng nếu
-acc **đã accept rules** của competition đó trên web (không có API); chưa accept thì kernel lặng lẽ chạy T4. Kiểm bằng
-một kernel nhỏ in `torch.cuda.get_device_name(i)`. **L4×4 (96 GB) là môi trường gần nhất với máy chấm 2 × RTX 5090
-(64 GB)** → dùng cho đo thời gian và fine-tune.
+(deadline grant 2026-11-25), `"enable_internet": false` → 4× L4 (23 GB), 48 CPU. Chỉ có tác dụng nếu acc **đã accept rules**
+của competition đó trên web; chưa accept thì push báo lỗi hoặc rơi về CPU. Kiểm bằng kernel probe (handoff 02 §2.1).
 
 ## 3. Pipeline chạy
 
@@ -107,24 +73,6 @@ Giới hạn metadata: title 6–50 ký tự, subtitle 20–80. Upload khoảng 
 - Kernel T4 có thể bật internet (pip install); kernel L4 grant thì **không** → cài từ dataset wheels.
 - Collector của đợt cũ có thể ghi đè kết quả mới nếu xong sau: dừng collector cũ hoặc chép lại kết quả đợt mới sau cùng.
 
-## 6. Container Claude Code
+## 6. Container và bài học khác
 
-- **Container có thể khởi động lại bất cứ lúc nào**: mất tiến trình nền (fanout, run_kernel), còn scratchpad, repo, và
-  kernel trên Kaggle vẫn chạy. Phục hồi: `python3 automation/resume.py <runs>`.
-- Monitor có thể chết vì lỗi proxy nhưng vẫn ghi `STATUS=DONE:error` trong khi kernel vẫn RUNNING → kiểm
-  `kaggle kernels status` rồi `reattach.py`.
-- Tác vụ nền của Claude có trần khoảng 2 giờ; không dùng `sleep` dài ở foreground.
-- `pkill -f <pattern>` có thể giết luôn shell gọi nó → dùng PID cụ thể hoặc `TaskStop`.
-- Sửa file bằng Edit hoặc Python replace có `assert`, không dùng `sed` mù.
-- Gói: `pip install kaggle markdown xhtml2pdf`. md → pdf: `python3 automation/md2pdf.py <in.md> <out.pdf>`.
-
-## 7. Bài học DataMate (30/10)
-
-- vLLM 0.32 trên Kaggle: `pip install vllm` kéo torch 2.13 + CUDA 13 → gỡ `torchaudio torchcodec` (lệch CUDA).
-- **L4 (sm89): FlashInfer sampler JIT-compile lúc khởi động, mất 20 phút rồi lỗi `ld returned 1`** → cả run E2 đầu
-  trả toàn abstain. `agent.py` đặt sẵn `VLLM_USE_FLASHINFER_SAMPLER=0` (cũng có hiệu lực trong Docker).
-- 14B-AWQ trên **một** T4 không đủ KV cho prompt ~16k → T4 dùng `--tp 2`; L4 (24 GB) dùng `--dp 4`.
-- Qwen3.5-9B không khởi tạo được trên T4.
-- `run_kernel.py --logs-only` cho kernel tạo asset lớn (không kéo 14 GB output về container).
-- `pkill -f <pattern>` giết luôn shell gọi nó: dùng PID.
-
+Xem `handoff/02_ENGINEERING_OPS_NOTES.md` (bản cập nhật, thay cho mục 6–7 cũ).

@@ -127,3 +127,10 @@ table −0.16. e9: compile được 10/11 DN. Thư viện shots v4: 4228 chươn
 **E10 (T4, cấu hình tốt nhất + `--think --max-tokens 8192`, 40 câu của biz_114/116/117/125) vs e7 trên cùng 40 câu:**
 từng mẫu đúng **134/160 (84 %) vs 111/160 (69 %)**; PA cuối **+0.75 vs +0.60**. Think + shots cộng dồn được. Mẫu nhỏ (40 câu)
 → cần e10b (holdout) / e10l (L4, 316 câu) để xác nhận; đo thời gian trên L4 (T4: 10,144 s cho 40 câu, gồm compile).
+
+**E10l (L4, cấu hình tốt nhất + `--think --max-tokens 8192`, shots v3, code mới nhất) vs e7 trên cùng 316 câu
+(biz_114/116/117/125):** PA dev **+0.692 vs +0.591**, holdout **+0.900 vs +0.700** (40 câu), top-answer đúng **272 vs 253**;
+4/4 DN compile được. Thời gian 6,043 s vs ~2,400 s (≈ 2.5×; ~47 s/câu/L4). Lưu ý: e10l còn có code mới hơn (khoảng ngày dữ
+liệu, SafePool) và shots v3 (e7: v1), nên chênh lệch không hoàn toàn do thinking; e10 (cùng câu hỏi, T4) cho kết luận
+cùng chiều. Ước lượng 2×5090 (≈3–4× L4): 1000 câu ≈ 2 giờ, 2000 câu ≈ 4–4.5 giờ → vừa 6 giờ nhưng sát với 2000 câu (cần
+`--budget`, chạy thử thật).

@@ -38,7 +38,7 @@
 | Agent | Cấu hình tốt nhất (mục 5) đạt **PA train dev +0.47 / holdout +0.44** (3000 câu, leave-business-out) |
 | Thư viện shots | v4: 4228 chương trình (`src/shots/train_shots.jsonl`) |
 | Public test | Run `p1` (cấu hình tốt nhất với shots v2) **đang chạy**; chưa có file nộp |
-| Thinking | think + shots trên 40 câu (e10, T4): từng mẫu 84 % vs 69 %, PA +0.75 vs +0.60 so với e7 cùng câu; chờ xác nhận `e10b` (T4) / `e10l` (L4, đang xếp hàng) và đo thời gian |
+| Thinking | **Xác nhận có lợi:** e10l (L4, 316 câu) PA dev +0.69 vs +0.59 (không think), holdout +0.90 vs +0.70; chậm ≈ 2.5×. Chờ `e10b` (T4, holdout 40 câu) |
 | Sửa chưa đo trên GPU | khoảng ngày dữ liệu → unanswerable; NOTES compile không gọi bảng T là thiếu; `SafePool`; gợi ý `time=` trong compile |
 | Docker | `docker/predict.sh` đã dùng cấu hình tốt nhất; chưa build / chưa chạy thử; chưa có guideline BTC |
 | FP8 cho 5090, tất định, thời gian thật | Chưa làm |
@@ -66,7 +66,7 @@ python3 automation/pull_kernels.py <scratch>/pulled
 python3 automation/fanout.py <runs>/<run> zc-<run> "run_kaggle.py <train|public_test> OUT --model Qwen/Qwen3-14B-AWQ --dp 4 --cache /tmp/zc_cache --max-len 24576 --chunk 2 --helpers --norm-q --link --compile --compile-scope sales --k 4 --kc 4 --shots shots/train_shots.jsonl --n-shots 2 [--biz '<regex>']" 1 --accounts <acc> --l4 --ks nhatlong1103/zc-assets
 ```
 
-τ = 0.5 (mặc định).
+τ = 0.5 (mặc định). **Ứng viên tốt hơn:** thêm `--think --max-tokens 8192` (e10l), nếu thời gian trên 2×5090 cho phép (bước 4 mục 6).
 
 ## 6. Việc tiếp theo (theo thứ tự)
 

@@ -134,3 +134,8 @@ từng mẫu đúng **134/160 (84 %) vs 111/160 (69 %)**; PA cuối **+0.75 vs +
 liệu, SafePool) và shots v3 (e7: v1), nên chênh lệch không hoàn toàn do thinking; e10 (cùng câu hỏi, T4) cho kết luận
 cùng chiều. Ước lượng 2×5090 (≈3–4× L4): 1000 câu ≈ 2 giờ, 2000 câu ≈ 4–4.5 giờ → vừa 6 giờ nhưng sát với 2000 câu (cần
 `--budget`, chạy thử thật).
+
+**E10b (T4, như e10, 40 câu holdout biz_121/124/129/130, 4/4 compile được) vs e8 trên cùng câu:** từng mẫu 84/160 vs
+79/160 (lỗi chạy 1 vs 14); PA cuối **+0.00 vs +0.30** (thinking kém hơn). → bằng chứng lẫn lộn: dev 316 câu (e10l) +0.10,
+dev 40 câu (e10) +0.15, holdout 40 câu (e10b) −0.30. Với 40 câu, sai số của hiệu PA ≈ ±0.15. **Chưa đổi mặc định**; phép thử
+quyết định: e11 (thinking, 354 câu holdout biz_121/124/129, L4, đang xếp hàng) so với e8.

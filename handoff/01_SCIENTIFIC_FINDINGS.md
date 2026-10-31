@@ -134,7 +134,7 @@ rỗng, 4×L4 DP.
 - **Thinking (Qwen3 `--think`), chỉ trên T4, không shots:**
   - Độ đúng từng mẫu: dev 77/130 vs 52/130 không think; holdout 26/60 vs 20/60.
   - Nhưng vẫn thấp hơn cấu hình có shots không think (45 % vs 51 % từng mẫu trên 60 câu holdout trùng).
-  - **Cộng dồn think + shots có lợi:** e10l (L4, 316 câu, cùng câu với e7) PA dev +0.69 vs +0.59, holdout +0.90 vs +0.70, top-answer 272 vs 253; e10 (T4, 40 câu) từng mẫu 84 % vs 69 %. Chậm ≈ 2.5× (~47 s/câu/L4). e10l cũng có code / shots mới hơn e7 nên chênh lệch không hoàn toàn do thinking.
+  - **Cộng dồn think + shots có lợi:** e10l (L4, 316 câu, cùng câu với e7) PA dev +0.69 vs +0.59, holdout +0.90 vs +0.70, top-answer 272 vs 253; e10 (T4, 40 câu) từng mẫu 84 % vs 69 %. Chậm ≈ 2.5× (~47 s/câu/L4). e10l cũng có code / shots mới hơn e7 nên chênh lệch không hoàn toàn do thinking. **Nhưng holdout (e10b, T4, 40 câu, cùng câu với e8): PA +0.00 vs +0.30** → bằng chứng lẫn lộn, chưa kết luận (e11, 354 câu holdout, đang chờ).
 
 ## 5. Kết quả âm / trung tính (đã loại, có lý do)
 

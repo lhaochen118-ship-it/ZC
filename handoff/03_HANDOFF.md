@@ -38,7 +38,7 @@
 | Agent | Cấu hình tốt nhất (mục 5) đạt **PA train dev +0.47 / holdout +0.44** (3000 câu, leave-business-out) |
 | Thư viện shots | v4: 4228 chương trình (`src/shots/train_shots.jsonl`) |
 | Public test | Run `p1` (cấu hình tốt nhất với shots v2) **đang chạy**; chưa có file nộp |
-| Thinking | Hứa hẹn khi không có shots; think + shots chưa đo (`e10`, `e10b` T4; `e10l` L4 đang xếp hàng) |
+| Thinking | think + shots trên 40 câu (e10, T4): từng mẫu 84 % vs 69 %, PA +0.75 vs +0.60 so với e7 cùng câu; chờ xác nhận `e10b` (T4) / `e10l` (L4, đang xếp hàng) và đo thời gian |
 | Sửa chưa đo trên GPU | khoảng ngày dữ liệu → unanswerable; NOTES compile không gọi bảng T là thiếu; `SafePool`; gợi ý `time=` trong compile |
 | Docker | `docker/predict.sh` đã dùng cấu hình tốt nhất; chưa build / chưa chạy thử; chưa có guideline BTC |
 | FP8 cho 5090, tất định, thời gian thật | Chưa làm |

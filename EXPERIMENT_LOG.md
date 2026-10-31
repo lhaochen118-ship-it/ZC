@@ -123,3 +123,7 @@ Hợp các run e6a, e7, e7b, e8, e9 (cùng cấu hình `--helpers --norm-q [--li
 
 → giữ τ = 0.5. Theo type: number +0.48, percent +0.50, date +0.65, string +0.53, list +0.22, **unanswerable −0.29**,
 table −0.16. e9: compile được 10/11 DN. Thư viện shots v4: 4228 chương trình đúng, phủ 2446/3000 câu (`src/shots/`).
+
+**E10 (T4, cấu hình tốt nhất + `--think --max-tokens 8192`, 40 câu của biz_114/116/117/125) vs e7 trên cùng 40 câu:**
+từng mẫu đúng **134/160 (84 %) vs 111/160 (69 %)**; PA cuối **+0.75 vs +0.60**. Think + shots cộng dồn được. Mẫu nhỏ (40 câu)
+→ cần e10b (holdout) / e10l (L4, 316 câu) để xác nhận; đo thời gian trên L4 (T4: 10,144 s cho 40 câu, gồm compile).

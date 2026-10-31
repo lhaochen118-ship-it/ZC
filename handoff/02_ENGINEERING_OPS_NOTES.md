@@ -39,8 +39,8 @@ lỗi và bài học. Kết quả khoa học ở PDF 1, việc tiếp theo ở P
 | Acc | GPU | Ghi chú |
 |---|---|---|
 | lelynhan | 4×L4 | còn quota (đang chạy `p1`, `e10l` xếp hàng) |
-| mxuanquy | chỉ T4 (xin L4 → không có GPU) | đang chạy `e10b`, `e1b` (cũ) |
-| anderson1202 | T4 (chưa accept rules gemma-4 → không L4) | đang chạy `e10`, `e1c` (cũ) |
+| mxuanquy | chỉ T4 (xin L4 → không có GPU) | đang chạy `e10b` |
+| anderson1202 | T4 (chưa accept rules gemma-4 → không L4) | đang chạy `e10` |
 | phuongnehe, linhmai24, thnliu | 4×L4 | **hết quota tuần** lúc 20:45–23:00 UTC 30/10 |
 | yuan1103, synchan5704, mucnokieu, nguynduylm, yeshenhi, huyenco, loinguyentran | | hết quota tuần |
 | nhatlong1103 | | chỉ đăng dataset (user cấm chạy kernel) |
@@ -55,7 +55,7 @@ lỗi và bài học. Kết quả khoa học ở PDF 1, việc tiếp theo ở P
 |---|---|
 | L4 grant | `machine_shape=NvidiaL4` + `competition_sources=["gemma-4-developer-agent"]`. **Không internet**: cài vLLM từ wheels của output kernel `nhatlong1103/zc-assets` (`--ks`) |
 | Hàng đợi L4 | Có lúc QUEUED liên tục (e10l: 4 lần × 5 phút) khi pool L4 bận. `run_kernel.py` huỷ + đẩy lại; hết 4 lần thì **bản push cuối vẫn xếp hàng** → bám lại bằng `run_kernel.py <kdir> <out> 14400 0 43200 --attach` |
-| Ngắt kernel | Chỉ `kaggle kernels delete -y <acc>/<slug>` có tác dụng. Bộ phân loại an toàn của Claude **có lúc chặn** lệnh delete kernel do khung chat khác tạo → ghi vào handoff cho user ngắt tay |
+| Ngắt kernel | Chỉ `kaggle kernels delete -y <acc>/<slug>` có tác dụng. Bộ phân loại an toàn của Claude **có lúc chặn** lệnh delete kernel do khung chat khác tạo: hỏi user cho phép rồi chạy lại từng lệnh. Kernel đã xoá / không tồn tại trả về `Permission 'kernels.get' was denied` (cùng thông báo với slug sai) |
 | fanout | `--accounts a,b` lấp (a,0), (a,1), (b,0)…. Push hỏng (hết slot / quota) → failover sang acc kế. Log runner bị ghi đè khi failover → watcher có thể đã báo PUSH_FAILED: xoá dòng đó khỏi `<runs>/.reported` rồi bật lại watcher |
 | Code tại lúc push | Kernel dùng version `<acc>/zc-code` tại lúc `make_kernel` (fanout gọi ngay). Sửa code sau đó không ảnh hưởng run đang chạy → ghi rõ run nào dùng code nào |
 | Thư viện shots trong code | `src/shots/train_shots.jsonl` (≈4 MB) đi cùng dataset code; agent tìm `--shots shots/train_shots.jsonl` tương đối cwd hoặc dưới `/kaggle/input` |

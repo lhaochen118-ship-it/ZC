@@ -73,8 +73,7 @@ python3 automation/fanout.py <runs>/<run> zc-<run> "run_kaggle.py <train|public_
 1. **Khởi động:**
    - xin token, kiểm bằng `kaggle competitions list`;
    - tải dữ liệu, chạy 2 test không GPU;
-   - kéo kết quả `p1`, `e10`, `e10b`, `e10l`, `e3h-4`, `e3b-2` (`pull_kernels.py`);
-   - nhắc user ngắt tay `mxuanquy/zc-e1b-1`, `anderson1202/zc-e1c-1` nếu còn chạy.
+   - kéo kết quả `p1`, `e10`, `e10b`, `e10l`, `e3h-4`, `e3b-2` (`pull_kernels.py`).
 2. **File nộp public:**
    - khi `p1` xong: kiểm đủ 1000 dòng, đúng định dạng;
    - chép `submission.jsonl` vào `results/p1_submission.jsonl`;

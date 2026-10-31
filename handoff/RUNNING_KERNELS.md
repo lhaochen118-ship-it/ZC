@@ -17,7 +17,7 @@ Cần token `~/.kaggle/tok_<acc>` của từng acc. Kernel chưa xong được b
 | e3h | `linhmai24/zc-e3h-4` | 4×L4 | `--helpers --compile --compile-scope sales`, không shots | train biz_101,103,112,121,124,127,129 | chạy > 7 giờ (nghi kẹt); chỉ để thêm shots |
 | e3b | `thnliu/zc-e3b-2` | 4×L4 | `--helpers`, BBBB | train nửa sau | chạy > 7 giờ (nghi kẹt); chỉ để thêm shots |
 
-**Cần user ngắt tay** (công cụ tự động bị chặn lệnh xoá): `mxuanquy/zc-e1b-1`, `anderson1202/zc-e1c-1` — baseline cũ của khung
-chat 1, code cũ có lỗi, vô ích, chỉ tốn quota T4.
+`mxuanquy/zc-e1b-1`, `anderson1202/zc-e1c-1` (baseline cũ của khung chat 1) **đã không còn** (kiểm 31/10 01:20 UTC: không có trong
+danh sách kernel, truy vấn trạng thái trả về giống kernel đã xoá).
 
 Đã xong và đã phân tích (log trong `results/chat2_runs/`): smoke2, e3h-1/2/3, e3b-1, e3t-1/2, e4-1/2, e5-1/2, e6a, e7, e7b, e8, e9.

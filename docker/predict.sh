@@ -14,6 +14,8 @@ echo "split: $SPLIT  model: $MODEL  gpus: $NGPU  start: $(date -u +%FT%TZ)"
 # entity linking + retrieved solved examples from the training split (src/shots/train_shots.jsonl).
 # overridable with docker run -e NAME=value (defaults = the submitted configuration)
 K=${K:-4}; KC=${KC:-4}; MAX_LEN=${MAX_LEN:-32768}; BUDGET=${BUDGET:-20400}; DP=${DP:-$NGPU}; EXTRA=${EXTRA:-}
+# Qwen3 thinking: holdout PA +0.51 vs +0.25 without (EXPERIMENT_LOG entry 6), ~2.5-3x slower; THINK=0 is the fallback
+THINK=${THINK:-1}; [ "$THINK" = "1" ] && EXTRA="--think --max-tokens 8192 $EXTRA"
 python3 /app/src/agent.py "$SPLIT" "$RESULT" --model "$MODEL" --dp "$DP" --compile --compile-scope sales --k "$K" --kc "$KC" --repairs 2 \
     --helpers --norm-q --link --shots /app/src/shots/train_shots.jsonl --n-shots 2 \
     --chunk 2 --budget "$BUDGET" --cache /tmp/zc/cache --log-dir "$RESULT/logs" --max-len "$MAX_LEN" $EXTRA 2>&1 | tee "$RESULT/logs/run.log"

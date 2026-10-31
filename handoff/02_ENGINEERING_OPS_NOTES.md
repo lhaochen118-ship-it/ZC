@@ -1,6 +1,6 @@
 # 02 — Engineering & Operations Lessons (DataMate)
 
-*Cập nhật 2026-10-31 01:00 UTC (hết khung chat 2). Chỉ gồm kinh nghiệm lập trình, môi trường, Kaggle, tổ chức thử nghiệm,
+*Cập nhật 2026-10-31 04:45 UTC (hết khung chat 2). Chỉ gồm kinh nghiệm lập trình, môi trường, Kaggle, tổ chức thử nghiệm,
 lỗi và bài học. Kết quả khoa học ở PDF 1, việc tiếp theo ở PDF 3.*
 
 ## 1. Môi trường container Claude
@@ -34,13 +34,13 @@ lỗi và bài học. Kết quả khoa học ở PDF 1, việc tiếp theo ở P
 
 ## 2. Kaggle
 
-### 2.1 Tài khoản (31/10 01:00 UTC)
+### 2.1 Tài khoản (31/10 04:45 UTC)
 
 | Acc | GPU | Ghi chú |
 |---|---|---|
-| lelynhan | 4×L4 | còn quota (đang chạy `p1`, `e10l` xếp hàng) |
-| mxuanquy | chỉ T4 (xin L4 → không có GPU) | đang chạy `e10b` |
-| anderson1202 | T4 (chưa accept rules gemma-4 → không L4) | đang chạy `e10` |
+| lelynhan | 4×L4 | còn quota lúc bàn giao (đang chạy `p1`, `e11`) |
+| mxuanquy | chỉ T4 (xin L4 → không có GPU) | rảnh |
+| anderson1202 | T4 (chưa accept rules gemma-4 → không L4) | rảnh |
 | phuongnehe, linhmai24, thnliu | 4×L4 | **hết quota tuần** lúc 20:45–23:00 UTC 30/10 |
 | yuan1103, synchan5704, mucnokieu, nguynduylm, yeshenhi, huyenco, loinguyentran | | hết quota tuần |
 | nhatlong1103 | | chỉ đăng dataset (user cấm chạy kernel) |
@@ -89,7 +89,9 @@ có hướng dẫn) trước, (3) prompt sau. Ví dụ: quên `header=` → `bui
   - lật từng câu (correct → wrong và ngược lại) để biết thay đổi thật sự làm gì.
 - **Smoke** (`--subset 8` → 1 câu / DN) chỉ kiểm môi trường, **không đo được thông lượng**: mỗi nhóm prefix chỉ có 4 request
   nên GPU bị prefill-bound (60 tok/s). Run thật: 150–260 tok/s mỗi L4.
-- **Thời gian:** ~25–35 s / câu / L4 với K=4 + compile. Ước lượng 2×RTX 5090 (nhanh hơn L4 ~3–4×): 1000–2000 câu ≈ 1.3–2.6 giờ.
+- **Cỡ mẫu:** phép thử 40 câu có sai số hiệu PA ≈ ±0.15 (e10 nói thinking +0.15, e10b nói −0.30): chỉ dùng để phát hiện lỗi
+  môi trường / lỗi thô; quyết định cấu hình cần ≥ ~300 câu trên cùng câu hỏi, có cả dev và holdout.
+- **Thời gian:** ~25–35 s / câu / L4 với K=4 + compile; thinking ≈ 2.5× (~47 s / câu / L4). Ước lượng 2×RTX 5090 (nhanh hơn L4 ~3–4×): 1000–2000 câu ≈ 1.3–2.6 giờ.
   Thinking làm chậm thêm nhiều (T4: 100 câu × 2 mẫu = 5.4 giờ).
 
 ## 5. Lỗi đã gặp và cách sửa (khung chat 2)
@@ -122,3 +124,6 @@ có hướng dẫn) trước, (3) prompt sau. Ví dụ: quên `header=` → `bui
   - Smoke compile-đầy-đủ chạy 2 giờ cho 30 câu (huỷ).
   - Quota 4 acc L4 hết trong khoảng 6 giờ vì chạy song song 8 phiên dài.
   - **Lần sau:** giới hạn mỗi kernel ≤ 750 câu; ưu tiên thí nghiệm quyết định trên ~300–450 câu (4 DN) trước khi chạy toàn train.
+  - Runner cục bộ của kernel đã xoá vẫn chạy (poll mãi): kiểm `ps` định kỳ và dừng theo PID.
+  - Kernel đẩy trước một bản sửa chống treo (p1, e3h-4, e3b-2) chạy > 7 giờ: với run quan trọng (public test), chia nhỏ theo
+    DN để một kernel kẹt không làm mất cả kết quả.

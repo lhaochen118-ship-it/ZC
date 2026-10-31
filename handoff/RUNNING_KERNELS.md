@@ -1,4 +1,4 @@
-# Kernel còn chạy lúc bàn giao (2026-10-31 01:10 UTC)
+# Kernel còn chạy lúc bàn giao (2026-10-31 04:45 UTC)
 
 Runner cục bộ của khung chat 2 mất khi sang khung chat mới; kernel vẫn chạy trên Kaggle. Kéo output khi xong:
 
@@ -10,8 +10,8 @@ Cần token `~/.kaggle/tok_<acc>` của từng acc. Kernel chưa xong được b
 
 | Run | Kernel | GPU | Cấu hình | Dữ liệu | Ghi chú |
 |---|---|---|---|---|---|
-| p1 | `lelynhan/zc-p1-1` | 4×L4 | cấu hình tốt nhất (handoff 03 §5), shots v2 | **public test 1000 câu** | → file nộp; đẩy 20:57 UTC |
-| e11 | `lelynhan/zc-e11-1` | 4×L4 | tốt nhất + `--think --max-tokens 8192`, shots v4 | train holdout biz_121,124,129 | đang **QUEUED** (pool L4 bận); phép thử quyết định cho thinking; so với e8 |
+| p1 | `lelynhan/zc-p1-1` | 4×L4 | cấu hình tốt nhất (handoff 03 §5), shots v2 | **public test 1000 câu** | → file nộp; đẩy 20:57 UTC 30/10; trước SafePool, > 7.5 giờ (nghi kẹt) |
+| e11 | `lelynhan/zc-e11-1` | 4×L4 | tốt nhất + `--think --max-tokens 8192`, shots v4 | train holdout biz_121,124,129 | **RUNNING** từ ~04:30 UTC (sau nhiều lần xếp hàng); phép thử quyết định cho thinking; so với e8 |
 | e3h | `linhmai24/zc-e3h-4` | 4×L4 | `--helpers --compile --compile-scope sales`, không shots | train biz_101,103,112,121,124,127,129 | chạy > 7 giờ (nghi kẹt); chỉ để thêm shots |
 | e3b | `thnliu/zc-e3b-2` | 4×L4 | `--helpers`, BBBB | train nửa sau | chạy > 7 giờ (nghi kẹt); chỉ để thêm shots |
 

@@ -1,6 +1,6 @@
 # 01 — Scientific Findings (DataMate, Zalo AI Challenge 2026)
 
-*Cập nhật 2026-10-31 01:00 UTC (hết khung chat 2). Branch `claude/peaceful-carson-0dny90`, repo `lhaochen118-ship-it/ZC`.
+*Cập nhật 2026-10-31 04:45 UTC (hết khung chat 2). Branch `claude/peaceful-carson-0dny90`, repo `lhaochen118-ship-it/ZC`.
 Tài liệu này chỉ nêu đóng góp, kết quả và bằng chứng; cách vận hành ở PDF 2, việc tiếp theo ở PDF 3.*
 
 ## 1. Bài toán và hệ quả của thước đo
@@ -164,7 +164,8 @@ rỗng, 4×L4 DP.
 
 ## 7. Hạn chế và điều kiện kiểm chứng
 
-- **Chưa có điểm public LB.** Run public `p1` (cấu hình tốt nhất, 1000 câu) đang chạy lúc bàn giao.
+- **Chưa có điểm public LB.** Run public `p1` (cấu hình tốt nhất, 1000 câu) đang chạy lúc bàn giao (nghi kẹt).
+- **Thinking chưa kết luận:** dev +0.10 (316 câu) nhưng holdout −0.30 (40 câu); phép thử quyết định e11 (354 câu holdout) đang chạy.
 - **Holdout chỉ 10 DN, 1024 câu.** Khác biệt < ~0.03 PA giữa hai cấu hình là trong nhiễu. Các run khác nhau dùng thư viện
   shots v1–v3 (lớn dần) và code tăng dần, nên số "toàn train" là **hợp nhiều run**, không phải một run duy nhất.
 - **Bộ làm sạch và prompt được phát triển khi nhìn train + public.** Bằng chứng độc lập cho dữ liệu chưa thấy chỉ có:

@@ -139,3 +139,17 @@ cùng chiều. Ước lượng 2×5090 (≈3–4× L4): 1000 câu ≈ 2 giờ, 2
 79/160 (lỗi chạy 1 vs 14); PA cuối **+0.00 vs +0.30** (thinking kém hơn). → bằng chứng lẫn lộn: dev 316 câu (e10l) +0.10,
 dev 40 câu (e10) +0.15, holdout 40 câu (e10b) −0.30. Với 40 câu, sai số của hiệu PA ≈ ±0.15. **Chưa đổi mặc định**; phép thử
 quyết định: e11 (thinking, 354 câu holdout biz_121/124/129, L4, đang xếp hàng) so với e8.
+
+## Entry 6 — 2026-10-31 07:45 UTC: thinking trên holdout (phép thử quyết định)
+
+**e11** (L4, code mới nhất: khoảng ngày dữ liệu, SafePool, gợi ý `time=`; shots v4; `--think --max-tokens 8192`) vs **e8**
+(không think, shots v2) trên **cùng 354 câu holdout** (biz_121/124/129; e11 compile được 3/3 DN):
+
+| | PA holdout | đúng / sai / abstain | number | percent | list | unanswerable |
+|---|---|---|---|---|---|---|
+| e8 | +0.254 | 208 / 118 / 28 | +0.25 | +0.24 | +0.20 | +0.00 (9 câu) |
+| **e11** | **+0.514** | 256 / 74 / 24 | +0.57 | +0.50 | −0.07 | **+1.00** (9 câu) |
+
+→ gói "code mới nhất + shots v4 + thinking" hơn +0.26 PA trên holdout. Chưa tách riêng phần của thinking (e11 khác e8 ở cả code
+và shots). Thời gian: 52–98 s / câu / L4 (biz_124 chậm nhất: 11,602 s cho 118 câu). Ước lượng 2×5090: ~2000 câu ≈ 4–4.5 giờ.
+**Cấu hình khuyến nghị mới = cấu hình tốt nhất + `--think --max-tokens 8192`**, kèm `--budget` để an toàn thời gian.

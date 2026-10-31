@@ -134,7 +134,7 @@ rỗng, 4×L4 DP.
 - **Thinking (Qwen3 `--think`), chỉ trên T4, không shots:**
   - Độ đúng từng mẫu: dev 77/130 vs 52/130 không think; holdout 26/60 vs 20/60.
   - Nhưng vẫn thấp hơn cấu hình có shots không think (45 % vs 51 % từng mẫu trên 60 câu holdout trùng).
-  - **Cộng dồn think + shots có lợi:** e10l (L4, 316 câu, cùng câu với e7) PA dev +0.69 vs +0.59, holdout +0.90 vs +0.70, top-answer 272 vs 253; e10 (T4, 40 câu) từng mẫu 84 % vs 69 %. Chậm ≈ 2.5× (~47 s/câu/L4). e10l cũng có code / shots mới hơn e7 nên chênh lệch không hoàn toàn do thinking. **Nhưng holdout (e10b, T4, 40 câu, cùng câu với e8): PA +0.00 vs +0.30** → bằng chứng lẫn lộn, chưa kết luận (e11, 354 câu holdout, đang chờ).
+  - **Cộng dồn think + shots có lợi:** e10l (L4, 316 câu, cùng câu với e7) PA dev +0.69 vs +0.59, holdout +0.90 vs +0.70, top-answer 272 vs 253; e10 (T4, 40 câu) từng mẫu 84 % vs 69 %. Chậm ≈ 2.5× (~47 s/câu/L4). e10l cũng có code / shots mới hơn e7 nên chênh lệch không hoàn toàn do thinking. Holdout nhỏ (e10b, T4, 40 câu) cho +0.00 vs +0.30, nhưng **phép thử quyết định e11 (L4, 354 câu holdout, cùng câu với e8): PA +0.514 vs +0.254** (number +0.57 vs +0.25, percent +0.50 vs +0.24, unanswerable 9/9 đúng). e11 khác e8 cả ở code (khoảng ngày dữ liệu, SafePool) và shots (v4 vs v2) → +0.26 là của cả gói; phần riêng của thinking chưa tách.
 
 ## 5. Kết quả âm / trung tính (đã loại, có lý do)
 
@@ -165,7 +165,7 @@ rỗng, 4×L4 DP.
 ## 7. Hạn chế và điều kiện kiểm chứng
 
 - **Chưa có điểm public LB.** Run public `p1` (cấu hình tốt nhất, 1000 câu) đang chạy lúc bàn giao (nghi kẹt).
-- **Thinking chưa kết luận:** dev +0.10 (316 câu) nhưng holdout −0.30 (40 câu); phép thử quyết định e11 (354 câu holdout) đang chạy.
+- **Thinking:** gói code mới nhất + shots v4 + thinking có lợi rõ trên holdout (e11: +0.51 vs +0.25, 354 câu); phần riêng của thinking chưa tách. Thời gian 52–98 s / câu / L4 → sát giới hạn 6 giờ nếu private ~2000 câu.
 - **Holdout chỉ 10 DN, 1024 câu.** Khác biệt < ~0.03 PA giữa hai cấu hình là trong nhiễu. Các run khác nhau dùng thư viện
   shots v1–v3 (lớn dần) và code tăng dần, nên số "toàn train" là **hợp nhiều run**, không phải một run duy nhất.
 - **Bộ làm sạch và prompt được phát triển khi nhìn train + public.** Bằng chứng độc lập cho dữ liệu chưa thấy chỉ có:

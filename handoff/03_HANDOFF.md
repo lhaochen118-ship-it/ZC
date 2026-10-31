@@ -37,10 +37,10 @@ chạy thêm gì trong khung chat 2.*
 | Hạng mục | Trạng thái |
 |---|---|
 | Làm sạch (`ingest.py`) + lớp ngữ nghĩa (`semantic.py`) | Xong, đã kiểm chứng |
-| Agent | Cấu hình tốt nhất (mục 5) đạt **PA train dev +0.47 / holdout +0.44** (3000 câu, leave-business-out) |
+| Agent | Cấu hình tốt nhất (mục 5) đạt **PA train dev +0.47 / holdout +0.44** (3000 câu, leave-business-out); thêm thinking: holdout +0.51 vs +0.25 (354 câu, e11) |
 | Thư viện shots | v4: 4228 chương trình (`src/shots/train_shots.jsonl`) |
 | Public test | Run `p1` (cấu hình tốt nhất, shots v2, **trước** SafePool) đang chạy > 7.5 giờ (nghi kẹt); chưa có file nộp |
-| Thinking | **Bằng chứng lẫn lộn:** dev e10l (316 câu) PA +0.69 vs +0.59; holdout e10b (40 câu, T4) +0.00 vs +0.30. Chậm ≈ 2.5×. Quyết định chờ `e11` (354 câu holdout, L4, **đang chạy** từ ~04:30 UTC) so với e8 |
+| Thinking | **Có lợi trên holdout:** e11 (code mới nhất + shots v4 + think) PA +0.51 vs e8 +0.25 trên cùng 354 câu holdout; dev e10l +0.69 vs +0.59. Chậm ≈ 2.5–3×. Chưa tách riêng phần của thinking |
 | Sửa chưa đo trên GPU | khoảng ngày dữ liệu → unanswerable; NOTES compile không gọi bảng T là thiếu; `SafePool`; gợi ý `time=` trong compile |
 | Docker | `docker/predict.sh` đã dùng cấu hình tốt nhất; chưa build / chưa chạy thử; chưa có guideline BTC |
 | FP8 cho 5090, tất định, thời gian thật | Chưa làm |
@@ -68,7 +68,7 @@ python3 automation/pull_kernels.py <scratch>/pulled
 python3 automation/fanout.py <runs>/<run> zc-<run> "run_kaggle.py <train|public_test> OUT --model Qwen/Qwen3-14B-AWQ --dp 4 --cache /tmp/zc_cache --max-len 24576 --chunk 2 --helpers --norm-q --link --compile --compile-scope sales --k 4 --kc 4 --shots shots/train_shots.jsonl --n-shots 2 [--biz '<regex>']" 1 --accounts <acc> --l4 --ks nhatlong1103/zc-assets
 ```
 
-τ = 0.5 (mặc định). **Ứng viên:** thêm `--think --max-tokens 8192`; chỉ dùng nếu e11 (holdout) xác nhận lợi ích và thời gian trên 2×5090 cho phép (bước 4 mục 6).
+τ = 0.5 (mặc định). **Khuyến nghị mới (sau e11): thêm `--think --max-tokens 8192`** (holdout +0.51 vs +0.25), kèm `--budget` để không quá 6 giờ; cấu hình không think là phương án dự phòng nếu thời gian thật trên 2×5090 không đủ.
 
 ## 6. Việc tiếp theo (theo thứ tự)
 
@@ -86,7 +86,8 @@ python3 automation/fanout.py <runs>/<run> zc-<run> "run_kaggle.py <train|public_
      (`--biz`) để mỗi kernel ≤ ~500 câu.
 3. **Đo các sửa chưa đo:** chạy cấu hình mục 5 (code mới nhất + shots v4) trên 4 DN của e7 (114, 116, 117, 125) và 4 DN của
    e6a (105, 108, 115, 118); so cặp bằng `src/compare.py` với log trong `results/chat2_runs/`.
-4. **Thinking:** so `e11` với e8 trên cùng câu (`src/compare.py`). Nếu lợi > ~0.05 PA trên holdout:
+4. **Thinking (e11 đã xác nhận có lợi trên holdout):** tách riêng phần của thinking (chạy code mới nhất + shots v4 *không*
+   think trên cùng biz_121/124/129, so với e11), rồi:
    - đo thời gian;
    - cân nhắc chỉ bật think cho câu đồng thuận thấp (leo thang: chạy lần 2 với `--think` cho câu conf < 0.75).
 5. **Giảm lỗi còn lại** (PDF 1 §6):

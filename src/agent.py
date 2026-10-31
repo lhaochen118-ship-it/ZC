@@ -111,7 +111,9 @@ def _sales_only(prompt):
     """--compile-scope sales: only C["orders"] and C["lines"] (a shorter program; E2b compiled 5/40 with the full scope)."""
     a = prompt.index('- C["items"]'); b = prompt.index("Rules:\n")
     p = prompt[:a] + "Build only these two tables; everything else stays in T.\n" + prompt[b:]
-    return p.replace("about 150 lines at most", "about 80 lines at most").replace(", no supplier, no customer address", "")
+    p = p.replace("about 150 lines at most", "about 80 lines at most").replace(", no supplier, no customer address", "")
+    return p.replace("which kinds of information are NOT recorded", "which kinds of information are NOT recorded anywhere in T (purchases, stock, "
+                     "catalogue and other tables stay available in T: never call them missing because they are not in C)")
 
 
 SYSTEM_COMPILE_SALES = _sales_only(SYSTEM_COMPILE)
@@ -129,6 +131,7 @@ def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None, sh
                          "from this shop's: reuse the rulebook logic (periods, valid orders, rounding, ranking), never their names.\n\n" + ex)
         nq = vnnorm.normalize(q["question"]) if NORM_Q else q["question"]
         alt = f"\n(same question with chat abbreviations / typing slips expanded: {nq})" if nq != q["question"] else ""
+        if DATA_RANGE.get(q["business_id"]): alt += f"\n(this shop's records cover {DATA_RANGE[q['business_id']]})"
         if q["business_id"] in LINKS:
             hits = LINKS[q["business_id"]].link(nq)
             if hits: alt += "\n(values of this shop's data that the question mentions, with their exact spelling: " + "; ".join(hits) + ")"
@@ -479,6 +482,17 @@ class EntityIndex:
 
 
 LINKS = {}
+DATA_RANGE = {}                                                        # business / question id -> "YYYY-MM-DD .. YYYY-MM-DD"
+
+
+def data_range(biz):
+    """Date span of the shop's largest dated table (the sales records)."""
+    best = None
+    for df in biz.tables.values():
+        for c in df.columns:
+            if pd.api.types.is_datetime64_any_dtype(df[c]) and df[c].notna().sum() > (best[0] if best else 0):
+                best = (int(df[c].notna().sum()), df[c].min(), df[c].max())
+    return f"{best[1]:%Y-%m-%d} .. {best[2]:%Y-%m-%d}" if best else ""
 
 
 # ------------------------------------------------------------------ retrieval of solved examples (--shots)
@@ -642,9 +656,13 @@ def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, ma
                                                                 "Fix it and output the full corrected program."}); nxt.append(k)
             elif reflect and rnd < repairs and k not in reflected and suspicious(r["answer"]):
                 reflected.add(k); att["reflect"] = True
+                rng = DATA_RANGE.get(k[0], "")
                 convs[k].append({"role": "user", "content": f"The program returned {json.dumps(r['answer'], ensure_ascii=False)}. A zero or empty result often means "
                                                             "a wrong filter (status labels, date range, name spelling: use match_names, unit). Re-check each filter "
-                                                            "against the actual values. If the result is really correct, output the same program again."})
+                                                            "against the actual values. " + (f"The shop's records cover {rng}. " if rng else "") +
+                                                            "If the asked period lies entirely outside the records, or the shop does not record the kind of information "
+                                                            "asked (no column / value for it anywhere in T), the answer is {\"type\": \"unanswerable\"} (rulebook). "
+                                                            "If the result is really correct, output the same program again."})
                 nxt.append(k)
         print(f"[{label}] round {rnd}: {len(pending)} gens, {ntok} tok in {t1 - t0:.0f}s ({ntok / max(t1 - t0, 1e-9):.0f} tok/s), "
               f"exec {time.time() - t1:.0f}s, {len(nxt)} to redo", flush=True)
@@ -708,7 +726,7 @@ def run(a, engine=None):
     bizs = {b: load_biz(cache, a.split, b) for b in bids}
     for b, z in bizs.items():
         CARDS[b] = z.card()
-        if getattr(a, "link", False): LINKS[b] = EntityIndex(z)
+        if getattr(a, "link", False): LINKS[b] = EntityIndex(z); DATA_RANGE[b] = data_range(z)
     print(f"ingest {len(bids)} businesses {time.time() - t_start:.0f}s", flush=True)
 
     global SHOTS, NORM_Q
@@ -812,6 +830,8 @@ def answer_stage(engine, pool, a, rulebook, bizs, qs, canon, paths, repairs):
     def make_task(k, code):
         q = qmap[k[0]]
         return (k, q["business_id"], q["as_of_date"], code, a.timeout, canon[q["business_id"]]["path"] if path_of[k] == "A" else None)
+    for q in qs:
+        if q["business_id"] in DATA_RANGE: DATA_RANGE[q["id"]] = DATA_RANGE[q["business_id"]]
     qatt = generate_and_run(engine, pool, items, greedy, make_task, run_code, repairs, a.max_tokens, a.temp, "answer", reflect=not a.no_reflect)
     by_q = defaultdict(list)
     for k in items: by_q[k[0]].append(k)

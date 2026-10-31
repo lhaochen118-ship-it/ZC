@@ -110,3 +110,16 @@ Thời gian: ~25 s/câu mỗi L4 (5,941 s cho 236 câu trên 1 GPU).
 **E3t-1 (thinking, holdout 100 câu):** từng mẫu think không shots 26/60 vs không think không shots 20/60 (30 câu trùng e3b);
 so với cấu hình e8 (không think, có shots) trên 60 câu trùng: 54/120 (45 %) vs 123/240 (51 %). → shots > thinking; cộng dồn
 think + shots đang đo (E10, T4, 40 câu).
+
+## Entry 5 — 2026-10-31 00:30 UTC: toàn bộ train với cấu hình tốt nhất
+
+Hợp các run e6a, e7, e7b, e8, e9 (cùng cấu hình `--helpers --norm-q [--link] --compile --compile-scope sales --k 4
+--kc 4 --shots --n-shots 2`, shots luôn từ DN khác) phủ **đủ 3000 câu train**:
+
+| | PA dev (1976 câu) | PA holdout (1024 câu) | top-answer đúng |
+|---|---|---|---|
+| τ = 0.5 (khi chạy) | **+0.471** | **+0.437** | 2130/3000 (71 %) |
+| τ = 0.75 | +0.479 | +0.426 | |
+
+→ giữ τ = 0.5. Theo type: number +0.48, percent +0.50, date +0.65, string +0.53, list +0.22, **unanswerable −0.29**,
+table −0.16. e9: compile được 10/11 DN. Thư viện shots v4: 4228 chương trình đúng, phủ 2446/3000 câu (`src/shots/`).

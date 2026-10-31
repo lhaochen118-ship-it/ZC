@@ -27,8 +27,11 @@ def namespace(biz):
     return g
 
 
+PROG = None                                                            # --prog <file>: one mapping program for every business
+
+
 def build(biz, bid):
-    g = namespace(biz); exec(compile(open(os.path.join(REF, bid + ".py")).read(), bid, "exec"), g)
+    g = namespace(biz); exec(compile(open(PROG or os.path.join(REF, bid + ".py")).read(), bid, "exec"), g)
     return g["C"], g.get("NOTES", "")
 
 
@@ -36,6 +39,8 @@ def main():
     argv = sys.argv[1:]
     if "--show" in argv: i = argv.index("--show"); show = int(argv[i + 1]); del argv[i:i + 2]
     else: show = 5
+    global PROG
+    if "--prog" in argv: i = argv.index("--prog"); PROG = argv[i + 1]; del argv[i:i + 2]
     dump = open(argv[argv.index("--dump") + 1], "w") if "--dump" in argv else None
     if dump is not None: i = argv.index("--dump"); del argv[i:i + 2]
     a = [x for x in argv if not x.startswith("--")]

@@ -318,7 +318,7 @@ def run_mapping(task):
     t0 = time.time()
     try:
         biz = _lru(_BIZ, bid, lambda: load_biz(_CTX["cache"], _CTX["split"], bid))
-        meta = canonmod.load_meta().get(rid, {}).get("tables") if rid else None
+        meta = canonmod.load_meta().get(rid, {}).get("tables") if rid and not rid.startswith("fmt:") else None
         signal.signal(signal.SIGALRM, _alarm); signal.alarm(300)
         try: r = canonmod.run_mapping(code, biz, meta)
         finally: signal.alarm(0)
@@ -573,6 +573,11 @@ def main():
     ap.add_argument("--chunk", type=int, default=0, help="businesses per chunk (answers appended after each chunk)")
     ap.add_argument("--budget", type=float, default=0, help="wall-clock budget in seconds: fast mode / abstain when running out")
     ap.add_argument("--log-dir", default="", help="also write one JSON log per question here (Docker: /result/logs)")
+    ap.add_argument("--v1", action="store_true", help="old pipeline (LLM writes raw pandas / compile programs) instead of the toolkit")
+    ap.add_argument("--qw", type=float, default=2.0, help="v2: vote weight of the rule-based template program (0 = off)")
+    ap.add_argument("--shots", type=int, default=4, help="v2: few-shot examples per question")
+    ap.add_argument("--map-llm", action="store_true", help="v2: LLM mapping candidates even when a reference program fits")
+    ap.add_argument("--no-llm", action="store_true", help="v2: no model at all (reference mappings + template programs only)")
     a = ap.parse_args()
     if a.dp > 1 and not a.shard: return run_dp(a)
     return run(a)
@@ -599,7 +604,7 @@ def run(a, engine=None):
     for b, z in bizs.items(): CARDS[b] = z.card()
     print(f"ingest {len(bids)} businesses {time.time() - t_start:.0f}s", flush=True)
 
-    engine = engine or Engine(a)
+    if not (a.no_llm and not a.v1): engine = engine or Engine(a)
     print(f"model ready {time.time() - t_start:.0f}s", flush=True)
     import multiprocessing as mp
     pool = mp.get_context("fork").Pool(nw, initializer=_init_worker, initargs=(cache, a.split), maxtasksperchild=100)
@@ -622,6 +627,29 @@ def run(a, engine=None):
         print(f"=== chunk {ci + 1}/{len(chunks)}: {len(cb)} businesses, {len(cq)} questions, mode={mode}, elapsed {elapsed:.0f}s", flush=True)
         if mode == "abstain":
             for q in cq: write_answer(sub, logf, a, q, {"type": "abstain"}, 0.0, Counter(), {}, {}, 0.0)
+            continue
+        if not a.v1:                                                   # toolkit pipeline
+            k = 0 if a.no_llm else (a.k if mode == "full" else 1)
+            canon = canon_stage_v2(engine, pool, a, rulebook, bizs, cb, clog)
+            qatt, path_of, by_q, rule = answer_stage_v2(engine, pool, a, rulebook, bizs, cq, canon, k, a.repairs if mode == "full" else 1)
+            per_q = (time.time() - t_chunk) / max(len(cq), 1)
+            for q in cq:
+                votes, rep = Counter(), {}
+                rr = rule.get(q["id"]); total = float(k)
+                if rr and rr.get("ok"):                                # first, so that it wins ties (stable most_common)
+                    c = canon_of(rr["answer"]); votes[c] += a.qw; rep[c] = rr["answer"]; total += a.qw
+                for kk in sorted(by_q[q["id"]]):
+                    r = last_ok(qatt[kk])
+                    if r: c = canon_of(r["answer"]); votes[c] += 1.0; rep.setdefault(c, r["answer"])
+                if votes and total:
+                    top, n = votes.most_common(1)[0]; conf = n / total
+                    final = rep[top] if conf >= a.tau else {"type": "abstain"}
+                else: conf, final = 0.0, {"type": "abstain"}
+                samples = {f"{kk[1]}{path_of[kk]}": qatt[kk] for kk in sorted(by_q[q["id"]])}
+                if rr: samples["rule"] = rr
+                write_answer(sub, logf, a, q, final, conf, votes, samples, path_of, per_q)
+            sub.flush(); logf.flush()
+            sec_per_q = (time.time() - t_start) / max(1, sum(len([q for q in qs if q["business_id"] in set(c)]) for c in chunks[:ci + 1]))
             continue
         paths = full_paths if mode == "full" else "B"
         k = len(paths)
@@ -681,17 +709,12 @@ def rulebook_extract(rulebook):
     return "\n".join(keep) if keep else rulebook
 
 
-def resolvable(biz, ref_meta):
-    """cheap pre-check: every table a reference program reads has a counterpart (>= 70 % of its columns) in biz."""
-    tabs = ref_meta.get("tables") or {}
-    if not tabs: return False
-    have = [set(df.columns) for df in biz.tables.values()]
-    return all(max((len(set(cols) & h) / max(1, len(cols)) for h in have), default=0) >= 0.7 for cols in tabs.values())
+resolvable = canonmod.resolvable
 
 
 def map_examples(biz, bid, exclude_own, k=2):
     """the k reference mapping programs of the most similar formats, with the cards of the tables they read."""
-    meta = canonmod.load_meta(); progs = canonmod.ref_programs()
+    meta = canonmod.load_meta(); progs = canonmod.ref_programs(formats=False)
     cards = json.load(open(os.path.join(canonmod.REF_DIR, "_cards.json"), encoding="utf-8")) if os.path.isfile(os.path.join(canonmod.REF_DIR, "_cards.json")) else {}
     out = []
     for rid in canonmod.nearest_refs(biz, k, meta, exclude=(bid,) if exclude_own else ()):
@@ -706,7 +729,7 @@ def canon_stage_v2(engine, pool, a, rulebook, bizs, bids, clog):
     exclude_own = os.path.isfile(os.path.join(a.split, "answers.jsonl"))      # honest train runs: never a shop's own program
     progs, meta = canonmod.ref_programs(), canonmod.load_meta()
     tasks = [((b, rid), b, code, rid, os.path.join(cdir, f"{b}.ref_{rid}.pkl")) for b in bids for rid, code in progs.items()
-             if not (exclude_own and rid == b) and resolvable(bizs[b], meta.get(rid, {}))]
+             if not (exclude_own and rid == b) and resolvable(bizs[b], "generic" if rid.startswith("fmt:") else meta.get(rid, {}))]
     cands = defaultdict(list); t0 = time.time()
     for k, r in pool.imap_unordered(run_mapping, tasks):
         if r.get("ok"): cands[k[0]].append(("ref:" + k[1], r))

@@ -7,7 +7,8 @@
 
 | # | File | Để biết |
 |---|---|---|
-| 1 | File này | Repo có gì, việc tiếp theo |
+| 0 | `handoff/04_TOOLKIT_V2.md` | **Pipeline v2 (31/10) — trạng thái hiện tại, kết quả, cách chạy, việc tiếp theo** |
+| 1 | File này | Repo có gì, việc tiếp theo (bản 30/10, trước v2) |
 | 2 | `handoff/03_HANDOFF.md` | Bối cảnh, quyết định user đã chốt, trạng thái, **các bước tiếp theo chi tiết** |
 | 3 | `handoff/RUNNING_KERNELS.md` | Kernel còn chạy lúc bàn giao, cách kéo kết quả |
 | 4 | `handoff/01_SCIENTIFIC_FINDINGS.md` | Đóng góp đã kiểm chứng, kết quả tích cực / tiêu cực, số liệu, hạn chế |

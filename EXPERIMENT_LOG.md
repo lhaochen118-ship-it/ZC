@@ -5,6 +5,7 @@ liệu (split, số câu), kết quả (PA tổng và theo type / loại câu, %
 
 | Entry | Ngày | Thí nghiệm | PA (dev) | PA (holdout) | PA public LB | s/câu | Quyết định |
 |---|---|---|---|---|---|---|---|
+| 4 | 31/10 | v2 tất định (mapping tham chiếu + mẫu câu, không LLM), toàn train | 0.867 (cả train, in-sample mapping) | — | — | ~0.1 (CPU) | giữ; chạy v2 + LLM trên Kaggle |
 
 ## Entry 0 — 2026-10-30: khởi tạo
 
@@ -54,3 +55,21 @@ Code mới nhất, 4×L4, `--compile --k 4 --kc 4 --dp 4`: 1000/1000 câu; nạp
 vòng trả lời đầu 176–234 tok/s mỗi L4 (+30 %), compile 21–57 tok/s; 4/4 phiếu 26 %, 2/4 45 %; compile 3/14 DN; lỗi
 hàng đầu không đổi (ngày ngoài phạm vi, tên cột, `.str`, thiếu ANSWER, đọc file). Không tạo file nộp (user: chỉ khi
 kết quả tốt). Chi tiết: `handoff/01_SCIENTIFIC_FINDINGS.md` §3.
+
+## Entry 4 — 2026-10-31: pipeline v2 (toolkit), kiểm chứng tất định trên train
+
+Không có token Kaggle trong phiên → chỉ đo trên CPU, không LLM. Chi tiết: `handoff/04_TOOLKIT_V2.md`.
+
+- **Giả thuyết:** lỗi của v1 nằm ở việc LLM 14B phải tự diễn giải rulebook và tự viết pandas dài trên bảng bẩn mỗi câu.
+  Viết ngữ nghĩa rulebook một lần (`src/dm.py`), chuẩn hoá mỗi DN bằng chương trình mapping ngắn (`finalize`), và để mỗi
+  câu chỉ còn 1–3 dòng gọi toolkit.
+- **Kiểm chứng (không LLM):** mapping tham chiếu cho 30 DN train + bộ đọc mẫu câu theo luật (`src/qparse.py`):
+  3,000 câu train → **2,651 đúng / 51 sai / 298 chưa đọc** (PA 0.867 nếu abstain phần còn lại). Đây là cận trên của lớp
+  dữ liệu + toolkit (mapping viết tay cho train); trên DN mới, mapping đến từ chuyển giao định dạng hoặc LLM.
+- **Bộ chuyển đổi định dạng POS tổng quát** thay 6 chương trình riêng: 604 đúng / 17 sai (riêng: 603 / 18).
+- **Lỗi dữ liệu sửa:** `1 kg` → 1000 trong ingest; trạng thái trống / mã đơn trống kế thừa đơn trên; nhãn `Không giao được`,
+  `hàng trả về`, `đang gửi`, tiếng Anh; gộp cách viết tên hàng / khách; `kl` = khách lẻ; `zalo_oa`.
+- **Agent v2** (`src/agent.py`, mặc định; `--v1` giữ pipeline cũ): canon stage (chuyển giao + LLM mapping với ví dụ gần nhất),
+  answer stage (chương trình luật trọng số `--qw` + K chương trình LLM few-shot từ ~2,680 cặp đã kiểm chứng), DP, log từng câu.
+  Test FakeEngine `tests/test_agent_v2.py`: PASS.
+- **Việc tiếp:** chạy v2 trên Kaggle (train dev/holdout rồi public), chọn `--qw`/`--tau`/K trên dev.

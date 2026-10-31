@@ -23,6 +23,23 @@ def K(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
+NEG = {"k": "khong", "ko": "khong", "hok": "khong", "hong": "khong", "kh": "khong", "kg": "khong", "khg": "khong", "hem": "khong", "hk": "khong"}
+
+
+def untelex(t):
+    """undo Telex typing left in accent-free text ('bawngf' -> 'bang', 'toonf' -> 'ton', 'dduwowcj' -> 'duoc') and spell
+    colloquial negations as 'khong'. Vietnamese syllables never end in f / s / r / x / j, so those are tone keys."""
+    out = []
+    for w in t.split():
+        if re.fullmatch(r"[a-z]+", w) and len(w) > 1:
+            v = w.replace("dd", "d").replace("aa", "a").replace("ee", "e").replace("oo", "o")
+            v = re.sub(r"(?<=[aou])w", "", v).replace("uow", "uo")
+            if len(v) > 2 and v[-1] in "fsrxj" and re.search(r"[aeiouy]", v[:-1]): v = v[:-1]
+            w = v
+        out.append(NEG.get(w, w))
+    return " ".join(out)
+
+
 Y = r"(20\d\d|\d\d)"
 MON = r"(?:thang|thg|th|t)\s*"
 
@@ -135,8 +152,9 @@ def ans(t, expr): return f'ANSWER = {{"type": "{t}", "answer": {expr}}}'
 
 def parse(q, today, shop=None):
     """(template, code) for the common templates; None when unsure."""
-    t = K(q); tk = dm.key(q); p, P = parse_period(q, today)
-    def has(*pats): return any(re.search(x, t) for x in pats)
+    t0 = K(q); t = untelex(t0); tk = dm.key(q); p, P = parse_period(q, today)
+    if P is None: p, P = parse_period(t, today)
+    def has(*pats): return any(re.search(x, t) or re.search(x, t0) for x in pats)
     V = Vocab(shop) if shop is not None else None
     f = {}; item = None
     if V is not None:
@@ -160,7 +178,7 @@ def parse(q, today, shop=None):
     if has(r"ca sang") and not has(r"ca chieu"): f["shift"] = "sáng"
     elif has(r"ca chieu") and not has(r"ca sang"): f["shift"] = "chiều"
     if has(r"ke don|can don bac si|theo don"):
-        neg = has(r"khong ke don|khong can don|tru thuoc ke don|tru .*ke don|khong theo don")
+        neg = bool(re.search(r"khong ke don|khong can don|tru thuoc ke don|tru .*ke don|khong theo don|khong phai thuoc ke don", t))
         f["where"] = "lambda d: ~d['prescription'].fillna(False).astype(bool)" if neg else "lambda d: d['prescription'].fillna(False).astype(bool)"
     fa = lambda d=None: fargs({k: v for k, v in (d if d is not None else f).items() if k != "where"}) + (f", where={f['where']}" if "where" in (d if d is not None else f) else "")
     rev = has(r"doanh thu|dthu|revenue|ban duoc .*tien|ban dc .*tien|thu ve|tien hang|tien ban|bao nhieu tien|bnhiu tien|bn tien|nhiu tien|nhieu tien|mang ve|thu duoc")

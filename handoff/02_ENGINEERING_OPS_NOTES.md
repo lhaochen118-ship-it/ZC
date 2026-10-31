@@ -99,7 +99,7 @@ có hướng dẫn) trước, (3) prompt sau. Ví dụ: quên `header=` → `bui
 | Test cục bộ FAIL (symlink tương đối) | `os.path.abspath` |
 | Chương trình đọc file thay vì dùng T | sandbox chặn `open` / `pd.read_*` |
 | `day is out of range`, `.str` trên cột số, KeyError tên cột, thiếu ANSWER | helper ngày, gợi ý theo loại lỗi, danh sách cột trong thông báo |
-| Đếm dòng thay vì đơn, lấy tổng sau giảm giá làm doanh thu, `<= ngày cuối` trên cột có giờ | `build_sales` + gợi ý `.dt.normalize()` |
+| Đếm dòng thay vì đơn, lấy tổng sau giảm giá làm doanh thu, <= ngày cuối trên cột có giờ | `build_sales` + gợi ý `.dt.normalize()` |
 | Compile: quên `header=`, truyền nhầm bảng khách làm header, dùng tên cột gốc sau build_sales, merge theo mã đơn gốc | tự tìm / sửa header, giữ cột gốc + cột chuẩn, giữ cột mã đơn gốc; 4 vòng sửa compile |
 | `hqua` / `hnay` không hiểu → trả doanh thu toàn thời gian | `vnnorm` |
 | Khách lẻ ("kl", "lẻ") bị xếp hạng như khách | `WALKIN` trong build_sales |

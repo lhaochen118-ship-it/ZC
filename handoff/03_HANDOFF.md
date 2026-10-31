@@ -75,7 +75,7 @@ python3 automation/fanout.py <runs>/<run> zc-<run> "run_kaggle.py <train|public_
 1. **Khởi động:**
    - xin token, kiểm bằng `kaggle competitions list`;
    - tải dữ liệu, chạy 2 test không GPU;
-   - kéo kết quả `p1`, `e11`, `e3h-4`, `e3b-2` (`pull_kernels.py`; nếu khung chat 2 đã kéo thì log nằm trong
+   - kéo kết quả `p1`, `e11` (`pull_kernels.py`; nếu khung chat 2 đã kéo thì log nằm trong
      `results/chat2_runs/`);
    - kernel nào còn RUNNING quá 12 giờ kể từ lúc đẩy (`RUNNING_KERNELS.md`) thì coi là kẹt: ngắt bằng `kaggle kernels delete -y`.
 2. **File nộp public:**

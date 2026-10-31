@@ -200,7 +200,7 @@ def rank(values, k=None, ascending=False, codes=None):
 # ------------------------------------------------------------------ text
 def norm_text(s):
     s = unicodedata.normalize("NFC", str(s)).lower()
-    s = re.sub(r"[^\w\s]", " ", s); return re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"[^\w\s]|_", " ", s); return re.sub(r"\s+", " ", s).strip()
 
 
 def strip_accents(s):
@@ -272,7 +272,17 @@ ORDER_COLS = ["order_id", "order_time", "order_date", "customer_id", "customer_n
               "paid_at_purchase", "note"]
 LINE_COLS = ["order_id", "line_no", "order_time", "order_date", "status", "valid", "item_code", "item_name", "item_group", "unit",
              "qty", "factor", "qty_base", "base_unit", "unit_price", "line_discount", "line_amount", "unit_cost", "returned_qty"]
-WALKIN = re.compile(r"^(khach le|khach vang lai|vang lai|le|khach|walk in|walkin|khach hang le|kh le|guest|none|nan|0|-)$")
+WALKIN = re.compile(r"^(khach le|khach vang lai|vang lai|le|khach|walk in|walkin|khach hang le|kh le|kl|k l|khl|kvl|guest|none|nan|0|-|khong ten|an danh)$")
+
+
+def canon_spelling(series):
+    """replace every spelling of a name by the most frequent spelling with the same key (case, spacing, punctuation and
+    accents ignored), so that grouping by name follows the rulebook (§3, §8)."""
+    v = series.dropna()
+    if not len(v): return series
+    k = v.map(key); best = pd.DataFrame({"k": k, "v": v}).groupby(["k", "v"]).size().reset_index(name="n")
+    best = best.sort_values(["k", "n", "v"], ascending=[True, False, True]).drop_duplicates("k").set_index("k")["v"]
+    return series.map(lambda x: best.get(key(x), x) if x is not None and not (isinstance(x, float) and math.isnan(x)) else x)
 
 
 def is_walkin(name):
@@ -320,7 +330,11 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
                 add = [c for c in it.columns if c not in L.columns]
                 if add:
                     it["_k"] = it[kcol].map(key); m = it.drop_duplicates("_k").set_index("_k")[add]
-                    L = L.join(m, on=L[kcol].map(key).rename("_k")) if False else pd.concat([L, m.reindex(L[kcol].map(key).values).set_axis(L.index)], axis=1)
+                    L = pd.concat([L, m.reindex(L[kcol].map(key).values).set_axis(L.index)], axis=1)
+                if kcol == "item_code" and "item_name" in it.columns:     # one spelling per item: the catalogue's
+                    nm = dict(zip(it[kcol].map(key), it["item_name"]))
+                    if "item_name" in L.columns: L["item_name_raw"] = L["item_name"]
+                    L["item_name"] = L[kcol].map(key).map(nm).where(lambda x: x.notna(), L.get("item_name"))
                 break
     # units
     if "factor" not in L.columns:
@@ -379,6 +393,9 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
     if "order_time" not in L.columns and "order_time" in O.columns: L = L.merge(O[["order_id", "order_time"]], on="order_id", how="left")
     for c in ("customer_id", "customer_name"):
         if c in O.columns: O[c] = O[c].where(~O[c].map(is_walkin), None) if c == "customer_name" else O[c].where(O[c].notna() & O[c].astype(str).str.strip().ne(""), None)
+    for c in ("customer_name",):                                       # §8: names that differ only in spelling are one thing
+        if c in O.columns: O[c] = canon_spelling(O[c])
+    if "item_name" in L.columns: L["item_name"] = canon_spelling(L["item_name"])
     if "payment_method" in O.columns: O["payment_raw"] = O["payment_method"]; O["payment_method"] = O["payment_method"].map(canon_payment)
     if "channel" in O.columns: O["channel_raw"] = O["channel"]; O["channel"] = O["channel"].map(canon_channel)
     O = O[[c for c in ORDER_COLS if c in O.columns] + [c for c in O.columns if c not in ORDER_COLS]]
@@ -540,14 +557,18 @@ class Shop:
         return m
 
     # -- revenue / orders
+    @staticmethod
+    def _line_level(f): return any(k in f for k in ("item", "group", "where"))
+
     def revenue(self, p=None, **f):
-        """rulebook revenue (§1) of valid orders in p. Item / group filters use line amounts, others order revenue."""
-        if any(k in f for k in ("item", "group")) or f.get("where_lines"):
-            f.pop("where_lines", None); return money(self.lines(p, **f)["line_amount"].sum())
+        """rulebook revenue (§1) of valid orders in p. Item / group / where filters use line amounts (where: a function of
+        the lines frame), the others order revenue."""
+        if self._line_level(f): return money(self.lines(p, **f)["line_amount"].sum())
         return money(self.orders(p, **f)["revenue"].sum())
 
     def n_orders(self, p=None, valid=True, **f):
-        if any(k in f for k in ("item", "group")): return int(self.lines(p, valid=valid, **f)["order_id"].nunique())
+        """number of valid orders in p (item / group / where filters: orders having such a line)."""
+        if self._line_level(f): return int(self.lines(p, valid=valid, **f)["order_id"].nunique())
         return int(len(self.orders(p, valid=valid, **f)))
 
     def cancel_rate(self, p):
@@ -591,12 +612,19 @@ class Shop:
 
     def item_sales(self, p, by="qty", **f):
         """{item_name: measure} over valid lines of p. by: qty (base units) | revenue | n_orders | profit."""
-        l = self.lines(p, **f); name = "item_name" if "item_name" in l.columns else "item_code"
+        l = self.lines(p, **f)
+        if "is_service" in l.columns: l = l[~l["is_service"].fillna(False).astype(bool)]   # service fee lines are not items
+        name = "item_code" if "item_code" in l.columns and l["item_code"].notna().all() else "item_name"
         if by == "qty": s = l.groupby(name)["qty_base"].sum()
         elif by == "revenue": s = l.groupby(name)["line_amount"].sum()
         elif by == "n_orders": s = l.groupby(name)["order_id"].nunique()
-        elif by == "profit": s = (l["line_amount"] - l["qty"] * l["unit_cost"]).groupby(l[name]).sum()
+        elif by == "profit":
+            require("unit_cost" in l.columns and l["unit_cost"].notna().any(), "no cost price on the sale lines")
+            s = (l["line_amount"] - l["qty"] * l["unit_cost"]).groupby(l[name]).sum()
         else: raise ValueError(by)
+        if name == "item_code" and "item_name" in l.columns:                          # report the catalogue name
+            nm = l.drop_duplicates("item_code").set_index("item_code")["item_name"]
+            s.index = [nm.get(c, c) for c in s.index]; s = s.groupby(level=0).sum()
         return s
 
     def top_items(self, p, k=1, by="qty", **f):
@@ -608,10 +636,20 @@ class Shop:
         if l is None or "item_code" not in l.columns or "item_name" not in l.columns: return None
         return dict(zip(l["item_name"], l["item_code"].astype(str)))
 
+    def item_name(self, x):
+        """catalogue name of an item given by code or by any spelling."""
+        for df in (self.C.get("items"), self.L):
+            if df is not None and "item_name" in df.columns:
+                m = self._match(df, ("item_code", "item_name"), x)
+                if m.any(): return df.loc[m, "item_name"].iloc[0]
+        return x
+
     # -- customers / staff
     def customer_key(self):
         o = self.O
-        return "customer_id" if "customer_id" in o.columns and o["customer_id"].notna().any() else "customer_name"
+        if "customer_id" in o.columns and o["customer_id"].notna().any(): return "customer_id"
+        require("customer_name" in o.columns and o["customer_name"].notna().any(), "the data does not record customers")
+        return "customer_name"
 
     def customer_sales(self, p, by="revenue", **f):
         o = self.orders(p, valid=(None if by == "n_cancelled" else True), **f); k = self.customer_key(); o = o[o[k].notna()]
@@ -940,3 +978,64 @@ PERIOD_API = {f.__name__: f for f in (day, today_p, yesterday, between, month, m
                                       prev_month_same_days, prev_month, same_month_last_year, this_week, last_week, last_n_days,
                                       ytd, until, months_back, month_seq, tet, before_tet, tet_of, lunar_to_solar)}
 NUM_API = {f.__name__: f for f in (round_half_up, money, pct, growth, rank, canon_status, map_status, canon_payment, canon_channel, key, require)}
+
+
+def api(shop, today):
+    """names available to answer programs: periods, number helpers and the shop's metrics."""
+    g = dict(PERIOD_API); g.update(NUM_API); g.update(shop_api(shop))
+    g.update({"TODAY": _ts(today), "D": D, "Period": Period, "Unanswerable": Unanswerable, "C": shop.C, "pd": pd, "np": np, "math": math, "re": re})
+    return g
+
+
+def run_program(code, shop, today, extra=None):
+    """execute an answer program -> ANSWER dict; Unanswerable -> {"type": "unanswerable"}."""
+    g = api(shop, today)
+    if extra: g.update(extra)
+    try: exec(compile(code, "<program>", "exec"), g)
+    except Unanswerable: return {"type": "unanswerable", "answer": None}
+    return g.get("ANSWER")
+
+
+API_DOC = """Toolkit (already imported; every metric follows the RULEBOOK defaults: valid orders = not cancelled and not returned,
+revenue = line amounts after line discounts without VAT / delivery / order vouchers, records after TODAY ignored,
+rankings descending with ties by code, money rounded half-up to whole VND, percentages to 2 decimals):
+- Periods (whole days, both ends included): day("YYYY-MM-DD"), today_p(TODAY), yesterday(TODAY), between(a, b), month(y, m),
+  month_noyear(m, TODAY) ('tháng M' with no year), quarter(y, q), quarter_noyear(q, TODAY), year(y), this_month(TODAY) (day 1 ..
+  today), prev_month_same_days(TODAY) (the base 'cùng kỳ tháng trước' of this_month), prev_month(p), same_month_last_year(p),
+  this_week(TODAY), last_week(TODAY) (full Monday-Sunday), last_n_days(n, TODAY), ytd(TODAY), until(d) (from the start of the
+  data), month_seq(y1, m1, y2, m2), months_back(p, n), tet(y), tet_of(TODAY), before_tet(y, n=None). p.start, p.end, p.days, p.mask(series).
+- Filters (keyword arguments of most metrics): item=, group=, customer=, customer_group=, staff=, channel=, payment=,
+  shift="sáng"|"chiều", status=, where=lambda d: <boolean Series over the lines (or orders) frame>.
+  Payments are canonical: "tiền mặt", "chuyển khoản", "ví điện tử", "cod", "ghi nợ", "thẻ"; channels: "tại quầy", "điện thoại", "zalo", "sàn TMĐT".
+- Orders / revenue: revenue(p, **f), n_orders(p, **f), aov(p, **f), cancel_rate(p), orders(p, valid=True|None|False, **f) and
+  lines(p, **f) -> DataFrames, daily_revenue(p), best_day(p, by="revenue"|"orders"), n_days_revenue_at_least(p, x),
+  n_orders_revenue_at_least(p, x), monthly_revenue(periods), best_month(periods), increasing(periods), share(p, **f) (percent of
+  the whole shop's revenue), weekday_avg(p, weekday 0=Monday), peak_hour(p), size_qty(p, "M"|"L").
+- Items: item_qty(p, item=|group=, base_unit=None) (base units), item_sales(p, by="qty"|"revenue"|"n_orders"|"profit") -> Series,
+  top_items(p, k, by="qty", **f) -> list, unsold_items(p), price_on(item, d), price_change_date(item, new_price),
+  price_effect(item, n, date=None, new_price=None) (% change of quantity, n days from the rise vs n days before).
+- Customers / staff: customer_sales(p, by="revenue"|"n_orders"|"n_days"|"aov"|"n_cancelled") -> Series, top_customers(p, k, by=...),
+  n_customers(p, min_orders=1), pct_customers(p, min_orders), staff_sales(p, by="revenue"|"orders") -> Series.
+- Debt (at the end of day d): debt_total(d), n_debtors(d), top_debtors(d, k) -> table, debt_aging(d, bins=((0,7),(8,15),(16,None))),
+  debt_older_than(d, n), debt_flow(p, customer=None) -> [new credit, repaid], debts(d), debt_by_customer(d).
+- Purchases / stock: purchase_total(p), avg_purchase_price(item, p, unit=None), top_supplier(p, by="amount"|"receipts"),
+  supplier_ranking(p, by), import_minus_sales(item, p), stock_at(item, d), stock_split(item, d, big_unit) -> [big, base],
+  stock_value(d), lot_stock(d), lots_expiring(d, until) -> DataFrame (remaining, unit_cost_base, expiry), nearest_expiry(item, d),
+  factor(item, unit).
+- Profit: gross_profit(p, **f), net_profit(p); deliveries: n_delivery_trips(p).
+- Helpers: growth(new, old) (% change, negative when it fell), pct(part, whole), money(x), round_half_up(x, nd), rank(values, k),
+  key(s) (accent-free comparison key), require(cond, why). raise Unanswerable(why) when the data cannot answer (rulebook §7);
+  a metric raises it itself when the period has no data at all or the needed information is not recorded.
+- C: the canonical tables (pandas DataFrames) for anything the metrics do not cover; T: the cleaned raw tables."""
+
+MAP_DOC = """Builder API for the mapping program (already imported):
+- tbl(*columns): the table of T that has all these columns (use it instead of T["name"] so that other exports of the same
+  layout map too). frame(df, canonical_name=<raw column name | Series | value>, ...) -> DataFrame (missing raw names are skipped).
+- map_status(series, {raw label: canonical}) -> canonical statuses ("hoàn thành", "huỷ", "trả hàng", "đang giao"); keyword
+  rules cover the usual labels, give overrides only for labels they would miss. Blank cells stay blank (finalize fills them).
+- finalize(lines, orders=None, conversions=None, items=None, dedupe=True) -> (orders, lines): applies the rulebook "how files
+  are written" rules (blank order cells / ids inherit the order's first line, exact duplicate lines of one order dropped,
+  qty_base = qty x factor, an order with any returned line is 'trả hàng', valid, order revenue = sum of line amounts).
+  Use dedupe=False for books that are not written by order (every row is one record: give each row its own order_id).
+- conversions_table(df, item_col, unit_col, factor_col, base_unit_col=None); readme_conversions(README) for '1 thùng = 24 lon' lines.
+- canon_status, canon_payment, canon_channel, key, parse_num, parse_date, pd, np, re, README (text), T, RAW (original strings)."""

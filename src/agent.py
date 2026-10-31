@@ -27,6 +27,8 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ingest
+import dm, qparse, fewshot
+import canon as canonmod
 from score import norm
 
 ENV_DOC = """Environment available to your program (already loaded, do NOT read files):
@@ -88,6 +90,46 @@ Rules:
 Keep the program compact (about 150 lines at most); output only one ```python code block, no explanation."""
 
 
+SYSTEM_LIB = f"""You are DataMate, an expert data analyst for Vietnamese small businesses. You answer a question by writing ONE short Python program that calls the DataMate toolkit on the business's canonical tables.
+
+{dm.API_DOC}
+- `TODAY`: pandas Timestamp of the as-of date ("hôm nay").
+
+Rules:
+1. Read the question carefully: period, measure (revenue, quantity in base units, number of orders, ...), filters, ranking size k, and the answer type. Follow the RULEBOOK for every definition; the toolkit already implements the defaults, so prefer a toolkit call over re-implementing it.
+2. Use the exact names, codes and labels written in the data (see the CANONICAL TABLES card); names in the question may be written loosely (no accents, abbreviations): pick the matching value from the card.
+3. If the data does not record what the question needs (the NOTES say what is missing), or the period lies outside the data, `raise Unanswerable("<reason>")`.
+4. {ANSWER_DOC}
+5. Output only one ```python code block, no explanation. The EXAMPLES come from other shops (their names and data differ); use them for the method only."""
+
+SYSTEM_MAP = f"""You are DataMate's data engineer. Write ONE short Python program that maps the raw tables of a Vietnamese small business onto canonical tables, following the business README and the RULEBOOK. About a hundred questions are answered from these tables, so the mapping must be exactly right.
+
+{dm.MAP_DOC}
+
+Canonical tables (use only what the data contains; never invent values):
+{dm.CANON_DOC}
+
+Rules:
+1. Map every raw column you need by its exact name. Map status labels with map_status (inspect the README for statuses written in notes or for returns written as negative quantities). Keep codes as text.
+2. Customer names: walk-in customers ("khách lẻ", "lẻ", "kl", blank) become None automatically. Use the customer list to add names / groups when orders only carry a code.
+3. Build C["orders"] and C["lines"] with finalize, plus the other tables the business has (items with item_group / cost / prescription / active_ingredient, purchases, payments with pay_date, stock, lots, prices, expenses, deliveries, conversions).
+4. Set NOTES (a string): what the tables mean for this shop and which kinds of information are NOT recorded (no cost price, no customers, no time of day, ...).
+5. The tables are already loaded in T: never read files. Output only one ```python code block (about 15-40 lines), no explanation. The EXAMPLES are mapping programs written for other shops."""
+
+
+def user_msg_lib(rulebook, biz_readme, canon_card, examples, q):
+    return "\n\n".join([f"# RULEBOOK\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}",
+                         f"# CANONICAL TABLES (in C; metrics use them)\n{canon_card}",
+                         f"# EXAMPLES (other shops)\n{examples or '(none)'}",
+                         f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}\n\nWrite the program."])
+
+
+def user_msg_map(rulebook, biz_readme, card, examples):
+    return "\n\n".join([f"# RULEBOOK (extract)\n{rulebook}", f"# EXAMPLES (mapping programs of other shops)\n{examples}",
+                         f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}", f"# RAW TABLES (in T)\n{card}",
+                         "# TASK\nWrite the mapping program for this business."])
+
+
 def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None):
     parts = [f"# RULEBOOK\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}", f"# RAW TABLES (in T)\n{card}"]
     if canon_card is not None:
@@ -142,7 +184,7 @@ _BIZ, _CAN, _CTX = {}, {}, {}
 def _init_worker(cache_dir, split_dir):
     _CTX["cache"], _CTX["split"] = cache_dir, split_dir
     cal = pd.read_csv(os.path.join(split_dir, "calendar.csv"))
-    cal["date"] = pd.to_datetime(cal["date"]); _CTX["cal"] = cal
+    cal["date"] = pd.to_datetime(cal["date"]); _CTX["cal"] = cal; dm.set_calendar(cal)
 
 
 def _lru(d, key, loader, cap=6):
@@ -167,7 +209,11 @@ def _namespace(bid, as_of=None, canon_path=None):
     if as_of is not None: g["TODAY"] = pd.Timestamp(as_of)
     if canon_path:
         can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
-        g["C"] = {k: v.copy() for k, v in can["C"].items()}; g["NOTES"] = can.get("notes", "")
+        if can.get("v2"):                                              # toolkit programs: metrics bound to this shop + day
+            shop = dm.Shop(can["C"], as_of, {"data_end": can.get("data_end")})
+            g.update(dm.api(shop, as_of if as_of is not None else shop.last)); g["T"] = {k: v.copy() for k, v in biz.tables.items()}
+        else: g["C"] = {k: v.copy() for k, v in can["C"].items()}
+        g["NOTES"] = can.get("notes", "")
     return g
 
 
@@ -205,6 +251,7 @@ def run_code(task):
         out = _exec(code, g, timeout)
         if "ANSWER" not in g: r = {"ok": False, "error": "the program did not assign ANSWER", "stdout": out[-1500:]}
         else: r = {"ok": True, "answer": fmt_answer(g["ANSWER"]), "stdout": out[-1500:]}
+    except dm.Unanswerable as e: r = {"ok": True, "answer": {"type": "unanswerable", "answer": None}, "reason": str(e)[:200], "stdout": out[-600:]}
     except BaseException as e: r = _err(e, out)
     r["t"] = time.time() - t0
     return key, r
@@ -262,6 +309,26 @@ def signature(C):
             sig.update({f"qty:{k}": round(float(x), 2) for k, x in l.loc[v, "qty_base"].groupby(m[v]).sum().items()})
     except Exception as e: sig["error"] = type(e).__name__
     return sig
+
+
+def run_mapping(task):
+    """task = (key, bid, code, ref_id_or_None, out_path) -> (key, result): a v2 mapping program (reference transfer or LLM),
+    executed and checked; the canonical tables are pickled to out_path."""
+    key, bid, code, rid, out_path = task
+    t0 = time.time()
+    try:
+        biz = _lru(_BIZ, bid, lambda: load_biz(_CTX["cache"], _CTX["split"], bid))
+        meta = canonmod.load_meta().get(rid, {}).get("tables") if rid else None
+        signal.signal(signal.SIGALRM, _alarm); signal.alarm(300)
+        try: r = canonmod.run_mapping(code, biz, meta)
+        finally: signal.alarm(0)
+        if r["ok"]:
+            C = r.pop("C"); pickle.dump({"C": C, "notes": r["notes"], "v2": True, "data_end": canonmod.data_end(biz)}, open(out_path, "wb"), protocol=4)
+            r.update(path=out_path, sig=signature(C), card=canonmod.card(C, r["notes"]))
+        else: r.pop("C", None)
+    except BaseException as e: r = _err(e)
+    r["t"] = time.time() - t0
+    return key, r
 
 
 def run_compile(task):
@@ -605,6 +672,117 @@ def compile_stage(engine, pool, a, rulebook, bizs, bids, clog):
                                "attempts": {s: catt[(b, s)] for s in range(a.kc)}}, ensure_ascii=False, default=str) + "\n")
     clog.flush()
     return canon
+
+
+def rulebook_extract(rulebook):
+    """the rulebook sections a mapping needs: orders / revenue, industry rules, how files are written."""
+    secs = re.split(r"\n(?=## )", rulebook)
+    keep = [x for x in secs if re.match(r"## \d+\.\s*(Đơn hàng|Theo ngành|Cách ghi)", x)]
+    return "\n".join(keep) if keep else rulebook
+
+
+def resolvable(biz, ref_meta):
+    """cheap pre-check: every table a reference program reads has a counterpart (>= 70 % of its columns) in biz."""
+    tabs = ref_meta.get("tables") or {}
+    if not tabs: return False
+    have = [set(df.columns) for df in biz.tables.values()]
+    return all(max((len(set(cols) & h) / max(1, len(cols)) for h in have), default=0) >= 0.7 for cols in tabs.values())
+
+
+def map_examples(biz, bid, exclude_own, k=2):
+    """the k reference mapping programs of the most similar formats, with the cards of the tables they read."""
+    meta = canonmod.load_meta(); progs = canonmod.ref_programs()
+    cards = json.load(open(os.path.join(canonmod.REF_DIR, "_cards.json"), encoding="utf-8")) if os.path.isfile(os.path.join(canonmod.REF_DIR, "_cards.json")) else {}
+    out = []
+    for rid in canonmod.nearest_refs(biz, k, meta, exclude=(bid,) if exclude_own else ()):
+        out.append(f"## Example shop: raw tables\n{cards.get(rid, '(card not available)')}\n## Its mapping program\n```python\n{progs[rid].strip()}\n```")
+    return "\n\n".join(out)
+
+
+def canon_stage_v2(engine, pool, a, rulebook, bizs, bids, clog):
+    """canonical tables per business: reference programs transferred by table columns; the LLM writes a mapping (with the
+    two most similar reference programs as examples) for businesses no reference fits (or always with --map-llm)."""
+    cdir = os.path.join(a.cache or a.out, "canon2_" + (a.shard.replace("/", "of") or "main")); os.makedirs(cdir, exist_ok=True)
+    exclude_own = os.path.isfile(os.path.join(a.split, "answers.jsonl"))      # honest train runs: never a shop's own program
+    progs, meta = canonmod.ref_programs(), canonmod.load_meta()
+    tasks = [((b, rid), b, code, rid, os.path.join(cdir, f"{b}.ref_{rid}.pkl")) for b in bids for rid, code in progs.items()
+             if not (exclude_own and rid == b) and resolvable(bizs[b], meta.get(rid, {}))]
+    cands = defaultdict(list); t0 = time.time()
+    for k, r in pool.imap_unordered(run_mapping, tasks):
+        if r.get("ok"): cands[k[0]].append(("ref:" + k[1], r))
+    print(f"[map] transfer: {len(tasks)} reference programs tried, {sum(len(v) for v in cands.values())} fit, "
+          f"{sum(1 for b in bids if cands[b])}/{len(bids)} businesses mapped ({time.time() - t0:.0f}s)", flush=True)
+    need = [b for b in bids if a.map_llm or not cands[b]]
+    if need and engine is not None:
+        rb = rulebook_extract(rulebook)
+        items = {(b, s): [{"role": "system", "content": SYSTEM_MAP},
+                          {"role": "user", "content": user_msg_map(rb, bizs[b].readme, CARDS[b], map_examples(bizs[b], b, exclude_own))}]
+                 for b in need for s in range(a.kc)}
+        catt = generate_and_run(engine, pool, items, {k for k in items if k[1] == 0},
+                                lambda k, code: (k, k[0], code, None, os.path.join(cdir, f"{k[0]}.llm{k[1]}.pkl")),
+                                run_mapping, a.repairs, a.compile_tokens, a.temp, "map")
+        for (b, sidx), atts in catt.items():
+            r = last_ok(atts)
+            if r: cands[b].append((f"llm:{sidx}", r))
+        for b in need: clog.write(json.dumps({"business_id": b, "llm_attempts": {s: catt[(b, s)] for s in range(a.kc)}}, ensure_ascii=False, default=str) + "\n")
+    canon = {}
+    for b in bids:
+        cs = cands[b]
+        if not cs: print(f"  {b}: no canonical tables", flush=True); continue
+        best, scores = agreement([r["sig"] for _, r in cs])
+        order = sorted(range(len(cs)), key=lambda i: (-cs[i][1]["coverage"], -scores[i], i))
+        src, r = cs[order[0]]; canon[b] = r
+        print(f"  {b}: {len(cs)} candidates, chose {src} coverage {r['coverage']:.0f}", flush=True)
+        clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"]] for x, y in cs]}, ensure_ascii=False) + "\n")
+    clog.flush()
+    return canon
+
+
+def run_qparse(task):
+    """task = (key, bid, as_of, question, canon_path, timeout) -> (key, result): the rule-based template program."""
+    key, bid, as_of, question, canon_path, timeout = task
+    t0 = time.time(); r = {"ok": False, "error": "unparsed"}
+    try:
+        can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
+        shop = dm.Shop(can["C"], as_of, {"data_end": can.get("data_end")})
+        pr = qparse.parse(question, as_of, shop)
+        if pr:
+            tpl, code = pr
+            _, r = run_code((key, bid, as_of, code, timeout, canon_path)); r.update(code=code, tpl=tpl)
+    except BaseException as e: r = _err(e)
+    r["t"] = time.time() - t0
+    return key, r
+
+
+def answer_stage_v2(engine, pool, a, rulebook, bizs, qs, canon, k, repairs):
+    """K toolkit programs per question from the LLM (few-shot: similar verified train programs) + the rule-based program."""
+    ex = fewshot.AnswerExamples(); exclude_own = os.path.isfile(os.path.join(a.split, "answers.jsonl"))
+    qmap = {q["id"]: q for q in qs}; items = {}; greedy = set(); path_of = {}
+    for q in qs:
+        b = q["business_id"]
+        if b in canon:
+            exs = ex.pick(q["question"], k=a.shots, exclude_business=b if exclude_own else None)
+            msgs = [{"role": "system", "content": SYSTEM_LIB},
+                    {"role": "user", "content": user_msg_lib(rulebook, bizs[b].readme, canon[b]["card"], fewshot.render_examples(exs), q)}]
+        else:
+            msgs = [{"role": "system", "content": SYSTEM_RAW}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q)}]
+        for sidx in range(k):
+            items[(q["id"], sidx)] = msgs; path_of[(q["id"], sidx)] = "L" if b in canon else "B"
+        greedy.add((q["id"], 0))
+    def make_task(kk, code):
+        q = qmap[kk[0]]; b = q["business_id"]
+        return (kk, b, q["as_of_date"], code, a.timeout, canon[b]["path"] if b in canon else None)
+    qatt = generate_and_run(engine, pool, items, greedy, make_task, run_code, repairs, a.max_tokens, a.temp, "answer",
+                            reflect=not a.no_reflect) if (engine is not None and k) else defaultdict(list)
+    rule = {}
+    if a.qw > 0:
+        tasks = [((q["id"], "Q"), q["business_id"], q["as_of_date"], q["question"], canon[q["business_id"]]["path"], a.timeout)
+                 for q in qs if q["business_id"] in canon]
+        for kk, r in pool.imap_unordered(run_qparse, tasks, chunksize=4): rule[kk[0]] = r
+        print(f"[rule] {sum(1 for r in rule.values() if r.get('ok'))}/{len(tasks)} questions answered by templates", flush=True)
+    by_q = defaultdict(list)
+    for kk in items: by_q[kk[0]].append(kk)
+    return qatt, path_of, by_q, rule
 
 
 def answer_stage(engine, pool, a, rulebook, bizs, qs, canon, paths, repairs):

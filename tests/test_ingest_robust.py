@@ -127,6 +127,13 @@ def check(variant, fname):
     return errs
 
 
+def check_units_vs_multipliers():
+    """quantities written with a unit must keep their value ('1 kg' is 1, '10 m' is 10); money shorthand still scales."""
+    cases = {"1 kg": 1, "10 kg": 10, "2,5 kg": 2.5, "3 m": 3, "12 m2": 12, "4 tấn": 4, "29k": 29000, "1tr205": 1205000, "12 triệu": 12e6,
+             "20kđ": 20000, "1,5tr": 1.5e6, "2 tỷ": 2e9, "7 ly": 7, "1 bao 25kg": 1}
+    return [f"{x!r} -> {ingest.parse_num(x)} (want {v})" for x, v in cases.items() if not np.isclose(ingest.parse_num(x), v)]
+
+
 if __name__ == "__main__":
     cases = [("uniform", "a.xlsx"), ("mixed", "a.xlsx"), ("mixed", "a.csv"), ("semicolon", "a.csv"), ("utf16", "a.csv"),
              ("title_rows", "a.xlsx"), ("page_headers", "a.xlsx"), ("two_row_header", "a.xlsx"), ("paren_neg", "a.xlsx")]
@@ -134,7 +141,8 @@ if __name__ == "__main__":
     for v, f in cases:
         e = check(v, f); fails += bool(e)
         print(f"{'PASS' if not e else 'FAIL'} {v:15s} {f:7s} {'; '.join(e)[:300]}")
-    for nm, fn in [("dup_subheaders", check_dup_subheaders), ("decimal_dot", lambda: check_decimal(".")), ("decimal_comma", lambda: check_decimal(","))]:
+    for nm, fn in [("dup_subheaders", check_dup_subheaders), ("decimal_dot", lambda: check_decimal(".")), ("decimal_comma", lambda: check_decimal(",")),
+                   ("units_vs_multipliers", check_units_vs_multipliers)]:
         e = fn(); fails += bool(e); cases.append(nm)
         print(f"{'PASS' if not e else 'FAIL'} {nm:23s} {'; '.join(e)[:300]}")
     print(f"{len(cases) - fails}/{len(cases)} variants recovered")

@@ -54,9 +54,10 @@ def parse_num(x, dec=None):
     try: v = float(tok)
     except ValueError: return np.nan
     rest = _CUR.sub("", rest).strip()
-    if rest.startswith(("tr", "triệu", "trieu", "m ")) or rest == "m": v *= 1e6
-    elif rest.startswith(("k", "nghìn", "nghin", "ngàn", "ngan")): v *= 1e3
-    elif rest.startswith(("tỷ", "ty")): v *= 1e9
+    # multipliers only as whole words: "1 kg" is one kilogram (not 1,000), "10 m" ten metres (not 10 million)
+    if re.match(r"(tr|triệu|trieu)(?![a-zà-ỹ])", rest): v *= 1e6
+    elif re.match(r"(k|nghìn|nghin|ngàn|ngan)(?![a-zà-ỹ])", rest): v *= 1e3
+    elif re.match(r"(tỷ|ty)(?![a-zà-ỹ])", rest): v *= 1e9
     v = round(v, 6)                                                    # '65,079tr' -> 65079000, not 65078999.99999999
     return -v if neg else v
 

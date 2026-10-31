@@ -76,7 +76,7 @@ làm tốt), thay vì tự viết lại các luật đó trong từng chương t
   Giải mã gõ telex sai chỉ khi kết quả là từ có trong từ vựng (rulebook + câu hỏi của split). Bản chuẩn hoá hiển thị
   **cạnh** câu gốc, câu gốc vẫn là chuẩn.
 - **Entity linking:** liệt kê các giá trị chữ của DN (tên hàng / khách / nhóm…) có dạng bỏ dấu nằm trong câu hỏi bỏ dấu,
-  kèm cách viết đúng và cột chứa nó (`noi lau ga la e` → `'Lẩu gà lá é' in T['ban_hang']['Hàng bán']`).
+  kèm cách viết đúng và cột chứa nó (`noi lau ga la e` → 'Lẩu gà lá é' trong cột 'Hàng bán' của bảng ban_hang).
 - **Khoảng ngày dữ liệu:** in khoảng ngày có dữ liệu của DN, để câu về kỳ nằm ngoài dữ liệu trả `unanswerable` (luật §7).
   **Chưa đo.**
 
@@ -158,7 +158,7 @@ rỗng, 4×L4 DP.
 3. **Kỳ tương đối:** "tuần rồi", "tuần này", ca sáng / chiều (thiếu `time=` trong compile; đã thêm gợi ý, chưa đo).
 4. **Câu nghiệp vụ hiếm:**
    - đếm "mặt hàng ế";
-   - tồn kho theo đơn vị lớn `[chẵn, lẻ]`;
+   - tồn kho theo đơn vị lớn [chẵn, lẻ];
    - hiệu ứng tăng giá;
    - đợt giao (đã cải thiện nhờ shots).
 

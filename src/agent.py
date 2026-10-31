@@ -646,7 +646,7 @@ def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, ma
                     convs[k].append({"role": "user", "content": "No ```python block was found. Output only the complete program in one ```python block."}); nxt.append(k)
                 continue
             codes[k] = code; tasks.append(make_task(k, code))
-        for k, r in pool.imap_unordered(runner, tasks, chunksize=2):
+        for k, r in pool.map_safe(runner, tasks):
             att = {"round": rnd, "code": codes[k], **{x: r[x] for x in r if x not in ("t", "card")}, "exec_s": round(r["t"], 2)}
             if "card" in r: att["card"] = r["card"]
             attempts[k].append(att)
@@ -668,6 +668,40 @@ def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, ma
               f"exec {time.time() - t1:.0f}s, {len(nxt)} to redo", flush=True)
         pending = sorted(nxt)
     return attempts
+
+
+class SafePool:
+    """Worker pool whose map never hangs: signal.alarm cannot interrupt every C-level pandas call, and one stuck program
+    blocked a whole kernel. Results are collected with a deadline; tasks still running then are reported as time-outs
+    and the pool is killed and recreated."""
+    def __init__(self, n, initargs, timeout):
+        import multiprocessing as mp
+        self.n, self.initargs, self.timeout, self.ctx = n, initargs, timeout, mp.get_context("fork"); self._new()
+
+    def _new(self):
+        self.pool = self.ctx.Pool(self.n, initializer=_init_worker, initargs=self.initargs, maxtasksperchild=100)
+
+    def map_safe(self, fn, tasks):
+        if not tasks: return
+        res = {i: self.pool.apply_async(fn, (t,)) for i, t in enumerate(tasks)}
+        # every task gets `timeout` (+ namespace build); the batch at most enough waves for the pool size
+        deadline = time.time() + (self.timeout + 60) * (1 + len(tasks) // max(self.n, 1)) + 60
+        done = set(); last = time.time()
+        while len(done) < len(res):
+            for i, r in res.items():
+                if i not in done and r.ready():
+                    done.add(i); last = time.time()
+                    try: yield r.get()
+                    except Exception as e: yield tasks[i][0], {"ok": False, "error": f"worker error: {type(e).__name__}: {e}"[:400], "stdout": "", "t": 0.0}
+            if len(done) < len(res):
+                if time.time() > deadline or time.time() - last > 3 * self.timeout + 120:
+                    for i in res:
+                        if i not in done:
+                            yield tasks[i][0], {"ok": False, "error": "timeout: the program ran too long (killed)", "stdout": "", "t": float(self.timeout)}
+                    self.pool.terminate(); self._new(); return
+                time.sleep(0.05)
+
+    def close(self): self.pool.close()
 
 
 def last_ok(atts):
@@ -739,7 +773,7 @@ def run(a, engine=None):
     engine = engine or Engine(a)
     print(f"model ready {time.time() - t_start:.0f}s", flush=True)
     import multiprocessing as mp
-    pool = mp.get_context("fork").Pool(nw, initializer=_init_worker, initargs=(cache, a.split), maxtasksperchild=100)
+    pool = SafePool(nw, (cache, a.split), a.timeout)
     full_paths = (a.paths or ("".join("A" if i % 2 == 0 else "B" for i in range(a.k)) if a.compile else "B" * a.k))
     full_paths = (full_paths * a.k)[:a.k]
 

@@ -1,6 +1,6 @@
 # 02 — Engineering & Operations Lessons (DataMate)
 
-*Cập nhật 2026-10-31 04:45 UTC (hết khung chat 2). Chỉ gồm kinh nghiệm lập trình, môi trường, Kaggle, tổ chức thử nghiệm,
+*Cập nhật 2026-10-31 09:00 UTC (hết khung chat 2). Chỉ gồm kinh nghiệm lập trình, môi trường, Kaggle, tổ chức thử nghiệm,
 lỗi và bài học. Kết quả khoa học ở PDF 1, việc tiếp theo ở PDF 3.*
 
 ## 1. Môi trường container Claude
@@ -38,7 +38,7 @@ lỗi và bài học. Kết quả khoa học ở PDF 1, việc tiếp theo ở P
 
 | Acc | GPU | Ghi chú |
 |---|---|---|
-| lelynhan | 4×L4 | còn quota lúc bàn giao (đang chạy `p1`, `e11`) |
+| lelynhan | 4×L4 | còn ít quota (đã chạy ~30 giờ phiên trong khung chat 2); rảnh |
 | mxuanquy | chỉ T4 (xin L4 → không có GPU) | rảnh |
 | anderson1202 | T4 (chưa accept rules gemma-4 → không L4) | rảnh |
 | phuongnehe, linhmai24, thnliu | 4×L4 | **hết quota tuần** lúc 20:45–23:00 UTC 30/10 |

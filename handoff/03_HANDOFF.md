@@ -1,6 +1,6 @@
 # 03 — Handoff (DataMate, sang khung chat 3)
 
-*Bàn giao 2026-10-31 04:45 UTC (cuối khung chat 2). User yêu cầu: chờ các kernel đang chạy xong rồi **dừng**, không khởi
+*Bàn giao 2026-10-31 09:00 UTC (cuối khung chat 2; mọi kernel đã dừng). User yêu cầu: chờ các kernel đang chạy xong rồi **dừng**, không khởi
 chạy thêm gì trong khung chat 2.*
 - *Repo `lhaochen118-ship-it/ZC`, branch làm việc **`claude/peaceful-carson-0dny90`** (tiếp nối `datamate`). Không tạo PR.*
 - *Kết quả và bằng chứng: PDF 1. Vận hành và lỗi: PDF 2. File này chỉ có mục tiêu, trạng thái, quyết định, vị trí, việc tiếp theo.*
@@ -39,7 +39,7 @@ chạy thêm gì trong khung chat 2.*
 | Làm sạch (`ingest.py`) + lớp ngữ nghĩa (`semantic.py`) | Xong, đã kiểm chứng |
 | Agent | Cấu hình tốt nhất (mục 5) đạt **PA train dev +0.47 / holdout +0.44** (3000 câu, leave-business-out); thêm thinking: holdout +0.51 vs +0.25 (354 câu, e11) |
 | Thư viện shots | v4: 4228 chương trình (`src/shots/train_shots.jsonl`) |
-| Public test | Run `p1` (cấu hình tốt nhất, shots v2, **trước** SafePool) đang chạy > 7.5 giờ (nghi kẹt); chưa có file nộp |
+| Public test | `p1` (cấu hình không think, trước SafePool) bị dừng ở 12 giờ: **764/1000 câu**; file nộp đủ dòng (thiếu = abstain) ở `results/p1_submission.jsonl`, chưa nộp. Compile hỏng 4/14 DN public |
 | Thinking | **Có lợi trên holdout:** e11 (code mới nhất + shots v4 + think) PA +0.51 vs e8 +0.25 trên cùng 354 câu holdout; dev e10l +0.69 vs +0.59. Chậm ≈ 2.5–3×. Chưa tách riêng phần của thinking |
 | Sửa chưa đo trên GPU | khoảng ngày dữ liệu → unanswerable; NOTES compile không gọi bảng T là thiếu; `SafePool`; gợi ý `time=` trong compile |
 | Docker | `docker/predict.sh` đã dùng cấu hình tốt nhất; chưa build / chưa chạy thử; chưa có guideline BTC |
@@ -75,15 +75,14 @@ python3 automation/fanout.py <runs>/<run> zc-<run> "run_kaggle.py <train|public_
 1. **Khởi động:**
    - xin token, kiểm bằng `kaggle competitions list`;
    - tải dữ liệu, chạy 2 test không GPU;
-   - kéo kết quả `p1`, `e11` (`pull_kernels.py`; nếu khung chat 2 đã kéo thì log nằm trong
-     `results/chat2_runs/`);
+   - không còn kernel nào chạy (mọi log đã ở `results/chat2_runs/`);
    - kernel nào còn RUNNING quá 12 giờ kể từ lúc đẩy (`RUNNING_KERNELS.md`) thì coi là kẹt: ngắt bằng `kaggle kernels delete -y`.
 2. **File nộp public:**
-   - khi `p1` xong: kiểm đủ 1000 dòng, đúng định dạng;
-   - chép `submission.jsonl` vào `results/p1_submission.jsonl`;
-   - báo user kèm ước lượng PA train (+0.44 holdout); user quyết định nộp;
-   - nếu `p1` kẹt / hỏng: chạy lại public test với cấu hình mục 5 và code mới nhất (có SafePool), chia 2 kernel theo DN
-     (`--biz`) để mỗi kernel ≤ ~500 câu.
+   - `results/p1_submission.jsonl` (764/1000 có đáp án, cấu hình cũ) đã sẵn để user nộp thử nếu muốn;
+   - chạy lại public test với cấu hình khuyến nghị (mục 5, có `--think`) và code mới nhất (SafePool), chia **4 kernel**
+     theo DN (`--biz`, mỗi kernel ~250 câu, 3–4 DN) để không kernel nào chạm 12 giờ;
+   - xem lỗi compile của 4 DN public (dev_007, 011, 013, 014) trong `results/chat2_runs/p1__zc-p1-1/compile_logs.jsonl.gz`
+     trước khi chạy lại.
 3. **Đo các sửa chưa đo:** chạy cấu hình mục 5 (code mới nhất + shots v4) trên 4 DN của e7 (114, 116, 117, 125) và 4 DN của
    e6a (105, 108, 115, 118); so cặp bằng `src/compare.py` với log trong `results/chat2_runs/`.
 4. **Thinking (e11 đã xác nhận có lợi trên holdout):** tách riêng phần của thinking (chạy code mới nhất + shots v4 *không*

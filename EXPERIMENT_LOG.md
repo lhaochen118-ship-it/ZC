@@ -153,3 +153,9 @@ quyết định: e11 (thinking, 354 câu holdout biz_121/124/129, L4, đang xế
 → gói "code mới nhất + shots v4 + thinking" hơn +0.26 PA trên holdout. Chưa tách riêng phần của thinking (e11 khác e8 ở cả code
 và shots). Thời gian: 52–98 s / câu / L4 (biz_124 chậm nhất: 11,602 s cho 118 câu). Ước lượng 2×5090: ~2000 câu ≈ 4–4.5 giờ.
 **Cấu hình khuyến nghị mới = cấu hình tốt nhất + `--think --max-tokens 8192`**, kèm `--budget` để an toàn thời gian.
+
+**p1 (public test, cấu hình tốt nhất KHÔNG think, shots v2, code trước SafePool):** Kaggle dừng ở giới hạn 12 giờ; 3/4 shard
+xong → **764/1000 câu có đáp án** (number 371, percent 112, string 48, list 37, date 15, unanswerable 11, boolean 7, table 5;
+abstain 158). Shard 2 (dev_005, dev_008) kẹt khi thực thi chương trình (đúng lỗi SafePool sửa); dev_012 chưa tới lượt.
+Compile hỏng 4 DN public (dev_007, 011, 013, 014): rulebook / cấu trúc public khác train. File nộp đủ 1000 dòng (236 câu
+thiếu ghi `abstain`): `results/p1_submission.jsonl`. Chưa có điểm LB (user quyết định nộp).

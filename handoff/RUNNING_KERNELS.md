@@ -1,21 +1,14 @@
-# Kernel còn chạy lúc bàn giao (2026-10-31 04:45 UTC)
+# Kernel còn chạy lúc bàn giao (2026-10-31 09:00 UTC)
 
-Runner cục bộ của khung chat 2 mất khi sang khung chat mới; kernel vẫn chạy trên Kaggle. Kéo output khi xong:
+**Không còn kernel nào chạy.** Theo yêu cầu của user, khung chat 2 dừng sau khi các run cuối kết thúc.
 
-```bash
-python3 automation/pull_kernels.py <scratch>/pulled
-```
+Kết quả cuối:
 
-Cần token `~/.kaggle/tok_<acc>` của từng acc. Kernel chưa xong được báo `not finished`.
+| Run | Kernel | Kết quả |
+|---|---|---|
+| p1 | `lelynhan/zc-p1-1` | public test, dừng ở 12 giờ, 764/1000 câu → `results/p1_submission.jsonl` |
+| e11 | `lelynhan/zc-e11-1` | thinking trên holdout: PA +0.51 vs +0.25 (e8) |
+| e3h-4, e3b-2 | `linhmai24/zc-e3h-4`, `thnliu/zc-e3b-2` | dừng ở 12 giờ, không có output (chỉ để thêm shots) |
 
-| Run | Kernel | GPU | Cấu hình | Dữ liệu | Ghi chú |
-|---|---|---|---|---|---|
-| p1 | `lelynhan/zc-p1-1` | 4×L4 | cấu hình tốt nhất (handoff 03 §5), shots v2 | **public test 1000 câu** | → file nộp; đẩy 20:57 UTC 30/10; trước SafePool, > 7.5 giờ (nghi kẹt) |
-
-`mxuanquy/zc-e1b-1`, `anderson1202/zc-e1c-1` (baseline cũ của khung chat 1) **đã không còn** (kiểm 31/10 01:20 UTC: không có trong
-danh sách kernel, truy vấn trạng thái trả về giống kernel đã xoá).
-
-`linhmai24/zc-e3h-4`, `thnliu/zc-e3b-2` bị Kaggle dừng ở giới hạn 12 giờ, không có output (chỉ dùng để thêm shots: không mất gì
-quan trọng; nghi kẹt do chương trình treo, trước SafePool).
-
-Đã xong và đã phân tích (log trong `results/chat2_runs/`): smoke2, e3h-1/2/3, e3b-1, e3t-1/2, e4-1/2, e5-1/2, e6a, e7, e7b, e8, e9, e10, e10l, e10b, e11.
+Log mọi run (nén): `results/chat2_runs/` (README trong đó). Kéo lại output một kernel đã xong:
+`KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels output <acc>/<slug> -p <dir>`.

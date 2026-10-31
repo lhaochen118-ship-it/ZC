@@ -164,7 +164,7 @@ rỗng, 4×L4 DP.
 
 ## 7. Hạn chế và điều kiện kiểm chứng
 
-- **Chưa có điểm public LB.** Run public `p1` (cấu hình tốt nhất, 1000 câu) đang chạy lúc bàn giao (nghi kẹt).
+- **Chưa có điểm public LB.** Run public `p1` (cấu hình không think) chỉ xong 764/1000 câu (một shard kẹt); compile hỏng 4/14 DN public → dữ liệu / rulebook public khó hơn train, ước lượng train không chuyển thẳng sang public.
 - **Thinking:** gói code mới nhất + shots v4 + thinking có lợi rõ trên holdout (e11: +0.51 vs +0.25, 354 câu); phần riêng của thinking chưa tách. Thời gian 52–98 s / câu / L4 → sát giới hạn 6 giờ nếu private ~2000 câu.
 - **Holdout chỉ 10 DN, 1024 câu.** Khác biệt < ~0.03 PA giữa hai cấu hình là trong nhiễu. Các run khác nhau dùng thư viện
   shots v1–v3 (lớn dần) và code tăng dần, nên số "toàn train" là **hợp nhiều run**, không phải một run duy nhất.

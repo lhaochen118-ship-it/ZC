@@ -46,7 +46,9 @@ except Exception as e: print("vllm import:", e, flush=True)
 mon = subprocess.Popen(["nvidia-smi", "--query-gpu=index,utilization.gpu,memory.used,memory.total", "--format=csv,noheader,nounits", "-l", "5"],
                        stdout=open(os.path.join(out, "gpu_monitor.csv"), "w"), stderr=subprocess.DEVNULL)
 t0 = time.time()
-rc = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent.py"), split, out] + args).returncode
+script = "agent.py"                                                   # --script <file>: another job of src/ (qnorm_llm.py)
+if "--script" in args: i = args.index("--script"); script = args[i + 1]; del args[i:i + 2]
+rc = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), script), split, out] + args).returncode
 mon.terminate()
 import json, collections
 g = collections.defaultdict(list)

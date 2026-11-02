@@ -185,6 +185,28 @@ class Normalizer:
         for i in range(len(words) - 1, 0, -1): out.append(best[i][out[-1]][1])
         return out[::-1]
 
+    def restore_only(self, text):
+        """accents restored on an accent-free sentence, words unchanged (measurement of the bigram model)."""
+        parts = re.split(r"([^\W\d_]+)", unicodedata.normalize("NFC", text)); ws = parts[1::2]
+        if ws:
+            rest = self.restore([w.lower() for w in ws])
+            parts[1::2] = self._context_fixes([_case_like(w, r) for w, r in zip(ws, rest)], ws, restored=True, seps=parts[0::2])
+        return "".join(parts)
+
+    # -- context rules after accent restoration (each limited to a safe context; see question_cleaning/README.md)
+    @staticmethod
+    def _context_fixes(words, typed, restored, seps=None):
+        """seps[i] = the text right before word i (numbers live there: '50 k' is 50 thousand, not 'không')."""
+        out = list(words); low = [w.lower() for w in out]; n = len(out); seps = seps or [""] * (n + 1)
+        for i, w in enumerate(low):
+            nxt = " ".join(low[i + 1:i + 4]); prv = low[i - 1] if i else ""
+            if w == "nhiêu" and prv != "bao" and re.search(r"\b(nhất|hơn|hay ít)\b", nxt): out[i] = _case_like(out[i], "nhiều")
+            elif w in ("hà", "ha") and i == n - 1 and typed[i][:1].islower(): out[i] = "hả"   # final question particle, not a name
+            elif w == "lệ" and restored and prv not in ("tỉ", "tỷ") and typed[i].isascii(): out[i] = _case_like(out[i], "lẻ")
+            elif w == "j" and i > 0: out[i] = "gì"
+            elif w == "k" and i > 0 and not re.search(r"\d\s*$", seps[i]): out[i] = "không"
+        return out
+
     # -- the whole cleaning
     def clean(self, q, as_of=None):
         changes = []
@@ -224,6 +246,9 @@ class Normalizer:
             fixed = " ".join(_case_like(o, x) for o, x in zip(orig, new))
             if fixed != w: changes.append([w, fixed, "accent"])
             final.append(fixed)
+        final = self._context_fixes(final, [w for w in outw], restored=flat and accented < 0.15, seps=parts[0::2])
+        for w0, w1 in zip(outw, final):
+            if w0 != w1 and not any(c[1] == w1 for c in changes): changes.append([w0, w1, "context"])
         parts[1::2] = final
         s = "".join(parts)
         for rx, f in MONTHS:                                            # month shorthands

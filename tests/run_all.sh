@@ -1,14 +1,25 @@
 #!/bin/bash
 # Full CPU test suite (no GPU); every test must PASS before a Kaggle launch (automation/preflight.py runs this).
-set -euo pipefail
+# Each test's last line must contain PASS, otherwise the suite stops with exit code 1 (no silent pass).
+set -uo pipefail
 cd "$(dirname "$0")/.."
 S=${SCRATCH:-$(mktemp -d)}
 SPLIT=data/raw/train/train
-[ -d "${CACHE:-$S/cache_train}" ] || python3 src/ingest.py $SPLIT ${CACHE:-$S/cache_train} 4 > /dev/null
-python3 tests/test_ingest_robust.py | tail -1
-python3 tests/test_engine_batching.py | tail -1
-timeout 300 python3 tests/test_sandbox.py 2>/dev/null | tail -1
-python3 tests/test_agent_v2.py $SPLIT $S/t_v2 2>&1 | tail -1 | grep -q PASS && echo "test_agent_v2 PASS"
-python3 tests/test_plausibility.py $SPLIT ${CACHE:-$S/cache_train} 2>&1 | tail -1 | grep -q PASS && echo "test_plausibility PASS"
-timeout 1800 python3 tests/test_pipeline.py $SPLIT $S/t_pipe 2>&1 | tail -1 | grep -q PASS && echo "test_pipeline PASS"
+CACHE=${CACHE:-$S/cache_train}
+[ -d "$CACHE" ] || python3 src/ingest.py $SPLIT $CACHE 4 > /dev/null
+run() {                                     # run <name> <timeout s> <command...>
+    local name=$1 t=$2; shift 2
+    local out; out=$(timeout "$t" "$@" 2>&1); local rc=$?
+    if [ $rc -ne 0 ] || ! echo "$out" | tail -1 | grep -q PASS; then
+        echo "$name FAIL (rc=$rc)"; echo "$out" | tail -25; exit 1
+    fi
+    echo "$name PASS"
+}
+run test_ingest_robust 300 python3 tests/test_ingest_robust.py
+run test_engine_batching 300 python3 tests/test_engine_batching.py
+run test_sandbox 300 python3 tests/test_sandbox.py
+run test_agent_v2 900 python3 tests/test_agent_v2.py $SPLIT $S/t_v2
+run test_plausibility 900 python3 tests/test_plausibility.py $SPLIT $CACHE
+run test_qnorm 900 python3 tests/test_qnorm.py $SPLIT $S/t_qn
+run test_pipeline 3600 python3 tests/test_pipeline.py $SPLIT $S/t_pipe
 echo "ALL PASS"

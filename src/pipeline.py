@@ -302,10 +302,11 @@ class Pipeline:
             st = {"att": {}, "rule": None, "pending": k + (1 if (a.qw > 0 and can) else 0), "t": time.time(), "w": {}}
             path = "L" if can else "B"
             def settle(q=q, st=st, path=path):
-                st["pending"] -= 1
-                if st["pending"] == 0 and not self.escalate(q, st, k, path, can, b, prio, settle):
+                st["pending"] -= 1                                       # st["settle"]: THIS question's settle (a bare name
+                if st["pending"] == 0 and not self.escalate(q, st, k, path, can, b, prio, st["settle"]):   # would bind late)
                     self.write(q, st, k, path); self.inflight_q -= 1; left["n"] -= 1
                     if left["n"] == 0: self.chunk_done(b, ci)
+            st["settle"] = settle
             if can:
                 exs = self.ex.pick(q["question"], k=a.shots, exclude_business=b if self.exclude_own else None)
                 msgs = [{"role": "system", "content": agent.SYSTEM_LIB},

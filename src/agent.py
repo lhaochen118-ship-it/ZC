@@ -154,7 +154,8 @@ CODE_RE = re.compile(r"```(?:python|py)?\s*\n(.*?)```", re.S)
 
 
 def extract_code(text):
-    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
+    if "</think>" in text: text = text.rsplit("</think>", 1)[1]        # the answer follows the reasoning (Qwen3.5 may open
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)        # <think> in the prompt: no opening tag in the output)
     m = CODE_RE.findall(text)
     if m: return max(m, key=len)
     m = re.search(r"```(?:python|py)?\s*\n(.*)$", text, re.S)                 # unterminated block (length cut)
@@ -708,7 +709,7 @@ def build_parser():
     ap.add_argument("--steal-chunk", type=int, default=16, help="pipeline: questions per stealable work unit")
     ap.add_argument("--escalate", type=int, default=0, help="pipeline: extra thinking samples for low-confidence / flagged answers (0 = off)")
     ap.add_argument("--esc-conf", type=float, default=0.75, help="pipeline: escalate when the vote share of the top answer is below this")
-    ap.add_argument("--esc-tokens", type=int, default=4096, help="pipeline: max tokens of an escalation (thinking) sample")
+    ap.add_argument("--esc-tokens", type=int, default=6144, help="pipeline: max tokens of an escalation (thinking) sample")
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")

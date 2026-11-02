@@ -35,6 +35,7 @@ def main():
     # 1. flags
     for j in jobs:
         if j[0] != "run_kaggle.py" or len(j) < 3: fail(f"job must be 'run_kaggle.py <split> OUT/... <args>': {j}")
+        if "--script" in j: continue                                    # another src/ job: checked by its own smoke run below
         try: ap.parse_args(["SPLIT", "OUT"] + j[3:])
         except SystemExit: fail(f"agent rejects the flags of job {' '.join(j)}")
         if not (j[2] == "OUT" or j[2].startswith("OUT/")): fail(f"output dir must be OUT or OUT/...: {j[2]}")
@@ -68,6 +69,14 @@ def main():
         if not os.path.isfile(os.path.join(split, "questions.jsonl")): fail(f"local split {split} missing (download the data first)")
         out = os.path.join(work, "out_" + re.sub(r"\W", "_", j[2]))
         args = [x for x in j[3:]]
+        if "--script" in args:                                          # e.g. qnorm_llm.py: runs on the whole split with a fake LLM
+            i = args.index("--script"); script = args[i + 1]; del args[i:i + 2]
+            if "--cache" in args: args[args.index("--cache") + 1] = os.path.join(work, "cache")
+            ident = os.path.join(work, "ident.py"); open(ident, "w").write("def responder(conv):\n    return conv[-1]['content']\n")
+            r = subprocess.run([sys.executable, os.path.join(ROOT, "src", script), split, out] + args + ["--fake-responder", ident],
+                               capture_output=True, text=True, timeout=3600)
+            if r.returncode != 0: fail(f"smoke of {script}:\n" + (r.stdout + r.stderr)[-3000:])
+            print(f"[4] smoke {script} on {j[1]}: rc 0, outputs {sorted(os.listdir(out))}", flush=True); continue
         for flag in ("--cache",):                                       # local paths for the smoke
             if flag in args: args[args.index(flag) + 1] = os.path.join(work, "cache")
         if "--budget" in args: args[args.index("--budget") + 1] = "600"

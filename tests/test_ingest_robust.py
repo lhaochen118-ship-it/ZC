@@ -165,3 +165,4 @@ if __name__ == "__main__":
         e = fn(); fails += bool(e); cases.append(nm)
         print(f"{'PASS' if not e else 'FAIL'} {nm:23s} {'; '.join(e)[:300]}")
     print(f"{len(cases) - fails}/{len(cases)} variants recovered")
+    print("PASS" if not fails else "FAIL")

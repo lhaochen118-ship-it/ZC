@@ -92,12 +92,12 @@ print("confirm |", nsamp.count(1), "questions settled by rule + greedy sample,",
 # --map-retry: when every mapping sample of a business fails, a second batch runs (here the first 4 mapping generations
 # = 2 samples x 2 rounds fail); the business still gets an LLM mapping and every question is answered once
 calls = {"map": 0}
-def responder_failfirst(conv):
-    if conv[0]["content"].startswith("You are DataMate's data engineer"):
-        calls["map"] += 1
+def responder_failfirst(conv):                                         # biz_101's own first 4 mapping generations fail (other
+    if conv[0]["content"].startswith("You are DataMate's data engineer") and "biz_101" in conv[1]["content"]:   # businesses'
+        calls["map"] += 1                                                 # calls may interleave in any order)
         if calls["map"] <= 4: return "```python\nraise ValueError('broken mapping')\n```"
     return responder(conv)
-a_mr = args(os.path.join(scratch, "out_retry"), True); a_mr.map_llm = True
+a_mr = args(os.path.join(scratch, "out_retry"), True)
 agent.run(a_mr, engine=pipeline.FakeStepLLM(responder_failfirst))
 cl = [json.loads(l) for l in open(os.path.join(a_mr.out, "compile_logs.jsonl"), encoding="utf-8")]
 ch = {c["business_id"]: c["chosen"] for c in cl if "chosen" in c}

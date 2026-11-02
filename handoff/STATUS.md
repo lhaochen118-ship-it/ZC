@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-02 19:50 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-02 19:35 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự.*
 
 ## Kết quả mới nhất (Qwen3.5-9B FP8, train 3000 câu leave-one-out, 4×L4) — EXPERIMENT_LOG entry 4
@@ -26,11 +26,15 @@ Public v4b (zc-v4b-2, 7599 s) đã có: ứng viên nộp `runs/v4b/zc-v4b-2_out
 - Câu đã làm sạch + kỳ hiển thị cạnh câu gốc trong prompt (`--qclean`).
 - Routine tự tiếp tục: `trig_01U26KaZP68Dmg8JL2RGcbVS` (mỗi 2 giờ, vào phiên này).
 
-## Đang chạy (19:50 UTC)
+## Đang chạy (19:35 UTC)
 
 - **v5** (`runs/v5`, launched 18:49; commit 2ea939c, compile-tokens 6144): zc-v5-1 train esc4, -2 public esc4,
   -3 train esc4 lặp lại (đo tất định), -4 train esc0, -5 public lặp lại (đo độ trùng đáp án). Xong khoảng 20:30–21:00.
-- **v6-train** (`runs/v6`, commit 8793c4f: rule reader đọc câu đã làm sạch + sửa mẫu câu + toolkit): đang qua preflight.
+- **v6-train** (`runs/v6`, launched 19:23 trên mucnokieu, commit 8793c4f: rule reader đọc câu đã làm sạch + sửa mẫu câu +
+  toolkit).
+- Sau v6 (chưa chạy GPU): f461753 (cảnh báo nhập không có mặt hàng, sổ kho coi như snapshot, quy đổi rỗng), c65757a
+  (CANON_DOC đủ bảng, đổi tên cột alias: delivery_batch → trip_no sửa 10 câu biz_117; cảnh báo nợ biz_111).
+  docker/predict.sh: cấu hình tốt nhất (kc 6, qw 4, think-map, escalate 4, compile 6144). → gom vào v7.
 - Watcher `watch_done.py` nền; `active_runs.txt` = v5, v6.
 - Oracle train (eval_lib --clean): 2754 đúng / 3 sai / 243 chưa đọc (sáng nay 2666 / 36 / 298). EXPERIMENT_LOG entry 5.
 - Việc sau khi v5 / v6 xong: chấm, so v4b (0.955), đo |ΔPA| giữa 2 lần train giống nhau, độ trùng 2 lần public; nếu

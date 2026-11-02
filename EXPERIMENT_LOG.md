@@ -87,3 +87,23 @@ Cấu hình chung: `--pipeline --think-map --k 4 --kc 6 --repairs 2 --shots 4 --
 - Còn yếu: biz_123 0.57 (nhà thuốc, pos.sqlite: lô / nhập / tồn), biz_111 0.86 (escalation làm tệ hơn 0.93), biz_117 0.87,
   biz_121 0.88, biz_122 0.90.
 - v4 (14:59) chết cả 5 kernel do môi trường dựng sẵn import từ mount > 900 s (đã sửa, xem commit de732a8).
+
+## Entry 5 — 2026-11-02: offline (CPU) measurements on the v4b logs; robustness + rule-reader fixes
+
+Measured without GPU:
+- re-executing the 441 logged mapping attempts: 171 → 222 valid (dedent, `fillna(None)`, repair splicing);
+- replaying the escalation run: top1 0.942 → 0.949 (stock from lots, warning-aware ranking).
+  Cross-mapping voting (vote2 0.935, agreement-first 0.867) and fallback (= top1) bring nothing → dropped.
+
+Train oracle, `tests/eval_lib.py` (reference mappings, rule programs only):
+
+| Toolkit / rule reader | Right | Wrong | Unparsed |
+|---|---|---|---|
+| morning (02/11) | 2666 | 36 | 298 |
+| + stock from lots | 2675 | 27 | 298 |
+| + cleaned question as input (`--clean`) | 2737 | 23 | 240 |
+| + general pattern fixes, fee lines, debts without data | **2754** | **3** | 243 |
+
+LLM cleaning pass: measured and rejected (Qwen3.5-9B 70.0 % vs 97.7 % word accuracy; all 14 of its changes wrong).
+Runs: v5 (18:49, mapping robustness + compile-tokens 6144, ± escalation, repeat for determinism, public ×2),
+v6-train (rule reader fixes).

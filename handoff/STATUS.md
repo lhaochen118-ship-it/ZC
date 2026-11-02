@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-02 19:05 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-02 19:50 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự.*
 
 ## Kết quả mới nhất (Qwen3.5-9B FP8, train 3000 câu leave-one-out, 4×L4) — EXPERIMENT_LOG entry 4
@@ -26,17 +26,15 @@ Public v4b (zc-v4b-2, 7599 s) đã có: ứng viên nộp `runs/v4b/zc-v4b-2_out
 - Câu đã làm sạch + kỳ hiển thị cạnh câu gốc trong prompt (`--qclean`).
 - Routine tự tiếp tục: `trig_01U26KaZP68Dmg8JL2RGcbVS` (mỗi 2 giờ, vào phiên này).
 
-## Đang làm (19:05 UTC) — v5 chưa chạy
+## Đang chạy (19:50 UTC)
 
-Thay đổi chưa commit (đã test riêng, chưa qua run_all / preflight):
-- `agent.extract_code` dedent; `agent.splice` (sửa lỗi dạng mảnh, gắn vào chương trình trước); `pipeline.sample`: dùng
-  splice ở vòng sửa, hết token khi thinking → vòng sau tắt thinking.
-- `canon`: gợi ý tên cột gần nhất khi KeyError; `fillna(None)` không lỗi; `secondary_checks` (cảnh báo mềm: doanh thu ≠
-  cột "Tiền hàng", lô thiếu lot_sales, ngày nhập, hạn lô) → vòng đầy đủ + xếp hạng `rank_score` (coverage − phạt).
-- `dm.stock_at`: không có snapshot → tồn = phần còn của lô (khớp 31/32 câu train nhà thuốc).
-- Đo offline: chạy lại 441 lần ánh xạ đã log → 171 → 222 lần OK; replay nhà thuốc: biz_121 0.88 → 0.98, biz_122 0.90 → 0.97.
-- Bước LLM làm sạch câu hỏi: đo xong, **không dùng** (README `question_cleaning/`).
-- Kế hoạch v5 (fanout + preflight): train esc4, public esc4, train esc4 lặp lại (đo tất định), train esc0, public lặp lại.
+- **v5** (`runs/v5`, launched 18:49; commit 2ea939c, compile-tokens 6144): zc-v5-1 train esc4, -2 public esc4,
+  -3 train esc4 lặp lại (đo tất định), -4 train esc0, -5 public lặp lại (đo độ trùng đáp án). Xong khoảng 20:30–21:00.
+- **v6-train** (`runs/v6`, commit 8793c4f: rule reader đọc câu đã làm sạch + sửa mẫu câu + toolkit): đang qua preflight.
+- Watcher `watch_done.py` nền; `active_runs.txt` = v5, v6.
+- Oracle train (eval_lib --clean): 2754 đúng / 3 sai / 243 chưa đọc (sáng nay 2666 / 36 / 298). EXPERIMENT_LOG entry 5.
+- Việc sau khi v5 / v6 xong: chấm, so v4b (0.955), đo |ΔPA| giữa 2 lần train giống nhau, độ trùng 2 lần public; nếu
+  tốt → chạy public bản v6 làm ứng viên nộp; còn lại: chọn ánh xạ cho DN mới (dev_012 sửa xe, dev_014 điện thoại).
 
 ## Làm sạch câu hỏi (15:25 UTC) — gần xong
 

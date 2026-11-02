@@ -15,15 +15,22 @@
 Chẩn đoán: DN có ánh xạ đúng đạt 0.90–1.00; sai số gần như toàn bộ do **chọn sai ánh xạ** ở vài DN (107, 110, 117,
 123, 124, 126, 127): ánh xạ sai → trả lời sai mà tự tin (PA −1). Thinking cho câu trả lời giúp DN đã ánh xạ đúng.
 
-## Việc đang dở
+## Đã xong trong khung chat này (sau restart 12:53 UTC)
 
-- `src/pipeline.py`: viết lại work stealing theo **chunk câu hỏi** (16 câu) thay vì theo DN (public: 4 tiến trình xong
-  lúc 1174 / 1969 / 2401 / 3144 s). **Chưa test, chưa commit** → phải qua `tests/run_all.sh` + preflight trước khi dùng.
+- `question_cleaning/` + `src/qnorm.py`: 3000 câu train đã làm sạch (khôi phục dấu 99.3 % từ / 93.6 % câu, LOBO).
+- Chunk stealing (`src/pipeline.py`), đã qua test.
+- Kiểm tra ánh xạ (`canon.plausibility`): 0 dương tính giả trên 36 tham chiếu; bắt được ánh xạ sai của 107/126/127/110.
+- Ingest: cột ngày dạng số serial Excel → datetime (chỉ đổi biz_107 `ngay_ban`).
+- Hậu kiểm câu trả lời (`agent.answer_flags`, 4/2930 cờ giả trên đáp án chuẩn) + **escalation** (`--escalate N`: thêm N
+  mẫu thinking cho câu conf < 0.75 / unanswerable / bị cờ; thêm chương trình trên bảng thô nếu ánh xạ bỏ sót bảng).
+- Vòng "đầy đủ" cho ánh xạ (`--complete-map`): hỏi lại một lần khi ánh xạ bỏ sót bảng thô.
+- Câu đã làm sạch + kỳ hiển thị cạnh câu gốc trong prompt (`--qclean`).
+- Routine tự tiếp tục: `trig_01U26KaZP68Dmg8JL2RGcbVS` (mỗi 2 giờ, vào phiên này).
 
 ## Việc tiếp theo (thứ tự)
 
-1. Module làm sạch câu hỏi + thư mục `question_cleaning/` (3000 câu train đã làm sạch + README) — user yêu cầu.
-2. Test + commit chunk stealing.
-3. Chọn ánh xạ tốt hơn: `src/replay.py` trên log các run (DN lỗi), thử bỏ phiếu nhiều ánh xạ / đồng thuận đáp án.
-4. Run tiếp: pipeline + think-map (+ think cho câu trả lời) với cách chọn ánh xạ mới; public test → file nộp nếu tốt.
-5. Docker 5090: kiểm tra cấu hình cuối, ước lượng thời gian.
+1. `tests/run_all.sh` PASS → commit → preflight → chạy **v4** (pipeline + think-map + kc 6 + escalate 4 + complete-map +
+   qclean) train + public, và **ablation** escalate 0 (acc khác) để đo phần đóng góp.
+2. Chấm v4 (report.py), phân tích lỗi còn lại theo DN / loại câu; cập nhật EXPERIMENT_LOG.
+3. Nếu tốt: tạo file nộp public từ run public v4 (`results/pub/submission.jsonl`) cho user.
+4. Tiếp tục: chọn ánh xạ theo đồng thuận đáp án giữa nhiều ứng viên (replay), kiểm tra bảng phụ (kho, lô, nhập), Docker 5090.

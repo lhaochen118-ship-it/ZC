@@ -74,6 +74,13 @@ w4 = canon.secondary_checks(C4, biz)
 check("missing trip_no", any("C['deliveries'] lacks ['trip_no']" in x for x in w4), w4)
 check("paid_at_purchase is a time", any("paid_at_purchase must be the AMOUNT" in x for x in w4), w4)
 check("payments without total_payable", any("orders has no total_payable" in x for x in w4), w4)
+# item groups that do not reach the lines; returned orders that are not 'trả hàng'
+C5 = C_of("Tiền hàng"); C5["items"] = pd.DataFrame({"item_code": ["X"], "item_group": ["vitamin"]})
+C5["orders"]["status"] = "hoàn thành"
+C5["returns"] = pd.DataFrame({"order_id": raw["Mã bill"].head(20)})
+w5 = canon.secondary_checks(C5, biz)
+check("groups not on the lines", any("item_group" in x for x in w5), w5)
+check("returns not trả hàng", any("C['returns'] have status" in x for x in w5), w5)
 # ranking: a wrong revenue column is ranked below any candidate without it; a missing secondary table costs little
 rs = canon.rank_score
 check("rank: revenue", rs({"coverage": 30, "warnings": w_bad}) < rs({"coverage": 5, "warnings": []}))

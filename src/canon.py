@@ -276,6 +276,27 @@ def secondary_checks(C, biz):
     if isinstance(P_, pd.DataFrame) and len(P_) and "total_payable" not in o:
         w.append("C['payments'] is mapped but orders has no total_payable (what the customer must pay for the whole order): debts are "
                  "total_payable minus the payments")
+    # 1c. item groups reach the lines; returned orders are 'trả hàng'; debts are the exception, not the rule
+    it = C.get("items")
+    if isinstance(it, pd.DataFrame) and "item_group" in it and it["item_group"].notna().any() and l is not None and len(l):
+        fill = float(l["item_group"].notna().mean()) if "item_group" in l else 0.0
+        if fill < 0.5:
+            w.append(f"items has item_group but only {fill:.0%} of the lines have one: merge item_group into the lines (finalize(..., "
+                     "items=...)), otherwise every question about a group of items answers 0")
+    rt = C.get("returns")
+    if isinstance(rt, pd.DataFrame) and len(rt) > 10 and "order_id" in rt and "status" in o:
+        share = float(rt["order_id"].astype(str).map(o.set_index(o["order_id"].astype(str))["status"]).eq("trả hàng").mean())
+        if share < 0.9:
+            w.append(f"only {share:.0%} of the orders in C['returns'] have status 'trả hàng': an order with any returned item is a "
+                     "returned order (rulebook §1) and does not count for revenue")
+    if isinstance(C.get("payments"), pd.DataFrame) and len(C["payments"]) and "total_payable" in o and "order_date" in o:
+        try:
+            sh = dm.Shop(C, None, {"data_end": data_end(biz)}); end = sh.data_end(); base = sh._debt_orders(end)
+            owe = len(sh.debts(end)) / max(len(base), 1)
+            if len(base) > 100 and owe > 0.05:                         # the reference mappings: at most 0.4 %
+                w.append(f"{owe:.0%} of the orders still owe money at the end of the data: check that payments.order_id matches "
+                         "orders.order_id (same codes, as text) and that total_payable is what the customer must pay for the order")
+        except Exception: pass
     # 2. lots without the allocation of sales to lots: every lot then counts as still full
     lots, ls = C.get("lots"), C.get("lot_sales")
     if isinstance(lots, pd.DataFrame) and len(lots) and l is not None and len(l) and not (isinstance(ls, pd.DataFrame) and len(ls)):

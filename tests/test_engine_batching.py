@@ -30,7 +30,7 @@ class SP:
 sys.modules["vllm"] = types.SimpleNamespace(LLM=LLM, SamplingParams=SP)
 import agent
 eng = agent.Engine.__new__(agent.Engine)
-eng.llm, eng.tok, eng.lora = LLM(), Tok(), None
+eng.llm, eng.tok, eng.lora, eng.prefix_budget = LLM(), Tok(), None, 3100
 eng.a = argparse.Namespace(max_len=100000, think=False, model="mock", prefix_budget=3100, quant="", think_map=False)
 pref = {b: f"# RULEBOOK\n{'r' * 4000}\n\n# BUSINESS README\n{b * 2000}\n\n# CANONICAL TABLES\ncard {b}" for b in "abcd"}
 convs = [[{"role": "user", "content": pref[b] + f"\n\n# EXAMPLES\nex {q}\n\n# QUESTION\nq{b}{q}-{s}"}] for b in "abcd" for q in range(5) for s in range(4)]
@@ -39,3 +39,27 @@ assert all(t.endswith(c[0]["content"][-8:]) for t, c in zip(texts, convs)), "out
 # prefix ~1500 tokens each, budget 3100 -> 2 businesses per wave -> 2 waves x (warm-up + generation)
 assert calls == [(2, 1), (40, 256), (2, 1), (40, 256)], calls
 print("calls", calls, "| PASS")
+
+# ---- StepLLM (pipeline adapter) against a mock vLLM LLMEngine: add_request / step, priority refused -> plain FCFS
+import pipeline
+sys.modules["vllm.sampling_params"] = types.SimpleNamespace(RequestOutputKind=types.SimpleNamespace(FINAL_ONLY="final"))
+
+
+class Core:
+    def __init__(self): self.q, self.calls = [], []
+    def add_request(self, rid, prompt, sp, **kw):
+        if "priority" in kw: raise ValueError("Got priority 3 but Priority scheduling is not enabled.")
+        self.q.append((rid, prompt, sp)); self.calls.append((rid, sp))
+    def step(self):
+        out, self.q = self.q[:3], self.q[3:]
+        return [types.SimpleNamespace(request_id=r, finished=True, outputs=[types.SimpleNamespace(text="T" + p[-3:], token_ids=[1, 2])]) for r, p, _ in out]
+
+
+eng.llm.llm_engine = Core()
+st = pipeline.StepLLM(eng)
+rids = [st.add([{"role": "user", "content": f"q{i:03d}"}], 0.0, 1, 64, priority=3) for i in range(7)]
+got = []
+while st.busy(): got += st.step()
+assert [g[0] for g in got] == rids and got[0][1] == "T000" and not st.prio_ok, (got, st.prio_ok)
+assert all(sp.output_kind == "final" and sp.max_tokens == 64 and sp.temperature == 0.0 for _, sp in eng.llm.llm_engine.calls)
+print("StepLLM | PASS")

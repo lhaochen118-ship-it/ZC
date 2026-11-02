@@ -458,15 +458,35 @@ class Engine:
         if os.path.isfile(cfg) and "vision_config" in json.load(open(cfg)):     # vision-language checkpoint (Qwen3.5): text only
             kw["limit_mm_per_prompt"] = {"image": 0, "video": 0}
         if a.quant: kw["quantization"] = a.quant
-        t0 = time.time()
-        self.llm = LLM(model=a.model, tensor_parallel_size=tp, dtype="half" if half else "auto", max_model_len=a.max_len,
-                       gpu_memory_utilization=0.92, enable_prefix_caching=True, seed=0, enforce_eager=a.eager, **kw)
-        print(f"[engine] {os.path.basename(a.model.rstrip('/'))} tp={tp} {kw} loaded in {time.time() - t0:.0f}s", flush=True)
+        if getattr(a, "max_num_seqs", 0): kw["max_num_seqs"] = a.max_num_seqs
+        if getattr(a, "max_batched_tokens", 0): kw["max_num_batched_tokens"] = a.max_batched_tokens
+        t0 = time.time(); base = dict(model=a.model, tensor_parallel_size=tp, dtype="half" if half else "auto", max_model_len=a.max_len,
+                                      gpu_memory_utilization=a.gpu_util, enable_prefix_caching=True, seed=0, enforce_eager=a.eager)
+        spec = {"speculative_config": {"method": "mtp", "num_speculative_tokens": a.spec_mtp}} if getattr(a, "spec_mtp", 0) else {}
+        try: self.llm = LLM(**base, **kw, **spec)
+        except Exception as e:                                         # this vLLM / model has no MTP drafter: plain decoding
+            if not spec: raise
+            print(f"[engine] MTP speculative decoding unavailable ({type(e).__name__}: {str(e)[:200]}); plain decoding", flush=True)
+            import gc, torch; gc.collect(); torch.cuda.empty_cache(); self.llm = LLM(**base, **kw); spec = {}
+        self.kv_tokens = self._kv_tokens()
+        self.prefix_budget = a.prefix_budget or (self.kv_tokens // 2 if self.kv_tokens else 32000)
+        print(f"[engine] {os.path.basename(a.model.rstrip('/'))} tp={tp} {kw} {spec} loaded in {time.time() - t0:.0f}s | "
+              f"KV cache {self.kv_tokens} tokens | prefix budget {self.prefix_budget}", flush=True)
         self.lora = None
         if a.lora:                                                     # SFT adapter (src/train_sft.py) on the quantised base
             from vllm.lora.request import LoRARequest
             self.lora = LoRARequest("sft", 1, a.lora)
         self.tok = self.llm.get_tokenizer(); self.a = a
+
+    def _kv_tokens(self):
+        """KV-cache capacity in tokens as allocated by vLLM (None if this version does not expose it)."""
+        for path in ("llm_engine.vllm_config.cache_config", "llm_engine.cache_config"):
+            obj = self.llm
+            try:
+                for name in path.split("."): obj = getattr(obj, name)
+                if obj.num_gpu_blocks: return int(obj.num_gpu_blocks) * int(obj.block_size)
+            except Exception: pass
+        return None
 
     def render(self, msgs, think=None):
         kw = {"enable_thinking": self.a.think if think is None else think} if "qwen3" in self.a.model.lower() else {}
@@ -506,7 +526,7 @@ class Engine:
         waves, cur, cur_tok = [], [], 0
         for prefix, members in groups.items():
             t = len(self.tok.encode(prefix, add_special_tokens=False))
-            if cur and cur_tok + t > self.a.prefix_budget: waves.append(cur); cur, cur_tok = [], 0
+            if cur and cur_tok + t > self.prefix_budget: waves.append(cur); cur, cur_tok = [], 0
             cur.append((prefix, members)); cur_tok += t
         if cur: waves.append(cur)
         texts = [""] * len(convs); ntok = 0
@@ -599,9 +619,17 @@ def main():
     ap.add_argument("--shots", type=int, default=4, help="v2: few-shot examples per question")
     ap.add_argument("--map-llm", action="store_true", help="v2: LLM mapping candidates even when a reference program fits")
     ap.add_argument("--no-llm", action="store_true", help="v2: no model at all (reference mappings + template programs only)")
+    ap.add_argument("--pipeline", action="store_true", help="pipelined scheduler: generation, execution and repairs overlap; GPU processes steal businesses")
+    ap.add_argument("--active", type=int, default=2, help="pipeline: businesses answering at once per GPU (prefix-cache locality)")
+    ap.add_argument("--low-water", type=int, default=64, help="pipeline: admit one more business when fewer requests are queued")
+    ap.add_argument("--claim-dir", default="", help="internal: shared claim directory of the GPU processes")
     ap.add_argument("--think-map", action="store_true", help="thinking mode for the mapping programs only (3x token budget)")
     ap.add_argument("--quant", default="", help="vLLM quantization for an unquantised checkpoint, e.g. fp8 (L4 / 5090)")
-    ap.add_argument("--prefix-budget", type=int, default=32000, help="tokens of distinct shared prefixes per generation wave (about half the KV cache)")
+    ap.add_argument("--prefix-budget", type=int, default=0, help="tokens of distinct shared prefixes per generation wave (0 = half the KV cache vLLM allocated)")
+    ap.add_argument("--gpu-util", type=float, default=0.92, help="vLLM gpu_memory_utilization (weights + activations + KV cache)")
+    ap.add_argument("--max-num-seqs", type=int, default=0, help="vLLM max concurrent sequences (0 = vLLM default)")
+    ap.add_argument("--max-batched-tokens", type=int, default=0, help="vLLM max tokens per scheduler step (0 = vLLM default)")
+    ap.add_argument("--spec-mtp", type=int, default=0, help="speculative decoding with the model's MTP head, N draft tokens (Qwen3.5); falls back to plain decoding")
     a = ap.parse_args()
     if a.dp > 1 and not a.shard: return run_dp(a)
     return run(a)
@@ -624,8 +652,14 @@ def run(a, engine=None):
     todo = [b for b in bids if not os.path.isfile(os.path.join(cache, b + ".pkl"))]
     if todo:
         with ProcessPoolExecutor(nw) as ex: list(ex.map(ingest._cache_one, [(a.split, cache, b) for b in todo]))
-    bizs = {b: load_biz(cache, a.split, b) for b in bids}
-    for b, z in bizs.items(): CARDS[b] = z.card()
+    pipe = a.pipeline and not a.v1 and not a.no_llm
+    if pipe:                                                           # loaded when the business is claimed
+        class LazyBiz(dict):
+            def __missing__(self, b): z = load_biz(cache, a.split, b); CARDS[b] = z.card(); self[b] = z; return z
+        bizs = LazyBiz()
+    else:
+        bizs = {b: load_biz(cache, a.split, b) for b in bids}
+        for b, z in bizs.items(): CARDS[b] = z.card()
     print(f"ingest {len(bids)} businesses {time.time() - t_start:.0f}s", flush=True)
 
     if not (a.no_llm and not a.v1): engine = engine or Engine(a)
@@ -640,6 +674,14 @@ def run(a, engine=None):
     logf = open(os.path.join(a.out, "logs.jsonl"), "w", encoding="utf-8")
     clog = open(os.path.join(a.out, "compile_logs.jsonl"), "w", encoding="utf-8")
     if a.log_dir: os.makedirs(a.log_dir, exist_ok=True)
+    if pipe:                                                           # pipelined scheduler (src/pipeline.py)
+        import pipeline
+        llm = engine if hasattr(engine, "add") and hasattr(engine, "step") else pipeline.StepLLM(engine)
+        pipeline.Pipeline(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, a.claim_dir).run()
+        pool.close(); sub.close(); logf.close(); clog.close()
+        print(f"DONE {len(qs)} questions in {time.time() - t_start:.0f}s", flush=True)
+        if not a.claim_dir: score_if_possible(a, qs)
+        return
     chunks = [bids[i:i + a.chunk] for i in range(0, len(bids), a.chunk)] if a.chunk else [bids]
     sec_per_q = None
     for ci, cb in enumerate(chunks):
@@ -876,10 +918,21 @@ def run_dp(a):
     argv = list(sys.argv[1:]); i = argv.index("--dp"); del argv[i:i + 2]
     cache = a.cache or os.path.join(a.out, "cache"); os.makedirs(a.out, exist_ok=True)
     nw = str(max(1, (a.workers or os.cpu_count() or 4) // n))
+    pipe = a.pipeline and not a.v1 and not a.no_llm
+    if pipe:                                                           # ingest every business once, then work stealing
+        qs0 = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+        if a.subset: qs0 = select_subset(qs0, a.subset)
+        todo = [b for b in sorted({q["business_id"] for q in qs0}) if not os.path.isfile(os.path.join(cache, b + ".pkl"))]
+        os.makedirs(cache, exist_ok=True)
+        if todo:
+            from concurrent.futures import ProcessPoolExecutor
+            with ProcessPoolExecutor(max(1, os.cpu_count() or 4)) as ex: list(ex.map(ingest._cache_one, [(a.split, cache, b) for b in todo]))
+        print(f"[dp] ingested {len(todo)} businesses in {time.time() - t0:.0f}s", flush=True)
+        claims = os.path.join(a.out, "claims"); import shutil; shutil.rmtree(claims, ignore_errors=True); os.makedirs(claims)
     procs = []
     for g in range(n):
         args = [sys.executable, os.path.abspath(__file__), a.split, os.path.join(a.out, f"shard{g}")] + argv[2:] + \
-               ["--shard", f"{g}/{n}", "--cache", cache, "--tp", "1", "--workers", nw]
+               (["--claim-dir", claims] if pipe else ["--shard", f"{g}/{n}"]) + ["--cache", cache, "--tp", "1", "--workers", nw]
         procs.append(subprocess.Popen(args, env=dict(os.environ, CUDA_VISIBLE_DEVICES=str(g)),
                                       stdout=open(os.path.join(a.out, f"shard{g}.log"), "w"), stderr=subprocess.STDOUT))
     def merge(files=("submission.jsonl",)):                           # atomic merge of the shards' (partial) outputs

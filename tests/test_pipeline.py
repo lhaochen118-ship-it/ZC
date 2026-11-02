@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Pipelined scheduler (src/pipeline.py) without a GPU, against the round-based path on the same mini split.
+Two businesses: biz_101 (no reference fits on train -> LLM mapping; the first mapping leaves a status unmapped -> check
+fails -> repair) and biz_102 (reference transfer). A fake engine finishes at most 7 requests per step, so generation,
+execution and repairs interleave. Checks: same final answers as the round-based path, every question logged once,
+compile logs complete, the claim of a business is exclusive.
+Usage: test_pipeline.py <train_split_dir> <scratch_dir>"""
+import os, sys, json, shutil, argparse
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
+import agent, pipeline, qparse
+
+split, scratch = sys.argv[1], sys.argv[2]
+mini = os.path.join(scratch, "mini_pipe"); shutil.rmtree(mini, ignore_errors=True); os.makedirs(os.path.join(mini, "data"))
+for f in ("rulebook.md", "calendar.csv"): shutil.copy(os.path.join(split, f), mini)
+want = []
+for b in ("biz_101", "biz_102"):
+    os.symlink(os.path.abspath(os.path.join(split, "data", b)), os.path.join(mini, "data", b))
+    qs = [json.loads(l) for l in open(os.path.join(split, "questions.jsonl"), encoding="utf-8") if json.loads(l)["business_id"] == b]
+    want += [q["id"] for q in qs[:10]]
+for f in ("questions.jsonl", "answers.jsonl"):
+    rows = [l for l in open(os.path.join(split, f), encoding="utf-8") if json.loads(l)["id"] in want]
+    open(os.path.join(mini, f), "w", encoding="utf-8").writelines(rows)
+
+MAP = open(os.path.join(os.path.dirname(agent.__file__), "refs", "compile", "biz_101.py"), encoding="utf-8").read()
+BAD_MAP = MAP.replace('map_status(t["Kết quả"])', 'map_status(t["Kết quả"], {"Xong": "???"})')
+
+
+def responder(conv):
+    sysmsg, user, turns = conv[0]["content"], conv[1]["content"], len(conv)
+    if sysmsg.startswith("You are DataMate's data engineer"):
+        return "```python\n" + (BAD_MAP if turns == 2 else MAP) + "\n```"
+    q = user[user.rindex("question: ") + 10:].split("\n")[0]
+    t = qparse.K(q)
+    if "doanh thu" in t or "dthu" in t or "tien" in t: return "```python\nANSWER = {'type': 'number', 'answer': revenue(month(2026, 5))}\n```"
+    if "huy" in t: return "```python\nthis is not valid python\n```"            # exercises the repair path
+    return "```python\nraise Unanswerable('fake')\n```"
+
+
+def args(out, pipe):
+    return argparse.Namespace(split=mini, out=out, model="fake", k=2, paths="", compile=False, kc=2, repairs=1, subset=0, tau=0.5,
+                              cache=os.path.join(scratch, "cache_pipe"), tp=1, max_len=24576, think=False, workers=2, max_tokens=512,
+                              compile_tokens=2048, timeout=60, temp=0.7, eager=False, no_reflect=False, lora="", dp=1, shard="", chunk=0,
+                              budget=0, log_dir="", v1=False, qw=2.0, shots=3, map_llm=False, no_llm=False, prefix_budget=32000, quant="",
+                              think_map=False, gpu_util=0.92, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0,
+                              pipeline=pipe, active=1, low_water=4, claim_dir="")
+
+
+shutil.rmtree(os.path.join(scratch, "cache_pipe"), ignore_errors=True)
+a_rb = args(os.path.join(scratch, "out_rounds"), False); agent.run(a_rb, engine=agent.FakeEngine(responder))
+a_pp = args(os.path.join(scratch, "out_pipe"), True); agent.run(a_pp, engine=pipeline.FakeStepLLM(responder))
+
+
+def finals(out): return {json.loads(l)["id"]: json.loads(l) for l in open(os.path.join(out, "submission.jsonl"), encoding="utf-8")}
+
+
+fr, fp = finals(a_rb.out), finals(a_pp.out)
+logs = [json.loads(l) for l in open(os.path.join(a_pp.out, "logs.jsonl"), encoding="utf-8")]
+clog = [json.loads(l) for l in open(os.path.join(a_pp.out, "compile_logs.jsonl"), encoding="utf-8")]
+chosen = {c["business_id"]: c["chosen"] for c in clog if "chosen" in c}
+res = json.load(open(os.path.join(a_pp.out, "score.json")))
+print("pipeline", {k: res.get(k) for k in ("PA", "correct", "wrong", "abstain")}, "| chosen", chosen)
+assert set(fp) == set(want) and len(logs) == len(want), "every question answered and logged exactly once"
+diff = [q for q in want if fr[q] != fp[q]]
+assert not diff, f"pipeline differs from the round-based path on {diff[:3]}: {[(fr[q], fp[q]) for q in diff[:3]]}"
+assert chosen["biz_101"].startswith("llm:") and chosen["biz_102"].startswith("ref:"), chosen
+assert any(any(len(v) > 1 for v in c["llm_attempts"].values()) for c in clog if "llm_attempts" in c), "the bad mapping was not repaired"
+cd = os.path.join(scratch, "claims_test"); shutil.rmtree(cd, ignore_errors=True); os.makedirs(cd)
+assert pipeline.claim(cd, "biz_1") and not pipeline.claim(cd, "biz_1") and pipeline.claim(cd, "biz_2"), "claims must be exclusive"
+print("PASS")

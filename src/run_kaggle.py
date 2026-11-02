@@ -23,4 +23,24 @@ if "--model" in args:                                                 # prefer w
         if not os.path.isfile(os.path.join(dst, "config.json")):
             t = time.time(); subprocess.run(["cp", "-r", src, dst]); print(f"model copied to {dst} in {time.time() - t:.0f}s", flush=True)
         args[i] = dst
-os.execv(sys.executable, [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent.py"), split, out] + args)
+os.makedirs(out, exist_ok=True)
+try:
+    import vllm; print("vllm", vllm.__version__, flush=True)
+except Exception as e: print("vllm import:", e, flush=True)
+# GPU monitor: one sample per GPU every 5 s (utilisation %, memory MiB) -> OUT/gpu_monitor.csv, summary -> gpu_summary.json
+mon = subprocess.Popen(["nvidia-smi", "--query-gpu=index,utilization.gpu,memory.used,memory.total", "--format=csv,noheader,nounits", "-l", "5"],
+                       stdout=open(os.path.join(out, "gpu_monitor.csv"), "w"), stderr=subprocess.DEVNULL)
+t0 = time.time()
+rc = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent.py"), split, out] + args).returncode
+mon.terminate()
+import json, collections
+g = collections.defaultdict(list)
+for line in open(os.path.join(out, "gpu_monitor.csv")):
+    try: i, u, m, tot = [float(x) for x in line.split(",")]; g[int(i)].append((u, m, tot))
+    except ValueError: pass
+summ = {f"gpu{i}": {"mean_util": round(sum(u for u, _, _ in v) / len(v), 1), "busy_share": round(sum(u >= 50 for u, _, _ in v) / len(v), 3),
+                    "peak_mem_gb": round(max(m for _, m, _ in v) / 1024, 1), "total_gb": round(v[0][2] / 1024, 1), "samples": len(v)} for i, v in sorted(g.items())}
+summ["wall_s"] = round(time.time() - t0)
+json.dump(summ, open(os.path.join(out, "gpu_summary.json"), "w"), indent=1)
+print("GPU", json.dumps(summ), flush=True)
+sys.exit(rc)

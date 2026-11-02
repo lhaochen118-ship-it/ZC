@@ -52,8 +52,8 @@ file này giải thích lý do và ghi số đo.*
 | v1q35-1 | round-based, Qwen3.5-9B FP8 | 750 + 749 train (2 shard) | 2424 / 2549 | | | 0.900 / 0.877 |
 | p1q14b-1 | `--pipeline`, Qwen3-14B-AWQ | 3000 train | đang chạy | | | |
 | p2q35-1 | `--pipeline`, Qwen3.5-9B FP8 | 3000 train | đang chạy | | | |
-| zc-v4b-1 | pipeline + think-map + escalate 4, kc 6 | 3000 train | 6046 (agent 5717) | 89.5 / 92.7 / 94.2 / 84.3 % | 20.6–21.9 / 22.5 GB | **0.955** |
-| zc-v4b-2 | như trên | 1000 public | 7599 (agent 7252) | 95.5 / 84.9 / 84.5 / 78.7 % | 20.9–21.7 / 22.5 GB | — |
+| zc-v4b-1 | pipeline + think-map + escalate 4, kc 6 | 3000 train | 6046 (agent 5717) | 89.5 / 92.7 / 94.2 / 84.3 % (VRAM 20.6–21.9 / 22.5 GB) | — | **0.955** |
+| zc-v4b-2 | như trên | 1000 public | 7599 (agent 7252) | 95.5 / 84.9 / 84.5 / 78.7 % (VRAM 20.9–21.7 / 22.5 GB) | — | — |
 
 Chi phí cố định mỗi kernel (đo 02/11): `pip install` vLLM từ wheels 398–471 s, chép mô hình 66–158 s, nạp vLLM ~3 phút.
 → thử môi trường dựng sẵn `lelynhan/zc-env-vllm032` (pip --target, gắn qua kernel source): **thất bại** (v4, 02/11).

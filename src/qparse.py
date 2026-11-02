@@ -37,7 +37,16 @@ def untelex(t):
             if len(v) > 2 and v[-1] in "fsrxj" and re.search(r"[aeiouy]", v[:-1]): v = v[:-1]
             w = v
         out.append(NEG.get(w, w))
-    return " ".join(out)
+    return dialect(" ".join(out))
+
+
+def dialect(t):
+    """central-Vietnamese words in accent-free text, only where unambiguous: 'thang ni' -> 'thang nay', 'tho mo' -> 'tho nao',
+    'toi chu' -> 'toi nay' ('mo' alone could be 'mở', so it is rewritten only after a noun that asks 'which')."""
+    t = re.sub(r"\b(thang|tuan|nam|bua|hom|ngay|quy|luc|dot)\s+ni\b", r"\1 nay", t)
+    t = re.sub(r"\b(tho|ngay|thang|xe|dong xe|hang|mat hang|mon|khach|nhan vien|loai|nhom|sp|san pham|nha cung cap|ncc)\s+mo\b", r"\1 nao", t)
+    t = re.sub(r"\b(toi|den|tu dau nam toi|tu dau thang toi)\s+chu\b", r"\1 nay", t)
+    return re.sub(r"\brua\b", "vay", t)
 
 
 Y = r"(20\d\d|\d\d)"

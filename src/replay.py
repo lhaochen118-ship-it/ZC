@@ -84,7 +84,7 @@ def main():
                 jobs.append(((rec["id"], src, code), b, rec["as_of_date"], code, a.timeout, cr["path"]))
     print(f"[replay] {len(jobs)} executions", flush=True)
     res = {}
-    for k, r in agent.pmap(pool, agent.run_code, jobs, deadline=max(900, 2 * len(jobs))):
+    for k, r in agent.pmap(pool, agent.run_code, jobs, per_task=a.timeout):
         res[k] = agent.canon_of(r["answer"]) if r.get("ok") else None
         if r.get("ok"): res[("A",) + k] = r["answer"]
     pool.close()

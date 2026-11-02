@@ -34,3 +34,6 @@ python3 tests/test_sandbox.py
 
 `test_sandbox.py`: a generated `except Exception:` cannot swallow the time-out; a late SIGALRM is ignored; `pmap`
 turns a crashing / lost task into an error result (the 02/11 Kaggle crash: a stray time-out aborted 2 of 4 GPU shards).
+
+`bash tests/run_all.sh` runs the whole CPU suite. Before any Kaggle launch, `automation/preflight.py "<jobs>"` must print
+`PREFLIGHT OK` (fanout.py enforces it).

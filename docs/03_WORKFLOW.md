@@ -18,6 +18,12 @@ tối đa trên private test, trong 6 giờ, tái lập được".*
 - **Kiểm dữ liệu đầu vào trước khi kết luận** (header Excel, định dạng số/ngày, mã hoá tiếng Việt).
 - **Không vi phạm luật BTC:** không dùng test để train, không logic theo id, tổng tham số ≤ 15B, offline.
 
+## 1a. Cổng kiểm tra trước khi chạy (user chốt 2026-11-02)
+
+Code xong → tự review diff (logic, công thức, biên, tối ưu) → `automation/preflight.py "<jobs>"` in `PREFLIGHT OK`
+(flag, file kernel, test CPU, chạy thử end-to-end trên CPU với mô hình giả) → mới được đẩy kernel. `fanout.py` tự kiểm
+và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
+
 ## 1b. Nguyên tắc dùng Kaggle (ZAIC.docx §4, cập nhật 2026-11-02)
 
 - Dùng **tất cả** acc được cấp. Token chỉ ở `~/.kaggle/tok_<username>` (quyền 600), không đưa vào code, prompt, GitHub

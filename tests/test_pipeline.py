@@ -42,7 +42,7 @@ def args(out, pipe):
                               compile_tokens=2048, timeout=60, temp=0.7, eager=False, no_reflect=False, lora="", dp=1, shard="", chunk=0,
                               budget=0, log_dir="", v1=False, qw=2.0, shots=3, map_llm=False, no_llm=False, prefix_budget=32000, quant="",
                               think_map=False, gpu_util=0.92, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0,
-                              pipeline=pipe, active=1, low_water=4, claim_dir="")
+                              pipeline=pipe, active=1, low_water=4, claim_dir="", claim_procs=1, deadline=0)
 
 
 shutil.rmtree(os.path.join(scratch, "cache_pipe"), ignore_errors=True)
@@ -77,6 +77,25 @@ assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-3000:]
 fc = finals(out_cli)
 assert fc == fp, f"CLI run differs from the in-process pipeline on {[q for q in want if fc.get(q) != fp[q]][:3]}"
 print("CLI (agent.py as __main__) | same answers")
+# the multi-GPU path on CPU: run_dp ingests once, two processes claim businesses, outputs are merged
+def cli(out, *extra):
+    shutil.rmtree(out, ignore_errors=True)
+    r = subprocess.run([sys.executable, os.path.join(os.path.dirname(agent.__file__), "agent.py"), mini, out, "--pipeline", "--fake-responder", rf,
+                        "--k", "2", "--kc", "2", "--repairs", "1", "--shots", "3", "--workers", "4", "--active", "1", "--low-water", "4",
+                        "--cache", os.path.join(scratch, "cache_pipe_dp"), *extra], capture_output=True, text=True, timeout=900)
+    assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-3000:]
+    return r.stdout
+log = cli(os.path.join(scratch, "out_dp"), "--dp", "2")
+fd = finals(os.path.join(scratch, "out_dp"))
+claims = sorted(os.listdir(os.path.join(scratch, "out_dp", "claims")))
+assert fd == fp, f"--dp 2 differs on {[q for q in want if fd.get(q) != fp[q]][:3]}"
+assert claims == ["biz_101", "biz_102"], claims
+print("run_dp --dp 2 (claims", claims, ") | same answers")
+# a budget too small to answer anything: every question must still be written (abstain), nothing lost
+cli(os.path.join(scratch, "out_budget"), "--dp", "2", "--budget", "1")
+fb = finals(os.path.join(scratch, "out_budget"))
+assert set(fb) == set(want), f"{len(set(want) - set(fb))} questions missing under the time budget"
+print("budget 1 s |", sum(1 for v in fb.values() if v["type"] == "abstain"), "of", len(fb), "abstained, none missing")
 cd = os.path.join(scratch, "claims_test"); shutil.rmtree(cd, ignore_errors=True); os.makedirs(cd)
 assert pipeline.claim(cd, "biz_1") and not pipeline.claim(cd, "biz_1") and pipeline.claim(cd, "biz_2"), "claims must be exclusive"
 print("PASS")

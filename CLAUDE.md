@@ -36,7 +36,21 @@ Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3
 10. **Bẫy công cụ:** watcher `automation/watch_done.py` chạy `run_in_background` với `timeout` 7200000 ms (mặc định
     30 phút sẽ bị kill); `A && B && nohup C &` đưa cả chuỗi vào subshell (mất biến) → dùng `(…) &`.
 
-## Kiểm tra trước khi push (CPU, phải PASS)
+## Cổng kiểm tra trước khi chạy (user chốt 2026-11-02: "code xong phải kiểm tra lại rồi mới được chạy")
 
-`tests/README.md`: `test_ingest_robust.py`, `test_engine_batching.py`, `test_agent_v2.py`, `test_pipeline.py`,
+Mục tiêu: không còn run chết giữa chừng hay chạy cấu hình chưa tối ưu. Trước **mọi** lần đẩy kernel:
+
+1. **Tự review diff**: đọc lại từng hàm vừa sửa, tìm lỗi logic / công thức (deadline, ngân sách thời gian, đếm, chỉ số,
+   vòng lặp, đường dẫn), trường hợp biên (rỗng, None, hết giờ, worker chết, nhiều tiến trình), và chỗ chưa tối ưu
+   (GPU chờ CPU, tải lệch, đọc lại dữ liệu, bộ nhớ). Ghi các lỗi tìm được vào commit message.
+2. **`automation/preflight.py "<jobs>"`** phải in `PREFLIGHT OK`: flag hợp lệ theo `agent.build_parser()`, file kernel
+   sinh offline đúng (`OUT/...` nằm trong `/kaggle/working/results`), `tests/run_all.sh` PASS, chạy thử end-to-end đúng
+   lệnh đó trên CPU với mô hình giả (`--fake-responder`, `--subset`, cùng `--dp` / `--pipeline` / `--budget`).
+   `fanout.py` tự chạy preflight và **từ chối khởi chạy** nếu chưa qua (cache theo hash code + jobs; `--no-preflight`
+   chỉ dùng cho kernel không chạy agent, ví dụ tải mô hình).
+3. Phần không thử được trên CPU (vLLM, GPU): đối chiếu API với lần chạy GPU gần nhất đã thành công; thay đổi lớn ở
+   phần này → chạy nhỏ (`--subset`) một lần trước khi chạy toàn bộ.
+
+Test CPU (`tests/run_all.sh`, chi tiết `tests/README.md`): `test_ingest_robust`, `test_engine_batching`, `test_sandbox`,
+`test_agent_v2`, `test_pipeline` (gồm chạy CLI dưới `__main__`, `--dp 2` với claim, ngân sách thời gian), và
 `eval_lib.py` (oracle mapping train: 2666 đúng / 36 sai / 298 chưa đọc, 02/11).

@@ -19,6 +19,24 @@ args = [a for a in sys.argv[1:] if not a.startswith("--") and a not in DSARG]
 if "--accounts" in sys.argv: ACCOUNTS = sys.argv[sys.argv.index("--accounts") + 1].split(","); args = [a for a in args if a != ",".join(ACCOUNTS)]
 work, prefix, jobs = args[0], args[1], args[2]
 jobs = [j.strip() for j in (open(jobs).read().replace("\n", ";") if os.path.isfile(jobs) else jobs).split(";") if j.strip()]
+
+# pre-run gate (user rule 2026-11-02): no launch before automation/preflight.py passes for this exact code + job string
+import hashlib
+h = hashlib.sha256(";".join(jobs).encode())
+for f in sorted(f for f in glob.glob(os.path.join(ROOT, "src", "**", "*"), recursive=True) + glob.glob(os.path.join(ROOT, "automation", "*.py")) +
+                glob.glob(os.path.join(ROOT, "tests", "*")) if os.path.isfile(f) and "__pycache__" not in f):
+    h.update(f.encode()); h.update(open(f, "rb").read())
+mark = os.path.expanduser(f"~/.cache/zc_preflight/{h.hexdigest()[:16]}")
+if "--no-preflight" in sys.argv: print("preflight: SKIPPED (--no-preflight)", flush=True)
+elif os.path.isfile(mark): print("preflight: already passed for this code + jobs", flush=True)
+else:
+    pf = [j for j in jobs if j.startswith("run_kaggle.py")]
+    if pf:
+        print("preflight: running (flags, kernel files, CPU tests, CPU smoke) ...", flush=True)
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "automation", "preflight.py"), ";".join(pf)], capture_output=True, text=True)
+        print(r.stdout[-1500:], flush=True)
+        if r.returncode != 0: print("NOT LAUNCHED: preflight failed", flush=True); sys.exit(1)
+    os.makedirs(os.path.dirname(mark), exist_ok=True); open(mark, "w").write("\n".join(jobs))
 slots = [(a, s) for a in ACCOUNTS for s in (0, 1)]                       # fill BOTH GPU sessions of an account before the next (user rule: do not spend quota of extra accounts)
 nk = min(int(args[3]) if len(args) > 3 else len(slots), len(jobs))
 os.makedirs(work, exist_ok=True); procs = []

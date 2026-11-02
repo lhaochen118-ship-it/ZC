@@ -249,9 +249,12 @@ def _exec(code, g, timeout):
     return buf.getvalue()
 
 
-def pmap(pool, fn, tasks, deadline=900):
+def pmap(pool, fn, tasks, per_task=300, deadline=None):
     """robust unordered map over the CPU pool: a task whose worker raised or never returned yields an error result for
-    its key (task[0]) instead of aborting the stage."""
+    its key (task[0]) instead of aborting the stage. Deadline of the whole map = waves of `per_task` seconds (the
+    in-worker alarm limit of one task) over the pool's workers, plus 10 minutes."""
+    nproc = max(1, getattr(pool, "_processes", 1) or 1)
+    if deadline is None: deadline = (per_task + 60) * math.ceil(max(1, len(tasks)) / nproc) + 600
     t0 = time.time(); asy = [(t[0], pool.apply_async(fn, (t,))) for t in tasks]
     for key, ar in asy:
         try: yield ar.get(timeout=max(1.0, t0 + deadline - time.time()))
@@ -265,6 +268,17 @@ def _err(e, out=""):
     msg = f"{type(e).__name__}: {e}"[:600]
     if isinstance(e, FileNotFoundError): msg += "\n(Do not read files: every table is already loaded in T.)"
     return {"ok": False, "error": msg + ("\nat " + " -> ".join(where) if where else ""), "stdout": out[-800:]}
+
+
+_START = None                                                          # shared start time per CPU-task slot (pipeline deadlines)
+START_SLOTS = 1 << 16
+
+
+def _timed(arg):
+    """worker side of pipeline.CPU: record when the task actually starts (queue time does not count), then run it."""
+    slot, fn, task = arg
+    if _START is not None: _START[slot] = time.time()
+    return fn(task)
 
 
 def run_code(task):
@@ -574,6 +588,11 @@ class FakeEngine:
 
 
 # ------------------------------------------------------------------ pipeline
+def a_timeout(tasks):
+    """per-task alarm limit of run_code tasks (key, bid, as_of, code, timeout, canon_path)."""
+    return max((t[4] for t in tasks if len(t) == 6 and isinstance(t[4], (int, float))), default=300)
+
+
 def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, max_tokens, temp, label, reflect=False, think=None):
     """items: {key: conversation}, key = (id, sample index); keys in `greedy` decode at temperature 0, the others sample
     with seeds fixed by (round, sample index). Generation + execution + repair rounds.
@@ -595,7 +614,7 @@ def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, ma
                     convs[k].append({"role": "user", "content": "No ```python block was found. Output only the complete program in one ```python block."}); nxt.append(k)
                 continue
             codes[k] = code; tasks.append(make_task(k, code))
-        for k, r in pmap(pool, runner, tasks, deadline=max(900, 3 * len(tasks))):
+        for k, r in pmap(pool, runner, tasks, per_task=300 if runner in (run_mapping, run_compile) else a_timeout(tasks)):
             att = {"round": rnd, "code": codes[k], **{x: r[x] for x in r if x not in ("t", "card")}, "exec_s": round(r["t"], 2)}
             if "card" in r: att["card"] = r["card"]
             attempts[k].append(att)
@@ -620,7 +639,7 @@ def last_ok(atts):
     return ok[-1] if ok else None
 
 
-def main():
+def build_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument("split"); ap.add_argument("out")
     ap.add_argument("--model", default="Qwen/Qwen3-14B-AWQ"); ap.add_argument("--k", type=int, default=4)
@@ -648,6 +667,8 @@ def main():
     ap.add_argument("--active", type=int, default=2, help="pipeline: businesses answering at once per GPU (prefix-cache locality)")
     ap.add_argument("--low-water", type=int, default=64, help="pipeline: admit one more business when fewer requests are queued")
     ap.add_argument("--claim-dir", default="", help="internal: shared claim directory of the GPU processes")
+    ap.add_argument("--claim-procs", type=int, default=1, help="internal: number of GPU processes sharing the claims")
+    ap.add_argument("--deadline", type=float, default=0, help="internal: absolute end time (epoch s) of the whole run")
     ap.add_argument("--think-map", action="store_true", help="thinking mode for the mapping programs only (3x token budget)")
     ap.add_argument("--quant", default="", help="vLLM quantization for an unquantised checkpoint, e.g. fp8 (L4 / 5090)")
     ap.add_argument("--prefix-budget", type=int, default=0, help="tokens of distinct shared prefixes per generation wave (0 = half the KV cache vLLM allocated)")
@@ -656,8 +677,13 @@ def main():
     ap.add_argument("--max-batched-tokens", type=int, default=0, help="vLLM max tokens per scheduler step (0 = vLLM default)")
     ap.add_argument("--spec-mtp", type=int, default=0, help="speculative decoding with the model's MTP head, N draft tokens (Qwen3.5); falls back to plain decoding")
     ap.add_argument("--fake-responder", default="", help="tests: python file defining responder(conv) -> text; no model is loaded")
+    return ap
+
+
+def main():
+    ap = build_parser()
     a = ap.parse_args()
-    if a.dp > 1 and not a.shard and not a.fake_responder: return run_dp(a)
+    if a.dp > 1 and not a.shard and not a.claim_dir: return run_dp(a)
     if a.fake_responder:
         g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
         import pipeline
@@ -695,7 +721,9 @@ def run(a, engine=None):
     if not (a.no_llm and not a.v1): engine = engine or Engine(a)
     print(f"model ready {time.time() - t_start:.0f}s", flush=True)
     import multiprocessing as mp
-    pool = mp.get_context("fork").Pool(nw, initializer=_init_worker, initargs=(cache, a.split), maxtasksperchild=100)
+    global _START
+    _START = mp.get_context("fork").Array("d", START_SLOTS, lock=False)    # inherited by the forked workers
+    pool = mp.get_context("fork").Pool(nw, initializer=_init_worker, initargs=(cache, a.split), maxtasksperchild=1000)
     full_paths = (a.paths or ("".join("A" if i % 2 == 0 else "B" for i in range(a.k)) if a.compile else "B" * a.k))
     full_paths = (full_paths * a.k)[:a.k]
 
@@ -899,7 +927,7 @@ def answer_stage_v2(engine, pool, a, rulebook, bizs, qs, canon, k, repairs):
     if a.qw > 0:
         tasks = [((q["id"], "Q"), q["business_id"], q["as_of_date"], q["question"], canon[q["business_id"]]["path"], a.timeout)
                  for q in qs if q["business_id"] in canon]
-        for kk, r in pmap(pool, run_qparse, tasks, deadline=max(900, 3 * len(tasks))): rule[kk[0]] = r
+        for kk, r in pmap(pool, run_qparse, tasks, per_task=a.timeout): rule[kk[0]] = r
         print(f"[rule] {sum(1 for r in rule.values() if r.get('ok'))}/{len(tasks)} questions answered by templates", flush=True)
     by_q = defaultdict(list)
     for kk in items: by_q[kk[0]].append(kk)
@@ -944,8 +972,11 @@ def score_if_possible(a, qs):
 
 def run_dp(a):
     """One agent process per GPU (CUDA_VISIBLE_DEVICES=i), then merge submissions / logs and score."""
-    import subprocess, torch
-    n = min(a.dp, max(1, torch.cuda.device_count())); t0 = time.time()
+    import subprocess
+    t0 = time.time()
+    if a.fake_responder: n = a.dp                                      # tests: CPU processes play the GPUs
+    else:
+        import torch; n = min(a.dp, max(1, torch.cuda.device_count()))
     argv = list(sys.argv[1:]); i = argv.index("--dp"); del argv[i:i + 2]
     cache = a.cache or os.path.join(a.out, "cache"); os.makedirs(a.out, exist_ok=True)
     nw = str(max(1, (a.workers or os.cpu_count() or 4) // n))
@@ -963,7 +994,8 @@ def run_dp(a):
     procs = []
     for g in range(n):
         args = [sys.executable, os.path.abspath(__file__), a.split, os.path.join(a.out, f"shard{g}")] + argv[2:] + \
-               (["--claim-dir", claims] if pipe else ["--shard", f"{g}/{n}"]) + ["--cache", cache, "--tp", "1", "--workers", nw]
+               (["--claim-dir", claims, "--claim-procs", str(n)] if pipe else ["--shard", f"{g}/{n}"]) + ["--cache", cache, "--tp", "1", "--workers", nw] + \
+               (["--deadline", f"{t0 + a.budget:.0f}"] if a.budget else [])
         procs.append(subprocess.Popen(args, env=dict(os.environ, CUDA_VISIBLE_DEVICES=str(g)),
                                       stdout=open(os.path.join(a.out, f"shard{g}.log"), "w"), stderr=subprocess.STDOUT))
     def merge(files=("submission.jsonl",)):                           # atomic merge of the shards' (partial) outputs

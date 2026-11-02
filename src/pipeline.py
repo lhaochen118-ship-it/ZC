@@ -97,22 +97,32 @@ class FakeStepLLM:
 
 # ------------------------------------------------------------------ CPU tasks with deadlines
 class CPU:
+    """CPU tasks on the shared pool with callbacks. A task counts as lost (dead / hung worker) only when it has been
+    RUNNING longer than its own alarm limit + slack: the worker writes its start time into agent._START[slot]
+    (agent._timed), so time spent waiting in a busy queue never triggers a false time-out. Without the shared slots
+    (should not happen) a generous limit from submission is used."""
     def __init__(self, pool, slack=120):
         self.pool, self.slack, self.ready, self.live, self.n = pool, slack, deque(), {}, 0
+        self.start = agent._START
 
     def submit(self, func, task, deadline_s, cb):
-        self.n += 1; tok = self.n; self.live[tok] = (time.time() + deadline_s + self.slack, cb)
-        self.pool.apply_async(func, (task,), callback=lambda res, t=tok: self.ready.append((t, res)),
+        self.n += 1; tok = self.n; slot = tok % agent.START_SLOTS
+        if self.start is not None: self.start[slot] = 0.0
+        self.live[tok] = (slot, deadline_s + self.slack, time.time(), cb)
+        self.pool.apply_async(agent._timed, ((slot, func, task),), callback=lambda res, t=tok: self.ready.append((t, res)),
                               error_callback=lambda ex, t=tok: self.ready.append((t, (None, {"ok": False, "error": f"{type(ex).__name__}: {ex}"[:300], "t": 0.0}))))
 
     def poll(self):
         n = 0
         while self.ready:
             tok, (_, r) = self.ready.popleft()
-            if tok in self.live: _, cb = self.live.pop(tok); cb(r); n += 1
-        now = time.time()
-        for tok in [t for t, (d, _) in self.live.items() if d < now]:          # stuck worker: report a time-out, ignore it later
-            _, cb = self.live.pop(tok); cb({"ok": False, "error": "timeout: the program ran too long (worker did not return)", "t": 0.0}); n += 1
+            if tok in self.live: cb = self.live.pop(tok)[3]; cb(r); n += 1
+        now = time.time(); lost = []
+        for tok, (slot, lim, t_sub, cb) in self.live.items():
+            started = self.start[slot] if self.start is not None else 0.0
+            if (started > 0 and now - started > lim) or (self.start is None and now - t_sub > lim + 1800): lost.append(tok)
+        for tok in lost:                                                 # dead / hung worker: report a time-out, ignore it later
+            cb = self.live.pop(tok)[3]; cb({"ok": False, "error": "timeout: the program ran too long (worker did not return)", "t": 0.0}); n += 1
         return n
 
     def busy(self): return len(self.live)
@@ -143,6 +153,9 @@ class Pipeline:
         self.t0, self.ntok, self.n_answered, self.n_q = time.time(), 0, 0, len(qs)
         self.mt_map = a.compile_tokens * (3 if a.think_map else 1); self.written = set()
         self.k_now = a.k
+        # one absolute deadline for every GPU process (set by run_dp from the container start), else from now
+        self.deadline = getattr(a, "deadline", 0) or ((self.t0 + a.budget) if a.budget else 0)
+        self.n_procs = max(1, getattr(a, "claim_procs", 1) or 1)
 
     # -- plumbing
     def gen(self, conv, temp, seed, max_tokens, cb, think=None, prio=0):
@@ -297,23 +310,34 @@ class Pipeline:
         if n_pre < 1 and len(self.active) < self.a.active + 1: return True
         return self.llm.busy() < self.a.low_water and len(self.active) < self.a.active + 2
 
+    def unclaimed(self):
+        return [b for b in self.order if b not in self.active and b not in self.done_b and b not in self.skipped
+                and not (self.claim_dir and os.path.exists(os.path.join(self.claim_dir, b)))]
+
+    def claim_rest(self):
+        """claim every business nobody has started (so that each is abstained exactly once)."""
+        rest = [b for b in self.unclaimed() if claim(self.claim_dir, b)]
+        self.abstain_rest(rest); self.done_b.extend(rest); return rest
+
     def run(self):
-        a = self.a; self.skipped = set(); budget = a.budget or 0; exhausted = False
+        a = self.a; self.skipped = set(); exhausted = False
+        span = (self.deadline - self.t0) if self.deadline else 0
         while True:
-            el = time.time() - self.t0
-            if budget and el >= 0.99 * budget:                          # hard limit: unfinished questions are abstained
-                self.abstain_rest([b for b in self.order if b in self.active]); print("[pipe] time budget reached", flush=True); break
-            if not exhausted and (not budget or el < 0.95 * budget):
-                if budget and self.n_answered:                          # fast mode when the projected time exceeds the budget
-                    left = sum(len(self.by_b[b]) for b in self.order if b not in self.done_b)
-                    self.k_now = 1 if el / self.n_answered * left > 0.9 * budget - el else a.k
+            now = time.time(); left_s = (self.deadline - now) if self.deadline else None
+            if self.deadline and left_s <= 0.01 * span:                 # hard limit: every unwritten question is abstained
+                self.claim_rest(); self.abstain_rest([b for b in self.order if b in self.active])
+                print("[pipe] time budget reached", flush=True); break
+            if not exhausted and (not self.deadline or left_s > 0.05 * span):
+                if self.deadline and self.n_answered:                   # fast mode (K=1) when this process's share of the
+                    mine = sum(len(self.by_b[b]) for b in self.active) + sum(len(self.by_b[b]) for b in self.unclaimed()) / self.n_procs
+                    per_q = (now - self.t0) / self.n_answered           # remaining work would not fit before the deadline
+                    self.k_now = 1 if per_q * mine > 0.9 * left_s else a.k
                 while self.want_more():
                     b = self.next_business()
                     if b is None: exhausted = True; break
                     self.start(b)
-            elif budget and el >= 0.95 * budget and not exhausted:      # out of time: the rest is abstained (claimed first)
-                rest = [b for b in self.order if b not in self.active and b not in self.done_b and b not in self.skipped and claim(self.claim_dir, b)]
-                self.abstain_rest(rest); self.done_b.extend(rest); exhausted = True
+            elif self.deadline and left_s <= 0.05 * span and not exhausted:   # out of time: nothing new is started
+                self.claim_rest(); exhausted = True
             moved = self.cpu.poll()
             if self.llm.busy():
                 for rid, text, ntok in self.llm.step(): self.cb.pop(rid)(text, ntok); moved += 1

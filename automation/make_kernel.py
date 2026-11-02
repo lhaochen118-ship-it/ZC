@@ -28,16 +28,17 @@ MS = sys.argv[sys.argv.index("--ms") + 1].split(",") if "--ms" in sys.argv else 
 NET = "--internet" in sys.argv and not L4                                  # L4 grant sessions refuse internet
 ENV = dict(kv.split("=", 1) for kv in sys.argv[sys.argv.index("--env") + 1].split(",")) if "--env" in sys.argv else {}
 VALUED = ("--owner", "--ds", "--env", "--ks", "--ms")
-argv = [a for i, a in enumerate(sys.argv) if a not in ("--gpu", "--l4", "--internet") + VALUED and sys.argv[i - 1] not in VALUED]
+argv = [a for i, a in enumerate(sys.argv) if a not in ("--gpu", "--l4", "--internet", "--no-upload") + VALUED and sys.argv[i - 1] not in VALUED]
 kdir, slug, jobs = argv[1], argv[2], [j.split() for j in argv[3].split(";") if j.strip()]
 
 # --- 1. code dataset
 stage = os.path.join(kdir, "_code"); shutil.rmtree(stage, ignore_errors=True)
 shutil.copytree(os.path.join(ROOT, "src"), stage, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "cache"))
 json.dump({"title": "zc-code", "id": CODE_DS, "licenses": [{"name": "CC0-1.0"}]}, open(os.path.join(stage, "dataset-metadata.json"), "w"))
-exists = subprocess.run(["kaggle", "datasets", "status", CODE_DS], capture_output=True, text=True).stdout.strip().lower() == "ready"
-cmd = (["kaggle", "datasets", "version", "-p", stage, "-m", "update"] if exists else ["kaggle", "datasets", "create", "-p", stage]) + ["-r", "zip", "-q"]
-r = subprocess.run(cmd, capture_output=True, text=True); print("code dataset:", (r.stdout + r.stderr).strip().splitlines()[-1:])
+if "--no-upload" not in sys.argv:                                       # preflight.py builds the kernel files offline
+    exists = subprocess.run(["kaggle", "datasets", "status", CODE_DS], capture_output=True, text=True).stdout.strip().lower() == "ready"
+    cmd = (["kaggle", "datasets", "version", "-p", stage, "-m", "update"] if exists else ["kaggle", "datasets", "create", "-p", stage]) + ["-r", "zip", "-q"]
+    r = subprocess.run(cmd, capture_output=True, text=True); print("code dataset:", (r.stdout + r.stderr).strip().splitlines()[-1:])
 
 # --- 2. kernel
 runner = r'''

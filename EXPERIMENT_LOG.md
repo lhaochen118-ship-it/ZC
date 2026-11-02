@@ -125,3 +125,15 @@ v6-train (rule reader fixes).
     (groups not on the lines).
   - These now trigger soft checks (6dc6cbb). The study of selection by the questions' rule programs is running.
 - Mapping variance is also the main **determinism** risk (|ΔPA| ≤ 0.03 between runs). The repeat run v5-3 measures it.
+
+## Entry 7 — 2026-11-02: public v5 ×2 (determinism), mapping selection by rule programs, --confirm
+
+- Public v5-2: 113 abstains (v4b-2: 136). dev_003 went from 20 abstains to 0. dev_014 still has no mapping (complex
+  multi-sheet workbooks; every attempt failed).
+- **Determinism** (v5-2 vs v5-5, identical config): the same final answer on only **88.3 %** of the 1000 public
+  questions. Different mappings were chosen for 7 of the 13 businesses (dev_009: 17 / 21 answers differ). Cause:
+  the mapping samples are not reproducible across runs (batch composition → numerics).
+  - Response 1: selection by the rule programs of the questions (fb0020f; offline +0.014 rule PA, never worse) —
+    a stable outcome even when the sampled set differs.
+  - Response 2: v9i tests `VLLM_BATCH_INVARIANT=1`.
+- `--confirm` (rule + greedy sample first): offline on v4b, same PA with 61 % fewer LLM samples; v9 validates it on GPU.

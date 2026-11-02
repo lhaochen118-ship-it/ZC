@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-02 20:55 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-02 21:05 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự.*
 
 ## Kết quả mới nhất (Qwen3.5-9B FP8, train 3000 câu leave-one-out, 4×L4) — EXPERIMENT_LOG entry 4
@@ -42,6 +42,9 @@ Public v4b (zc-v4b-2, 7599 s) đã có: ứng viên nộp `runs/v4b/zc-v4b-2_out
   biz_105, biz_117). Đang nghiên cứu offline: chọn ánh xạ theo kết quả chương trình luật trên câu hỏi (`scratchpad/select_study.py`).
 - Commit sau v8 (chưa chạy GPU): 9778bec `--confirm` (luật + mẫu greedy trước: offline cùng PA, bớt 61 % mẫu LLM),
   6dc6cbb cảnh báo nhóm hàng / đơn trả / tỉ lệ nợ.
+- **Tất định (public v5 ×2): chỉ 88.3 % đáp án trùng** — ánh xạ khác nhau ở 7/13 DN. v9 (lelynhan, linhmai24: train,
+  public, public lặp; code mới: chọn ánh xạ theo chương trình luật + --confirm 1) và v9i (thnliu: public ×2 với
+  VLLM_BATCH_INVARIANT=1) đang qua preflight (≈ 21:05).
 - Container restart 20:03: runner + watcher chạy lại bằng `--attach` (8 kernel v5/v6/v7 vẫn RUNNING trên Kaggle).
 - Chưa chạy GPU (gom vào **v8**): 7ed7241 import hook `import datamate` (12.9 % lần thử train / 21.5 % public từng lỗi
   ModuleNotFoundError), e75c49a (Period thay ngày, lọc theo cột bất kỳ, nợ cần dữ liệu thanh toán).

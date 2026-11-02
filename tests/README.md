@@ -27,3 +27,10 @@ python3 tests/test_pipeline.py data/raw/train/train <scratch>
 `test_pipeline.py`: the pipelined scheduler gives the same answers as the round-based path (fake engine finishing 7
 requests per step: generation / execution / repairs interleave), claims are exclusive. `test_engine_batching.py` also
 checks the vLLM request-level adapter (`StepLLM`) against a mock `LLMEngine`.
+
+```bash
+python3 tests/test_sandbox.py
+```
+
+`test_sandbox.py`: a generated `except Exception:` cannot swallow the time-out; a late SIGALRM is ignored; `pmap`
+turns a crashing / lost task into an error result (the 02/11 Kaggle crash: a stray time-out aborted 2 of 4 GPU shards).

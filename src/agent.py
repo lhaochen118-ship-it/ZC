@@ -219,20 +219,43 @@ def _namespace(bid, as_of=None, canon_path=None):
     return g
 
 
-class _Timeout(Exception): pass
+class _Timeout(BaseException):
+    """BaseException, so that `except Exception:` in a generated program cannot swallow the time-out."""
 
 
-def _alarm(*_): raise _Timeout()
+_ARMED = [False]
+
+
+def _alarm(*_):
+    if _ARMED[0]:                                                      # a late SIGALRM after disarm() is ignored: it used to
+        _ARMED[0] = False; raise _Timeout()                            # escape the worker and abort a whole GPU shard (02/11)
+
+
+def arm(seconds):
+    signal.signal(signal.SIGALRM, _alarm); _ARMED[0] = True; signal.alarm(int(seconds))
+
+
+def disarm():
+    signal.alarm(0); _ARMED[0] = False
 
 
 def _exec(code, g, timeout):
     import io, contextlib
     buf = io.StringIO()
-    signal.signal(signal.SIGALRM, _alarm); signal.alarm(timeout)
+    arm(timeout)
     try:
         with contextlib.redirect_stdout(buf): exec(compile(code, "<program>", "exec"), g)
-    finally: signal.alarm(0)
+    finally: disarm()
     return buf.getvalue()
+
+
+def pmap(pool, fn, tasks, deadline=900):
+    """robust unordered map over the CPU pool: a task whose worker raised or never returned yields an error result for
+    its key (task[0]) instead of aborting the stage."""
+    t0 = time.time(); asy = [(t[0], pool.apply_async(fn, (t,))) for t in tasks]
+    for key, ar in asy:
+        try: yield ar.get(timeout=max(1.0, t0 + deadline - time.time()))
+        except BaseException as e: yield key, {"ok": False, "error": f"worker failed: {type(e).__name__}: {e}"[:300], "t": 0.0}
 
 
 def _err(e, out=""):
@@ -321,9 +344,9 @@ def run_mapping(task):
     try:
         biz = _lru(_BIZ, bid, lambda: load_biz(_CTX["cache"], _CTX["split"], bid))
         meta = canonmod.load_meta().get(rid, {}).get("tables") if rid and not rid.startswith("fmt:") else None
-        signal.signal(signal.SIGALRM, _alarm); signal.alarm(300)
+        arm(300)
         try: r = canonmod.run_mapping(code, biz, meta)
-        finally: signal.alarm(0)
+        finally: disarm()
         if r["ok"]:
             C = r.pop("C"); pickle.dump({"C": C, "notes": r["notes"], "v2": True, "data_end": canonmod.data_end(biz)}, open(out_path, "wb"), protocol=4)
             r.update(path=out_path, sig=signature(C), card=canonmod.card(C, r["notes"]))
@@ -572,7 +595,7 @@ def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, ma
                     convs[k].append({"role": "user", "content": "No ```python block was found. Output only the complete program in one ```python block."}); nxt.append(k)
                 continue
             codes[k] = code; tasks.append(make_task(k, code))
-        for k, r in pool.imap_unordered(runner, tasks, chunksize=2):
+        for k, r in pmap(pool, runner, tasks, deadline=max(900, 3 * len(tasks))):
             att = {"round": rnd, "code": codes[k], **{x: r[x] for x in r if x not in ("t", "card")}, "exec_s": round(r["t"], 2)}
             if "card" in r: att["card"] = r["card"]
             attempts[k].append(att)
@@ -805,7 +828,7 @@ def canon_stage_v2(engine, pool, a, rulebook, bizs, bids, clog):
     tasks = [((b, rid), b, code, rid, os.path.join(cdir, f"{b}.ref_{rid}.pkl")) for b in bids for rid, code in progs.items()
              if not (exclude_own and rid == b) and resolvable(bizs[b], "generic" if rid.startswith("fmt:") else meta.get(rid, {}))]
     cands = defaultdict(list); t0 = time.time()
-    for k, r in pool.imap_unordered(run_mapping, tasks):
+    for k, r in pmap(pool, run_mapping, tasks):
         if r.get("ok"): cands[k[0]].append(("ref:" + k[1], r))
     print(f"[map] transfer: {len(tasks)} reference programs tried, {sum(len(v) for v in cands.values())} fit, "
           f"{sum(1 for b in bids if cands[b])}/{len(bids)} businesses mapped ({time.time() - t0:.0f}s)", flush=True)
@@ -876,7 +899,7 @@ def answer_stage_v2(engine, pool, a, rulebook, bizs, qs, canon, k, repairs):
     if a.qw > 0:
         tasks = [((q["id"], "Q"), q["business_id"], q["as_of_date"], q["question"], canon[q["business_id"]]["path"], a.timeout)
                  for q in qs if q["business_id"] in canon]
-        for kk, r in pool.imap_unordered(run_qparse, tasks, chunksize=4): rule[kk[0]] = r
+        for kk, r in pmap(pool, run_qparse, tasks, deadline=max(900, 3 * len(tasks))): rule[kk[0]] = r
         print(f"[rule] {sum(1 for r in rule.values() if r.get('ok'))}/{len(tasks)} questions answered by templates", flush=True)
     by_q = defaultdict(list)
     for kk in items: by_q[kk[0]].append(kk)

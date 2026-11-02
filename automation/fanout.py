@@ -60,7 +60,6 @@ while procs:
             acc = [a for a in ACCOUNTS[k % len(ACCOUNTS):] + ACCOUNTS if a not in tried[k]][0]; tried[k].add(acc)
             make(os.path.join(work, slug), slug, jobs[k::nk], acc, gpu); time.sleep(40)
             print(f"{slug}: push failed -> retry on {acc}", flush=True); procs[k] = launch(k); continue
-        res = glob.glob(os.path.join(work, slug + "_out", "results", "*.json"))
-        for f in res: shutil.copy(f, os.path.join(ROOT, "results"))
+        res = glob.glob(os.path.join(work, slug + "_out", "results", "**", "submission.jsonl"), recursive=True)   # outputs stay in <work>
         print(f"{slug}: {'OK' if 'STATUS=DONE:complete' in log else 'FAILED'} {len(res)} results, rc!=0: {log.count('rc=') - log.count('rc=0')}", flush=True)
     time.sleep(15)

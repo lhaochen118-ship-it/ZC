@@ -62,7 +62,11 @@ def run(ij):
     i, j = ij
     env = dict(os.environ, OMP_NUM_THREADS=TH, MKL_NUM_THREADS=TH, OPENBLAS_NUM_THREADS=TH, ZC_OUT=R, ZC_DATA=DATA, **ENV)
     if NGPU and len(JOBS) > 1: env["CUDA_VISIBLE_DEVICES"] = str(i %% NGPU)
-    cmd = [sys.executable, j[0]] + [SUB.get(a, a) for a in j[1:]]
+    def sub(x):                                                        # OUT, OUT/train, DATA/..., INPUT/... (prefix tokens)
+        for k, v in SUB.items():
+            if x == k or x.startswith(k + "/"): return v + x[len(k):]
+        return x
+    cmd = [sys.executable, j[0]] + [sub(a) for a in j[1:]]
     t = time.time(); log = os.path.join(L, "_".join(j).replace(".py", "").replace("/", "-")[:120] + ".log")
     r = subprocess.run(cmd, cwd=C, stdout=open(log, "w"), stderr=subprocess.STDOUT, env=env)
     print(f"done {' '.join(j)} rc={r.returncode} {time.time()-t:.0f}s", flush=True); return r.returncode

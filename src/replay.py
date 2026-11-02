@@ -58,7 +58,7 @@ def main():
             if not canonmod.resolvable(biz, "generic" if rid.startswith("fmt:") else meta.get(rid, {})): continue
         tasks.append(((b, src), b, code, rid, os.path.join(a.work, "canon", f"{b}.{src.replace(':', '_')}.pkl")))
     cands = defaultdict(list)
-    for (b, src), r in pool.imap_unordered(agent.run_mapping, tasks):
+    for (b, src), r in agent.pmap(pool, agent.run_mapping, tasks):
         if r.get("ok"): cands[b].append((src, r))
     rank = {}
     for b in bids:
@@ -84,7 +84,7 @@ def main():
                 jobs.append(((rec["id"], src, code), b, rec["as_of_date"], code, a.timeout, cr["path"]))
     print(f"[replay] {len(jobs)} executions", flush=True)
     res = {}
-    for k, r in pool.imap_unordered(agent.run_code, jobs, chunksize=8):
+    for k, r in agent.pmap(pool, agent.run_code, jobs, deadline=max(900, 2 * len(jobs))):
         res[k] = agent.canon_of(r["answer"]) if r.get("ok") else None
         if r.get("ok"): res[("A",) + k] = r["answer"]
     pool.close()

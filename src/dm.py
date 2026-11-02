@@ -306,7 +306,10 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
     dropped; qty_base = qty * factor; an order with any returned line or returned status is 'trả hàng'; valid = not
     cancelled and not returned; order revenue = sum of line amounts (after line discounts)."""
     L = lines.copy().reset_index(drop=True)
-    if "order_id" not in L.columns: raise ValueError("lines need an order_id column")
+    if "order_id" not in L.columns:
+        raise ValueError("lines need an order_id column (the code shared by the lines of one order). When the file has one row per "
+                         "order (no item lines), build lines from the same rows: frame(t, order_id=<order code column>, "
+                         "line_amount=<tiền hàng column>), then finalize(lines, orders)")
     oid = L["order_id"].where(~L["order_id"].astype(str).str.strip().isin(["", "nan", "None", "NaN"]))
     L["order_id"] = oid.ffill().astype(str).str.strip()                # §8: a blank order id continues the order above
     order_level = [c for c in ORDER_COLS if c in L.columns and c not in ("order_id", "revenue", "valid")]
@@ -843,15 +846,21 @@ class Shop:
         e = self.meta.get("data_end"); return _ts(e) if e is not None else self.last
 
     def stock_at(self, item, d):
-        """stock of item (base units) at the end of day d: ledger if any, else snapshot at the end of the data rolled back
-        with purchases and sales after d."""
+        """stock of item (base units) at the end of day d: ledger if any; else snapshot at the end of the data rolled back
+        with purchases and sales after d; else (lots + lot_sales, no snapshot) the remaining quantity of its lots
+        (lot_stock: matches the training answers of every lot-based pharmacy, 31 / 32 questions)."""
         d = _ts(d); ks = self._item_keys(item)
         lg = self.C.get("ledger")
         if lg is not None and len(lg):
             g = lg[self._match(lg, ("item_code", "item_name"), ks)].copy(); g["time"] = pd.to_datetime(g["time"])
             g = g[g["time"] < d + D].sort_values("time", kind="mergesort")
             return _num(g["stock_after"].iloc[-1]) if len(g) else 0
-        st = self.C.get("stock"); require(st is not None and len(st), "no stock records")
+        st = self.C.get("stock"); lots = self.C.get("lots"); ls = self.C.get("lot_sales")
+        if (st is None or not len(st)) and lots is not None and len(lots) and ls is not None and len(ls):
+            require(self._match(lots, ("item_code", "item_name"), ks).any(), f"{item} has no lot")
+            L = self.lot_stock(d)
+            return _num(float(L.loc[self._match(L, ("item_code", "item_name"), ks), "remaining"].sum()))
+        require(st is not None and len(st), "no stock records")
         m = st[self._match(st, ("item_code", "item_name"), ks)]; require(len(m), f"{item} is not in the stock list")
         q = float(m["qty_base"].sum()); end = self.data_end()
         if d >= end: return _num(q)

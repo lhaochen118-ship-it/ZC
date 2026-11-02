@@ -59,6 +59,9 @@ assert not C("tháng 7 doanh thu", "thăng 7 doanh thu"), "a word the user accen
 assert not C("doanh thu", "doanh thu\nGiải thích: ..."), "explanations must be rejected"
 m = qnorm_llm.merge("tháng 7 Coca Cola 330ml ban duoc bao nhieu", "tháng 7 Côca Côla 330ml bán được bao nhiêu")
 assert m == "tháng 7 Coca Cola 330ml bán được bao nhiêu", m
+# a question typed with accents keeps its deliberate accent-free words ('so số' = compare, 'ca chiều' = shift)
+q = "Xem giúp so số đĩa cơm bán ra trong 7 ngày, với 7 ngày trước"
+assert qnorm_llm.merge(q, "Xem giúp số số đĩa cơm bán ra trong 7 ngày, với 7 ngày trước", q) == q
 # the job end to end with a fake LLM that returns the user's accents (accented questions) / the rules' text
 mini = os.path.join(scratch, "mini_qn"); shutil.rmtree(mini, ignore_errors=True); os.makedirs(os.path.join(mini, "data"))
 for f in ("rulebook.md", "calendar.csv"): shutil.copy(os.path.join(split, f), mini)

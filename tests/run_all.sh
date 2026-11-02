@@ -21,5 +21,6 @@ run test_sandbox 300 python3 tests/test_sandbox.py
 run test_agent_v2 900 python3 tests/test_agent_v2.py $SPLIT $S/t_v2
 run test_plausibility 900 python3 tests/test_plausibility.py $SPLIT $CACHE
 run test_qnorm 900 python3 tests/test_qnorm.py $SPLIT $S/t_qn
+run test_mapping_fixes 300 python3 tests/test_mapping_fixes.py
 run test_pipeline 3600 python3 tests/test_pipeline.py $SPLIT $S/t_pipe
 echo "ALL PASS"

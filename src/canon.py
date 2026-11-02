@@ -10,9 +10,24 @@ Two sources of candidate mapping programs, all executed, checked (dm.check) and 
      similar reference programs (by table / column overlap) as examples.
 
 Usage (offline check of the transfer step): canon.py <split_dir> <cache_dir> [bid ...]"""
-import os, re, sys, json, glob, pickle, traceback
+import os, re, sys, json, glob, pickle, difflib, traceback, unicodedata
 import numpy as np
 import pandas as pd
+
+
+def _lenient_fillna(orig):
+    """fillna(None) / fillna() is a no-op instead of "Must specify a fill 'value' or 'method'" (28 of the 92 failed
+    mapping attempts of v4b): a missing value stays missing, which is what such code means."""
+    def fillna(self, value=None, *args, **kw):
+        if value is None and not args and kw.get("method") is None and kw.get("limit") is None:
+            return None if kw.get("inplace") else self.copy()
+        return orig(self, value, *args, **kw)
+    fillna.__wrapped__ = orig
+    return fillna
+
+
+for _cls in (pd.Series, pd.DataFrame):
+    if not hasattr(_cls.fillna, "__wrapped__"): _cls.fillna = _lenient_fillna(_cls.fillna)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dm, ingest
@@ -181,13 +196,105 @@ def plausibility(C, biz):
     return errs
 
 
+def _fold(x):
+    x = unicodedata.normalize("NFD", str(x)).replace("đ", "d").replace("Đ", "D")
+    return re.sub(r"[^a-z0-9]", "", "".join(c for c in x if unicodedata.category(c) != "Mn").lower())
+
+
+def key_hint(e, biz):
+    """for a KeyError on a table / column name: the closest real names (accents, case and spacing aside), so that the
+    repair round can fix it (43 of the 92 failed mapping attempts of v4b were wrong column names)."""
+    if not isinstance(e, KeyError) or not e.args: return ""
+    k = str(e.args[0]).split(" (")[0]
+    names = {}
+    for t, df in biz.tables.items():
+        names.setdefault(_fold(t), (t, None))
+        for c in df.columns:
+            if not str(c).startswith("_"): names.setdefault(_fold(c), (str(c), t))
+    close = difflib.get_close_matches(_fold(k), list(names), n=5, cutoff=0.6)
+    if not close: return ""
+    return " | closest names in the data: " + ", ".join(f"{names[c][0]!r} ({'table' if names[c][1] is None else 'column of ' + names[c][1]})" for c in close)
+
+
+REV_NAMES = {"tienhang", "tienban", "thanhtienhang", "doanhthu"}       # rulebook §1: "tiền hàng, tiền bán ... cùng nghĩa với doanh thu"
+
+
+def _num(s): return pd.to_numeric(s.map(lambda v: ingest.parse_num(v) if isinstance(v, str) else v), errors="coerce")
+
+
+def warning_penalty(w):
+    """coverage points a soft warning costs when candidate mappings are ranked: a wrong revenue column breaks most
+    answers (always ranked below), a missing secondary table only its own questions."""
+    return 100.0 if str(w).startswith("orders.revenue differs") else 2.0
+
+
+def rank_score(r):
+    """ranking of a candidate mapping that runs: coverage minus its warnings (pipeline.select, replay)."""
+    return float(r.get("coverage") or 0) - sum(warning_penalty(w) for w in r.get("warnings") or [])
+
+
+def secondary_checks(C, biz):
+    """soft content checks (warnings, not errors: the mapping is kept): they are sent back once in the completeness round
+    and rank candidate mappings (fewer warnings first). Every reference mapping of the training split gives none
+    (tests/test_plausibility.py)."""
+    w = []
+    o, l = C.get("orders"), C.get("lines")
+    if o is None or not len(o) or "order_id" not in o: return w
+    ids = set(o["order_id"].astype(str).str.strip())
+    v = o[o["valid"].astype(bool)] if "valid" in o else o
+    # 1. revenue against a column the data itself calls tiền hàng / tiền bán / doanh thu (one value per order)
+    if "revenue" in o and len(v) > 50:
+        rv = pd.to_numeric(v["revenue"], errors="coerce"); vid = v["order_id"].astype(str).str.strip()
+        for t, df in biz.tables.items():
+            rcs = [c for c in df.columns if _fold(c) in REV_NAMES]
+            if not rcs or len(df) < 50: continue
+            for kc in df.columns:
+                if kc in rcs or df[kc].head(200).astype(str).str.strip().isin(ids).mean() < 0.9: continue   # cheap pre-check
+                kv = df[kc].astype(str).str.strip()
+                if kv.isin(ids).mean() < 0.9 or kv.duplicated().mean() > 0.05: continue   # one row per order
+                for rc in rcs:                                         # (exported duplicates of a few rows aside)
+                    m = pd.Series(_num(df[rc]).values, index=kv.values).groupby(level=0).first()
+                    x = vid.map(m); ok = rv.notna() & x.notna()
+                    if ok.sum() < 50: continue
+                    off = ((rv[ok] - x[ok]).abs() > (1 + 0.005 * x[ok].abs())).mean()
+                    tot = float(rv[ok].sum() / x[ok].sum() - 1) if x[ok].sum() else 0.0
+                    if off > 0.02 or abs(tot) > 0.005:                 # the reference mappings: 0 % / 0 %
+                        w.append(f"orders.revenue differs from the column '{rc}' of {t} on {off:.0%} of the orders (total {tot:+.1%}). Rulebook §1: the "
+                                 f"tiền hàng / tiền bán of an order IS its revenue (line amounts after line discounts, before order "
+                                 f"discounts, without VAT or shipping): map revenue (and the line amounts of order-only data) to '{rc}'")
+                break
+    # 2. lots without the allocation of sales to lots: every lot then counts as still full
+    lots, ls = C.get("lots"), C.get("lot_sales")
+    if isinstance(lots, pd.DataFrame) and len(lots) and l is not None and len(l) and not (isinstance(ls, pd.DataFrame) and len(ls)):
+        w.append("C['lots'] is mapped without C['lot_sales'] (order_id, lot_id, qty_base, returned_base): without it every lot "
+                 "counts as full in stock (lot_stock, lots_expiring, nearest_expiry). Map the table that records which lot each "
+                 "sold quantity came from, if the data has one")
+    # 3. purchases and lots dated inside the data
+    end = data_end(biz)
+    p = C.get("purchases")
+    if end is not None and isinstance(p, pd.DataFrame) and len(p) > 20 and "receipt_date" in p:
+        d = pd.to_datetime(p["receipt_date"], errors="coerce").dropna()
+        if len(d) and ((d > end + pd.Timedelta(days=2)).mean() > 0.2 or (d < end - pd.Timedelta(days=5 * 366)).mean() > 0.2):
+            w.append(f"purchase receipt dates run from {d.min().date()} to {d.max().date()}, the data ends {end.date()}: check the receipt "
+                     "date column and its conversion")
+    if isinstance(lots, pd.DataFrame) and len(lots) > 20 and "expiry" in lots:
+        ex = pd.to_datetime(lots["expiry"], errors="coerce")
+        if ex.notna().mean() < 0.8:
+            w.append(f"only {ex.notna().mean():.0%} of the lots have an expiry date that parses: check the expiry column and its format")
+        elif "receipt_date" in lots:
+            rd = pd.to_datetime(lots["receipt_date"], errors="coerce"); ok = ex.notna() & rd.notna()
+            if ok.sum() > 20 and (ex[ok] < rd[ok]).mean() > 0.2:
+                w.append("more than 20 % of the lots expire before they were received: expiry and receipt_date look swapped or wrong")
+    return w
+
+
 def run_mapping(code, biz, ref_cols=None):
-    """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used)."""
+    """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used, unused, warnings)."""
     g = namespace(biz, ref_cols)
     try: exec(compile(code, "<mapping>", "exec"), g)
     except Exception as e:
         tb = [l for l in traceback.format_exc().splitlines() if '"<mapping>"' in l][-1:]
-        return {"ok": False, "error": f"{type(e).__name__}: {str(e)[:300]}" + (f" ({tb[0].strip()})" if tb else "")}
+        return {"ok": False, "error": f"{type(e).__name__}: {str(e)[:300]}" + (f" ({tb[0].strip()})" if tb else "") + key_hint(e, biz)}
     C = g.get("C")
     if not isinstance(C, dict) or "orders" not in C: return {"ok": False, "error": "the program did not build C with C['orders']"}
     errs = dm.check(C)
@@ -195,7 +302,10 @@ def run_mapping(code, biz, ref_cols=None):
     errs = plausibility(C, biz)                                        # content checks: silent mistakes -> repairable errors
     if errs: return {"ok": False, "error": "the canonical tables look wrong:\n- " + "\n- ".join(errs), "C": C}
     unused = [t for t in biz.tables if t not in g["T"].accessed and t not in g["RAW"].accessed]
-    return {"ok": True, "C": C, "notes": str(g.get("NOTES", "")), "coverage": coverage(C), "tables_used": dict(g["T"].used), "unused": unused}
+    try: warns = secondary_checks(C, biz)
+    except Exception as e: warns = []; print(f"[canon] secondary checks failed: {type(e).__name__}: {e}", flush=True)
+    return {"ok": True, "C": C, "notes": str(g.get("NOTES", "")), "coverage": coverage(C), "tables_used": dict(g["T"].used), "unused": unused,
+            "warnings": warns}
 
 
 def resolvable(biz, ref_meta):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Accent restoration by the solution's own LLM (Qwen3.5-9B: no extra model), with a hard check, on top of the rules of
-qnorm.py. Used where the bigram model is weak (context words: mỗi / mọi, mà / mã, chở / cho, nồi / nói ...).
+qnorm.py. EVALUATED AND NOT USED (02/11, kernel zc-v4b-5): word accuracy 70.0 % vs 97.7 % for the bigram model, and all
+14 of its changes to the 3000 train questions were wrong ('so số' -> 'số số', 'ca chiều' -> 'cả chiều').
 
 check(src, out): accepted only if out, accents stripped, has EXACTLY the words of src (same order, same numbers / codes,
 nothing added, dropped or changed) and every word the user typed WITH accents is unchanged. A rejected output keeps the
@@ -31,8 +32,18 @@ def check(src, out):
     return all(x.lower() == y.lower() for x, y in zip(a, b) if not x.isascii())         # the user's accents are kept
 
 
-def merge(rule_text, llm_text):
-    """word by word: the LLM's form where the rule text has an accent-free word, the rule text's form elsewhere."""
+def typed_with_accents(question):
+    """the user typed accents (>= 15 % of the words, as qnorm.Normalizer.clean decides): an accent-free word there is
+    meant so ('so số đĩa' = compare, 'ca chiều' = shift)."""
+    ws = qnorm.WORD.findall(unicodedata.normalize("NFC", str(question or "")))
+    return bool(ws) and sum(not w.isascii() for w in ws) / len(ws) >= 0.15
+
+
+def merge(rule_text, llm_text, question=None):
+    """word by word: the LLM's form where the rule text has an accent-free word, the rule text's form elsewhere; a
+    question the user typed with accents is never changed. (Measured 02/11: the LLM is far weaker than the rules and
+    every one of its 14 changes on the train questions was wrong; the solution does not use it.)"""
+    if question is not None and typed_with_accents(question): return rule_text
     if toks(rule_text) != toks(llm_text): return rule_text
     parts = re.split(r"([^\W_]+)", unicodedata.normalize("NFC", rule_text)); lw = TOK.findall(unicodedata.normalize("NFC", llm_text.strip()))
     for k, i in enumerate(range(1, len(parts), 2)):
@@ -79,7 +90,7 @@ def main():
         for q, r in rows:
             t = (out.get(("q", q["id"])) or "").strip()
             good = check(r["clean"], t)
-            final = merge(r["clean"], t) if good else r["clean"]
+            final = merge(r["clean"], t, q["question"]) if good else r["clean"]
             n += 1; ok += good; agree += final == r["clean"]
             f.write(json.dumps({"id": q["id"], "business_id": q["business_id"], "as_of_date": q["as_of_date"], "question": q["question"],
                                 "clean_rule": r["clean"], "clean_llm": t, "llm_ok": good, "clean": final, "agree": final == r["clean"],

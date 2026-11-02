@@ -16,7 +16,7 @@ Stages
 
 Usage: agent.py <split_dir> <out_dir> --model <hf id or path> [--k 4] [--paths AABB] [--compile] [--kc 4]
                 [--repairs 2] [--subset N] [--tau 0.5] [--cache <dir>] [--tp N] [--dp N] [--think] [--workers N]"""
-import os, re, sys, json, time, math, signal, pickle, argparse, traceback
+import os, re, sys, ast, json, time, math, signal, pickle, argparse, textwrap, traceback
 if __name__ == "__main__":                                             # run as a script: other modules' `import agent` must get
     sys.modules.setdefault("agent", sys.modules["__main__"])           # THIS module (its CARDS, worker context), not a second copy
 # FlashInfer's sampler is JIT-compiled at start-up; on Kaggle L4 the build failed after 20 min (ld error). The PyTorch
@@ -154,13 +154,51 @@ CODE_RE = re.compile(r"```(?:python|py)?\s*\n(.*?)```", re.S)
 
 
 def extract_code(text):
+    """the program of a reply (largest ```python block after the reasoning), dedented: a block indented as a whole was
+    30 of the 92 failed mapping attempts of v4b (IndentationError)."""
     if "</think>" in text: text = text.rsplit("</think>", 1)[1]        # the answer follows the reasoning (Qwen3.5 may open
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)        # <think> in the prompt: no opening tag in the output)
     m = CODE_RE.findall(text)
-    if m: return max(m, key=len)
+    if m: return textwrap.dedent(max(m, key=len))
     m = re.search(r"```(?:python|py)?\s*\n(.*)$", text, re.S)                 # unterminated block (length cut)
-    if m and ("ANSWER" in m.group(1) or re.search(r"\bC\s*(=|\[)", m.group(1))): return m.group(1)
+    if m and ("ANSWER" in m.group(1) or re.search(r"\bC\s*(=|\[)", m.group(1))): return textwrap.dedent(m.group(1))
     return None
+
+
+def _target_key(st):
+    """the text of what a top-level statement assigns ('orders', 'orders["valid"]'), or None."""
+    if isinstance(st, ast.Assign) and len(st.targets) == 1: return ast.unparse(st.targets[0])
+    if isinstance(st, ast.AnnAssign): return ast.unparse(st.target)
+    return None
+
+
+def splice(prev, frag):
+    """a repair reply that rewrites only the failing statements (it uses variables it never defines, which the previous
+    program defined: 14 NameErrors in v4b; or it never sets the C / ANSWER the previous program set) -> the previous
+    program with each statement of the reply replacing the
+    previous statement that assigns the same target, the others inserted before the final `C = ...` / `ANSWER = ...`.
+    None when the reply is a complete program (nothing to splice) or either side does not parse."""
+    try: P, F = ast.parse(prev).body, ast.parse(frag).body
+    except SyntaxError: return None
+    store = lambda sts: {n.id for st in sts for n in ast.walk(st) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store)}
+    loaded = {n.id for st in F for n in ast.walk(st) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+    outs = {k for k in ("C", "ANSWER") if any(_target_key(st) == k for st in P)}      # what the previous program produced
+    partial = bool((loaded - store(F)) & store(P)) or bool(outs - store(F))          # ... and the reply does not
+    if not P or not F or not partial: return None
+    first = {}
+    for i, st in enumerate(F):
+        k = _target_key(st)
+        if k is not None: first.setdefault(k, i)
+    out, used = [], set()
+    for st in P:
+        k = _target_key(st); i = first.get(k) if k is not None else None
+        if i is not None and i not in used: out.append(F[i]); used.add(i)
+        else: out.append(st)
+    rest = [st for i, st in enumerate(F) if i not in used]
+    late = [st for st in rest if re.match(r"(C|ANSWER)\[", _target_key(st) or "")]   # C["lot_sales"] = ...: after C exists
+    rest = [st for st in rest if not any(st is x for x in late)]
+    end = next((j for j in range(len(out) - 1, -1, -1) if _target_key(out[j]) in ("C", "ANSWER")), len(out))
+    return ast.unparse(ast.Module(body=out[:end] + rest + out[end:end + 1] + late + out[end + 1:], type_ignores=[]))
 
 
 # ------------------------------------------------------------------ helpers exposed to programs

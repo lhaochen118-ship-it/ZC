@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-02 18:10 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-02 19:05 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự.*
 
 ## Kết quả mới nhất (Qwen3.5-9B FP8, train 3000 câu leave-one-out, 4×L4) — EXPERIMENT_LOG entry 4
@@ -26,16 +26,17 @@ Public v4b (zc-v4b-2, 7599 s) đã có: ứng viên nộp `runs/v4b/zc-v4b-2_out
 - Câu đã làm sạch + kỳ hiển thị cạnh câu gốc trong prompt (`--qclean`).
 - Routine tự tiếp tục: `trig_01U26KaZP68Dmg8JL2RGcbVS` (mỗi 2 giờ, vào phiên này).
 
-## Đang chạy (15:45 UTC)
+## Đang làm (19:05 UTC) — v5 chưa chạy
 
-- **v4 (14:59) chết cả 5 kernel** ở ~1230 s: `import torch, vllm` từ môi trường dựng sẵn trên mount `/kaggle/input` > 900 s
-  (TimeoutExpired không bắt). Đã sửa (`run_kaggle.py`: env chỉ dùng khi `ZC_USE_ENV=1`, probe không thể ném lỗi) +
-  `run_kernel.py` từng đọc "503 Server Error" của API thành trạng thái `error` → giờ chỉ đọc dòng `has status`.
-- **v4b** (`runs/v4b`, launched 15:40, PREFLIGHT OK, không gắn env): zc-v4b-1 train (escalate 4), -2 public, -3 train
-  escalate 0, -4 train kc 8 + repairs 3, -5 qnorm_llm. Cấu hình chung: pipeline + think-map + kc 6 + qw 4 +
-  complete-map + qclean (bản qnorm MỚI). Watcher nền (`active_runs.txt` = v4b; phải tự thêm tên run vào file này).
-- Routine `trig_01U26KaZP68Dmg8JL2RGcbVS`: mỗi giờ, tới 03/11 03:30 UTC (user: chạy liên tục 12 giờ).
-- Replay offline (CPU) trên t1q35-1 cho các DN lỗi ánh xạ: `scratchpad/replay_t1` (top1 / agree1 / vote2-3 / oracle).
+Thay đổi chưa commit (đã test riêng, chưa qua run_all / preflight):
+- `agent.extract_code` dedent; `agent.splice` (sửa lỗi dạng mảnh, gắn vào chương trình trước); `pipeline.sample`: dùng
+  splice ở vòng sửa, hết token khi thinking → vòng sau tắt thinking.
+- `canon`: gợi ý tên cột gần nhất khi KeyError; `fillna(None)` không lỗi; `secondary_checks` (cảnh báo mềm: doanh thu ≠
+  cột "Tiền hàng", lô thiếu lot_sales, ngày nhập, hạn lô) → vòng đầy đủ + xếp hạng `rank_score` (coverage − phạt).
+- `dm.stock_at`: không có snapshot → tồn = phần còn của lô (khớp 31/32 câu train nhà thuốc).
+- Đo offline: chạy lại 441 lần ánh xạ đã log → 171 → 222 lần OK; replay nhà thuốc: biz_121 0.88 → 0.98, biz_122 0.90 → 0.97.
+- Bước LLM làm sạch câu hỏi: đo xong, **không dùng** (README `question_cleaning/`).
+- Kế hoạch v5 (fanout + preflight): train esc4, public esc4, train esc4 lặp lại (đo tất định), train esc0, public lặp lại.
 
 ## Làm sạch câu hỏi (15:25 UTC) — gần xong
 

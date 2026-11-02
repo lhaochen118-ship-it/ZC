@@ -183,10 +183,11 @@ class Pipeline:
         """one sample = generation + execution + up to a.repairs repair rounds; finish(attempts) when it is settled.
         complete(r) -> message or None: one extra round asking a mapping to cover the raw tables it left unused (the last
         ok attempt is kept, so this round can only add)."""
-        st = {"conv": list(conv), "rnd": 0, "att": attempts if attempts is not None else [], "reflected": False, "completed": False}
+        st = {"conv": list(conv), "rnd": 0, "att": attempts if attempts is not None else [], "reflected": False, "completed": False,
+              "think": think}
         def launch():
             temp = 0.0 if greedy else self.a.temp
-            self.gen(st["conv"], temp, 1000 * st["rnd"] + 17 * key[1] + 1, max_tokens, on_text, think, prio)
+            self.gen(st["conv"], temp, 1000 * st["rnd"] + 17 * key[1] + 1, max_tokens, on_text, st["think"], prio)
         def retry(msg):
             if st["rnd"] < self.a.repairs:
                 st["conv"].append({"role": "user", "content": msg}); st["rnd"] += 1; launch()
@@ -197,11 +198,21 @@ class Pipeline:
             code = agent.extract_code(text)
             if code is None:
                 st["att"].append({"round": st["rnd"], "ok": False, "error": "no python code block", "gen": text[-400:]})
+                if st["think"]:                                          # the reasoning ran out of tokens (23 of 203 mapping
+                    st["think"] = False                                  # attempts of v4b): the retry writes the program
+                    return retry("No ```python block was found: the reasoning used up the token budget. Do not reason further; "
+                                 "output only the complete program in one ```python block.")
                 return retry("No ```python block was found. Output only the complete program in one ```python block.")
+            sp = None
+            if st["rnd"] > 0:                                            # a repair that sent only the fixed statements
+                prev = next((x["code"] for x in reversed(st["att"]) if x.get("code")), None)
+                sp = agent.splice(prev, code) if prev else None
+                if sp: code = sp
             self.cpu.submit(runner, make_task(key, code), self.a.timeout if runner is agent.run_code else 300,
-                            lambda r, code=code: on_exec(code, r))
-        def on_exec(code, r):
+                            lambda r, code=code, sp=bool(sp): on_exec(code, r, sp))
+        def on_exec(code, r, spliced=False):
             att = {"round": st["rnd"], "code": code, **{x: r[x] for x in r if x not in ("t", "card")}, "exec_s": round(r.get("t", 0.0), 2)}
+            if spliced: att["spliced"] = True
             if "card" in r: att["card"] = r["card"]
             st["att"].append(att)
             if not r.get("ok"):
@@ -245,13 +256,21 @@ class Pipeline:
                 self.clog.write(json.dumps({"business_id": b, "llm_attempts": {x: bs["llm"][x] for x in range(self.a.kc)}}, ensure_ascii=False, default=str) + "\n")
                 self.select(b, bs)
         def complete(r):
+            """one extra round for a mapping that runs: the soft checks it fails (canon.secondary_checks) and the raw
+            tables it leaves unused."""
+            if not getattr(self.a, "complete_map", 1): return None
             un = [t for t in r.get("unused") or [] if len(self.bizs[b].tables[t])]
-            if not un or not getattr(self.a, "complete_map", 1): return None
-            desc = "; ".join(f"`{t}` ({len(self.bizs[b].tables[t])} rows: {', '.join(map(str, list(self.bizs[b].tables[t].columns)[:12]))})" for t in un)
-            return (f"The mapping runs and passes the checks, but it does not use these raw tables: {desc}. If they hold information "
-                    "questions may ask about (purchases, stock, lots, prices, payments, debts, deliveries, expenses, staff, customers, "
-                    "items, conversions ...), add them to C under the canonical names; keep everything that already works. If none "
-                    "of them is needed, output the same program again.")
+            warns = r.get("warnings") or []
+            if not un and not warns: return None
+            parts = []
+            if warns: parts.append("The mapping runs, but these checks of its content fail:\n- " + "\n- ".join(warns))
+            if un:
+                desc = "; ".join(f"`{t}` ({len(self.bizs[b].tables[t])} rows: {', '.join(map(str, list(self.bizs[b].tables[t].columns)[:12]))})" for t in un)
+                parts.append(f"It does not use these raw tables: {desc}. If they hold information questions may ask about (purchases, "
+                             "stock, lots, prices, payments, debts, deliveries, expenses, staff, customers, items, conversions ...), add "
+                             "them to C under the canonical names.")
+            return ("\n\n".join(parts) + "\n\nFix this and output the complete program; keep everything that already works. If nothing "
+                    "needs to change, output the same program again.")
         for s in range(self.a.kc):
             self.sample((b, s), msgs, s == 0, self.mt_map, agent.run_mapping,
                         lambda k, code: (k, k[0], code, None, os.path.join(self.cdir, f"{k[0]}.llm{k[1]}.pkl")),
@@ -262,9 +281,10 @@ class Pipeline:
         if cs:
             cs.sort(key=lambda x: (not x[0].startswith("ref:"), x[0]))  # deterministic; references before LLM samples (as in agent)
             _, scores = agent.agreement([r["sig"] for _, r in cs])
-            order = sorted(range(len(cs)), key=lambda i: (-cs[i][1]["coverage"], -scores[i], i))
+            order = sorted(range(len(cs)), key=lambda i: (-canonmod.rank_score(cs[i][1]), -scores[i], i))   # coverage - warnings
             src, r = cs[order[0]]; can = {"path": r["path"], "card": r["card"], "src": src, "unused": r.get("unused") or []}
-            self.clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"]] for x, y in cs]}, ensure_ascii=False) + "\n")
+            self.clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"], len(y.get("warnings") or [])] for x, y in cs]},
+                                       ensure_ascii=False) + "\n")
             print(f"  {b}: {len(cs)} candidates, chose {src} coverage {r['coverage']:.0f} ({time.time() - bs['t']:.0f}s)", flush=True)
         else: print(f"  {b}: no canonical tables ({time.time() - bs['t']:.0f}s)", flush=True)
         self.clog.flush(); self.maps[b] = can; self.mapping.discard(b); self.own.append(b)

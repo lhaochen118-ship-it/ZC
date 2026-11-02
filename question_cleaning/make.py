@@ -47,7 +47,7 @@ for b, bq in sorted(by_b.items()):
         if q["id"] in llm:
             t = llm[q["id"]].strip(); ok = qnorm_llm.check(r["clean"], t); rec["clean_llm"] = t; rec["llm_check"] = ok
             if ok:
-                m = qnorm_llm.merge(r["clean"], t)
+                m = qnorm_llm.merge(r["clean"], t, q["question"])
                 if m != r["clean"]: rec["clean"] = m; src = "rules+llm"; r["changes"].append([r["clean"], m, "llm"])
             st["llm_ok" if ok else "llm_rejected"] += 1
         rec.update(source=src, key=qnorm.strip_accents(rec["clean"]).lower(), period=r["period"], changes=r["changes"])

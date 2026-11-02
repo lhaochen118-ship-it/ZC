@@ -37,3 +37,14 @@ turns a crashing / lost task into an error result (the 02/11 Kaggle crash: a str
 
 `bash tests/run_all.sh` runs the whole CPU suite. Before any Kaggle launch, `automation/preflight.py "<jobs>"` must print
 `PREFLIGHT OK` (fanout.py enforces it).
+
+```
+python3 tests/test_mapping_fixes.py
+```
+
+`test_mapping_fixes.py` (no data files): a code block indented as a whole runs (dedent); a repair reply holding only the
+fixed statements is spliced into the previous program (also `C["x"] = ...` after `C = ...`); a `KeyError` on a name
+gets the closest real table / column names; `fillna(None)` is a no-op; the soft checks (`canon.secondary_checks`) flag
+a revenue that differs from a "Tiền hàng" column and lots without lot sales, and nothing on a right mapping; the
+ranking puts a wrong revenue below any candidate; stock comes from the lots when there is no snapshot.
+`test_plausibility.py` also requires zero soft warnings for every reference mapping on its own business.

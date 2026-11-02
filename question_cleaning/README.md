@@ -8,7 +8,7 @@ doanh nghiệp. Không có luật nào theo doanh nghiệp hay id câu hỏi.
 |---|---|
 | `train_questions_clean.jsonl` | **3000 câu train** đã làm sạch, mỗi dòng: `id`, `business_id`, `as_of_date`, `question` (gốc), `clean`, `clean_rules`, `source`, `key`, `period`, `changes` (và `clean_llm`, `llm_check` khi đã ghép bước LLM) |
 | `stats.json` | số câu đổi, số câu theo từng quy tắc, số câu nhận ra kỳ thời gian |
-| `module/` | **module làm sạch**: `qnorm.py` (luật), `qnorm_llm.py` (bước LLM + kiểm tra cứng), `qnorm_phrases.txt` (cụm từ chung), `qnorm_train_questions.txt` (câu train có dấu dùng làm từ vựng). Bản sao **giống hệt** `src/`: `tests/test_qnorm.py` báo lỗi nếu khác |
+| `module/` | **module làm sạch**: `qnorm.py` (luật, bản dùng thật), `qnorm_llm.py` (bước LLM: đã đo, không dùng), `qnorm_phrases.txt` (cụm từ chung), `qnorm_train_questions.txt` (câu train có dấu dùng làm từ vựng). Bản sao **giống hệt** `src/`: `tests/test_qnorm.py` báo lỗi nếu khác |
 | `make.py` | tạo lại tất cả: `python3 question_cleaning/make.py data/raw/train/train [--cache <ingest cache>] [--llm <questions_clean.jsonl của qnorm_llm>]` (CPU, khoảng 10 giây) |
 
 Dùng trong code:
@@ -81,17 +81,22 @@ Câu gốc luôn là chuẩn. Agent đưa `clean` và kỳ thời gian **bên c�
 10. **Kỳ thời gian** (`period`): kỳ đầu tiên trong câu theo rulebook §2 (`qparse.parse_period`). Kết quả gồm khoảng ngày
     ISO và biểu thức toolkit, ví dụ `{"start": "2025-10-01", "end": "2025-10-31", "code": "month(2025, 10)"}`.
 
-## Bước LLM (`module/qnorm_llm.py`; job đang chạy trên Kaggle, kernel zc-v4-5)
+## Bước LLM (`module/qnorm_llm.py`): đã thử, **không dùng**
 
-Bước này dùng chính Qwen3.5-9B của giải pháp, không thêm mô hình. Mô hình thêm dấu theo ngữ cảnh cho những từ mà bigram còn
-mơ hồ: mỗi / mọi, mà / mã, chở / cho, lon / lớn, tên đường…
+Đã thử dùng chính Qwen3.5-9B của giải pháp (không thêm mô hình) để thêm dấu theo ngữ cảnh. Kernel zc-v4b-5, 02/11, 1270 s
+trên 4×L4. Đầu ra phải qua kiểm tra cứng: bỏ dấu đi phải ra **đúng** chuỗi từ đầu vào, và từ người dùng đã gõ dấu giữ nguyên.
 
-- **Kiểm tra cứng:** bỏ dấu đầu ra phải được **đúng** chuỗi từ đầu vào, không thêm, bớt hay đổi từ, số, mã.
-- Từ người dùng đã gõ dấu giữ nguyên.
-- LLM không được đổi tên viết hoa giữa câu, mã, số.
-- Đầu ra hỏng thì giữ kết quả của luật.
+| Thêm dấu cho 2162 câu có dấu đã bỏ dấu (so với dấu gốc của người dùng) | Từ đúng | Câu đúng |
+|---|---|---|
+| bigram của module (chỉ bước khôi phục dấu) | **97.7 %** | **86.9 %** |
+| Qwen3.5-9B (không thinking, greedy) | 70.0 % | 31.4 % |
 
-`make.py --llm` ghép kết quả theo từng từ. Mọi câu mà luật và LLM khác nhau sẽ được duyệt tay trước khi dùng.
+Trên 3000 câu thật, LLM chỉ đổi 14 câu so với luật, và **cả 14 đều sai**:
+- "so số đĩa … với …" (so sánh) → "số số", 10 câu;
+- "ca chiều" (ca làm việc) → "cả chiều", 4 câu.
+
+→ Bộ làm sạch cuối cùng là phần **luật** (`qnorm.py`). `qnorm_llm.py` giữ lại để đo, có kiểm tra cứng; `merge()` không bao giờ
+đổi câu người dùng đã gõ có dấu.
 
 ## Kết quả trên 3000 câu train (`stats.json`)
 
@@ -115,8 +120,8 @@ mơ hồ: mỗi / mọi, mà / mã, chở / cho, lon / lớn, tên đường…
   - tên đường không có trong dữ liệu: Bạch Đằng, Hai Bà Trưng, Lê Trọng Tấn;
   - cặp từ cùng mặt chữ: lon / lớn, vỉ / vị, của / cửa, hướng / hương, chậm / chấm.
 
-  Đây là phần dành cho bước LLM. Với câu thật gõ không dấu, sai ở mức này chỉ ảnh hưởng phần đọc của LLM; bộ đọc luật dùng
-  `key` không dấu nên không bị ảnh hưởng.
+  Bước LLM đã thử cũng không quyết được (xem trên). Với câu thật gõ không dấu, sai ở mức này chỉ ảnh hưởng phần đọc của LLM;
+  bộ đọc luật dùng `key` không dấu nên không bị ảnh hưởng.
 
 ## Ví dụ (từ `train_questions_clean.jsonl`)
 

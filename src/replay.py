@@ -11,8 +11,9 @@
      top1         candidates ranked like the run (coverage, then agreement); vote on the first
      agree1       ranked by signature agreement only
      voteM        votes of the top-M candidates added (each candidate weight 1/M)
-     oracle       best candidate per business (upper bound of mapping selection)
-Usage: replay.py <split_dir> <run_dir> <cache_dir> <work_dir> [--m 3] [--qw 2] [--tau 0.5] [--biz REGEX] [--workers 4]"""
+     fbM          top1; when its answer is unanswerable / abstain, the next of the top-M candidates that answers
+     oracle       best candidate per business (upper bound of mapping selection; only with --oracle: runs every candidate)
+Usage: replay.py <split_dir> <run_dir> <cache_dir> <work_dir> [--m 3] [--qw 2] [--tau 0.5] [--biz REGEX] [--workers 4] [--oracle]"""
 import os, re, sys, json, pickle, argparse, time
 from collections import Counter, defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -42,6 +43,7 @@ def main():
     ap.add_argument("split"); ap.add_argument("run"); ap.add_argument("cache"); ap.add_argument("work")
     ap.add_argument("--m", type=int, default=3); ap.add_argument("--qw", type=float, default=2.0); ap.add_argument("--tau", type=float, default=0.5)
     ap.add_argument("--biz", default=""); ap.add_argument("--workers", type=int, default=4); ap.add_argument("--timeout", type=int, default=60)
+    ap.add_argument("--oracle", action="store_true")
     a = ap.parse_args(); t0 = time.time()
     os.makedirs(os.path.join(a.work, "canon"), exist_ok=True)
     logs = [r for r in load_jsonl(os.path.join(a.run, "logs.jsonl")) if not a.biz or re.search(a.biz, r["business_id"])]
@@ -65,13 +67,13 @@ def main():
         cs = sorted(cands[b], key=lambda x: x[0])
         if not cs: rank[b] = {"top1": [], "agree1": []}; continue
         _, sc = agent.agreement([r["sig"] for _, r in cs])
-        rank[b] = {"top1": [cs[i] for i in sorted(range(len(cs)), key=lambda i: (-cs[i][1]["coverage"], -sc[i], i))],
+        rank[b] = {"top1": [cs[i] for i in sorted(range(len(cs)), key=lambda i: (-canonmod.rank_score(cs[i][1]), -sc[i], i))],
                    "agree1": [cs[i] for i in sorted(range(len(cs)), key=lambda i: (-sc[i], i))]}
         print(f"{b}: {len(cs)} candidates; top1 {[s for s, _ in rank[b]['top1'][:a.m]]} agree1 {[s for s, _ in rank[b]['agree1'][:a.m]]}", flush=True)
     print(f"[replay] mappings {time.time() - t0:.0f}s", flush=True)
 
     # 2. execute every distinct program of every question on the candidates that any strategy can pick
-    use = {b: {s: r for s, r in (rank[b]["top1"][:a.m] + rank[b]["agree1"][:1] + rank[b]["top1"])} for b in bids}
+    use = {b: {s: r for s, r in (rank[b]["top1"][:a.m] + rank[b]["agree1"][:1] + (rank[b]["top1"] if a.oracle else []))} for b in bids}
     jobs, progs = [], {}
     for rec in logs:
         b = rec["business_id"]; ps = []
@@ -119,11 +121,23 @@ def main():
         for b, qids in by_b.items():
             cs = pick(b)
             for qid in qids: strat[name][qid] = vote(qid, [s for s, _ in cs], [1.0 / max(len(cs), 1)] * len(cs))
-    if refs:
+    for m in range(2, a.m + 1):                                        # fallback: the next candidate only when top1 cannot answer
+        strat[f"fb{m}"] = {}
+        for b, qids in by_b.items():
+            cs = [s for s, _ in rank[b]["top1"][:m]]
+            for qid in qids:
+                p = vote(qid, cs[:1], [1.0]) if cs else {"type": "abstain"}
+                for alt in cs[1:]:
+                    if p.get("type") not in ("unanswerable", "abstain"): break
+                    q2 = vote(qid, [alt], [1.0])
+                    if q2.get("type") not in ("unanswerable", "abstain"): p = q2
+                strat[f"fb{m}"][qid] = p
+    if refs and a.oracle:
         strat["oracle"] = {}
         for b, qids in by_b.items():
             best = max(rank[b]["top1"] or [(None, None)], key=lambda x: tally({q: vote(q, [x[0]], [1.0]) for q in qids})["PA"] if x[0] else -9)
             for qid in qids: strat["oracle"][qid] = vote(qid, [best[0]], [1.0]) if best[0] else {"type": "abstain"}
+    if refs:
         out = {k: tally(v) for k, v in strat.items()}
         for k, v in out.items(): print(f"{k:8s} {v}", flush=True)
         per_b = {b: {k: tally({q: strat[k][q] for q in qids})["PA"] for k in strat} for b, qids in by_b.items()}

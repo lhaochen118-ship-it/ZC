@@ -31,7 +31,7 @@ sys.modules["vllm"] = types.SimpleNamespace(LLM=LLM, SamplingParams=SP)
 import agent
 eng = agent.Engine.__new__(agent.Engine)
 eng.llm, eng.tok, eng.lora = LLM(), Tok(), None
-eng.a = argparse.Namespace(max_len=100000, think=False, model="mock", prefix_budget=3100, quant="")
+eng.a = argparse.Namespace(max_len=100000, think=False, model="mock", prefix_budget=3100, quant="", think_map=False)
 pref = {b: f"# RULEBOOK\n{'r' * 4000}\n\n# BUSINESS README\n{b * 2000}\n\n# CANONICAL TABLES\ncard {b}" for b in "abcd"}
 convs = [[{"role": "user", "content": pref[b] + f"\n\n# EXAMPLES\nex {q}\n\n# QUESTION\nq{b}{q}-{s}"}] for b in "abcd" for q in range(5) for s in range(4)]
 texts, ntok = eng.gen(convs, [0.0] * len(convs), [1] * len(convs), 256)

@@ -43,7 +43,7 @@ def responder(conv):
 ap = argparse.Namespace(split=mini, out=os.path.join(scratch, "out_v2"), model="fake", k=2, paths="", compile=False, kc=2, repairs=1, subset=0,
                         tau=0.5, cache=os.path.join(scratch, "cache_v2"), tp=1, max_len=24576, think=False, workers=2, max_tokens=512,
                         compile_tokens=2048, timeout=60, temp=0.7, eager=False, no_reflect=False, lora="", dp=1, shard="", chunk=0, budget=0,
-                        log_dir=os.path.join(scratch, "out_v2", "logs"), v1=False, qw=2.0, shots=3, map_llm=False, no_llm=False, prefix_budget=32000, quant="")
+                        log_dir=os.path.join(scratch, "out_v2", "logs"), v1=False, qw=2.0, shots=3, map_llm=False, no_llm=False, prefix_budget=32000, quant="", think_map=False)
 shutil.rmtree(ap.cache, ignore_errors=True)
 agent.run(ap, engine=agent.FakeEngine(responder))
 res = json.load(open(os.path.join(ap.out, "score.json")))

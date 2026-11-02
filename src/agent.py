@@ -468,17 +468,17 @@ class Engine:
             self.lora = LoRARequest("sft", 1, a.lora)
         self.tok = self.llm.get_tokenizer(); self.a = a
 
-    def render(self, msgs):
-        kw = {"enable_thinking": self.a.think} if "qwen3" in self.a.model.lower() else {}
+    def render(self, msgs, think=None):
+        kw = {"enable_thinking": self.a.think if think is None else think} if "qwen3" in self.a.model.lower() else {}
         try: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, **kw)
         except TypeError: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
 
-    def fit(self, conv, max_tokens):
+    def fit(self, conv, max_tokens, think=None):
         """Render a conversation within max_len: drop older repair turns first, then shrink the output budget.
         Returns (prompt, max_tokens) or (None, 0) when there is no room (never let one long prompt fail the batch)."""
         for c in (conv, conv[:2] + conv[-2:] if len(conv) > 4 else None, conv[:2] if len(conv) > 2 else None):
             if c is None: continue
-            p = self.render(c); n = len(self.tok.encode(p, add_special_tokens=False))
+            p = self.render(c, think); n = len(self.tok.encode(p, add_special_tokens=False))
             room = self.a.max_len - n - 16
             if room >= min(max_tokens, 768): return p, min(max_tokens, room)
         return None, 0
@@ -492,14 +492,14 @@ class Engine:
         cuts = [c for c in (p.find(m) for m in Engine.PREFIX_MARKS) if c > 0]
         return p[:min(cuts)] if cuts else p
 
-    def gen(self, convs, temps, seeds, max_tokens):
+    def gen(self, convs, temps, seeds, max_tokens, think=None):
         """Requests sharing a business prefix form a group. Groups are packed into waves whose distinct prefixes fit in
         about half of the KV cache (`--prefix-budget` tokens); per wave, every prefix is prefilled once by a 1-token
         warm-up request (one batched call), then all requests of the wave are generated in ONE call, so the scheduler
         keeps the GPU full while every request reads its prefix from the cache. (v2 grouped per question: four requests
         per call, GPU mostly idle; v1 sent all businesses at once: prefixes evicted each other, ~12x slower.)"""
         from vllm import SamplingParams
-        fitted = [self.fit(c, max_tokens) for c in convs]
+        fitted = [self.fit(c, max_tokens, think) for c in convs]
         idx = [i for i, (p, _) in enumerate(fitted) if p is not None]
         groups = {}
         for i in idx: groups.setdefault(self.prefix_of(fitted[i][0]), []).append(i)
@@ -524,12 +524,12 @@ class Engine:
 class FakeEngine:
     """Local testing without a GPU: responder(conv) -> text."""
     def __init__(self, responder): self.responder = responder
-    def gen(self, convs, temps, seeds, max_tokens):
+    def gen(self, convs, temps, seeds, max_tokens, think=None):
         outs = [self.responder(c) for c in convs]; return outs, sum(len(o) // 4 for o in outs)
 
 
 # ------------------------------------------------------------------ pipeline
-def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, max_tokens, temp, label, reflect=False):
+def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, max_tokens, temp, label, reflect=False, think=None):
     """items: {key: conversation}, key = (id, sample index); keys in `greedy` decode at temperature 0, the others sample
     with seeds fixed by (round, sample index). Generation + execution + repair rounds.
     Returns {key: [attempt dicts]}; the last ok attempt is the sample's result."""
@@ -539,7 +539,7 @@ def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, ma
         t0 = time.time()
         temps = [0.0 if k in greedy else temp for k in pending]
         seeds = [1000 * rnd + 17 * k[1] + 1 for k in pending]
-        texts, ntok = engine.gen([convs[k] for k in pending], temps, seeds, max_tokens)
+        texts, ntok = engine.gen([convs[k] for k in pending], temps, seeds, max_tokens, think)
         t1 = time.time(); tasks, codes, nxt = [], {}, []
         for k, text in zip(pending, texts):
             convs[k] = convs[k] + [{"role": "assistant", "content": text}]
@@ -599,6 +599,7 @@ def main():
     ap.add_argument("--shots", type=int, default=4, help="v2: few-shot examples per question")
     ap.add_argument("--map-llm", action="store_true", help="v2: LLM mapping candidates even when a reference program fits")
     ap.add_argument("--no-llm", action="store_true", help="v2: no model at all (reference mappings + template programs only)")
+    ap.add_argument("--think-map", action="store_true", help="thinking mode for the mapping programs only (3x token budget)")
     ap.add_argument("--quant", default="", help="vLLM quantization for an unquantised checkpoint, e.g. fp8 (L4 / 5090)")
     ap.add_argument("--prefix-budget", type=int, default=32000, help="tokens of distinct shared prefixes per generation wave (about half the KV cache)")
     a = ap.parse_args()
@@ -766,7 +767,8 @@ def canon_stage_v2(engine, pool, a, rulebook, bizs, bids, clog):
                  for b in need for s in range(a.kc)}
         catt = generate_and_run(engine, pool, items, {k for k in items if k[1] == 0},
                                 lambda k, code: (k, k[0], code, None, os.path.join(cdir, f"{k[0]}.llm{k[1]}.pkl")),
-                                run_mapping, a.repairs, a.compile_tokens, a.temp, "map")
+                                run_mapping, a.repairs, a.compile_tokens * (3 if a.think_map else 1), a.temp, "map",
+                                think=True if a.think_map else None)
         for (b, sidx), atts in catt.items():
             r = last_ok(atts)
             if r: cands[b].append((f"llm:{sidx}", r))

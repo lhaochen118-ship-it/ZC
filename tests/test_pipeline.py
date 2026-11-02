@@ -64,6 +64,19 @@ diff = [q for q in want if fr[q] != fp[q]]
 assert not diff, f"pipeline differs from the round-based path on {diff[:3]}: {[(fr[q], fp[q]) for q in diff[:3]]}"
 assert chosen["biz_101"].startswith("llm:") and chosen["biz_102"].startswith("ref:"), chosen
 assert any(any(len(v) > 1 for v in c["llm_attempts"].values()) for c in clog if "llm_attempts" in c), "the bad mapping was not repaired"
+# the real CLI: agent.py runs as __main__ and pipeline.py imports agent (Kaggle crash of 02/11: a second module copy
+# without CARDS / worker context); the fake responder is loaded from a file, no model
+import subprocess, inspect
+rf = os.path.join(scratch, "fake_responder.py")
+open(rf, "w", encoding="utf-8").write("import os, sys\nimport qparse\nMAP = " + repr(MAP) + "\nBAD_MAP = " + repr(BAD_MAP) + "\n" + inspect.getsource(responder))
+out_cli = os.path.join(scratch, "out_cli"); shutil.rmtree(out_cli, ignore_errors=True)
+r = subprocess.run([sys.executable, os.path.join(os.path.dirname(agent.__file__), "agent.py"), mini, out_cli, "--pipeline", "--fake-responder", rf,
+                    "--k", "2", "--kc", "2", "--repairs", "1", "--shots", "3", "--workers", "2", "--active", "1", "--low-water", "4",
+                    "--cache", os.path.join(scratch, "cache_pipe")], capture_output=True, text=True, timeout=600)
+assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-3000:]
+fc = finals(out_cli)
+assert fc == fp, f"CLI run differs from the in-process pipeline on {[q for q in want if fc.get(q) != fp[q]][:3]}"
+print("CLI (agent.py as __main__) | same answers")
 cd = os.path.join(scratch, "claims_test"); shutil.rmtree(cd, ignore_errors=True); os.makedirs(cd)
 assert pipeline.claim(cd, "biz_1") and not pipeline.claim(cd, "biz_1") and pipeline.claim(cd, "biz_2"), "claims must be exclusive"
 print("PASS")

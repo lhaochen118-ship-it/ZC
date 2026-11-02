@@ -17,6 +17,8 @@ Stages
 Usage: agent.py <split_dir> <out_dir> --model <hf id or path> [--k 4] [--paths AABB] [--compile] [--kc 4]
                 [--repairs 2] [--subset N] [--tau 0.5] [--cache <dir>] [--tp N] [--dp N] [--think] [--workers N]"""
 import os, re, sys, json, time, math, signal, pickle, argparse, traceback
+if __name__ == "__main__":                                             # run as a script: other modules' `import agent` must get
+    sys.modules.setdefault("agent", sys.modules["__main__"])           # THIS module (its CARDS, worker context), not a second copy
 # FlashInfer's sampler is JIT-compiled at start-up; on Kaggle L4 the build failed after 20 min (ld error). The PyTorch
 # sampler gives the same results without compiling anything.
 os.environ.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
@@ -630,8 +632,13 @@ def main():
     ap.add_argument("--max-num-seqs", type=int, default=0, help="vLLM max concurrent sequences (0 = vLLM default)")
     ap.add_argument("--max-batched-tokens", type=int, default=0, help="vLLM max tokens per scheduler step (0 = vLLM default)")
     ap.add_argument("--spec-mtp", type=int, default=0, help="speculative decoding with the model's MTP head, N draft tokens (Qwen3.5); falls back to plain decoding")
+    ap.add_argument("--fake-responder", default="", help="tests: python file defining responder(conv) -> text; no model is loaded")
     a = ap.parse_args()
-    if a.dp > 1 and not a.shard: return run_dp(a)
+    if a.dp > 1 and not a.shard and not a.fake_responder: return run_dp(a)
+    if a.fake_responder:
+        g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
+        import pipeline
+        return run(a, engine=pipeline.FakeStepLLM(g["responder"]) if a.pipeline else FakeEngine(g["responder"]))
     return run(a)
 
 
@@ -676,6 +683,7 @@ def run(a, engine=None):
     if a.log_dir: os.makedirs(a.log_dir, exist_ok=True)
     if pipe:                                                           # pipelined scheduler (src/pipeline.py)
         import pipeline
+        pipeline.bind(sys.modules[__name__])                           # the module that holds CARDS / worker context
         llm = engine if hasattr(engine, "add") and hasattr(engine, "step") else pipeline.StepLLM(engine)
         pipeline.Pipeline(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, a.claim_dir).run()
         pool.close(); sub.close(); logf.close(); clog.close()

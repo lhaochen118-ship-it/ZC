@@ -20,6 +20,13 @@ from collections import Counter, defaultdict, deque
 import agent, fewshot, canon as canonmod
 
 
+def bind(mod):
+    """use the agent module that is actually running (agent.py may run as __main__: its globals, e.g. CARDS and the
+    worker context of the CPU pool, live in that module, not in a fresh `import agent`)."""
+    global agent
+    agent = mod
+
+
 # ------------------------------------------------------------------ engines with a request / step interface
 class StepLLM:
     """vLLM request-level interface: add(conv, ...) -> rid; step() -> [(rid, text, n_tokens)] of finished requests.

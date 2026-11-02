@@ -152,8 +152,8 @@ def ans(t, expr): return f'ANSWER = {{"type": "{t}", "answer": {expr}}}'
 
 def parse(q, today, shop=None):
     """(template, code) for the common templates; None when unsure."""
-    t0 = K(q); t = untelex(t0); tk = dm.key(q); p, P = parse_period(q, today)
-    if P is None: p, P = parse_period(t, today)
+    t0 = K(q); t = untelex(t0); tk = dm.key(q); p, P = parse_period(t, today)   # Telex typos undone first ('quys 3/2025')
+    if P is None: p, P = parse_period(q, today)
     def has(*pats): return any(re.search(x, t) or re.search(x, t0) for x in pats)
     V = Vocab(shop) if shop is not None else None
     f = {}; item = None
@@ -334,10 +334,10 @@ def parse(q, today, shop=None):
         return "item_qty", ans("number", f"item_qty({P}{fa()})")
     # ---------------- revenue variants
     if has(r"co may ngay|bao nhieu ngay|bnhiu ngay|bn ngay|may bua|co may hom|so ngay|dem so ngay|bao nhieu bua") and P:
-        x = money_in(t, r"(?:tu|dat|tren|it nhat)\s*")
+        x = money_in(t, r"(?:tu|dat|tren|it nhat|tro len)\s*")
         if x and has(r"tro len"): return "n_days_rev_ge", ans("number", f"n_days_revenue_at_least({P}, {x:.0f})")
     if has(r"don") and has(r"tro len") and P and (rev or has(r"gia tri")):
-        x = money_in(t, r"(?:tu|it nhat|tri gia|gia tri)\s*")
+        x = money_in(t, r"(?:tu|dat|tren|it nhat|tri gia|gia tri|tro len)\s*")
         if x: return "n_orders_rev_ge", ans("number", f"n_orders_revenue_at_least({P}, {x:.0f}{fa()})")
     if has(r"trung binh|binh quan") and has(r"don|bill|hoa don") and rev and P and not has(r"nhap|moi ngay"):
         return "aov", ans("number", f"aov({P}{fa()})")

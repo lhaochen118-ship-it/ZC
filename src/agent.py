@@ -752,6 +752,8 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--select-rules", type=int, default=1, help="pipeline: rank candidate mappings also by how often the rule programs "
+                    "of the business's questions fail on them (coverage - warnings - 30 x failure share)")
     ap.add_argument("--confirm", type=int, default=0, help="pipeline: rule program + the greedy sample first; when they agree that is "
                     "the answer, else the other k-1 samples (offline on v4b: same PA, 61 %% fewer LLM samples)")
     ap.add_argument("--q-inflight", type=int, default=64, help="pipeline: questions answering at once per GPU process")
@@ -972,6 +974,36 @@ def canon_stage_v2(engine, pool, a, rulebook, bizs, bids, clog):
         clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"]] for x, y in cs]}, ensure_ascii=False) + "\n")
     clog.flush()
     return canon
+
+
+def run_rule_eval(task):
+    """task = (key, bid, canon_path, questions [(qid, as_of, text)], budget_s) -> (key, {ok, parsed, fail, fail_share}): the
+    rule programs of a business's questions on ONE candidate mapping; a failure is an error, unanswerable, 0 or empty answer.
+    Ranking candidates by it (pipeline.select) picked a better mapping on train: mean rule PA of the chosen candidate
+    0.890 -> 0.904 over 74 business-runs, never worse on any (scratchpad study of 02/11)."""
+    key, bid, canon_path, qs, budget = task
+    t0 = time.time(); n = fail = 0
+    try:
+        can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
+        meta = {"data_end": can.get("data_end")}
+        for qid, as_of, text in qs:
+            if time.time() - t0 > budget: break
+            shop = dm.Shop(can["C"], as_of, meta)
+            try: pr = qparse.parse(text, as_of, shop)
+            except Exception: pr = None
+            if not pr: continue
+            n += 1
+            try:
+                arm(20)
+                try: a = fmt_answer(dm.run_program(pr[1], shop, as_of))
+                finally: disarm()
+                if a.get("type") == "unanswerable" or a.get("answer") in (0, 0.0, [], None): fail += 1
+            except dm.Unanswerable: fail += 1
+            except (Exception, _Timeout): fail += 1
+        r = {"ok": True, "parsed": n, "fail": fail, "fail_share": fail / max(n, 1)}
+    except BaseException as e: r = _err(e)
+    r["t"] = time.time() - t0
+    return key, r
 
 
 def rule_text(q):

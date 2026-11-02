@@ -276,14 +276,46 @@ class Pipeline:
                         lambda k, code: (k, k[0], code, None, os.path.join(self.cdir, f"{k[0]}.llm{k[1]}.pkl")),
                         lambda atts, s=s: fin(s, atts), think=True if self.a.think_map else None, prio=bs["prio"], complete=complete)
 
+    SEL_FAIL_W = 30.0                                                   # ranking points per unit of rule failure share
+
+    def rule_questions(self, b):
+        """(qid, as_of, text the rule reader parses) for every question of b; the cleaned question is kept on q."""
+        nz = self.normalizer(b) if getattr(self.a, "qclean", 1) else None
+        out = []
+        for ch in self.chunks.get(b, []):
+            for q in ch:
+                if nz is not None and "_clean" not in q:
+                    try: q["_clean"] = nz.clean(q["question"], q["as_of_date"])
+                    except Exception: q["_clean"] = None
+                out.append((q["id"], q["as_of_date"], agent.rule_text(q)))
+        return out
+
     def select(self, b, bs):
+        """with >= 2 candidates: first the rule programs of b's questions on each of them (CPU), then the choice."""
+        cs = bs["cands"]
+        if len(cs) >= 2 and getattr(self.a, "select_rules", 1) and self.a.qw > 0:
+            qs = self.rule_questions(b)
+            if qs:
+                bs["evals"] = len(cs)
+                def on_eval(res, d):
+                    d["fail_share"] = res.get("fail_share", 0.0) if res.get("ok") else 0.0
+                    bs["evals"] -= 1
+                    if bs["evals"] == 0: self.choose(b, bs)
+                for src, r in cs:
+                    self.cpu.submit(agent.run_rule_eval, ((b, src), b, r["path"], qs, 150), 300, lambda res, d=r: on_eval(res, d))
+                return
+        self.choose(b, bs)
+
+    def choose(self, b, bs):
         cs, can = bs["cands"], None
         if cs:
             cs.sort(key=lambda x: (not x[0].startswith("ref:"), x[0]))  # deterministic; references before LLM samples (as in agent)
             _, scores = agent.agreement([r["sig"] for _, r in cs])
-            order = sorted(range(len(cs)), key=lambda i: (-canonmod.rank_score(cs[i][1]), -scores[i], i))   # coverage - warnings
+            order = sorted(range(len(cs)), key=lambda i: (-(canonmod.rank_score(cs[i][1]) - self.SEL_FAIL_W * cs[i][1].get("fail_share", 0.0)),
+                                                          -scores[i], i))   # coverage - warnings - rule failures
             src, r = cs[order[0]]; can = {"path": r["path"], "card": r["card"], "src": src, "unused": r.get("unused") or []}
-            self.clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"], len(y.get("warnings") or [])] for x, y in cs]},
+            self.clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"], len(y.get("warnings") or []),
+                                                                                        round(y.get("fail_share", -1.0), 3)] for x, y in cs]},
                                        ensure_ascii=False) + "\n")
             print(f"  {b}: {len(cs)} candidates, chose {src} coverage {r['coverage']:.0f} ({time.time() - bs['t']:.0f}s)", flush=True)
         else: print(f"  {b}: no canonical tables ({time.time() - bs['t']:.0f}s)", flush=True)

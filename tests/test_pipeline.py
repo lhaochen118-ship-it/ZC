@@ -73,6 +73,22 @@ assert len(les) == len(want) and len({r["id"] for r in les}) == len(want), "esca
 assert n_esc > 0 and all(len([k for k in r["samples"] if k.endswith("E")]) == 2 for r in les if "escalated" in r["samples"]), n_esc
 assert all("cleaned" in json.dumps(r) or True for r in les)
 print("escalation |", n_esc, "of", len(les), "questions escalated, each with 2 extra samples")
+# --confirm: the rule program + the greedy sample first; when they agree that is the answer (one LLM sample), else all k
+# samples. With qw 2 and k 2 an agreeing pair holds 3 of the 4 votes, so the answers must equal the full pipeline's.
+def responder_rule(conv):                                              # an LLM that writes the rule's own template program
+    sysmsg, user = conv[0]["content"], conv[1]["content"]
+    if sysmsg.startswith("You are DataMate's data engineer"): return responder(conv)
+    q = user[user.rindex("question: ") + 10:].split("\n")[0]; pr = qparse.parse(q, "2026-06-01")
+    return "```python\n" + (pr[1] if pr else "raise Unanswerable('fake')") + "\n```"
+a_fu = args(os.path.join(scratch, "out_full_r"), True); agent.run(a_fu, engine=pipeline.FakeStepLLM(responder_rule))
+a_cf = args(os.path.join(scratch, "out_confirm"), True); a_cf.confirm = 1; agent.run(a_cf, engine=pipeline.FakeStepLLM(responder_rule))
+lcf = [json.loads(l) for l in open(os.path.join(a_cf.out, "logs.jsonl"), encoding="utf-8")]
+assert len(lcf) == len(want) and len({r["id"] for r in lcf}) == len(want), "confirm must not duplicate or drop questions"
+nsamp = [len([k for k in r["samples"] if k[:1].isdigit()]) for r in lcf]
+fcf, ffu = finals(a_cf.out), finals(a_fu.out)
+assert nsamp.count(1) > 0 and nsamp.count(2) > 0 and nsamp.count(1) + nsamp.count(2) == len(lcf), nsamp
+assert fcf == ffu, f"--confirm differs from the full pipeline on {[q for q in want if fcf.get(q) != ffu[q]][:3]}"
+print("confirm |", nsamp.count(1), "questions settled by rule + greedy sample,", nsamp.count(2), "with every sample; answers identical")
 # the real CLI: agent.py runs as __main__ and pipeline.py imports agent (Kaggle crash of 02/11: a second module copy
 # without CARDS / worker context); the fake responder is loaded from a file, no model
 import subprocess, inspect

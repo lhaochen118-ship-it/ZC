@@ -752,6 +752,8 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--confirm", type=int, default=0, help="pipeline: rule program + the greedy sample first; when they agree that is "
+                    "the answer, else the other k-1 samples (offline on v4b: same PA, 61 %% fewer LLM samples)")
     ap.add_argument("--q-inflight", type=int, default=64, help="pipeline: questions answering at once per GPU process")
     ap.add_argument("--deadline", type=float, default=0, help="internal: absolute end time (epoch s) of the whole run")
     ap.add_argument("--think-map", action="store_true", help="thinking mode for the mapping programs only (3x token budget)")

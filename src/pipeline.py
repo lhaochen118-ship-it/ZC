@@ -319,11 +319,17 @@ class Pipeline:
                 try: q["_clean"] = nz.clean(q["question"], q["as_of_date"])
                 except Exception: q["_clean"] = None
         for q in qs:
-            st = {"att": {}, "rule": None, "pending": k + (1 if (a.qw > 0 and can) else 0), "t": time.time(), "w": {}}
+            confirm = bool(getattr(a, "confirm", 0)) and a.qw > 0 and bool(can) and k > 1
+            # --confirm: phase 1 = rule program + greedy sample; phase 2 = the other k-1 samples, only when phase 1 disagrees
+            st = {"att": {}, "rule": None, "pending": (1 if confirm else k) + (1 if (a.qw > 0 and can) else 0), "t": time.time(), "w": {},
+                  "phase": 1 if confirm else 2}
             path = "L" if can else "B"
             def settle(q=q, st=st, path=path):
                 st["pending"] -= 1                                       # st["settle"]: THIS question's settle (a bare name
-                if st["pending"] == 0 and not self.escalate(q, st, k, path, can, b, prio, st["settle"]):   # would bind late)
+                if st["pending"] > 0: return                             # would bind late)
+                if st["phase"] == 1 and not self.confirmed(st):          # rule and greedy sample disagree: the other samples
+                    st["phase"] = 2; st["pending"] = k - 1; st["launch"](1, k); return
+                if not self.escalate(q, st, k, path, can, b, prio, st["settle"]):
                     self.write(q, st, k, path); self.inflight_q -= 1; left["n"] -= 1
                     if left["n"] == 0: self.chunk_done(b, ci)
             st["settle"] = settle
@@ -334,15 +340,29 @@ class Pipeline:
             else:
                 msgs = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.bizs[b].readme, agent.CARDS[b], q)}]
             cpath = can["path"] if can else None
-            for s_ in range(k):
-                st["att"][s_] = []
-                self.sample((q["id"], s_), msgs, s_ == 0, a.max_tokens, agent.run_code,
-                            lambda kk, code, q=q, cpath=cpath: (kk, b, q["as_of_date"], code, a.timeout, cpath),
-                            lambda atts, settle=settle: settle(), reflect=not a.no_reflect, prio=prio, attempts=st["att"][s_])
+            def launch(lo, hi, q=q, st=st, msgs=msgs, cpath=cpath, settle=settle):
+                for s_ in range(lo, hi):
+                    st["att"][s_] = []
+                    self.sample((q["id"], s_), msgs, s_ == 0, a.max_tokens, agent.run_code,
+                                lambda kk, code, q=q, cpath=cpath: (kk, b, q["as_of_date"], code, a.timeout, cpath),
+                                lambda atts, settle=settle: settle(), reflect=not a.no_reflect, prio=prio, attempts=st["att"][s_])
+            st["launch"] = launch
+            launch(0, 1 if confirm else k)
             if a.qw > 0 and can:
-                def on_rule(r, st=st, settle=settle): st["rule"] = r; settle()
+                def on_rule(r, st=st, settle=settle):
+                    st["rule"] = r
+                    if st["phase"] == 1 and not (r.get("ok") and r.get("answer")):   # no rule answer: the other samples now
+                        st["phase"] = 2; st["pending"] += k - 1; st["launch"](1, k)
+                    settle()
                 self.cpu.submit(agent.run_qparse, ((q["id"], "Q"), b, q["as_of_date"], agent.rule_text(q), cpath, a.timeout), a.timeout, on_rule)
         if not qs: self.chunk_done(b, ci)
+
+    @staticmethod
+    def confirmed(st):
+        """phase 1 of --confirm: the rule program and the greedy sample give the same answer."""
+        rr = st["rule"]; g = agent.last_ok(st["att"].get(0) or [])
+        return bool(rr and rr.get("ok") and rr.get("answer") and g and g.get("answer") is not None
+                    and agent.canon_of(g["answer"]) == agent.canon_of(rr["answer"]))
 
     def vote(self, st):
         """weighted vote: rule program qw, every LLM sample its weight (1); conf = top / total weight of all voters."""

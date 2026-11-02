@@ -71,7 +71,15 @@ class Tables(dict):
     """T / RAW for a transferred program: a reference table name resolves to the business's table whose columns cover
     the reference table's columns best (>= 70 %)."""
     def __init__(self, data, ref_cols):
-        super().__init__(data); self.ref_cols = ref_cols; self.used = {}
+        super().__init__(data); self.ref_cols = ref_cols; self.used = {}; self.accessed = set()
+
+    def __getitem__(self, name):                                        # every table a program reads (completeness check)
+        if dict.__contains__(self, name): self.accessed.add(name); return dict.__getitem__(self, name)
+        return self.__missing__(name)
+
+    def get(self, name, default=None):
+        try: return self[name]
+        except KeyError: return default
 
     def __missing__(self, name):
         cols = set(self.ref_cols.get(name, []))
@@ -81,7 +89,7 @@ class Tables(dict):
             s = len(cols & set(df.columns)) / len(cols)
             if s > score: best, score = t, s
         if best is None or score < 0.7: raise KeyError(f"{name} (no table with its columns)")
-        self.used[name] = best
+        self.used[name] = best; self.accessed.add(best)
         return dict.__getitem__(self, best)
 
 
@@ -186,7 +194,8 @@ def run_mapping(code, biz, ref_cols=None):
     if errs: return {"ok": False, "error": "canonical tables failed the checks: " + "; ".join(errs), "C": C}
     errs = plausibility(C, biz)                                        # content checks: silent mistakes -> repairable errors
     if errs: return {"ok": False, "error": "the canonical tables look wrong:\n- " + "\n- ".join(errs), "C": C}
-    return {"ok": True, "C": C, "notes": str(g.get("NOTES", "")), "coverage": coverage(C), "tables_used": dict(g["T"].used)}
+    unused = [t for t in biz.tables if t not in g["T"].accessed and t not in g["RAW"].accessed]
+    return {"ok": True, "C": C, "notes": str(g.get("NOTES", "")), "coverage": coverage(C), "tables_used": dict(g["T"].used), "unused": unused}
 
 
 def resolvable(biz, ref_meta):

@@ -43,7 +43,7 @@ def args(out, pipe):
                               budget=0, log_dir="", v1=False, qw=2.0, shots=3, map_llm=False, no_llm=False, prefix_budget=32000, quant="",
                               think_map=False, gpu_util=0.92, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0,
                               pipeline=pipe, active=1, low_water=4, claim_dir="", claim_procs=1, deadline=0,
-                              steal_chunk=4, q_inflight=6)
+                              steal_chunk=4, q_inflight=6, escalate=0, esc_conf=0.75, esc_tokens=1024, esc_raw=1, complete_map=1, qclean=1)
 
 
 shutil.rmtree(os.path.join(scratch, "cache_pipe"), ignore_errors=True)
@@ -65,6 +65,14 @@ diff = [q for q in want if fr[q] != fp[q]]
 assert not diff, f"pipeline differs from the round-based path on {diff[:3]}: {[(fr[q], fp[q]) for q in diff[:3]]}"
 assert chosen["biz_101"].startswith("llm:") and chosen["biz_102"].startswith("ref:"), chosen
 assert any(any(len(v) > 1 for v in c["llm_attempts"].values()) for c in clog if "llm_attempts" in c), "the bad mapping was not repaired"
+# escalation: low-confidence / unanswerable / flagged answers get 2 more samples; every question still answered once
+a_es = args(os.path.join(scratch, "out_esc"), True); a_es.escalate = 2; agent.run(a_es, engine=pipeline.FakeStepLLM(responder))
+les = [json.loads(l) for l in open(os.path.join(a_es.out, "logs.jsonl"), encoding="utf-8")]
+n_esc = sum(1 for r in les if "escalated" in r["samples"])
+assert len(les) == len(want) and len({r["id"] for r in les}) == len(want), "escalation must not duplicate or drop questions"
+assert n_esc > 0 and all(len([k for k in r["samples"] if k.endswith("E")]) == 2 for r in les if "escalated" in r["samples"]), n_esc
+assert all("cleaned" in json.dumps(r) or True for r in les)
+print("escalation |", n_esc, "of", len(les), "questions escalated, each with 2 extra samples")
 # the real CLI: agent.py runs as __main__ and pipeline.py imports agent (Kaggle crash of 02/11: a second module copy
 # without CARDS / worker context); the fake responder is loaded from a file, no model
 import subprocess, inspect

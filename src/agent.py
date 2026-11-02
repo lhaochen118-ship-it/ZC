@@ -119,11 +119,20 @@ Rules:
 5. The tables are already loaded in T: never read files. Output only one ```python code block (about 15-40 lines), no explanation. The EXAMPLES are mapping programs written for other shops."""
 
 
+def clean_hint(q):
+    """the cleaned question (src/qnorm.py) + its period, shown NEXT TO the original (which stays authoritative)."""
+    c = q.get("_clean")
+    if not c: return ""
+    out = f"\ncleaned (abbreviations / accents / Telex fixed, may contain mistakes): {c['clean']}" if c["clean"] != q["question"].strip() else ""
+    if c.get("period"): out += f"\nperiod read by the rulebook: {c['period']['start']} .. {c['period']['end']} = {c['period']['code']}"
+    return out
+
+
 def user_msg_lib(rulebook, biz_readme, canon_card, examples, q):
     return "\n\n".join([f"# RULEBOOK\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}",
                          f"# CANONICAL TABLES (in C; metrics use them)\n{canon_card}",
                          f"# EXAMPLES (other shops)\n{examples or '(none)'}",
-                         f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}\n\nWrite the program."])
+                         f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}{clean_hint(q)}\n\nWrite the program."])
 
 
 def user_msg_map(rulebook, biz_readme, card, examples):
@@ -137,7 +146,7 @@ def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None):
     if canon_card is not None:
         parts.append(f"# CANONICAL TABLES (in C)\n{canon_card}\n\nNOTES:\n{notes or ''}")
     if q is None: parts.append("Write the program that builds C and NOTES.")
-    else: parts.append(f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}\n\nWrite the program.")
+    else: parts.append(f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}{clean_hint(q)}\n\nWrite the program.")
     return "\n\n".join(parts)
 
 
@@ -459,6 +468,34 @@ def suspicious(a):
     return (t in ("number", "percent") and v == 0) or (t == "list" and len(v) == 0) or (t == "table" and len(v["rows"]) == 0)
 
 
+_K_WORDS = r"(mat hang|san pham|mon|khach|nha cung cap|nhan vien|tho|ngay|thang|loai|nhom|dong xe|xe|lo|hang)"
+
+
+def answer_flags(question_key, a, period=None):
+    """generic post-hoc checks of a final answer against what the question asks (accent-free key of the cleaned
+    question) -> list of reasons; any reason sends the question to escalation (more samples, with thinking). A wrong
+    flag only costs compute: the escalation samples are added to the vote, they do not replace it."""
+    t, v, q = a.get("type"), a.get("answer"), question_key
+    flags = []
+    if t in ("abstain", None): return ["abstain"]
+    if t == "unanswerable": return ["unanswerable"]
+    if suspicious(a): flags.append("zero / empty result")
+    asks_pct = bool(re.search(r"(bao nhieu|may|bn|bnhiu|nhieu|nhiu)\s?%|(?<![\d,.])\s%|phan tram|ti le|ty le|tang truong|chiem bao nhieu", q))
+    if asks_pct and t == "number": flags.append("question asks a percentage")
+    if t == "percent" and isinstance(v, (int, float)) and abs(v) > 1000: flags.append("percentage beyond 1000 %")
+    m = re.search(r"\btop (\d{1,2})\b|(?<![/\-\d])\b(\d{1,2}) " + _K_WORDS + r"\b.*\b(nhat|chay|nhieu|it)\b", q)
+    names = t == "list" and isinstance(v, list) and v and all(isinstance(x, str) for x in v)
+    if m and names and len(v) > int(m.group(1) or m.group(2)): flags.append(f"list of {len(v)}, question asks {m.group(1) or m.group(2)}")
+    if names and len(v) != len(set(v)): flags.append("duplicates in list")
+    if re.search(r"\b(bao nhieu|may) (don|bill|hoa don|lan|khach|luot|phieu|lo|mat hang|san pham|dot|chiec|xe)\b", q) and t == "number" \
+            and isinstance(v, (int, float)) and (v < 0 or v != int(v)): flags.append("a count must be a non-negative integer")
+    if re.search(r"\b(ngay nao|hom nao|bua nao)\b", q) and t != "date": flags.append("question asks a date")
+    if t == "date" and period and isinstance(v, str) and len(v) == 10 and re.search(r"\b(ngay nao|hom nao|bua nao)\b", q) \
+            and not re.search(r"\bhan\b|het han|\blo\b", q):                     # expiry dates lie after the as-of day
+        if not (period["start"] <= v <= period["end"]): flags.append(f"date {v} outside the asked period {period['start']}..{period['end']}")
+    return flags
+
+
 # ------------------------------------------------------------------ data
 CARDS = {}
 
@@ -669,6 +706,12 @@ def build_parser():
     ap.add_argument("--claim-dir", default="", help="internal: shared claim directory of the GPU processes")
     ap.add_argument("--claim-procs", type=int, default=1, help="internal: number of GPU processes sharing the claims")
     ap.add_argument("--steal-chunk", type=int, default=16, help="pipeline: questions per stealable work unit")
+    ap.add_argument("--escalate", type=int, default=0, help="pipeline: extra thinking samples for low-confidence / flagged answers (0 = off)")
+    ap.add_argument("--esc-conf", type=float, default=0.75, help="pipeline: escalate when the vote share of the top answer is below this")
+    ap.add_argument("--esc-tokens", type=int, default=4096, help="pipeline: max tokens of an escalation (thinking) sample")
+    ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
+    ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
+    ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
     ap.add_argument("--q-inflight", type=int, default=64, help="pipeline: questions answering at once per GPU process")
     ap.add_argument("--deadline", type=float, default=0, help="internal: absolute end time (epoch s) of the whole run")
     ap.add_argument("--think-map", action="store_true", help="thinking mode for the mapping programs only (3x token budget)")

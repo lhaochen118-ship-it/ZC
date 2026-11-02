@@ -76,6 +76,7 @@ def main():
     for rec in logs:
         b = rec["business_id"]; ps = []
         for name, att in rec["samples"].items():
+            if name == "escalated": continue                            # list of reasons, not a sample
             r = att if name == "rule" else agent.last_ok(att)
             if r and r.get("ok") and r.get("code"): ps.append((name, r["code"]))
         progs[rec["id"]] = ps

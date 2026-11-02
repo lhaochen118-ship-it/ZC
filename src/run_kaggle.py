@@ -4,11 +4,26 @@ Usage (as a make_kernel job): run_kaggle.py <split: train|public_test> OUT <agen
 import os, sys, glob, subprocess, time
 
 t = time.time()
-wh = next((d for d in glob.glob("/kaggle/input/**/wheels", recursive=True) if glob.glob(d + "/vllm-*.whl")), None)
-cmd = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["vllm"]
-r = subprocess.run(cmd, capture_output=True, text=True); print("pip vllm:", "wheels" if wh else "pypi", r.returncode, r.stderr[-300:], flush=True)
-subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "python-calamine"], capture_output=True)
+# 1. prebuilt environment (kernel output lelynhan/zc-env-vllm032: vLLM + deps installed with pip --target), probed first;
+#    any failure falls back to installing the wheels (the 02/11 runs spent 400-470 s in pip)
+env_dir = next((os.path.dirname(f) for f in glob.glob("/kaggle/input/**/ZC_ENV_MARKER", recursive=True)), None)
+use_env = False
+if env_dir:
+    pe = dict(os.environ, PYTHONPATH=env_dir + os.pathsep + os.environ.get("PYTHONPATH", ""))
+    r = subprocess.run([sys.executable, "-c", "import torch, vllm, python_calamine; print(vllm.__version__, torch.__version__, torch.cuda.is_available())"],
+                       env=pe, capture_output=True, text=True, timeout=900)
+    use_env = r.returncode == 0 and "True" in r.stdout
+    print("prebuilt env", env_dir, "OK " + r.stdout.strip() if use_env else "FAILED: " + (r.stdout + r.stderr)[-400:], f"({time.time() - t:.0f}s)", flush=True)
+if use_env:
+    os.environ["PYTHONPATH"] = pe["PYTHONPATH"]; sys.path.insert(0, env_dir)
+    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)
+else:
+    wh = next((d for d in glob.glob("/kaggle/input/**/wheels", recursive=True) if glob.glob(d + "/vllm-*.whl")), None)
+    cmd = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["vllm"]
+    r = subprocess.run(cmd, capture_output=True, text=True); print("pip vllm:", "wheels" if wh else "pypi", r.returncode, r.stderr[-300:], flush=True)
+    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)
+    cal = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["python-calamine"]
+    subprocess.run(cal, capture_output=True)                         # offline L4 sessions: calamine from the wheels too
 print(f"setup {time.time() - t:.0f}s", flush=True)
 data = os.environ["ZC_DATA"]
 split = next(d for d in glob.glob(os.path.join(data, "**", sys.argv[1]), recursive=True) if os.path.isfile(os.path.join(d, "questions.jsonl")))

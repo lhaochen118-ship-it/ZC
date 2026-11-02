@@ -166,6 +166,7 @@ class Pipeline:
         self.started, self.taken, self.full = set(), set(), set()        # businesses mapped here; chunks seen taken; fully claimed
         self.mine, self.others = set(), set()                             # chunks claimed by THIS process; businesses mapped elsewhere
         self.inflight_q, self.done_chunks = 0, 0
+        self.norms = {}                                                  # b -> question Normalizer
         self.t0, self.ntok, self.n_answered, self.n_q = time.time(), 0, 0, len(qs)
         self.mt_map = a.compile_tokens * (3 if a.think_map else 1); self.written = set()
         self.k_now = a.k
@@ -177,9 +178,12 @@ class Pipeline:
     def gen(self, conv, temp, seed, max_tokens, cb, think=None, prio=0):
         self.cb[self.llm.add(conv, temp, seed, max_tokens, think, prio)] = cb
 
-    def sample(self, key, conv, greedy, max_tokens, runner, make_task, finish, think=None, reflect=False, prio=0, attempts=None):
-        """one sample = generation + execution + up to a.repairs repair rounds; finish(attempts) when it is settled."""
-        st = {"conv": list(conv), "rnd": 0, "att": attempts if attempts is not None else [], "reflected": False}
+    def sample(self, key, conv, greedy, max_tokens, runner, make_task, finish, think=None, reflect=False, prio=0, attempts=None,
+               complete=None):
+        """one sample = generation + execution + up to a.repairs repair rounds; finish(attempts) when it is settled.
+        complete(r) -> message or None: one extra round asking a mapping to cover the raw tables it left unused (the last
+        ok attempt is kept, so this round can only add)."""
+        st = {"conv": list(conv), "rnd": 0, "att": attempts if attempts is not None else [], "reflected": False, "completed": False}
         def launch():
             temp = 0.0 if greedy else self.a.temp
             self.gen(st["conv"], temp, 1000 * st["rnd"] + 17 * key[1] + 1, max_tokens, on_text, think, prio)
@@ -202,6 +206,9 @@ class Pipeline:
             st["att"].append(att)
             if not r.get("ok"):
                 return retry(f"The program failed:\n{r.get('error')}\nstdout:\n{r.get('stdout', '')[-600:]}\nFix it and output the full corrected program.")
+            if complete is not None and not st["completed"] and st["rnd"] < self.a.repairs:
+                msg = complete(r)
+                if msg: st["completed"] = True; att["complete"] = True; return retry(msg)
             if reflect and st["rnd"] < self.a.repairs and not st["reflected"] and agent.suspicious(r["answer"]):
                 st["reflected"] = True; att["reflect"] = True
                 return retry(f"The program returned {json.dumps(r['answer'], ensure_ascii=False)}. A zero or empty result often means "
@@ -237,10 +244,18 @@ class Pipeline:
             if bs["pending"] == 0:
                 self.clog.write(json.dumps({"business_id": b, "llm_attempts": {x: bs["llm"][x] for x in range(self.a.kc)}}, ensure_ascii=False, default=str) + "\n")
                 self.select(b, bs)
+        def complete(r):
+            un = [t for t in r.get("unused") or [] if len(self.bizs[b].tables[t])]
+            if not un or not getattr(self.a, "complete_map", 1): return None
+            desc = "; ".join(f"`{t}` ({len(self.bizs[b].tables[t])} rows: {', '.join(map(str, list(self.bizs[b].tables[t].columns)[:12]))})" for t in un)
+            return (f"The mapping runs and passes the checks, but it does not use these raw tables: {desc}. If they hold information "
+                    "questions may ask about (purchases, stock, lots, prices, payments, debts, deliveries, expenses, staff, customers, "
+                    "items, conversions ...), add them to C under the canonical names; keep everything that already works. If none "
+                    "of them is needed, output the same program again.")
         for s in range(self.a.kc):
             self.sample((b, s), msgs, s == 0, self.mt_map, agent.run_mapping,
                         lambda k, code: (k, k[0], code, None, os.path.join(self.cdir, f"{k[0]}.llm{k[1]}.pkl")),
-                        lambda atts, s=s: fin(s, atts), think=True if self.a.think_map else None, prio=bs["prio"])
+                        lambda atts, s=s: fin(s, atts), think=True if self.a.think_map else None, prio=bs["prio"], complete=complete)
 
     def select(self, b, bs):
         cs, can = bs["cands"], None
@@ -248,7 +263,7 @@ class Pipeline:
             cs.sort(key=lambda x: (not x[0].startswith("ref:"), x[0]))  # deterministic; references before LLM samples (as in agent)
             _, scores = agent.agreement([r["sig"] for _, r in cs])
             order = sorted(range(len(cs)), key=lambda i: (-cs[i][1]["coverage"], -scores[i], i))
-            src, r = cs[order[0]]; can = {"path": r["path"], "card": r["card"], "src": src}
+            src, r = cs[order[0]]; can = {"path": r["path"], "card": r["card"], "src": src, "unused": r.get("unused") or []}
             self.clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"]] for x, y in cs]}, ensure_ascii=False) + "\n")
             print(f"  {b}: {len(cs)} candidates, chose {src} coverage {r['coverage']:.0f} ({time.time() - bs['t']:.0f}s)", flush=True)
         else: print(f"  {b}: no canonical tables ({time.time() - bs['t']:.0f}s)", flush=True)
@@ -267,15 +282,28 @@ class Pipeline:
         m = json.load(open(f, encoding="utf-8")); self.maps[b] = None if m.get("none") else m
         return True, self.maps[b]
 
+    def normalizer(self, b):
+        """question cleaning for business b (vocabulary: rulebook + training questions of OTHER businesses + b's names)."""
+        if b not in self.norms:
+            import qnorm
+            try: self.norms[b] = qnorm.Normalizer.for_split(self.a.split, exclude_business=b, extra_texts=qnorm.Normalizer.entity_texts(self.bizs[b]))
+            except Exception as e: print(f"[pipe] {b}: question cleaning unavailable ({type(e).__name__}: {e})", flush=True); self.norms[b] = None
+        return self.norms[b]
+
     def answer_chunk(self, b, ci, can):
         a, k = self.a, self.k_now; prio = self.order.index(b)
         qs = self.chunks[b][ci]; left = {"n": len(qs)}; self.inflight_q += len(qs)
+        nz = self.normalizer(b) if getattr(a, "qclean", 1) else None
         for q in qs:
-            st = {"att": {}, "rule": None, "pending": k + (1 if (a.qw > 0 and can) else 0), "t": time.time()}
+            if nz is not None and "_clean" not in q:
+                try: q["_clean"] = nz.clean(q["question"], q["as_of_date"])
+                except Exception: q["_clean"] = None
+        for q in qs:
+            st = {"att": {}, "rule": None, "pending": k + (1 if (a.qw > 0 and can) else 0), "t": time.time(), "w": {}}
             path = "L" if can else "B"
             def settle(q=q, st=st, path=path):
                 st["pending"] -= 1
-                if st["pending"] == 0:
+                if st["pending"] == 0 and not self.escalate(q, st, k, path, can, b, prio, settle):
                     self.write(q, st, k, path); self.inflight_q -= 1; left["n"] -= 1
                     if left["n"] == 0: self.chunk_done(b, ci)
             if can:
@@ -295,18 +323,55 @@ class Pipeline:
                 self.cpu.submit(agent.run_qparse, ((q["id"], "Q"), b, q["as_of_date"], q["question"], cpath, a.timeout), a.timeout, on_rule)
         if not qs: self.chunk_done(b, ci)
 
-    def write(self, q, st, k, path):
-        a = self.a; votes, rep = Counter(), {}; rr = st["rule"]; total = float(k)
+    def vote(self, st):
+        """weighted vote: rule program qw, every LLM sample its weight (1); conf = top / total weight of all voters."""
+        a = self.a; votes, rep = Counter(), {}; rr = st["rule"]; total = sum(st["w"].get(s, 1.0) for s in st["att"])
         if rr and rr.get("ok"):
             c = agent.canon_of(rr["answer"]); votes[c] += a.qw; rep[c] = rr["answer"]; total += a.qw
-        for s in range(k):
+        for s in sorted(st["att"]):
             r = agent.last_ok(st["att"][s])
-            if r: c = agent.canon_of(r["answer"]); votes[c] += 1.0; rep.setdefault(c, r["answer"])
+            if r: c = agent.canon_of(r["answer"]); votes[c] += st["w"].get(s, 1.0); rep.setdefault(c, r["answer"])
         if votes and total:
             top, n = votes.most_common(1)[0]; conf = n / total
             final = rep[top] if conf >= a.tau else {"type": "abstain"}
-        else: conf, final = 0.0, {"type": "abstain"}
-        samples = {f"{s}{path}": st["att"][s] for s in range(k)}
+            best = rep[top]
+        else: conf, final, best = 0.0, {"type": "abstain"}, {"type": "abstain"}
+        return final, best, conf, votes
+
+    def escalate(self, q, st, k, path, can, b, prio, settle):
+        """post-hoc check (user rule): a low-confidence, abstained, unanswerable or flagged answer gets --escalate extra
+        samples WITH thinking (+ raw-table programs when it is unanswerable and the mapping left tables unused); the
+        question is decided on the vote of all samples. Returns True when samples were launched."""
+        a = self.a
+        if not getattr(a, "escalate", 0) or st.get("esc") or self.k_now < a.k: return False   # never in fast mode
+        final, best, conf, _ = self.vote(st)
+        c = q.get("_clean") or {}
+        flags = agent.answer_flags(c.get("key") or q["question"].lower(), best, c.get("period"))
+        if conf >= a.esc_conf and not flags: return False
+        st["esc"] = flags or [f"conf {conf:.2f}"]
+        raw = a.esc_raw if (best.get("type") == "unanswerable" and can and can.get("unused")) else 0
+        st["pending"] = a.escalate + raw
+        msgs_l = None
+        if can:
+            exs = self.ex.pick(q["question"], k=a.shots, exclude_business=b if self.exclude_own else None)
+            msgs_l = [{"role": "system", "content": agent.SYSTEM_LIB},
+                      {"role": "user", "content": agent.user_msg_lib(self.rulebook, self.bizs[b].readme, can["card"], fewshot.render_examples(exs), q)}]
+        msgs_b = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.bizs[b].readme, agent.CARDS[b], q)}]
+        cpath = can["path"] if can else None
+        for e in range(a.escalate + raw):
+            s = k + e; st["att"][s] = []; is_raw = e >= a.escalate or msgs_l is None
+            st["w"][s] = 1.0
+            self.sample((q["id"], s), msgs_b if is_raw else msgs_l, False, a.esc_tokens, agent.run_code,
+                        lambda kk, code, cp=(None if is_raw else cpath): (kk, b, q["as_of_date"], code, a.timeout, cp),
+                        lambda atts: settle(), think=True, reflect=False, prio=prio, attempts=st["att"][s])
+        return True
+
+    def write(self, q, st, k, path):
+        a = self.a
+        final, best, conf, votes = self.vote(st)
+        samples = {(f"{s}{path}" if s < k else f"{s}E"): st["att"][s] for s in sorted(st["att"])}
+        if st.get("esc"): samples["escalated"] = st["esc"]
+        rr = st["rule"]
         if rr: samples["rule"] = rr
         if q["id"] in self.written: return                              # already abstained at the hard time limit
         agent.write_answer(self.sub, self.logf, a, q, final, conf, votes, samples, {}, time.time() - st["t"])

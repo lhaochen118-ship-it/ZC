@@ -42,7 +42,8 @@ def args(out, pipe):
                               compile_tokens=2048, timeout=60, temp=0.7, eager=False, no_reflect=False, lora="", dp=1, shard="", chunk=0,
                               budget=0, log_dir="", v1=False, qw=2.0, shots=3, map_llm=False, no_llm=False, prefix_budget=32000, quant="",
                               think_map=False, gpu_util=0.92, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0,
-                              pipeline=pipe, active=1, low_water=4, claim_dir="", claim_procs=1, deadline=0)
+                              pipeline=pipe, active=1, low_water=4, claim_dir="", claim_procs=1, deadline=0,
+                              steal_chunk=4, q_inflight=6)
 
 
 shutil.rmtree(os.path.join(scratch, "cache_pipe"), ignore_errors=True)
@@ -87,9 +88,10 @@ def cli(out, *extra):
     return r.stdout
 log = cli(os.path.join(scratch, "out_dp"), "--dp", "2")
 fd = finals(os.path.join(scratch, "out_dp"))
-claims = sorted(os.listdir(os.path.join(scratch, "out_dp", "claims")))
+claims = sorted(x for x in os.listdir(os.path.join(scratch, "out_dp", "claims")) if not x.startswith("."))
 assert fd == fp, f"--dp 2 differs on {[q for q in want if fd.get(q) != fp[q]][:3]}"
-assert claims == ["biz_101", "biz_102"], claims
+# work units: one mapping claim + one published mapping per business, every 16-question chunk claimed exactly once
+assert claims == ["biz_101", "biz_101.c0", "biz_101.map", "biz_102", "biz_102.c0", "biz_102.map"], claims
 print("run_dp --dp 2 (claims", claims, ") | same answers")
 # a budget too small to answer anything: every question must still be written (abstain), nothing lost
 cli(os.path.join(scratch, "out_budget"), "--dp", "2", "--budget", "1")

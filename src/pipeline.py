@@ -128,11 +128,22 @@ class CPU:
     def busy(self): return len(self.live)
 
 
-def claim(claim_dir, bid):
-    """atomic claim of a business by one GPU process (False when another process has it)."""
+def claim(claim_dir, name):
+    """atomic claim of a work unit (business mapping `b`, question chunk `b.c<i>`) by one GPU process; the file holds
+    the owner's pid. False when another process has it."""
     if not claim_dir: return True
-    try: os.close(os.open(os.path.join(claim_dir, bid), os.O_CREAT | os.O_EXCL | os.O_WRONLY)); return True
+    try: fd = os.open(os.path.join(claim_dir, name), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     except FileExistsError: return False
+    os.write(fd, str(os.getpid()).encode()); os.close(fd); return True
+
+
+def owner_alive(claim_dir, name):
+    try: pid = int(open(os.path.join(claim_dir, name)).read().strip() or 0)
+    except (OSError, ValueError): return True                             # being written: assume alive
+    if not pid: return True
+    try: os.kill(pid, 0); return True
+    except ProcessLookupError: return False
+    except PermissionError: return True
 
 
 # ------------------------------------------------------------------ the scheduler
@@ -149,7 +160,12 @@ class Pipeline:
         self.order = sorted(self.by_b, key=lambda b: (-len(self.by_b[b]), b))  # most questions first: short tail
         self.cdir = os.path.join(a.cache or a.out, "canon2_pipe"); os.makedirs(self.cdir, exist_ok=True)
         self.cb = {}                                                     # rid -> callback(text, ntok)
-        self.active, self.answering, self.done_b = set(), set(), []
+        self.C = max(1, getattr(a, "steal_chunk", 16) or 16)             # questions per stealable chunk
+        self.chunks = {b: [qs_[i:i + self.C] for i in range(0, len(qs_), self.C)] for b, qs_ in self.by_b.items()}
+        self.mapping, self.maps, self.own = set(), {}, []                 # mapping in progress here; b -> can (None = raw path)
+        self.started, self.taken, self.full = set(), set(), set()        # businesses mapped here; chunks seen taken; fully claimed
+        self.mine, self.others = set(), set()                             # chunks claimed by THIS process; businesses mapped elsewhere
+        self.inflight_q, self.done_chunks = 0, 0
         self.t0, self.ntok, self.n_answered, self.n_q = time.time(), 0, 0, len(qs)
         self.mt_map = a.compile_tokens * (3 if a.think_map else 1); self.written = set()
         self.k_now = a.k
@@ -194,9 +210,9 @@ class Pipeline:
             finish(st["att"])
         launch()
 
-    # -- one business
+    # -- one business: transfer + mapping (exactly one process), then its chunks (any process)
     def start(self, b):
-        self.active.add(b); prio = self.order.index(b)
+        self.started.add(b); self.mapping.add(b); prio = self.order.index(b)
         biz = self.bizs[b]; bs = {"cands": [], "pending": 0, "llm": {}, "prio": prio, "t": time.time()}
         tasks = [((b, rid), b, code, rid, os.path.join(self.cdir, f"{b}.ref_{rid.replace(':', '_')}.pkl")) for rid, code in self.progs.items()
                  if not (self.exclude_own and rid == b) and canonmod.resolvable(biz, "generic" if rid.startswith("fmt:") else self.meta.get(rid, {}))]
@@ -232,23 +248,36 @@ class Pipeline:
             cs.sort(key=lambda x: (not x[0].startswith("ref:"), x[0]))  # deterministic; references before LLM samples (as in agent)
             _, scores = agent.agreement([r["sig"] for _, r in cs])
             order = sorted(range(len(cs)), key=lambda i: (-cs[i][1]["coverage"], -scores[i], i))
-            src, can = cs[order[0]]
+            src, r = cs[order[0]]; can = {"path": r["path"], "card": r["card"], "src": src}
             self.clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"]] for x, y in cs]}, ensure_ascii=False) + "\n")
-            print(f"  {b}: {len(cs)} candidates, chose {src} coverage {can['coverage']:.0f} ({time.time() - bs['t']:.0f}s)", flush=True)
+            print(f"  {b}: {len(cs)} candidates, chose {src} coverage {r['coverage']:.0f} ({time.time() - bs['t']:.0f}s)", flush=True)
         else: print(f"  {b}: no canonical tables ({time.time() - bs['t']:.0f}s)", flush=True)
-        self.clog.flush(); self.answering.add(b); self.answer(b, can, bs["prio"])
+        self.clog.flush(); self.maps[b] = can; self.mapping.discard(b); self.own.append(b)
+        if self.claim_dir:                                               # publish: other GPU processes may now take chunks
+            tmp = os.path.join(self.claim_dir, f".{b}.map.{os.getpid()}")
+            json.dump(can if can else {"none": True}, open(tmp, "w", encoding="utf-8"), ensure_ascii=False)
+            os.replace(tmp, os.path.join(self.claim_dir, f"{b}.map"))
 
-    def answer(self, b, can, prio):
-        a, k = self.a, self.k_now
-        qs = self.by_b[b]; left = {"n": len(qs)}
+    def mapping_of(self, b):
+        """(known, can): the mapping chosen for b, here or by another process (map file)."""
+        if b in self.maps: return True, self.maps[b]
+        if not self.claim_dir: return False, None
+        f = os.path.join(self.claim_dir, f"{b}.map")
+        if not os.path.isfile(f): return False, None
+        m = json.load(open(f, encoding="utf-8")); self.maps[b] = None if m.get("none") else m
+        return True, self.maps[b]
+
+    def answer_chunk(self, b, ci, can):
+        a, k = self.a, self.k_now; prio = self.order.index(b)
+        qs = self.chunks[b][ci]; left = {"n": len(qs)}; self.inflight_q += len(qs)
         for q in qs:
             st = {"att": {}, "rule": None, "pending": k + (1 if (a.qw > 0 and can) else 0), "t": time.time()}
             path = "L" if can else "B"
             def settle(q=q, st=st, path=path):
                 st["pending"] -= 1
                 if st["pending"] == 0:
-                    self.write(q, st, k, path); left["n"] -= 1
-                    if left["n"] == 0: self.finish_b(b)
+                    self.write(q, st, k, path); self.inflight_q -= 1; left["n"] -= 1
+                    if left["n"] == 0: self.chunk_done(b, ci)
             if can:
                 exs = self.ex.pick(q["question"], k=a.shots, exclude_business=b if self.exclude_own else None)
                 msgs = [{"role": "system", "content": agent.SYSTEM_LIB},
@@ -256,15 +285,15 @@ class Pipeline:
             else:
                 msgs = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.bizs[b].readme, agent.CARDS[b], q)}]
             cpath = can["path"] if can else None
-            for s in range(k):
-                st["att"][s] = []
-                self.sample((q["id"], s), msgs, s == 0, a.max_tokens, agent.run_code,
+            for s_ in range(k):
+                st["att"][s_] = []
+                self.sample((q["id"], s_), msgs, s_ == 0, a.max_tokens, agent.run_code,
                             lambda kk, code, q=q, cpath=cpath: (kk, b, q["as_of_date"], code, a.timeout, cpath),
-                            lambda atts, settle=settle: settle(), reflect=not a.no_reflect, prio=prio, attempts=st["att"][s])
+                            lambda atts, settle=settle: settle(), reflect=not a.no_reflect, prio=prio, attempts=st["att"][s_])
             if a.qw > 0 and can:
                 def on_rule(r, st=st, settle=settle): st["rule"] = r; settle()
                 self.cpu.submit(agent.run_qparse, ((q["id"], "Q"), b, q["as_of_date"], q["question"], cpath, a.timeout), a.timeout, on_rule)
-        if not qs: self.finish_b(b)
+        if not qs: self.chunk_done(b, ci)
 
     def write(self, q, st, k, path):
         a = self.a; votes, rep = Counter(), {}; rr = st["rule"]; total = float(k)
@@ -283,65 +312,98 @@ class Pipeline:
         agent.write_answer(self.sub, self.logf, a, q, final, conf, votes, samples, {}, time.time() - st["t"])
         self.sub.flush(); self.logf.flush(); self.n_answered += 1; self.written.add(q["id"])
 
-    def finish_b(self, b):
-        self.active.discard(b); self.answering.discard(b); self.done_b.append(b)
-        el = time.time() - self.t0
-        print(f"[pipe] {b} done | {len(self.done_b)} businesses, {self.n_answered}/{self.n_q} questions, {self.ntok} tok in {el:.0f}s "
+    def chunk_done(self, b, ci):
+        self.done_chunks += 1; el = time.time() - self.t0
+        print(f"[pipe] {b} chunk {ci + 1}/{len(self.chunks[b])} done | {self.n_answered} questions here, {self.ntok} tok in {el:.0f}s "
               f"({self.ntok / max(el, 1e-9):.0f} tok/s)", flush=True)
 
-    # -- admission and the main loop
+    # -- work units
     def next_business(self):
+        """claim the next unmapped business (most questions first)."""
         for b in self.order:
-            if b in self.active or b in self.done_b or b in self.skipped: continue
+            if b in self.started or b in self.others: continue
             if claim(self.claim_dir, b): return b
-            self.skipped.add(b)                                          # another GPU process has it
+            self.others.add(b)
         return None
 
-    def abstain_rest(self, bids):
-        for b in bids:
-            for q in self.by_b[b]:
-                if q["id"] in self.written: continue
-                agent.write_answer(self.sub, self.logf, self.a, q, {"type": "abstain"}, 0.0, Counter(), {}, {}, 0.0); self.written.add(q["id"])
+    def takeover(self):
+        """a business claimed by a process that died before publishing its mapping is mapped here (idle check only)."""
+        if not self.claim_dir: return None
+        for b in self.others:
+            if b in self.started or os.path.isfile(os.path.join(self.claim_dir, f"{b}.map")): continue
+            if not owner_alive(self.claim_dir, b) and claim(self.claim_dir, f"{b}.takeover"):
+                print(f"[pipe] {b}: mapping owner died, taking over", flush=True); self.start(b); return b
+        return None
+
+    def next_chunk(self):
+        """the next unclaimed question chunk of a mapped business: own businesses first (warm prefix), then others'."""
+        for b in self.own + [x for x in self.order if x not in self.own]:
+            if b in self.full: continue
+            known, can = self.mapping_of(b)
+            if not known: continue
+            free = False
+            for ci in range(len(self.chunks[b])):
+                if (b, ci) in self.taken: continue
+                if claim(self.claim_dir, f"{b}.c{ci}"): self.taken.add((b, ci)); self.mine.add((b, ci)); return b, ci, can
+                self.taken.add((b, ci))                                  # someone else has it
+            if not free: self.full.add(b)
+        return None
+
+    def unclaimed_units(self):
+        """(businesses not mapped by anyone, chunks nobody holds) according to the claim files."""
+        if not self.claim_dir:
+            bs = [b for b in self.order if b not in self.started]
+            return bs, [(b, ci) for b in self.order for ci in range(len(self.chunks[b])) if (b, ci) not in self.taken]
+        names = set(os.listdir(self.claim_dir))
+        return [b for b in self.order if b not in names], [(b, ci) for b in self.order for ci in range(len(self.chunks[b])) if f"{b}.c{ci}" not in names]
+
+    def abstain_qs(self, qs):
+        for q in qs:
+            if q["id"] in self.written: continue
+            agent.write_answer(self.sub, self.logf, self.a, q, {"type": "abstain"}, 0.0, Counter(), {}, {}, 0.0); self.written.add(q["id"])
         self.sub.flush(); self.logf.flush()
 
-    def want_more(self):
-        """one business prefetching (transfer / mapping) while at most --active answer; more when the GPU queue runs low."""
-        n_pre = len(self.active) - len(self.answering)
-        if n_pre < 1 and len(self.active) < self.a.active + 1: return True
-        return self.llm.busy() < self.a.low_water and len(self.active) < self.a.active + 2
-
-    def unclaimed(self):
-        return [b for b in self.order if b not in self.active and b not in self.done_b and b not in self.skipped
-                and not (self.claim_dir and os.path.exists(os.path.join(self.claim_dir, b)))]
-
     def claim_rest(self):
-        """claim every business nobody has started (so that each is abstained exactly once)."""
-        rest = [b for b in self.unclaimed() if claim(self.claim_dir, b)]
-        self.abstain_rest(rest); self.done_b.extend(rest); return rest
+        """claim every chunk nobody holds and abstain it (each question is written by exactly one process)."""
+        _, chunks = self.unclaimed_units(); n = 0
+        for b, ci in chunks:
+            if claim(self.claim_dir, f"{b}.c{ci}"): self.taken.add((b, ci)); self.mine.add((b, ci)); self.abstain_qs(self.chunks[b][ci]); n += 1
+        return n
+
+    def fill(self):
+        """keep one business mapping ahead (two when the GPU queue runs low) and --q-inflight questions answering."""
+        while len(self.mapping) < (2 if self.llm.busy() < self.a.low_water else 1):
+            b = self.next_business()
+            if b is None: break
+            self.start(b)
+        while self.inflight_q < self.a.q_inflight:
+            ch = self.next_chunk()
+            if ch is None: break
+            self.answer_chunk(*ch)
 
     def run(self):
-        a = self.a; self.skipped = set(); exhausted = False
-        span = (self.deadline - self.t0) if self.deadline else 0
+        a = self.a; span = (self.deadline - self.t0) if self.deadline else 0; stopped = False; last_check = last_fill = last_est = 0.0
         while True:
             now = time.time(); left_s = (self.deadline - now) if self.deadline else None
             if self.deadline and left_s <= 0.01 * span:                 # hard limit: every unwritten question is abstained
-                self.claim_rest(); self.abstain_rest([b for b in self.order if b in self.active])
+                self.claim_rest(); self.abstain_qs([q for (b, ci) in self.mine for q in self.chunks[b][ci]])   # own chunks only
                 print("[pipe] time budget reached", flush=True); break
-            if not exhausted and (not self.deadline or left_s > 0.05 * span):
-                if self.deadline and self.n_answered:                   # fast mode (K=1) when this process's share of the
-                    mine = sum(len(self.by_b[b]) for b in self.active) + sum(len(self.by_b[b]) for b in self.unclaimed()) / self.n_procs
-                    per_q = (now - self.t0) / self.n_answered           # remaining work would not fit before the deadline
-                    self.k_now = 1 if per_q * mine > 0.9 * left_s else a.k
-                while self.want_more():
-                    b = self.next_business()
-                    if b is None: exhausted = True; break
-                    self.start(b)
-            elif self.deadline and left_s <= 0.05 * span and not exhausted:   # out of time: nothing new is started
-                self.claim_rest(); exhausted = True
+            if self.deadline and left_s <= 0.05 * span:
+                if not stopped: self.claim_rest(); stopped = True       # out of time: nothing new is started
+            else:
+                if self.deadline and self.n_answered and now - last_est > 5:    # fast mode (K=1) when this process's share of
+                    last_est = now; ub, uc = self.unclaimed_units()               # the remaining work would not fit in time
+                    mine = self.inflight_q + sum(len(self.chunks[b][ci]) for b, ci in uc) / self.n_procs
+                    self.k_now = 1 if (now - self.t0) / self.n_answered * mine > 0.9 * left_s else a.k
+                if now - last_fill > 0.1: last_fill = now; self.fill()
             moved = self.cpu.poll()
             if self.llm.busy():
                 for rid, text, ntok in self.llm.step(): self.cb.pop(rid)(text, ntok); moved += 1
-            elif not moved:
-                if not self.cpu.busy() and not self.active and exhausted: break
-                time.sleep(0.01)
-        print(f"[pipe] DONE {len(self.done_b)} businesses, {self.n_answered} questions, {self.ntok} tok in {time.time() - self.t0:.0f}s", flush=True)
+            elif not moved and not self.cpu.busy() and not self.mapping and self.inflight_q == 0:
+                if now - last_check > 0.5:                              # idle: finished only when every unit is claimed
+                    last_check = now; ub, uc = self.unclaimed_units()
+                    if not ub and not uc: break
+                    self.fill(); self.takeover()                         # waits for mappings of other processes, or takes over
+                time.sleep(0.05)
+            elif not moved: time.sleep(0.005)
+        print(f"[pipe] DONE {self.done_chunks} chunks, {self.n_answered} questions here, {self.ntok} tok in {time.time() - self.t0:.0f}s", flush=True)

@@ -668,6 +668,8 @@ def build_parser():
     ap.add_argument("--low-water", type=int, default=64, help="pipeline: admit one more business when fewer requests are queued")
     ap.add_argument("--claim-dir", default="", help="internal: shared claim directory of the GPU processes")
     ap.add_argument("--claim-procs", type=int, default=1, help="internal: number of GPU processes sharing the claims")
+    ap.add_argument("--steal-chunk", type=int, default=16, help="pipeline: questions per stealable work unit")
+    ap.add_argument("--q-inflight", type=int, default=64, help="pipeline: questions answering at once per GPU process")
     ap.add_argument("--deadline", type=float, default=0, help="internal: absolute end time (epoch s) of the whole run")
     ap.add_argument("--think-map", action="store_true", help="thinking mode for the mapping programs only (3x token budget)")
     ap.add_argument("--quant", default="", help="vLLM quantization for an unquantised checkpoint, e.g. fp8 (L4 / 5090)")

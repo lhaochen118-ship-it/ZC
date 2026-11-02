@@ -253,7 +253,13 @@ class Pipeline:
             if r: bs["cands"].append((f"llm:{s}", r))
             bs["pending"] -= 1
             if bs["pending"] == 0:
-                self.clog.write(json.dumps({"business_id": b, "llm_attempts": {x: bs["llm"][x] for x in range(self.a.kc)}}, ensure_ascii=False, default=str) + "\n")
+                if not bs["cands"] and getattr(self.a, "map_retry", 1) and not bs.get("retried"):
+                    # every sample failed (biz_123 in v9, dev_014 in 3 of 4 public runs: luck of the sampling): one more batch
+                    bs["retried"] = True; bs["pending"] = self.a.kc
+                    print(f"  {b}: no mapping sample ran; a second batch of {self.a.kc}", flush=True)
+                    for s2 in range(self.a.kc, 2 * self.a.kc): launch(s2)
+                    return
+                self.clog.write(json.dumps({"business_id": b, "llm_attempts": {x: bs["llm"][x] for x in sorted(bs["llm"])}}, ensure_ascii=False, default=str) + "\n")
                 self.select(b, bs)
         def complete(r):
             """one extra round for a mapping that runs: the soft checks it fails (canon.secondary_checks) and the raw
@@ -271,10 +277,11 @@ class Pipeline:
                              "them to C under the canonical names.")
             return ("\n\n".join(parts) + "\n\nFix this and output the complete program; keep everything that already works. If nothing "
                     "needs to change, output the same program again.")
-        for s in range(self.a.kc):
+        def launch(s):
             self.sample((b, s), msgs, s == 0, self.mt_map, agent.run_mapping,
                         lambda k, code: (k, k[0], code, None, os.path.join(self.cdir, f"{k[0]}.llm{k[1]}.pkl")),
                         lambda atts, s=s: fin(s, atts), think=True if self.a.think_map else None, prio=bs["prio"], complete=complete)
+        for s in range(self.a.kc): launch(s)
 
     SEL_FAIL_W = 30.0                                                   # ranking points per unit of rule failure share
 

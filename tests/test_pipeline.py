@@ -89,6 +89,22 @@ fcf, ffu = finals(a_cf.out), finals(a_fu.out)
 assert nsamp.count(1) > 0 and nsamp.count(2) > 0 and nsamp.count(1) + nsamp.count(2) == len(lcf), nsamp
 assert fcf == ffu, f"--confirm differs from the full pipeline on {[q for q in want if fcf.get(q) != ffu[q]][:3]}"
 print("confirm |", nsamp.count(1), "questions settled by rule + greedy sample,", nsamp.count(2), "with every sample; answers identical")
+# --map-retry: when every mapping sample of a business fails, a second batch runs (here the first 4 mapping generations
+# = 2 samples x 2 rounds fail); the business still gets an LLM mapping and every question is answered once
+calls = {"map": 0}
+def responder_failfirst(conv):
+    if conv[0]["content"].startswith("You are DataMate's data engineer"):
+        calls["map"] += 1
+        if calls["map"] <= 4: return "```python\nraise ValueError('broken mapping')\n```"
+    return responder(conv)
+a_mr = args(os.path.join(scratch, "out_retry"), True); a_mr.map_llm = True
+agent.run(a_mr, engine=pipeline.FakeStepLLM(responder_failfirst))
+cl = [json.loads(l) for l in open(os.path.join(a_mr.out, "compile_logs.jsonl"), encoding="utf-8")]
+ch = {c["business_id"]: c["chosen"] for c in cl if "chosen" in c}
+att = [c for c in cl if c.get("business_id") == "biz_101" and "llm_attempts" in c][0]["llm_attempts"]
+assert len(att) == 4 and ch.get("biz_101", "").startswith("llm:"), (len(att), ch)   # samples 0-1 failed, 2-3 from the retry
+assert len(finals(a_mr.out)) == len(want)
+print("map retry | biz_101 mapped by", ch["biz_101"], "after a failed first batch")
 # the real CLI: agent.py runs as __main__ and pipeline.py imports agent (Kaggle crash of 02/11: a second module copy
 # without CARDS / worker context); the fake responder is loaded from a file, no model
 import subprocess, inspect

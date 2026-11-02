@@ -20,3 +20,4 @@ docs/fonts/
 models/
 results/*.json
 handoff/fonts/
+/pos.sqlite

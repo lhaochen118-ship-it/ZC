@@ -119,5 +119,11 @@ for q, want in [("coi gium thang 8/2025 dthu binh quan moi order la bao nhieu", 
 fl = pd.DataFrame({"item_name": ["Phí phục vụ", "Phin cà phê", "Bia"], "item_group": ["phí dịch vụ", "dụng cụ", "bia"]})
 check("fee lines", dm.fee_lines(fl).tolist() == [True, False, False])
 
+# 10. `import datamate` (and variants) in a generated program is the toolkit, real modules are untouched
+code = "import datamate\nfrom datamate_toolkit import revenue, month\nimport DataMate as D\nANSWER = {'type': 'number', 'answer': datamate.revenue(month(2025, 3)) + D.n_orders(month(2025, 3))}"
+check("import datamate", dm.run_program(code, sh, "2025-03-10") == {"type": "number", "answer": 32}, dm.run_program(code, sh, "2025-03-10"))
+try: exec("import numpyy", {}); check("missing module raises", False)
+except ModuleNotFoundError: pass
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

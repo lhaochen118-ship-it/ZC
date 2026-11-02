@@ -264,6 +264,7 @@ def _namespace(bid, as_of=None, canon_path=None):
             g.update(dm.api(shop, as_of if as_of is not None else shop.last)); g["T"] = {k: v.copy() for k, v in biz.tables.items()}
         else: g["C"] = {k: v.copy() for k, v in can["C"].items()}
         g["NOTES"] = can.get("notes", "")
+    dm._TOOLKIT_NS.clear(); dm._TOOLKIT_NS.update(g)                  # `import datamate` in a program -> this namespace
     return g
 
 

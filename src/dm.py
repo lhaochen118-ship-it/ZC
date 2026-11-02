@@ -10,7 +10,7 @@ Canonical: C["orders"] one row per order, C["lines"] one row per order line, opt
            C["payments"], C["stock"], C["lots"], C["prices"], C["expenses"], C["deliveries"], C["terms"]
            (column lists in CANON_DOC).
 Nothing here is keyed on a business or question id."""
-import re, math, unicodedata
+import re, sys, math, unicodedata
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 import numpy as np
@@ -1036,10 +1036,38 @@ def api(shop, today):
     return g
 
 
+_TOOLKIT_NS = {}                                                       # the toolkit of the program being executed
+
+
+class _ToolkitModule(__import__("types").ModuleType):
+    def __getattr__(self, name):
+        if name in _TOOLKIT_NS: return _TOOLKIT_NS[name]
+        raise AttributeError(f"the toolkit has no {name!r} (it is already imported: call the functions directly)")
+
+
+class _ToolkitFinder:
+    """`import datamate` / `from datamate_toolkit import revenue` (the generated programs tried this in 12.9 % of the
+    train attempts and 21.5 % of the public ones, all ModuleNotFoundError): any module named like data(_)mate* or
+    toolkit* is the toolkit namespace of the current program. Appended to sys.meta_path, so real modules come first."""
+    import re as _re
+    RX = _re.compile(r"(?i)^(data[_ ]?mate|datamate|toolkit)\w*$")
+    def find_spec(self, fullname, path=None, target=None):
+        if self.RX.match(fullname.split(".")[0]):
+            import importlib.machinery
+            return importlib.machinery.ModuleSpec(fullname, self)
+        return None
+    def create_module(self, spec): return _ToolkitModule(spec.name)
+    def exec_module(self, module): pass
+
+
+if not any(isinstance(f, _ToolkitFinder) for f in sys.meta_path): sys.meta_path.append(_ToolkitFinder())
+
+
 def run_program(code, shop, today, extra=None):
     """execute an answer program -> ANSWER dict; Unanswerable -> {"type": "unanswerable"}."""
     g = api(shop, today)
     if extra: g.update(extra)
+    _TOOLKIT_NS.clear(); _TOOLKIT_NS.update(g)
     try: exec(compile(code, "<program>", "exec"), g)
     except Unanswerable: return {"type": "unanswerable", "answer": None}
     return g.get("ANSWER")

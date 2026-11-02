@@ -1,18 +1,18 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-02 21:05 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-03 00:05 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự.*
 
-## Kết quả mới nhất (Qwen3.5-9B FP8, train 3000 câu leave-one-out, 4×L4) — EXPERIMENT_LOG entry 4
+## Kết quả mới nhất (03/11 00:05) — EXPERIMENT_LOG entry 8
 
-| Run (scratch `runs/`) | dev | holdout | all | wall |
+| Run | dev | holdout | all | public abstain |
 |---|---|---|---|---|
-| t1q35-1 `--think-map` (cũ) | 0.926 | 0.761 | 0.870 | 4065 s |
-| **v4b zc-v4b-1** escalate 4 | **0.976** | 0.913 | **0.955** | 6046 s |
-| v4b zc-v4b-3 escalate 0 | 0.955 | 0.918 | 0.943 | 4774 s |
+| v6-1 (rule reader on cleaned text + fixes) | 0.974 | **0.961** | **0.969** | — |
+| v8-1 (+ import hook) | 0.976 | 0.948 | 0.966 | 108 |
+| v9-1 (+ selection by rule programs + --confirm) | **0.989** | 0.809 | 0.928 | **51** |
 
-Còn yếu: biz_123 0.57, biz_111 0.86, biz_117 0.87, biz_121 0.88, biz_122 0.90; escalation làm hỏng kiểu `table`.
-Public v4b (zc-v4b-2, 7599 s) đã có: ứng viên nộp `runs/v4b/zc-v4b-2_out/results/pub/`.
+Holdout swings with mapping luck (v9: no mapping for biz_123). Public determinism v9 ×2: 80.4 % of answers identical.
+Next: v10 = v9 + --map-retry + kc 8 (train, public, public repeat); then the final configuration + submission file.
 
 ## Đã xong trong khung chat này (sau restart 12:53 UTC)
 

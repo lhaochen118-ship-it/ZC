@@ -137,3 +137,22 @@ v6-train (rule reader fixes).
     a stable outcome even when the sampled set differs.
   - Response 2: v9i tests `VLLM_BATCH_INVARIANT=1`.
 - `--confirm` (rule + greedy sample first): offline on v4b, same PA with 61 % fewer LLM samples; v9 validates it on GPU.
+
+## Entry 8 — 2026-11-02/03: v6–v9 (train + public), v9i
+
+| Run | Adds | dev | holdout | all | wall | public abstain |
+|---|---|---|---|---|---|---|
+| v6-1 | rule reader on the cleaned question, parser patterns, toolkit fixes | 0.974 | **0.961** | **0.969** | 5787 s | — |
+| v7-1 / -2 | + soft checks, CANON_DOC, aliases | 0.961 | 0.959 | 0.960 | 5838 s | 76 |
+| v8-1 / -2 | + import hook (`import datamate`), tolerances | 0.976 | 0.948 | 0.966 | **4641 s** | 108 |
+| v9-1 / -2 | + selection by rule programs, `--confirm 1` | **0.989** | 0.809 | 0.928 | 5748 s | **51** |
+| v9-3 | public repeat of v9 | | | | | 78 |
+| v9i | `VLLM_BATCH_INVARIANT=1` | crashed at ~470 s (not supported): ruled out | | | | |
+
+- Every run from v6 on is at 0.96–0.99 on dev. The total moves with the luck of the sampled mappings of 2–3 holdout
+  businesses: in v9, all 6 samples of biz_123 failed (no mapping, PA −0.08) and biz_124 got 0.48.
+- `--confirm` works on GPU: 2633 / 3000 train and 657 / 1000 public questions were settled by rule + greedy sample.
+  Wall time is dominated by the thinking mapping phase.
+- Determinism, public: v9 vs v9-3 gave the same answer on 80.4 % of questions (v5: 88.3 %). Mapping success itself
+  is random for dev_014 (mapped in v7 / v9, not in v9-3), and near-tied candidates flip in dev_004 / dev_012.
+- Next (v10): when every sample of a business fails, a second batch (`--map-retry`); kc 8 now that selection is better.

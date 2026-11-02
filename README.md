@@ -18,6 +18,7 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 | 3 | `docs/04_DECISION_V3.md` | Đánh giá v1 / v2, quyết định, kiến trúc v3, kế hoạch thí nghiệm |
 | 4 | `docs/03_WORKFLOW.md` | Quy trình làm việc + nguyên tắc user đã chốt |
 | 5 | `docs/02_KAGGLE_OPS.md` | Vận hành Kaggle (GPU L4, dataset, lệnh) |
+| 6 | `docs/05_GPU_OPTIMIZATION.md` (tóm tắt trong `CLAUDE.md`) | Playbook tốc độ GPU: đo, data parallel, prefix cache, pipeline, work stealing |
 | — | `docs/01_PLAN.md` | Kế hoạch gốc + tổng quan paper |
 | — | `docs/history/` | Kết quả, bài học kỹ thuật, nhật ký thí nghiệm của v1 |
 | — | `EXPERIMENT_LOG.md` | Nhật ký thí nghiệm v3 |

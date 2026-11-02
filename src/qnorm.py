@@ -53,6 +53,11 @@ _TONE = {"s": "́", "f": "̀", "r": "̉", "x": "̃", "j": "̣"}
 _VOW = [("aa", "â"), ("aw", "ă"), ("ee", "ê"), ("oo", "ô"), ("ow", "ơ"), ("uw", "ư"), ("dd", "đ")]
 
 
+def qnorm_key(s):
+    """accent-free lowercase word / number tokens of a name ('Snack Lay's vị tự nhiên 56g' -> ['snack', 'lay', 's', ...])."""
+    return re.findall(r"[^\W_]+", strip_accents(str(s)).lower())
+
+
 def strip_accents(s):
     s = unicodedata.normalize("NFD", s).replace("đ", "d").replace("Đ", "D")
     return unicodedata.normalize("NFC", "".join(c for c in s if unicodedata.category(c) != "Mn"))
@@ -118,7 +123,7 @@ class Normalizer:
         for t in list(texts) + [" ".join(COMMON)]:
             for line in re.split(r"[\n.;:!?()|]+", unicodedata.normalize("NFC", t)):
                 ws = [w.lower() for w in WORD.findall(line)]
-                if not ws or not any(any(ord(c) > 127 for c in w) for w in ws): continue
+                if not ws or sum(not w.isascii() for w in ws) < 0.5 * len(ws): continue   # typed with accents (not 1 'đ' in a plain line)
                 for i, w in enumerate(ws):
                     self.uni[w] += 1; self.forms[strip_accents(w)][w] += 1
                     if i: self.bi[(ws[i - 1], w)] += 1
@@ -133,6 +138,37 @@ class Normalizer:
         self.bi = Counter({k: v for k, v in self.bi.items() if k[0] not in bad and k[1] not in bad})
         self.N = sum(self.uni.values()) or 1
         self.vocab = {w for w in self.uni}
+
+    def set_entities(self, names):
+        """names written in the business's data: a span of the question that matches one (accents, case and punctuation
+        aside, >= 2 words) is rewritten exactly as the data writes it (entity linking)."""
+        idx = {}
+        for n in names:
+            k = " ".join(qnorm_key(n))
+            if len(k.split()) >= 2 and len(k) >= 6: idx.setdefault(k, n)
+        self.entities = sorted(idx.items(), key=lambda kv: -len(kv[0]))
+
+    def link(self, s):
+        """rewrite the data's names in s (longest first, no overlaps)."""
+        if not getattr(self, "entities", None): return s, []
+        toks = [(m.start(), m.end(), strip_accents(m.group(0)).lower()) for m in re.finditer(r"[^\W_]+|[^\w\s]", s)]
+        words = [t for t in toks if re.fullmatch(r"[^\W_]+", t[2])]
+        keys = [w[2] for w in words]; used = [False] * len(words); repl = []
+        first = defaultdict(list)
+        for k, n in self.entities: first[k.split()[0]].append((k.split(), n))
+        for i in range(len(words)):
+            for kt, n in first.get(keys[i], []):
+                j = i + len(kt)
+                if j <= len(words) and keys[i:j] == kt and not any(used[i:j]):
+                    a, b = words[i][0], words[j - 1][1]
+                    nt = list(re.finditer(r"[^\W_]+", n)); core = n[nt[0].start():nt[-1].end()]   # the name between its first and last
+                    title = all(m.group(0)[:1].isupper() or m.group(0)[:1].isdigit() for m in nt)   # word: no duplicated ')'
+                    if not title and s[a:b][:1].islower(): core = core[:1].lower() + core[1:]   # a label ('Ghi nợ') keeps the sentence's case
+                    if s[a:b] != core: repl.append((a, b, core))
+                    for x in range(i, j): used[x] = True
+                    break
+        for a, b, n in sorted(repl, reverse=True): s = s[:a] + n + s[b:]
+        return s, [[s, n, "entity"] for _, _, n in repl]
 
     @staticmethod
     def entity_texts(biz, max_unique=5000):
@@ -158,7 +194,7 @@ class Normalizer:
             for l in open(tq, encoding="utf-8"):
                 b, _, q = l.rstrip("\n").partition("\t")
                 if b != exclude_business: texts.append(q)
-        return cls(texts)
+        nz = cls(texts); nz.set_entities(extra_texts); return nz
 
     # -- accent restoration
     def _lp(self, prev, w):
@@ -205,6 +241,9 @@ class Normalizer:
             elif w == "lệ" and restored and prv not in ("tỉ", "tỷ") and typed[i].isascii(): out[i] = _case_like(out[i], "lẻ")
             elif w == "j" and i > 0: out[i] = "gì"
             elif w == "k" and i > 0 and not re.search(r"\d\s*$", seps[i]): out[i] = "không"
+            elif w == "len" and re.search(r"\d\s*(đ|d|đồng|dong|k)?\s*$", (seps[i - 1] + low[i - 1] if i and low[i - 1] in ("đ", "đồng", "d", "dong", "k") else "") + seps[i]): out[i] = "lên"
+            elif w == "tạ" and i == n - 1: out[i] = "ta"                           # final particle 'ta', not 'tạ' (100 kg)
+            elif w == "chi" and i == n - 1 and prv == "là": out[i] = "gì"            # central 'là chi' = 'là gì'
         return out
 
     # -- the whole cleaning
@@ -255,6 +294,7 @@ class Normalizer:
             s2 = rx.sub(f, s)
             if s2 != s: changes.append(["month", s2, "month"]); s = s2
         s = re.sub(r"\s+", " ", s).strip()
+        s, ch = self.link(s); changes += ch                               # names exactly as the data writes them
         out = {"clean": s, "changes": changes, "key": strip_accents(s).lower(), "period": None}
         if as_of is not None:
             try:

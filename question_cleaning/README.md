@@ -11,6 +11,9 @@ Chỉ dùng **luật ngôn ngữ chung** của tiếng Việt chat, không có g
 
 ## Các bước (theo thứ tự, mỗi thay đổi ghi trong `changes`)
 
+Từ vựng của bước khôi phục dấu chỉ học từ câu **gõ có dấu** (≥ ½ số từ có dấu): câu gõ thiếu dấu từng làm bẩn từ vựng
+(`truoc`, `nhien`) nên bị loại.
+
 1. **Unicode**: NFC, bỏ emoji / ký hiệu trang trí, gộp khoảng trắng.
 2. **Viết tắt chat** (cả từ, không ăn vào mã như `NV001`): `dthu` → doanh thu, `bnhiu`/`bn` → bao nhiêu, `hqua` → hôm qua,
    `hnay` → hôm nay, `đc`/`dc` → được, `ko`/`hok` → không, `trc` → trước, `vs` → với, `z` → vậy, `sp` → sản phẩm,
@@ -26,17 +29,29 @@ Chỉ dùng **luật ngôn ngữ chung** của tiếng Việt chat, không có g
    liệu) giữ nguyên.
 6. **Tháng viết tắt**: `th7/2025`, `T11/2025` → tháng 7/2025; `6-2026` → tháng 6/2026; `4/26` → tháng 4/2026 (chỉ khi số sau
    là năm 2 chữ số 23–29; `1/1` giữ nguyên); `th trước` → tháng trước.
-7. **Kỳ thời gian** (`period`): kỳ đầu tiên trong câu theo rulebook §2 (`qparse.parse_period`), ra khoảng ngày ISO và biểu thức
+7. **Tên theo dữ liệu (entity linking)**: đoạn câu trùng (bỏ dấu, hoa thường, dấu câu) với một tên ≥ 2 từ trong dữ liệu
+   của doanh nghiệp được ghi **đúng như dữ liệu** (`cao thu hanh` → Cao Thu Hạnh, `snack lay's vi tu nhien 56g` → snack
+   Lay's vị tự nhiên 56g); nhãn thường (`Ghi nợ`) giữ chữ thường của câu.
+8. **Luật ngữ cảnh** (chỉ ở ngữ cảnh an toàn): `nhiêu` → nhiều trước nhất / hơn / hay ít; `hà` cuối câu → hả; `lệ` → lẻ
+   (trừ tỉ lệ); `j` → gì; `k` → không (trừ sau số: `50 k`); `len` sau giá → lên; `tạ` cuối câu → ta; `là chi` → là gì.
+9. **Kỳ thời gian** (`period`): kỳ đầu tiên trong câu theo rulebook §2 (`qparse.parse_period`), ra khoảng ngày ISO và biểu thức
    toolkit, ví dụ `{"start": "2025-10-01", "end": "2025-10-31", "code": "month(2025, 10)"}`.
 
 Câu gốc luôn là chuẩn: agent đưa `clean` (và kỳ) **bên cạnh** câu gốc cho LLM, không thay thế.
 
+## Bước LLM (đang chạy: `src/qnorm_llm.py`)
+
+Chính Qwen3.5-9B của giải pháp (không thêm mô hình) thêm dấu theo ngữ cảnh cho các từ luật chưa chắc (mỗi / mọi, mà / mã,
+chở / cho, vì / vỉ, lỗi / lời …). Kiểm tra cứng: bỏ dấu đầu ra phải ra **đúng** chuỗi từ đầu vào (không thêm / bớt / đổi từ,
+số, mã), từ người dùng đã gõ dấu giữ nguyên; tên giữa câu và mã không bị LLM đổi. Job đo luôn độ chính xác của LLM so với
+mô hình bigram trên 2232 câu có dấu (bỏ dấu rồi khôi phục).
+
 ## Kết quả trên 3000 câu train
 
-- 1587 câu được thay đổi; 2976 / 3000 câu nhận ra kỳ thời gian.
-- Số câu theo quy tắc: viết tắt 1256, khôi phục dấu 790, Telex 235, tháng viết tắt 35 (chi tiết `stats.json`).
+- 1620 câu được thay đổi; 2976 / 3000 câu nhận ra kỳ thời gian.
+- Số câu theo quy tắc: abbr 1256, accent 790, telex 235, entity 149, context 63, month 35 (`stats.json`).
 - **Độ chính xác khôi phục dấu** (leave-one-business-out: lấy 2232 câu có dấu, bỏ dấu, khôi phục, so với câu gốc):
-  **từ 99.3 %**, từ có dấu 99.1 %, **nguyên câu đúng 93.6 %**.
+  **từ 99.66 %**, từ có dấu 99.60 %, **nguyên câu đúng 96.1 %** (lần 1: 99.3 % / 93.6 %).
 
 ## Ví dụ (ngẫu nhiên)
 

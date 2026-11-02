@@ -1061,7 +1061,7 @@ class _ToolkitFinder:
     train attempts and 21.5 % of the public ones, all ModuleNotFoundError): any module named like data(_)mate* or
     toolkit* is the toolkit namespace of the current program. Appended to sys.meta_path, so real modules come first."""
     import re as _re
-    RX = _re.compile(r"(?i)^(data[_ ]?mate|datamate|toolkit)\w*$")
+    RX = _re.compile(r"(?i)^(data[_ ]?mate|datamate|toolkit|(data_)?builder)\w*$")   # builder*: mapping programs
     def find_spec(self, fullname, path=None, target=None):
         if self.RX.match(fullname.split(".")[0]):
             import importlib.machinery

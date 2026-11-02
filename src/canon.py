@@ -372,6 +372,7 @@ def normalize_aliases(C):
 def run_mapping(code, biz, ref_cols=None):
     """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used, unused, warnings)."""
     g = namespace(biz, ref_cols)
+    dm._TOOLKIT_NS.clear(); dm._TOOLKIT_NS.update(g)                  # `from builder import frame` -> this namespace
     try: exec(compile(code, "<mapping>", "exec"), g)
     except Exception as e:
         tb = [l for l in traceback.format_exc().splitlines() if '"<mapping>"' in l][-1:]

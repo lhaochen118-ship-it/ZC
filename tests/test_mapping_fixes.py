@@ -56,6 +56,12 @@ check("revenue warning", any(x.startswith("orders.revenue differs from the colum
 check("no warning on the right column", w_ok == [], w_ok)
 C = C_of("Tiền hàng"); C["lots"] = pd.DataFrame({"lot_id": ["L1"], "item_code": ["X"], "expiry": ["2026-01-01"], "qty_in_base": [10]})
 check("lots without lot_sales", any("lot_sales" in x for x in canon.secondary_checks(C, biz)))
+C2 = C_of("Tiền hàng"); C2["purchases"] = pd.DataFrame({"receipt_id": ["P1"], "receipt_date": ["2025-02-01"], "amount": [10.0]})
+C2["stock"] = pd.DataFrame({"item_code": ["X", "Y"] * 40, "qty_base": range(80)}); C2["conversions"] = pd.DataFrame(columns=["item", "unit", "factor"])
+w2 = canon.secondary_checks(C2, biz)
+check("purchases headers", any("C['purchases'] has no item_code" in x for x in w2), w2)
+check("stock ledger as snapshot", any("rows per item" in x for x in w2), w2)
+check("empty conversions", any("C['conversions'] is empty" in x for x in w2), w2)
 # ranking: a wrong revenue column is ranked below any candidate without it; a missing secondary table costs little
 rs = canon.rank_score
 check("rank: revenue", rs({"coverage": 30, "warnings": w_bad}) < rs({"coverage": 5, "warnings": []}))

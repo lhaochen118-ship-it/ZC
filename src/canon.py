@@ -269,9 +269,24 @@ def secondary_checks(C, biz):
         w.append("C['lots'] is mapped without C['lot_sales'] (order_id, lot_id, qty_base, returned_base): without it every lot "
                  "counts as full in stock (lot_stock, lots_expiring, nearest_expiry). Map the table that records which lot each "
                  "sold quantity came from, if the data has one")
-    # 3. purchases and lots dated inside the data
-    end = data_end(biz)
+    # 3. purchases are item lines; a stock snapshot has one row per item; conversions are not empty
     p = C.get("purchases")
+    if isinstance(p, pd.DataFrame) and len(p) and not any(c in p.columns and p[c].notna().any() for c in ("item_code", "item_name")):
+        w.append("C['purchases'] has no item_code / item_name: purchases must be one row per received item line (receipt_id, "
+                 "receipt_date, supplier, item_code, unit, qty, unit_cost, amount); a table of receipt headers has no items: map "
+                 "the receipt lines table (with the header's date and supplier) instead")
+    st = C.get("stock")
+    if isinstance(st, pd.DataFrame) and len(st) > 50:
+        k = next((c for c in ("item_code", "item_name") if c in st.columns and st[c].notna().any()), None)
+        if k is not None and len(st) > 1.5 * max(st[k].nunique(), 1):
+            w.append(f"C['stock'] has {len(st) / max(st[k].nunique(), 1):.1f} rows per item, but a stock snapshot has one row per item "
+                     "(qty_base at the end of the data). A table of stock movements with the stock after each movement is "
+                     "C['ledger'] (item_code, time, qty_base, stock_after)")
+    cv = C.get("conversions")
+    if isinstance(cv, pd.DataFrame) and not len(cv):
+        w.append("C['conversions'] is empty: map the table of unit conversions (item, unit, factor), or leave conversions out")
+    # 4. purchases and lots dated inside the data
+    end = data_end(biz)
     if end is not None and isinstance(p, pd.DataFrame) and len(p) > 20 and "receipt_date" in p:
         d = pd.to_datetime(p["receipt_date"], errors="coerce").dropna()
         if len(d) and ((d > end + pd.Timedelta(days=2)).mean() > 0.2 or (d < end - pd.Timedelta(days=5 * 366)).mean() > 0.2):

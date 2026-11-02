@@ -62,6 +62,18 @@ w2 = canon.secondary_checks(C2, biz)
 check("purchases headers", any("C['purchases'] has no item_code" in x for x in w2), w2)
 check("stock ledger as snapshot", any("rows per item" in x for x in w2), w2)
 check("empty conversions", any("C['conversions'] is empty" in x for x in w2), w2)
+# alias columns of the toolkit's tables are renamed; missing toolkit columns / a non-amount paid_at_purchase are flagged
+C3 = {"deliveries": pd.DataFrame({"order_id": ["O1"], "delivery_date": ["2025-01-02"], "delivery_batch": [1]}),
+      "payments": pd.DataFrame({"order_id": ["O1"], "pay_time": pd.to_datetime(["2025-01-03 10:00"]), "amount": [5.0]})}
+canon.normalize_aliases(C3)
+check("alias trip_no", "trip_no" in C3["deliveries"].columns and "delivery_batch" not in C3["deliveries"].columns)
+check("pay_date from pay_time", "pay_date" in C3["payments"].columns)
+C4 = C_of("Tiền hàng"); C4["orders"]["paid_at_purchase"] = pd.Timestamp("2025-01-01"); C4["deliveries"] = pd.DataFrame({"order_id": ["O1"], "delivery_date": ["2025-01-02"]})
+C4["payments"] = pd.DataFrame({"order_id": ["B0001"], "pay_date": ["2025-01-05"], "amount": [1.0]})
+w4 = canon.secondary_checks(C4, biz)
+check("missing trip_no", any("C['deliveries'] lacks ['trip_no']" in x for x in w4), w4)
+check("paid_at_purchase is a time", any("paid_at_purchase must be the AMOUNT" in x for x in w4), w4)
+check("payments without total_payable", any("orders has no total_payable" in x for x in w4), w4)
 # ranking: a wrong revenue column is ranked below any candidate without it; a missing secondary table costs little
 rs = canon.rank_score
 check("rank: revenue", rs({"coverage": 30, "warnings": w_bad}) < rs({"coverage": 5, "warnings": []}))

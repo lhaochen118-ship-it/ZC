@@ -469,7 +469,9 @@ CANON_DOC = """C["orders"]: order_id, order_time, order_date, customer_id, custo
 C["lines"]: order_id, order_time, order_date, status, valid, item_code, item_name, item_group, unit, qty, factor, qty_base, base_unit, unit_price, line_discount, line_amount, unit_cost
 C["items"]: item_code, item_name, item_group, base_unit, unit_cost, price, ... ; C["purchases"]: receipt_id, receipt_date, supplier, item_code, item_name, unit, qty, factor, qty_base, unit_cost, amount, cancelled
 C["payments"]: order_id, pay_time, pay_date, amount, method ; C["stock"]: item_code, item_name, qty_base (snapshot at stock_date) ; C["lots"]: lot_id, item_code, expiry, qty_in_base, unit_cost_base, ...
-C["prices"]: item_code / item_name, date, price ; C["expenses"]: date, amount, category"""
+C["prices"]: item_code / item_name, date, price ; C["expenses"]: date, amount, category
+C["lot_sales"]: which lot each sold quantity came from: order_id, lot_id, qty_base, returned_base ; C["ledger"]: stock movements (thẻ kho): item_code, time, kind, qty_base, stock_after (stock after the movement)
+C["deliveries"]: one row per delivered line of a trip: order_id, delivery_date, trip_no (number of the trip of that order), item_name, qty_base, driver, plate ; C["conversions"]: item, unit, factor (base units per unit), base_unit"""
 
 
 # ------------------------------------------------------------------ shop: metrics over canonical tables

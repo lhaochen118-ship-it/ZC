@@ -263,6 +263,19 @@ def secondary_checks(C, biz):
                                  f"tiền hàng / tiền bán of an order IS its revenue (line amounts after line discounts, before order "
                                  f"discounts, without VAT or shipping): map revenue (and the line amounts of order-only data) to '{rc}'")
                 break
+    # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
+    for t, cols in REQUIRED.items():
+        df = C.get(t)
+        if isinstance(df, pd.DataFrame) and len(df):
+            miss = [c for c in cols if c not in df.columns]
+            if miss: w.append(f"C['{t}'] lacks {miss}: the toolkit reads C['{t}'] with the columns {cols} (see the canonical tables)")
+    if "paid_at_purchase" in o and (pd.api.types.is_datetime64_any_dtype(o["paid_at_purchase"]) or
+                                    pd.to_numeric(o["paid_at_purchase"], errors="coerce").notna().mean() < 0.5 * o["paid_at_purchase"].notna().mean()):
+        w.append("orders.paid_at_purchase must be the AMOUNT the customer paid when buying (a number), not a time or a label")
+    P_ = C.get("payments")
+    if isinstance(P_, pd.DataFrame) and len(P_) and "total_payable" not in o:
+        w.append("C['payments'] is mapped but orders has no total_payable (what the customer must pay for the whole order): debts are "
+                 "total_payable minus the payments")
     # 2. lots without the allocation of sales to lots: every lot then counts as still full
     lots, ls = C.get("lots"), C.get("lot_sales")
     if isinstance(lots, pd.DataFrame) and len(lots) and l is not None and len(l) and not (isinstance(ls, pd.DataFrame) and len(ls)):
@@ -303,6 +316,38 @@ def secondary_checks(C, biz):
     return w
 
 
+ALIASES = {   # canonical column <- names an LLM mapping uses for it (renamed only when the canonical one is absent)
+    "deliveries": {"trip_no": ["trip", "trip_id", "trip_number", "batch", "delivery_batch", "delivery_no", "delivery_trip", "chuyen"],
+                   "delivery_date": ["date", "ship_date", "delivered_date"], "qty_base": ["qty_delivered", "delivered_qty"]},
+    "payments": {"pay_date": ["payment_date", "paid_date", "date"], "amount": ["paid_amount", "pay_amount", "paid"]},
+    "lots": {"expiry": ["expiry_date", "exp_date", "expiration_date", "expire_date"], "qty_in_base": ["qty_base", "qty_in", "received_base"]},
+    "lot_sales": {"qty_base": ["qty_sold_base", "sold_base"], "returned_base": ["qty_returned_base", "returned_qty_base"]},
+    "ledger": {"stock_after": ["balance", "stock_balance", "balance_after", "qty_after"], "time": ["datetime", "timestamp"]},
+    "prices": {"price": ["new_price", "unit_price"], "date": ["effective_date", "valid_from", "apply_date"]},
+    "expenses": {"date": ["expense_date"], "amount": ["expense_amount", "cost"]},
+}
+REQUIRED = {"deliveries": ["order_id", "delivery_date", "trip_no"], "payments": ["order_id", "pay_date", "amount"],
+            "lots": ["lot_id", "item_code", "expiry", "qty_in_base"], "lot_sales": ["order_id", "lot_id", "qty_base"],
+            "ledger": ["item_code", "time", "stock_after"], "conversions": ["item", "unit", "factor"], "prices": ["date", "price"]}
+
+
+def normalize_aliases(C):
+    """rename alias columns of the toolkit's tables to their canonical names (an LLM wrote 'delivery_batch' for trip_no:
+    every delivery question of that business failed); payments get pay_date from pay_time. In place; returns renames."""
+    done = []
+    for t, al in ALIASES.items():
+        df = C.get(t)
+        if not isinstance(df, pd.DataFrame): continue
+        for canon_col, names in al.items():
+            if canon_col in df.columns: continue
+            src = next((n for n in names if n in df.columns), None)
+            if src is not None: df.rename(columns={src: canon_col}, inplace=True); done.append(f"{t}.{src}->{canon_col}")
+    P = C.get("payments")
+    if isinstance(P, pd.DataFrame) and "pay_date" not in P.columns and "pay_time" in P.columns:
+        P["pay_date"] = pd.to_datetime(P["pay_time"], errors="coerce").dt.normalize(); done.append("payments.pay_time->pay_date")
+    return done
+
+
 def run_mapping(code, biz, ref_cols=None):
     """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used, unused, warnings)."""
     g = namespace(biz, ref_cols)
@@ -312,6 +357,7 @@ def run_mapping(code, biz, ref_cols=None):
         return {"ok": False, "error": f"{type(e).__name__}: {str(e)[:300]}" + (f" ({tb[0].strip()})" if tb else "") + key_hint(e, biz)}
     C = g.get("C")
     if not isinstance(C, dict) or "orders" not in C: return {"ok": False, "error": "the program did not build C with C['orders']"}
+    normalize_aliases(C)
     errs = dm.check(C)
     if errs: return {"ok": False, "error": "canonical tables failed the checks: " + "; ".join(errs), "C": C}
     errs = plausibility(C, biz)                                        # content checks: silent mistakes -> repairable errors

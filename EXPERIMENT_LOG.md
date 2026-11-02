@@ -107,3 +107,21 @@ Train oracle, `tests/eval_lib.py` (reference mappings, rule programs only):
 LLM cleaning pass: measured and rejected (Qwen3.5-9B 70.0 % vs 97.7 % word accuracy; all 14 of its changes wrong).
 Runs: v5 (18:49, mapping robustness + compile-tokens 6144, ± escalation, repeat for determinism, public ×2),
 v6-train (rule reader fixes).
+
+## Entry 6 — 2026-11-02: v5 (mapping robustness, compile tokens 6144), train
+
+| Run | dev | holdout | all | wall |
+|---|---|---|---|---|
+| v4b-1 escalate 4 (entry 4) | 0.976 | 0.913 | 0.955 | 6046 s |
+| **v5-1** escalate 4 | **0.979** | 0.881 | 0.946 | — |
+| v4b-3 escalate 0 | 0.955 | 0.918 | 0.943 | 4774 s |
+| v5-4 escalate 0 | 0.942 | 0.919 | 0.934 | 5538 s |
+
+- Gains as expected: biz_121 0.88 → 0.99 and biz_122 0.90 → 0.99 (stock from lots); biz_111 0.86 → 0.98.
+- The total did **not** rise, because of **variance in the sampled mappings** of a few LLM-mapped businesses. The same
+  selection rule (highest coverage) picks a different program each run: biz_123 0.57 → 0.19, biz_105 0.97 → 0.82
+  (escalation off), biz_117 0.88 → 0.74.
+  - biz_123 (v5-1) errors: revenue +0.1 % (returns table ignored), debts ×16 (payments not matched), group revenue 0
+    (groups not on the lines).
+  - These now trigger soft checks (6dc6cbb). The study of selection by the questions' rule programs is running.
+- Mapping variance is also the main **determinism** risk (|ΔPA| ≤ 0.03 between runs). The repeat run v5-3 measures it.

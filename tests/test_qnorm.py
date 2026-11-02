@@ -20,8 +20,35 @@ cases = {   # rule cases found while reviewing the 3000 training questions (gene
     "Tháng 6/2026 khách Tô Phúc Huy ghi nợ thêm bao nhiêu": "tháng 6/2026 khách Tô Phúc Huy ghi nợ thêm bao nhiêu",
     "giờ mở cửa 1/1 là mấy giờ": "giờ mở cửa 1/1 là mấy giờ",
     "Cho tôi hỏi 6-2026 trung bình mỗi đơn": "Cho tôi hỏi tháng 6/2026 trung bình mỗi đơn",
+    "ê trong tháng 2/2025, số ly size l bán được là nhiêu": "ê trong tháng 2/2025, số ly size l bán được là bao nhiêu",
+    "ngay 10/09/2025 soda tang gia tu 35.000đ len 37.000đ": "ngày 10/09/2025 soda tăng giá từ 35.000đ lên 37.000đ",
+    "doanh thu cac don tra bang tien mat va chuyen khoan moi loai bao nhieu": "doanh thu các đơn trả bằng tiền mặt và chuyển khoản mỗi loại bao nhiêu",
+    "so 30 ngay ke tu ngay tang gia voi 30 ngay ngay truoc": "so 30 ngày kể từ ngày tăng giá với 30 ngày ngay trước",
+    "thang 3/2026 co bao nhieu don bi huy vi giao tre": "tháng 3/2026 có bao nhiêu đơn bị huỷ vì giao trễ",
+    "cac don dat da hon 7 ngay ma khach chua tra het": "các đơn đặt đã hơn 7 ngày mà khách chưa trả hết",
+    "tính mọi loại đồ uống bao nhiêu ly": "tính mọi loại đồ uống bao nhiêu ly",
 }
 bad = [(q, nz.clean(q)["clean"], want) for q, want in cases.items() if nz.clean(q)["clean"].lower() != want.lower()]
+# names of the data (synthetic here): protected from Telex / abbreviations / context rules, linked for accents only,
+# the user's casing and accents kept (exact comparison)
+names = ["Plusssz Max Multivitamin viên sủi tuýp 20 viên", "Ống luồn dây điện Sino SP D20 cây 2.92m", "Khách lẻ", "Lê Bảo Hoàng",
+         "BÁNH CROISSANT", "Bio-acimin Gold men vi sinh hộp 30 gói", "Vitamin K2 Mk7 hộp 30 viên", "Chống thấm Kova CT-11A tường 20kg",
+         "Dầu gió xanh Con Ó chai 12ml"]
+nzn = qnorm.Normalizer.for_split(split, extra_texts=names)
+name_cases = {
+    "Tồn kho Plusssz Max Multivitamin viên sủi tuýp 20 viên còn bao nhiêu": "Tồn kho Plusssz Max Multivitamin viên sủi tuýp 20 viên còn bao nhiêu",
+    "ke tu khi plusssz max multivitamin vien sui tuyp 20 vien len gia": "kể từ khi plusssz max multivitamin viên sủi tuýp 20 viên lên giá",
+    "Số cây Ống luồn dây điện Sino SP D20 cây 2.92m bán đc": "Số cây Ống luồn dây điện Sino SP D20 cây 2.92m bán được",
+    "tháng này khách Lê Bảo Hoàng nợ thêm bao nhiêu": "tháng này khách Lê Bảo Hoàng nợ thêm bao nhiêu",
+    "giá nhập một hộp Bánh croissant là bao nhiêu": "giá nhập một hộp Bánh croissant là bao nhiêu",
+    "ton kho bio-acimin gold men vi sinh hop 30 goi": "tồn kho bio-acimin gold men vi sinh hộp 30 gói",
+    "vitamin k2 mk7 ban duoc bao nhieu hop": "vitamin k2 mk7 bán được bao nhiêu hộp",
+    "so thung chong tham kova CT-11A tuong 20kg ban duoc": "số thùng chống thấm kova CT-11A tường 20kg bán được",
+    "dau gio xanh con o chai 12ml gan het han nhat": "dầu gió xanh con ó chai 12ml gần hết hạn nhất",   # the data's 'Con Ó', not 'còn'
+    "e doanh thu hom qua la bao nhieu": "ê doanh thu hôm qua là bao nhiêu",
+}
+bad += [(q, nzn.clean(q)["clean"], want) for q, want in name_cases.items() if nzn.clean(q)["clean"] != want]
+cases.update(name_cases)
 for b in bad: print("RULE MISMATCH", b)
 # LLM check: only accents may be added; the user's accents and every word / number stay
 C = qnorm_llm.check
@@ -48,5 +75,10 @@ assert r.returncode == 0, r.stdout[-1500:] + r.stderr[-2500:]
 acc = json.load(open(os.path.join(out, "accuracy.json")))
 rows = [json.loads(l) for l in open(os.path.join(out, "questions_clean.jsonl"), encoding="utf-8")]
 assert len(rows) == len(qs) and acc["llm_question_acc"] == 1.0, acc     # the fake LLM returns the true accents
+# the copy of the module in question_cleaning/module/ (for the user to read) must be identical to src/
+mod = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "question_cleaning", "module")
+for f in ("qnorm.py", "qnorm_llm.py", "qnorm_phrases.txt", "qnorm_train_questions.txt"):
+    a_, b_ = os.path.join(os.path.dirname(qnorm.__file__), f), os.path.join(mod, f)
+    if not (os.path.isfile(b_) and open(a_, "rb").read() == open(b_, "rb").read()): bad.append(("module copy differs", f, "run question_cleaning/make.py"))
 print("rules:", len(cases) - len(bad), "/", len(cases), "| job:", acc)
 print("PASS" if not bad else "FAIL")

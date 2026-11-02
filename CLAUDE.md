@@ -35,6 +35,9 @@ Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3
    `gemma-4-developer-agent`; probe acc bằng kernel 1 dòng; QUEUED > 8 phút (L4) → huỷ, đẩy lại (tối đa 5 lần).
 10. **Bẫy công cụ:** watcher `automation/watch_done.py` chạy `run_in_background` với `timeout` 7200000 ms (mặc định
     30 phút sẽ bị kill); `A && B && nohup C &` đưa cả chuỗi vào subshell (mất biến) → dùng `(…) &`.
+    `run_kernel.py` chỉ đọc trạng thái từ dòng `has status "KernelWorkerStatus.X"`: lỗi API 503 từng bị đọc thành `error`;
+    sửa xong thì attach lại bằng `--attach`. Không import thư viện thẳng từ mount `/kaggle/input` (rất chậm). Thay đổi ở
+    phần chỉ chạy trên Kaggle (môi trường, cài đặt) → chạy thử nhỏ trước.
 
 ## Cổng kiểm tra trước khi chạy (user chốt 2026-11-02: "code xong phải kiểm tra lại rồi mới được chạy")
 

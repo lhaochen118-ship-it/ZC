@@ -33,3 +33,39 @@ s3 = 105/111/114/115/119/123/129.
   xoá cuối kernel (chỉ còn log). Lần chạy pipeline đầu (p1q14) chết vì `agent.py` chạy dưới tên `__main__` (sửa 4f9bc0e).
 - Đang chạy (code đã sửa): v2q35 (Qwen3.5, round-based, train + public, linhmai24), p2q35 (Qwen3.5, `--pipeline`,
   duylnng), p1q14b (Qwen3-14B, `--pipeline`, thnliu: A/B tốc độ với v1q14).
+
+## Entry 2 — 2026-11-02: pipeline (không rào chắn) + think-map (Qwen3.5-9B FP8, 4×L4, train 3000 LOO)
+
+| Run | dev | holdout | all | wall |
+|---|---|---|---|---|
+| v2q35 round-based | 0.897 | 0.644 | 0.810 | 7174 s |
+| p3q35 `--pipeline` (sau khi sửa) | 0.901 | 0.745 | 0.848 | 3234 s |
+| t1q35-1 `--think-map` | 0.926 | 0.761 | **0.870** | 4065 s |
+| t1q35-2 `--think --think-map` | 0.915 | 0.691 | 0.839 | 8124 s |
+
+- Pipeline: nhanh 2.2× so với round-based, PA cao hơn (repair ngay, không chờ vòng).
+- Sai số gần như toàn bộ do **chọn sai ánh xạ** ở vài DN (107, 110, 117, 123, 124, 126, 127). DN ánh xạ đúng đạt 0.90–1.00.
+- Đã thêm: kiểm tra hợp lý ánh xạ (`canon.plausibility`), vòng "đầy đủ" (`--complete-map`), hậu kiểm + escalation
+  (`--escalate`), câu đã làm sạch trong prompt (`--qclean`), trọng số luật `--qw 4` (re-vote offline tốt hơn qw 2).
+  Đo trong v4 (đang chạy).
+
+## Entry 3 — 2026-11-02: làm sạch câu hỏi (`question_cleaning/`, `src/qnorm.py`)
+
+Đo: leave-one-business-out trên 2232 câu người dùng gõ có dấu: bỏ dấu, làm sạch lại, so với bản làm sạch câu gốc (bỏ qua
+vị trí dấu thanh và hoa thường).
+
+| Phiên bản | Từ đúng | Câu đúng | Thay đổi |
+|---|---|---|---|
+| lần 1 | 99.3 % | 93.6 % | bigram + viết tắt + Telex |
+| từ vựng chỉ từ câu có dấu, tên trong dữ liệu | 99.66 % | 96.1 % | |
+| luật ngữ cảnh, lexicon cụm từ ngắn | 99.75 % | 97.3 % | (đo cũ, so cả vị trí dấu) |
+| bảo vệ tên / mã, entity linking chỉ đổi dấu + khớp ≥ 3 từ của tên, `e`/`nhieu`/`đ` | **99.79 %** | **98.1 %** | 42 câu còn sai: mơ hồ thật |
+
+- Duyệt tay toàn bộ thay đổi trên 3000 câu train. Lỗi tìm được đều đã sửa bằng luật chung và có test (29 trường hợp):
+  - `Max` → Mã;
+  - `SP` → SẢN PHẨM;
+  - khách Lê → khách lẻ;
+  - BÁNH CROISSANT;
+  - `e` → ế;
+  - `CT-11A` → CT-11Ạ.
+- Bước LLM (zc-v4-5) sẽ xử lý phần mơ hồ còn lại: tên đường không có trong dữ liệu; lon / lớn; vỉ / vị.

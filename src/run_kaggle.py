@@ -4,16 +4,22 @@ Usage (as a make_kernel job): run_kaggle.py <split: train|public_test> OUT <agen
 import os, sys, glob, subprocess, time
 
 t = time.time()
-# 1. prebuilt environment (kernel output lelynhan/zc-env-vllm032: vLLM + deps installed with pip --target), probed first;
-#    any failure falls back to installing the wheels (the 02/11 runs spent 400-470 s in pip)
-env_dir = next((os.path.dirname(f) for f in glob.glob("/kaggle/input/**/ZC_ENV_MARKER", recursive=True)), None)
+# 1. vLLM from the mounted wheels (zc-assets/wheels, ~400-470 s of pip; proven on every L4 run). The prebuilt environment
+#    (kernel output lelynhan/zc-env-vllm032, pip --target) is OPT-IN (ZC_USE_ENV=1): importing torch + vLLM straight from
+#    the /kaggle/input mount (tens of thousands of small files) took > 900 s and killed all five v4 kernels (02/11).
+#    Its probe can never raise: any failure or timeout falls back to the wheels.
+env_dir = None
+if os.environ.get("ZC_USE_ENV") == "1":
+    env_dir = next((os.path.dirname(f) for f in glob.glob("/kaggle/input/*/*/*/ZC_ENV_MARKER") + glob.glob("/kaggle/input/*/ZC_ENV_MARKER")), None)
 use_env = False
 if env_dir:
     pe = dict(os.environ, PYTHONPATH=env_dir + os.pathsep + os.environ.get("PYTHONPATH", ""))
-    r = subprocess.run([sys.executable, "-c", "import torch, vllm, python_calamine; print(vllm.__version__, torch.__version__, torch.cuda.is_available())"],
-                       env=pe, capture_output=True, text=True, timeout=900)
-    use_env = r.returncode == 0 and "True" in r.stdout
-    print("prebuilt env", env_dir, "OK " + r.stdout.strip() if use_env else "FAILED: " + (r.stdout + r.stderr)[-400:], f"({time.time() - t:.0f}s)", flush=True)
+    try:
+        r = subprocess.run([sys.executable, "-c", "import torch, vllm, python_calamine; print(vllm.__version__, torch.__version__, torch.cuda.is_available())"],
+                           env=pe, capture_output=True, text=True, timeout=300)
+        use_env = r.returncode == 0 and "True" in r.stdout; msg = r.stdout.strip() if use_env else (r.stdout + r.stderr)[-400:]
+    except Exception as e: msg = repr(e)[:300]
+    print("prebuilt env", env_dir, ("OK " if use_env else "FAILED: ") + msg, f"({time.time() - t:.0f}s)", flush=True)
 if use_env:
     os.environ["PYTHONPATH"] = pe["PYTHONPATH"]; sys.path.insert(0, env_dir)
     subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)

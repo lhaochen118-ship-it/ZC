@@ -54,4 +54,7 @@ file này giải thích lý do và ghi số đo.*
 | p2q35-1 | `--pipeline`, Qwen3.5-9B FP8 | 3000 train | đang chạy | | | |
 
 Chi phí cố định mỗi kernel (đo 02/11): `pip install` vLLM từ wheels 398–471 s, chép mô hình 66–158 s, nạp vLLM ~3 phút.
-→ môi trường dựng sẵn `lelynhan/zc-env-vllm032` (đang dựng) để bỏ bước pip.
+→ thử môi trường dựng sẵn `lelynhan/zc-env-vllm032` (pip --target, gắn qua kernel source): **thất bại** (v4, 02/11).
+`import torch, vllm` thẳng từ mount `/kaggle/input` (hàng chục nghìn file nhỏ) > 900 s, cả 5 kernel chết. Giờ chỉ dùng khi
+`ZC_USE_ENV=1`. Muốn bỏ bước pip thì phải đóng thành **một file tar** (đọc tuần tự nhanh), giải nén ra đĩa local
+rồi mới import; và phải chạy thử nhỏ trước.

@@ -11,8 +11,10 @@ Usage: run_kernel.py <kernel_dir> <out_dir> [stall=600] [max_restarts=4] [hard=1
   --attach : do not push; wait for an already-running kernel (e.g. after a local restart), then pull.
   --logs-only : pull only the kernel log, not the outputs (kernels whose outputs are large reusable assets).
 Last line: STATUS=DONE:<complete|error|stall|timeout>
+The kernel state is read ONLY from the CLI's 'has status "KernelWorkerStatus.X"' line; any other answer (HTTP 503,
+network error) is transient and retried (a '503 Server Error' once ended a healthy running kernel's watch as 'error').
 """
-import sys, subprocess, time, os, json, glob
+import sys, subprocess, time, os, re, json, glob
 
 kdir, outdir = sys.argv[1], sys.argv[2]
 STALL = int(sys.argv[3]) if len(sys.argv) > 3 else 600
@@ -65,15 +67,23 @@ if not ATTACH and not push():
     print("STATUS=PUSH_FAILED", flush=True); sys.exit(1)
 attempt_t0 = time.time(); restarts = 0; last = None; state = ""; running_since = None; saw_out = False
 time.sleep(15)
+STATUS_RX = re.compile(r'has status "(?:KernelWorkerStatus\.)?([A-Za-z_]+)"')
+api_fail = 0
 while True:
     now = time.time()
-    st = kg("kernels", "status", kid); low = st.lower()
+    st = kg("kernels", "status", kid); m = STATUS_RX.search(st)
+    if m is None:                                                  # API hiccup: not a kernel state
+        api_fail += 1
+        if api_fail in (1, 10) or api_fail % 60 == 0: print(ts(), f"[{int(now - t0)}s] status API unavailable x{api_fail}:", st[-120:], flush=True)
+        if now - t0 > HARD: print("STATUS=HARD_TIMEOUT", flush=True); state = "timeout"; break
+        time.sleep(30); continue
+    api_fail = 0; low = m.group(1).lower()
     if low != last:
         print(ts(), f"[{int(now - t0)}s]", st[:140], flush=True); last = low
-    if "complete" in low or "error" in low or "cancel" in low:
-        state = "complete" if "complete" in low else ("error" if "error" in low else "cancel"); break
-    queued = "queued" in low
-    if "running" in low and running_since is None:
+    if low in ("complete", "error") or low.startswith("cancel"):
+        state = "complete" if low == "complete" else ("error" if low == "error" else "cancel"); break
+    queued = low == "queued"
+    if low == "running" and running_since is None:
         running_since = now; print(ts(), "kernel RUNNING (GPU granted)", flush=True)
     stuck = False
     if queued and now - attempt_t0 > STALL:

@@ -28,7 +28,8 @@ while True:
     for r in active():
         for meta in glob.glob(os.path.join(runs, r, "*", "kernel-metadata.json")):
             kd = os.path.dirname(meta); slug = os.path.basename(kd)
-            logs = [l for l in (kd + ".log", kd + ".attach.log") if os.path.isfile(l)]
+            logs = [kd + ".attach.log"] if os.path.isfile(kd + ".attach.log") else [l for l in (kd + ".log",) if os.path.isfile(l)]
+            # ^ a re-attached runner supersedes the first one (whose end marker may be wrong, e.g. an API 503 read as 'error')
             m = next(filter(None, (END.search(open(l, errors="ignore").read()) for l in logs)), None)
             if m is None: pending += 1; continue
             if f"{r}/{slug}" in seen: continue

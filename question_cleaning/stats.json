@@ -1,13 +1,14 @@
 {
  "questions": 3000,
- "changed": 1620,
+ "changed": 1614,
  "period_detected": 2976,
+ "rules": 3000,
  "questions_per_rule": {
   "abbr": 1256,
   "accent": 790,
-  "telex": 235,
-  "entity": 149,
-  "context": 63,
-  "month": 35
+  "telex": 231,
+  "context": 152,
+  "month": 35,
+  "entity": 9
  }
 }

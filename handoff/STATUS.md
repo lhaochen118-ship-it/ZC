@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-02 19:35 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-02 19:56 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự.*
 
 ## Kết quả mới nhất (Qwen3.5-9B FP8, train 3000 câu leave-one-out, 4×L4) — EXPERIMENT_LOG entry 4
@@ -34,7 +34,10 @@ Public v4b (zc-v4b-2, 7599 s) đã có: ứng viên nộp `runs/v4b/zc-v4b-2_out
   toolkit).
 - Sau v6 (chưa chạy GPU): f461753 (cảnh báo nhập không có mặt hàng, sổ kho coi như snapshot, quy đổi rỗng), c65757a
   (CANON_DOC đủ bảng, đổi tên cột alias: delivery_batch → trip_no sửa 10 câu biz_117; cảnh báo nợ biz_111).
-  docker/predict.sh: cấu hình tốt nhất (kc 6, qw 4, think-map, escalate 4, compile 6144). → gom vào v7.
+  docker/predict.sh: cấu hình tốt nhất (kc 6, qw 4, think-map, escalate 4, compile 6144).
+- **v7** (`runs/v7`, launched 19:52 trên huyenco, commit fddf7f3 = mọi sửa tới giờ): zc-v7-1 train, zc-v7-2 public.
+  Log in phiên bản pandas của Kaggle → ghim vào docker/Dockerfile (hiện cho phép 2.2–3.x).
+- Script: `scratchpad/agree_runs.py A B` (độ trùng đáp án, |ΔPA|), `scratchpad/revote.py run [qw...]` (bầu lại offline).
 - Watcher `watch_done.py` nền; `active_runs.txt` = v5, v6.
 - Oracle train (eval_lib --clean): 2754 đúng / 3 sai / 243 chưa đọc (sáng nay 2666 / 36 / 298). EXPERIMENT_LOG entry 5.
 - Việc sau khi v5 / v6 xong: chấm, so v4b (0.955), đo |ΔPA| giữa 2 lần train giống nhau, độ trùng 2 lần public; nếu

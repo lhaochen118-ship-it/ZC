@@ -48,6 +48,10 @@ os.makedirs(out, exist_ok=True)
 try:
     import vllm; print("vllm", vllm.__version__, flush=True)
 except Exception as e: print("vllm import:", e, flush=True)
+try:                                                                  # library versions of the run: the Docker image pins the
+    import pandas, numpy, torch; print("versions: pandas", pandas.__version__, "numpy", numpy.__version__, "torch", torch.__version__,
+                                       "python", sys.version.split()[0], flush=True)    # same (pandas 2 / 3 differ on NaN keys)
+except Exception as e: print("versions:", e, flush=True)
 # GPU monitor: one sample per GPU every 5 s (utilisation %, memory MiB) -> OUT/gpu_monitor.csv, summary -> gpu_summary.json
 mon = subprocess.Popen(["nvidia-smi", "--query-gpu=index,utilization.gpu,memory.used,memory.total", "--format=csv,noheader,nounits", "-l", "5"],
                        stdout=open(os.path.join(out, "gpu_monitor.csv"), "w"), stderr=subprocess.DEVNULL)

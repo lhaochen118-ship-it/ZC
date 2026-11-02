@@ -76,5 +76,30 @@ check("stock from lots", sh.stock_at("Thuốc X", "2025-03-10") == 10 and sh.sto
 try: sh.stock_at("Thuốc Y", "2025-03-10"); check("stock of an item without lots is unanswerable", False)
 except dm.Unanswerable: pass
 
+# 7. a person named differently from the data: full name ~ nickname, name ~ name + phone; never two people
+pdf = pd.DataFrame({"staff": ["Đức", "Phúc", None], "customer_name": ["Từ Hải Thanh 0359470831", "Lê An", "Trần An"]})
+mp = lambda col, v: pdf[sh._match_person(pdf, (col,), v)][col].tolist()
+check("person: nickname", mp("staff", "Lương Chí Đức") == ["Đức"] and mp("staff", "đức") == ["Đức"], mp("staff", "Lương Chí Đức"))
+check("person: phone", mp("customer_name", "Từ Hải Thanh") == ["Từ Hải Thanh 0359470831"])
+check("person: ambiguous / unknown", mp("customer_name", "An") == [] and mp("customer_name", "Nguyễn Văn Bình") == [])
+
+# 8. rule parser: general patterns found on the train oracle (template chosen for a question; None = no rule answer)
+import qparse
+tpl = lambda q: (qparse.parse(q, "2026-07-31") or (None,))[0]
+for q, want in [("coi gium thang 8/2025 dthu binh quan moi order la bao nhieu", "aov"),
+                ("tháng này doanh thu các đơn bán tại quầy là bao nhiêu, doanh thu các đơn bán qua zalo là bao nhiêu", None),
+                ("thang 2/2026 co bao nhieu mat hang xuat hien trong it nhat 107 don hang", "items_in_n_orders"),
+                ("cho hoi 3 mat hang hot nhat tuan roi la nhung mat hang nao", "top_items"),
+                ("tháng 6/2026 có bao nhiêu ngày đạt doanh thu từ 12.000.000 đồng trở lên", "n_days_rev_ge"),
+                ("tháng 6/2026 có bao nhiêu bill có doanh thu từ 1.000.000 đồng trở lên", "n_orders_rev_ge"),
+                ("thang 3/2026 co bao nhieu don bi huy vi giao tre", None),
+                ("tỉ lệ đơn huỷ tháng 3/2026 của các đơn trả bằng ví điện tử là bao nhiêu %", "cancel_rate"),
+                ("doanh thu tháng 7/2025 là bao nhiêu", "revenue"), ("tháng 7/2025 có bao nhiêu đơn", "n_orders"),
+                ("thang 6/2025 mat hang Espresso (double) ban duoc tong cong bao nhieu ly", None)]:
+    check(f"qparse: {q[:40]}", tpl(q) == want, tpl(q))
+# 9. fee lines are not items
+fl = pd.DataFrame({"item_name": ["Phí phục vụ", "Phin cà phê", "Bia"], "item_group": ["phí dịch vụ", "dụng cụ", "bia"]})
+check("fee lines", dm.fee_lines(fl).tolist() == [True, False, False])
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

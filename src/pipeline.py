@@ -341,7 +341,7 @@ class Pipeline:
                             lambda atts, settle=settle: settle(), reflect=not a.no_reflect, prio=prio, attempts=st["att"][s_])
             if a.qw > 0 and can:
                 def on_rule(r, st=st, settle=settle): st["rule"] = r; settle()
-                self.cpu.submit(agent.run_qparse, ((q["id"], "Q"), b, q["as_of_date"], q["question"], cpath, a.timeout), a.timeout, on_rule)
+                self.cpu.submit(agent.run_qparse, ((q["id"], "Q"), b, q["as_of_date"], agent.rule_text(q), cpath, a.timeout), a.timeout, on_rule)
         if not qs: self.chunk_done(b, ci)
 
     def vote(self, st):

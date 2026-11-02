@@ -473,6 +473,17 @@ C["prices"]: item_code / item_name, date, price ; C["expenses"]: date, amount, c
 
 
 # ------------------------------------------------------------------ shop: metrics over canonical tables
+def fee_lines(l):
+    """lines that are a fee, not an item ('Phí phục vụ', 'Phí giao hàng', 'Phụ phí ...', item group 'phí dịch vụ'): out of
+    item counts and rankings when the mapping sets no is_service flag."""
+    m = pd.Series(False, index=l.index)
+    for c in ("item_name", "item_group"):
+        if c in l.columns:
+            k = l[c].map(lambda x: key(x) if isinstance(x, str) else "")
+            m |= k.str.match(r"(phi|phu phi)\b")
+    return m
+
+
 class Unanswerable(Exception):
     """the released data cannot answer (rulebook §7): raise it from a program to answer `unanswerable`."""
 
@@ -525,9 +536,9 @@ class Shop:
             if v is not None: self._need(df, cols, what)
         if item is not None: df = df[self._match(df, ("item_code", "item_name"), item)]
         if group is not None: df = df[self._match(df, ("item_group",), group)]
-        if customer is not None: df = df[self._match(df, ("customer_id", "customer_name"), customer)]
+        if customer is not None: df = df[self._match_person(df, ("customer_id", "customer_name"), customer)]
         if customer_group is not None: df = df[self._match(df, ("customer_group",), customer_group)]
-        if staff is not None: df = df[self._match(df, ("staff",), staff)]
+        if staff is not None: df = df[self._match_person(df, ("staff",), staff)]
         if channel is not None: df = df[self._match(df, ("channel",), canon_channel(channel) if isinstance(channel, str) else channel)]
         if payment is not None: df = df[self._match(df, ("payment_method",), canon_payment(payment) if isinstance(payment, str) else payment)]
         if status is not None: df = df[df["status"].eq(status)]
@@ -536,6 +547,23 @@ class Shop:
             df = df[(h >= 6) & (h <= 13)] if key(shift).startswith("sang") else df[(h >= 14) & (h <= 21)]
         if where is not None: df = df[where(df)]
         return df
+
+    def _match_person(self, df, cols, v):
+        """_match for a person; when no value matches exactly, the ONE value whose name parts fit: the nickname a book
+        writes for a full name ('Lương Chí Đức' ~ 'Đức', or the reverse), or the name with a phone number after it
+        ('Từ Hải Thanh' ~ 'Từ Hải Thanh 0359470831'). Two or more such values: no match (never merges people)."""
+        m = self._match(df, cols, v)
+        if m.any() or isinstance(v, (list, tuple, set)): return m
+        q = key(v).split()
+        if not q: return m
+        hits = set()
+        for c in cols:
+            if c not in df.columns: continue
+            for x in df[c].dropna().unique():
+                kx = key(x).split()
+                if kx and (kx == q[-len(kx):] or q == kx[-len(q):] or (kx[:len(q)] == q and all(t.isdigit() for t in kx[len(q):]))):
+                    hits.add(x)
+        return self._match(df, cols, next(iter(hits))) if len(hits) == 1 else m
 
     @staticmethod
     def _need(df, cols, what):
@@ -617,10 +645,15 @@ class Shop:
         """{item_name: measure} over valid lines of p. by: qty (base units) | revenue | n_orders | profit."""
         l = self.lines(p, **f)
         if "is_service" in l.columns: l = l[~l["is_service"].fillna(False).astype(bool)]   # service fee lines are not items
+        else: l = l[~fee_lines(l)]
         name = "item_code" if "item_code" in l.columns and l["item_code"].notna().all() else "item_name"
         if by == "qty": s = l.groupby(name)["qty_base"].sum()
         elif by == "revenue": s = l.groupby(name)["line_amount"].sum()
-        elif by == "n_orders": s = l.groupby(name)["order_id"].nunique()
+        elif by == "n_orders":                                           # distinct orders per REPORTED name: codes that share
+            nm_ = l[name]                                                 # a catalogue name are one item (a sum would count an
+            if name == "item_code" and "item_name" in l.columns:          # order holding both codes twice)
+                nm = l.drop_duplicates("item_code").set_index("item_code")["item_name"]; nm_ = l["item_code"].map(lambda c: nm.get(c, c))
+            return l.groupby(nm_)["order_id"].nunique()
         elif by == "profit":
             require("unit_cost" in l.columns and l["unit_cost"].notna().any(), "no cost price on the sale lines")
             s = (l["line_amount"] - l["qty"] * l["unit_cost"]).groupby(l[name]).sum()
@@ -699,6 +732,7 @@ class Shop:
 
     def debts(self, d):
         """Series order_id -> amount still owed at the end of day d (> 0 only)."""
+        require("total_payable" in self.O.columns and self.O["total_payable"].notna().any(), "the data does not record order totals (no debts)")
         o = self._debt_orders(d); paid = self.paid_until(d)
         owed = o["total_payable"].values - o["order_id"].map(paid).fillna(0).values
         s = pd.Series(owed, index=o["order_id"].values); return s[s > 0.5]
@@ -734,7 +768,9 @@ class Shop:
         o = self._debt_orders(p.end)
         if "payment_method" in o.columns: o = o[o["payment_method"].isin(["ghi nợ", "trả góp"])]
         if customer is not None: o = o[self._match(o, ("customer_id", "customer_name"), customer)]
-        P = self.C.get("payments"); P = P[P["order_id"].astype(str).isin(set(o["order_id"]))].copy()
+        P = self.C.get("payments"); require(P is not None and len(P), "the data does not record payments of credit orders")
+        require("total_payable" in o.columns, "the data does not record order totals (no debts)")
+        P = P[P["order_id"].astype(str).isin(set(o["order_id"]))].copy()
         P["pay_date"] = pd.to_datetime(P["pay_date"]).dt.normalize()
         od = o.set_index("order_id")["order_date"]; P["od"] = P["order_id"].astype(str).map(od)
         same = P[P["pay_date"] == P["od"]].groupby("order_id")["amount"].sum()
@@ -884,13 +920,15 @@ class Shop:
 
     def stock_value(self, d):
         """sum over items in stock (> 0) at the end of day d of stock x catalogue cost per base unit."""
-        it = self.C.get("items"); require(it is not None and "cost" in it.columns and it["cost"].notna().any(), "no catalogue cost")
+        it = self.C.get("items")                                       # CANON_DOC names it unit_cost; older mappings: cost
+        cc = next((c for c in ("cost", "unit_cost") if it is not None and c in it.columns and it[c].notna().any()), None)
+        require(cc is not None, "no catalogue cost")
         tot = 0.0
         for _, r in it.iterrows():
             k = r["item_code"] if "item_code" in it.columns and pd.notna(r.get("item_code")) else r["item_name"]
             try: q = self.stock_at(k, d)
             except Unanswerable: continue
-            if q > 0 and pd.notna(r["cost"]): tot += q * float(r["cost"])
+            if q > 0 and pd.notna(r[cc]): tot += q * float(r[cc])
         return money(tot)
 
     # -- lots / expiry (pharmacy)

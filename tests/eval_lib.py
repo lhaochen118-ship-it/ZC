@@ -43,6 +43,9 @@ def main():
     if "--prog" in argv: i = argv.index("--prog"); PROG = argv[i + 1]; del argv[i:i + 2]
     dump = open(argv[argv.index("--dump") + 1], "w") if "--dump" in argv else None
     if dump is not None: i = argv.index("--dump"); del argv[i:i + 2]
+    clean = {}                                                         # --clean <jsonl>: parse the cleaned question text
+    if "--clean" in argv:
+        i = argv.index("--clean"); clean = {r["id"]: r["clean"] for r in map(json.loads, open(argv[i + 1], encoding="utf-8"))}; del argv[i:i + 2]
     a = [x for x in argv if not x.startswith("--")]
     split, cache = a[0], a[1]
     dm.set_calendar(pd.read_csv(os.path.join(split, "calendar.csv")))
@@ -58,7 +61,7 @@ def main():
         meta = {"data_end": pd.Timestamp(int(end.group(3)), int(end.group(2)), int(end.group(1)))} if end else {}
         for q in bq:
             shop = dm.Shop(C, q["as_of_date"], meta)
-            pr = qparse.parse(q["question"], q["as_of_date"], shop)
+            pr = qparse.parse(clean.get(q["id"], q["question"]), q["as_of_date"], shop)
             if not pr: res["unparsed"] += 1; continue
             tpl, code = pr
             try: ans = dm.run_program(code, shop, q["as_of_date"]); ans = fmt(ans)

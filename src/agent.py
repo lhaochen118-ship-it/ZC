@@ -971,6 +971,13 @@ def canon_stage_v2(engine, pool, a, rulebook, bizs, bids, clog):
     return canon
 
 
+def rule_text(q):
+    """the text the rule-based reader parses: the cleaned question when there is one (eval_lib on train: 2675 -> 2737
+    questions right, unparsed 298 -> 240, wrong 27 -> 23), else the question as typed."""
+    c = q.get("_clean") or {}
+    return c.get("clean") or q["question"]
+
+
 def run_qparse(task):
     """task = (key, bid, as_of, question, canon_path, timeout) -> (key, result): the rule-based template program."""
     key, bid, as_of, question, canon_path, timeout = task
@@ -1009,7 +1016,7 @@ def answer_stage_v2(engine, pool, a, rulebook, bizs, qs, canon, k, repairs):
                             reflect=not a.no_reflect) if (engine is not None and k) else defaultdict(list)
     rule = {}
     if a.qw > 0:
-        tasks = [((q["id"], "Q"), q["business_id"], q["as_of_date"], q["question"], canon[q["business_id"]]["path"], a.timeout)
+        tasks = [((q["id"], "Q"), q["business_id"], q["as_of_date"], rule_text(q), canon[q["business_id"]]["path"], a.timeout)
                  for q in qs if q["business_id"] in canon]
         for kk, r in pmap(pool, run_qparse, tasks, per_task=a.timeout): rule[kk[0]] = r
         print(f"[rule] {sum(1 for r in rule.values() if r.get('ok'))}/{len(tasks)} questions answered by templates", flush=True)

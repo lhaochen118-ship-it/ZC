@@ -20,12 +20,12 @@
 ## 2. Tài khoản
 
 Token: `~/.kaggle/tok_<username>` (chmod 600), `~/.kaggle/access_token` = `nhatlong1103` (chỉ đăng dataset). Không commit
-token. Danh sách acc, GPU và trạng thái quota hiện tại: `handoff/02_ENGINEERING_OPS_NOTES.md` §2.1 (bảng acc của dự án
+token. Danh sách acc hiện tại: `docs/03_WORKFLOW.md` §1b; bài học quota cũ: `docs/history/v1_engineering_notes.md` §2.1 (bảng acc của dự án
 trước đã bỏ vì lỗi thời).
 
 **GPU L4×4:** kernel-metadata `"machine_shape": "NvidiaL4"`, `"competition_sources": ["gemma-4-developer-agent"]`
 (deadline grant 2026-11-25), `"enable_internet": false` → 4× L4 (23 GB), 48 CPU. Chỉ có tác dụng nếu acc **đã accept rules**
-của competition đó trên web; chưa accept thì push báo lỗi hoặc rơi về CPU. Kiểm bằng kernel probe (handoff 02 §2.1).
+của competition đó trên web; chưa accept thì push báo lỗi hoặc rơi về CPU. Kiểm bằng kernel probe (`docs/history/v1_engineering_notes.md` §2.1).
 
 ## 3. Pipeline chạy
 
@@ -75,4 +75,4 @@ Giới hạn metadata: title 6–50 ký tự, subtitle 20–80. Upload khoảng 
 
 ## 6. Container và bài học khác
 
-Xem `handoff/02_ENGINEERING_OPS_NOTES.md` (bản cập nhật, thay cho mục 6–7 cũ).
+Xem `docs/history/v1_engineering_notes.md` (bản cập nhật, thay cho mục 6–7 cũ).

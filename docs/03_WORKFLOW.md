@@ -18,19 +18,24 @@ tối đa trên private test, trong 6 giờ, tái lập được".*
 - **Kiểm dữ liệu đầu vào trước khi kết luận** (header Excel, định dạng số/ngày, mã hoá tiếng Việt).
 - **Không vi phạm luật BTC:** không dùng test để train, không logic theo id, tổng tham số ≤ 15B, offline.
 
-## 1b. Nguyên tắc dùng Kaggle (user chốt 2026-10-30)
+## 1b. Nguyên tắc dùng Kaggle (ZAIC.docx §4, cập nhật 2026-11-02)
 
-- Dùng **tất cả** acc được cấp; token chỉ ở `~/.kaggle/tok_<acc>` / `access_token` (quyền 600), không đưa vào code,
-  prompt hay báo cáo; kiểm tra kết nối bằng `kaggle competitions list`.
-- Mỗi acc dùng **đủ 2 phiên GPU** trước khi sang acc khác. Acc có L4 → 2 phiên × 4 L4 (96 GB/phiên); không có L4 →
-  2 × T4. Hết GPU: việc rất nhẹ chạy CPU, việc nặng đợi GPU.
-- Phiên ~5 phút không có đầu ra (kẹt hàng đợi) → tự ngắt và tạo phiên mới, tối đa 4 lần (`run_kernel.py`, fanout dùng
-  stall 300 s, 4 lần); vẫn lỗi thì xem log, quota, cấu hình trước khi tiếp tục.
-- Tận dụng hết GPU trong phiên: inference dùng `agent.py --dp <số GPU>` (mỗi GPU một bản mô hình, chia doanh nghiệp
-  cân bằng theo số câu, prefix caching theo doanh nghiệp); mô hình không vừa 1 GPU thì `--tp`. Fine-tune dùng DDP trên
-  mọi GPU, bf16 (L4) / fp16 (T4), gradient accumulation để giữ batch hiệu dụng, gradient checkpointing chống OOM.
-- Định kỳ kiểm tra tiến trình treo / không cần nữa (kernel Kaggle và tiến trình nền cục bộ): ngắt rồi chạy lại; không
-  ngắt được thì báo user ngắt tay.
+- Dùng **tất cả** acc được cấp. Token chỉ ở `~/.kaggle/tok_<username>` (quyền 600), không đưa vào code, prompt, GitHub
+  hay báo cáo; kiểm tra kết nối bằng `kaggle competitions list`. Khung chat mới phải xin lại token.
+- Acc khung chat 3 (username Kaggle): `thnliu`, `linhmai24`, `lelynhan`, `mxuanquy`, `duylnng`, `caotienminh1`,
+  `nguyenmanh0404`, `hai1108`. Các acc này **dùng chung với dự án khác** (kernel `e27*`, `e32*`, `nclt-*`…): không
+  đụng vào kernel không phải `zc-*`. Không có token `nhatlong1103` → dataset mới đăng public trên một acc ở trên.
+- **Dồn luồng lên một acc**: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU cùng lúc; hết slot mới sang acc khác.
+  Mỗi phiên GPU = 4×L4 (24 GB/GPU, 96 GB phân tán, không phải một GPU 96 GB); không có L4 → 2×T4.
+- **Kẹt hàng đợi:** không có đầu ra sau ~8 phút (L4 / CPU) hoặc ~10 phút (T4) → kiểm trạng thái; L4 kẹt hàng đợi → ngắt,
+  tạo phiên mới, tối đa 5 lần; vẫn hỏng → xem lỗi code / logic, sửa rồi chạy lại; không phải lỗi code → chuyển 2×T4.
+  Vẫn hỏng → xem log, quota, cấu hình.
+- Tận dụng hết GPU trong phiên: inference `--dp <số GPU>` (mỗi GPU một bản mô hình, chia DN cân bằng theo số câu,
+  prefix caching theo DN); mô hình không vừa 1 GPU thì `--tp`. Fine-tune: DDP mọi GPU, bf16 (L4) / fp16 (T4),
+  gradient accumulation, gradient checkpointing chống OOM.
+- Hết GPU: việc rất nhẹ chạy CPU, việc nặng đợi GPU. Định kỳ dọn tiến trình treo (kernel Kaggle và tiến trình nền cục bộ);
+  không ngắt được thì báo user.
+- Cần thêm acc (và Kaggle không chặn API) → báo user.
 
 ## 2. Tối ưu thời gian chạy
 
@@ -56,7 +61,7 @@ tối đa trên private test, trong 6 giờ, tái lập được".*
 
 ## 4. Git
 
-- Branch làm việc: `datamate` (repo `lhaochen118-ship-it/ZC`). Không tạo PR nếu user không yêu cầu. Chỉ tạo file nộp thử khi kết quả tốt (user chốt).
+- Branch làm việc: `claude/datamate-v3-0dny90` (repo `lhaochen118-ship-it/ZC`). Không tạo PR nếu user không yêu cầu. Chỉ tạo file nộp thử khi kết quả tốt (user chốt).
 - Commit kèm trailer theo hướng dẫn của phiên; không ghi model ID vào commit.
 - Kết quả mới để file mới (`results/<run>/…`), không ghi đè kết quả cũ.
 - Không commit token, dữ liệu sinh ra lớn, cache (`.gitignore`).

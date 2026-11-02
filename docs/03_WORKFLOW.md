@@ -23,8 +23,8 @@ tối đa trên private test, trong 6 giờ, tái lập được".*
 - Dùng **tất cả** acc được cấp. Token chỉ ở `~/.kaggle/tok_<username>` (quyền 600), không đưa vào code, prompt, GitHub
   hay báo cáo; kiểm tra kết nối bằng `kaggle competitions list`. Khung chat mới phải xin lại token.
 - Acc khung chat 3 (username Kaggle): `thnliu`, `linhmai24`, `lelynhan`, `mxuanquy`, `duylnng`, `caotienminh1`,
-  `nguyenmanh0404`, `hai1108`, `nguynduylm`, `phuongnehe`. Probe 02/11: **4×L4** ở `lelynhan`, `linhmai24`, `thnliu`, `duylnng`, `caotienminh1`, `nguynduylm`, `phuongnehe` (2 acc user gửi thêm 02/11);
-  `mxuanquy` chỉ T4; `nguyenmanh0404`, `hai1108` chưa accept rules `gemma-4-developer-agent` (chỉ T4 đến khi user accept
+  `nguyenmanh0404`, `hai1108`, `nguynduylm`, `phuongnehe`. Probe 02/11: **4×L4** ở `lelynhan`, `linhmai24`, `thnliu`, `duylnng`, `caotienminh1`, `nguynduylm`, `phuongnehe` (2 acc user gửi thêm 02/11), `hai1108` (user accept rules 02/11);
+  `mxuanquy` chỉ T4; `nguyenmanh0404` chưa accept rules `gemma-4-developer-agent` (chỉ T4 đến khi user accept
   trên web). Các acc này **dùng chung với dự án khác** (kernel `e27*`, `e32*`, `nclt-*`…): không
   đụng vào kernel không phải `zc-*`. Không có token `nhatlong1103` → dataset mới đăng public trên một acc ở trên.
 - **Dồn luồng lên một acc**: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU cùng lúc; hết slot mới sang acc khác.

@@ -125,5 +125,16 @@ check("import datamate", dm.run_program(code, sh, "2025-03-10") == {"type": "num
 try: exec("import numpyy", {}); check("missing module raises", False)
 except ModuleNotFoundError: pass
 
+# 11. toolkit tolerances: a period where a day is meant, a filter on a column of the frame, debts need payment records
+check("period as a day", sh.stock_at("Thuốc X", dm.day("2025-03-10")) == sh.stock_at("Thuốc X", "2025-03-10"))
+lx = lines.assign(prescription=[True, False])
+shx = dm.Shop({"orders": orders, "lines": lx}, today="2025-03-10")
+check("column filter", float(shx.lines(dm.month(2025, 3), prescription=True)["line_amount"].sum()) == 10.0)
+try: shx.lines(dm.month(2025, 3), colour="red"); check("unknown filter raises", False)
+except TypeError: pass
+shd = dm.Shop({"orders": orders.assign(total_payable=[10.0, 20.0]), "lines": lines}, today="2025-03-10")
+try: shd.debts("2025-03-10"); check("debts without payment records are unanswerable", False)
+except dm.Unanswerable: pass
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

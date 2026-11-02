@@ -45,7 +45,10 @@ class Period:
     def __repr__(self): return f"Period({self.start.date()}..{self.end.date()}{' ' + self.label if self.label else ''})"
 
 
-def _ts(x): return pd.Timestamp(x).normalize()
+def _ts(x):
+    """a day; a Period where a day is meant (stock_at(item, today_p(TODAY))) is its last day (31 failed attempts in v4b)."""
+    if isinstance(x, Period): x = x.end
+    return pd.Timestamp(x).normalize()
 
 
 def day(d): d = _ts(d); return Period(d, d, f"day {d.date()}")
@@ -530,7 +533,7 @@ class Shop:
         return self._filter(l, **f)
 
     def _filter(self, df, item=None, group=None, customer=None, customer_group=None, staff=None, channel=None, payment=None,
-                shift=None, status=None, where=None):
+                shift=None, status=None, where=None, **extra):
         for v, cols, what in ((item, ("item_code", "item_name"), "items"), (group, ("item_group",), "item groups"),
                               (customer, ("customer_id", "customer_name"), "customers"), (customer_group, ("customer_group",), "customer groups"),
                               (staff, ("staff",), "staff"), (channel, ("channel",), "sales channels"), (payment, ("payment_method",), "payment methods"),
@@ -548,6 +551,11 @@ class Shop:
             h = pd.to_datetime(df["order_time"]).dt.hour
             df = df[(h >= 6) & (h <= 13)] if key(shift).startswith("sang") else df[(h >= 14) & (h <= 21)]
         if where is not None: df = df[where(df)]
+        for c, v in extra.items():                                      # prescription=True, base_unit="hộp": a column of the frame
+            if c not in df.columns: raise TypeError(f"unknown filter {c}= (no column {c!r}; use where=lambda d: ...)")
+            if isinstance(v, (bool, np.bool_)): df = df[df[c].fillna(False).astype(bool) == bool(v)]
+            elif isinstance(v, str): df = df[self._match(df, (c,), v)]
+            else: df = df[df[c] == v]
         return df
 
     def _match_person(self, df, cols, v):
@@ -735,6 +743,9 @@ class Shop:
     def debts(self, d):
         """Series order_id -> amount still owed at the end of day d (> 0 only)."""
         require("total_payable" in self.O.columns and self.O["total_payable"].notna().any(), "the data does not record order totals (no debts)")
+        P = self.C.get("payments")                                     # without any record of what was paid, every order would
+        require((P is not None and len(P)) or any(c in self.O.columns and self.O[c].notna().any()     # count as unpaid
+                                                  for c in ("paid_at_purchase", "paid_total", "debt_end")), "the data does not record payments (no debts)")
         o = self._debt_orders(d); paid = self.paid_until(d)
         owed = o["total_payable"].values - o["order_id"].map(paid).fillna(0).values
         s = pd.Series(owed, index=o["order_id"].values); return s[s > 0.5]

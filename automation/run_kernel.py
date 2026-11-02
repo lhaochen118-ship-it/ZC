@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Push a Kaggle kernel, wait for it, cancel+restart if it is stuck in the queue, pull + decode output.
 
-Stall policy (user): a session with no output for ~10 min is queue-stuck -> cancel it for real
+Stall policy (ZAIC.docx §4.2): no output for ~8 min (L4 / CPU) or ~10 min (T4) is queue-stuck -> cancel it for real
 (`kaggle kernels delete -y`, the only verified cancel) and push a fresh session; at most MAX_RESTARTS times.
 Kaggle's output API only exposes a RUNNING kernel's log near the end, so "no output" is judged by the kernel
 STATUS: QUEUED for > STALL secs => stuck. A RUNNING kernel is NOT restarted for being silent by default

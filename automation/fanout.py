@@ -9,7 +9,7 @@ import sys, os, glob, subprocess, shutil, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ACCOUNTS = sorted(os.path.basename(f)[4:] for f in glob.glob(os.path.expanduser("~/.kaggle/tok_*")))
-ACCOUNTS = ["nhatlong1103"] + [a for a in ACCOUNTS if a != "nhatlong1103"]
+ACCOUNTS = [a for a in ACCOUNTS if a != "nhatlong1103"]                  # nhatlong1103 only publishes datasets
 DSARG = ["--ds", sys.argv[sys.argv.index("--ds") + 1]] if "--ds" in sys.argv else []   # extra dataset sources for every kernel
 DSARG += (["--ks", sys.argv[sys.argv.index("--ks") + 1]] if "--ks" in sys.argv else []) + (["--internet"] if "--internet" in sys.argv else [])
 DSARG += ["--env", sys.argv[sys.argv.index("--env") + 1]] if "--env" in sys.argv else []
@@ -42,7 +42,7 @@ def make(kd, slug, part, acc, gpu):
 def launch(k):
     slug = f"{prefix}-{k + 1}"
     return subprocess.Popen([sys.executable, os.path.join(ROOT, "automation", "run_kernel.py"), os.path.join(work, slug),
-                             os.path.join(work, slug + "_out"), "300", "4", "43200"], stdout=open(os.path.join(work, slug + ".log"), "w"), stderr=subprocess.STDOUT)
+                             os.path.join(work, slug + "_out"), "600" if not L4 else "480", "5", "43200"], stdout=open(os.path.join(work, slug + ".log"), "w"), stderr=subprocess.STDOUT)
 
 
 procs = {}

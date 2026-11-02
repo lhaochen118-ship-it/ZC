@@ -134,6 +134,17 @@ def check_units_vs_multipliers():
     return [f"{x!r} -> {ingest.parse_num(x)} (want {v})" for x, v in cases.items() if not np.isclose(ingest.parse_num(x), v)]
 
 
+def check_serial_dates():
+    """a date column written as Excel serial numbers ('ngay_ban' 45717..) becomes dates; counts of days stay numbers."""
+    import pandas as pd
+    df = pd.DataFrame({"ngay_ban": [45717, 45718.5, 46225], "Số ngày nợ": [3, 12, 40], "Thành tiền": [45717, 46000, 50000]})
+    out, types = ingest.auto_type(df)
+    errs = []
+    if types.get("ngay_ban") != "datetime" or str(out["ngay_ban"].iloc[0].date()) != "2025-03-01": errs.append(f"ngay_ban -> {types.get('ngay_ban')} {out['ngay_ban'].iloc[0]}")
+    if types.get("Số ngày nợ") != "number" or types.get("Thành tiền") != "number": errs.append(f"non-dates retyped: {types}")
+    return errs
+
+
 def check_file_names():
     """file names stored as '#Uxxxx' by some unzip tools, or in NFD, must give the author's table name."""
     import unicodedata
@@ -150,7 +161,7 @@ if __name__ == "__main__":
         e = check(v, f); fails += bool(e)
         print(f"{'PASS' if not e else 'FAIL'} {v:15s} {f:7s} {'; '.join(e)[:300]}")
     for nm, fn in [("dup_subheaders", check_dup_subheaders), ("decimal_dot", lambda: check_decimal(".")), ("decimal_comma", lambda: check_decimal(",")),
-                   ("units_vs_multipliers", check_units_vs_multipliers), ("file_names", check_file_names)]:
+                   ("units_vs_multipliers", check_units_vs_multipliers), ("file_names", check_file_names), ("serial_dates", check_serial_dates)]:
         e = fn(); fails += bool(e); cases.append(nm)
         print(f"{'PASS' if not e else 'FAIL'} {nm:23s} {'; '.join(e)[:300]}")
     print(f"{len(cases) - fails}/{len(cases)} variants recovered")

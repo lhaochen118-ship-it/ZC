@@ -253,6 +253,11 @@ def auto_type(df, year_hint=None):
         def pdate(v, y):                                               # inside a date column, '46183' / 46183 are Excel serials
             if isinstance(v, str) and re.fullmatch(r"\d{5}(\.\d+)?", v.strip()): v = float(v)
             return parse_date(v, y)
+        if _DATEY.search(strip_accents(c).lower()):                    # a date column written as Excel serial NUMBERS
+            sv = pd.to_numeric(smp.map(lambda v: str(v).strip() if isinstance(v, str) else v), errors="coerce")
+            if sv.notna().mean() >= 0.95 and sv.dropna().between(25569, 73051).all() and 36526 <= sv.median() <= 60000:
+                full = pd.to_numeric(s.map(lambda v: None if _blank(v) else (str(v).strip() if isinstance(v, str) else v)), errors="coerce")
+                out[c] = pd.Timestamp("1899-12-30") + pd.to_timedelta(full, unit="D"); types[c] = "datetime"; continue
         dates = pd.Series([pdate(v, yh.get(i)) for i, v in smp.items()], index=idx)
         date_evidence = (is_dt | smp.map(lambda v: isinstance(v, str) and pd.notna(parse_date(v, 2000)))).mean() >= 0.2
         if dates.notna().mean() >= 0.9 and date_evidence:
@@ -280,6 +285,7 @@ def auto_type(df, year_hint=None):
 
 
 _ADDR = re.compile(r"(địa chỉ|dia chi|địa điểm|address|addr|đường|duong)", re.I)
+_DATEY = re.compile(r"(ngay|date|thoi gian|thoigian|time|datetime|timestamp)")   # accent-free, lowercase column names
 
 
 # ---------------------------------------------------------------- business

@@ -115,6 +115,64 @@ def coverage(C):
     return s + sum(1 for t, v in C.items() if t not in CORE and isinstance(v, pd.DataFrame) and len(v))
 
 
+def plausibility(C, biz):
+    """content checks of a mapping that ran: silent mistakes (wrong date conversion, swapped columns, wrong status
+    labels) become errors with a hint, so that the repair round can fix them instead of every answer being wrong.
+    Thresholds are conservative: every reference mapping of the training split passes (tests/test_plausibility.py)."""
+    errs = []
+    o, l = C.get("orders"), C.get("lines")
+    if o is None or not len(o): return errs
+    end = data_end(biz)
+    d = pd.to_datetime(o["order_date"], errors="coerce").dropna() if "order_date" in o else pd.Series(dtype="datetime64[ns]")
+    if len(d):
+        if end is not None and (d.max() > end + pd.Timedelta(days=2) or d.max() < end - pd.Timedelta(days=60)):
+            errs.append(f"orders end on {d.max().date()} but the README says the data runs until {end.date()}: check the order date "
+                        "column and its conversion (Excel serial numbers count days from 1899-12-30)")
+        if end is not None and d.min() < end - pd.Timedelta(days=5 * 366):
+            errs.append(f"orders start on {d.min().date()}, more than 5 years before the end of the data ({end.date()}): check the date column")
+        if end is None and (d.min().year < 2000 or d.max().year > 2100):
+            errs.append(f"order dates run from {d.min().date()} to {d.max().date()}: check the date column and its conversion")
+    if "valid" in o:
+        share = float(o["valid"].astype(bool).mean())
+        if share < 0.5:
+            errs.append(f"only {share:.0%} of the orders are valid (not cancelled / returned): check which status labels map to huỷ / trả hàng")
+        if "revenue" in o:
+            rv = pd.to_numeric(o.loc[o["valid"].astype(bool), "revenue"], errors="coerce").fillna(0)
+            if len(rv) and (rv <= 0).mean() > 0.2:
+                errs.append(f"{(rv <= 0).mean():.0%} of the valid orders have revenue <= 0: check line_amount (the line total after the line discount)")
+    if l is not None and len(l) and len(o) and len(l) / len(o) > 30:
+        errs.append(f"{len(l) / len(o):.0f} lines per order on average: order_id is probably not an order code (a date, status or "
+                    "name column?); when the file has no order code, each row (or each group of rows of one order) is one order")
+    if l is not None and {"order_id", "line_amount"} <= set(l.columns) and "revenue" in o and len(o) and len(l) / len(o) > 1.2:
+        sale = pd.to_numeric(l["qty"], errors="coerce").fillna(1) > 0 if "qty" in l.columns else pd.Series(True, index=l.index)
+        ls = pd.to_numeric(l.loc[sale, "line_amount"], errors="coerce").groupby(l.loc[sale, "order_id"]).sum()
+        v = o[o["valid"].astype(bool)] if "valid" in o else o
+        rv = pd.to_numeric(v["revenue"], errors="coerce"); lv = v["order_id"].map(ls)
+        ok = rv.notna() & lv.notna()
+        if ok.sum() > 50:
+            off = ((rv[ok] - lv[ok]).abs() > (1 + 0.005 * lv[ok].abs())).mean()
+            if off > 0.2:
+                errs.append(f"order revenue differs from the sum of its line amounts on {off:.0%} of the orders: rulebook §1 revenue is the sum "
+                            "of the line amounts (after line discounts); map an order total (after order discount / with shipping) to "
+                            "total_payable, not revenue")
+    if "customer_name" in o:
+        cn = o["customer_name"].dropna().astype(str).str.strip()
+        if len(cn) > 50 and cn.str.fullmatch(r"-?[\d.,]+").mean() > 0.5:
+            errs.append("customer_name holds numbers: map the column with the customer's NAME (or the customer list) to customer_name")
+    if l is not None and {"qty", "unit_price", "line_amount"} <= set(l.columns):
+        x = l[["qty", "unit_price", "line_amount"]].apply(pd.to_numeric, errors="coerce").dropna()
+        x = x[(x["qty"] > 0) & (x["unit_price"] > 0) & (x["line_amount"] > 0)]
+        if len(x) > 50:
+            r = float((x["line_amount"] / (x["qty"] * x["unit_price"])).median())
+            if not 0.3 <= r <= 1.5:
+                errs.append(f"median line_amount / (qty x unit_price) is {r:.2f}, expected about 1: check the qty, unit_price and line_amount columns")
+    if l is not None and {"qty", "qty_base"} <= set(l.columns):
+        x = l[["qty", "qty_base"]].apply(pd.to_numeric, errors="coerce").dropna(); x = x[x["qty"] > 0]
+        if len(x) > 50 and (x["qty_base"] < x["qty"] - 1e-9).mean() > 0.05:
+            errs.append("qty_base is smaller than qty on many lines: qty_base must be the quantity in BASE units (qty x unit factor)")
+    return errs
+
+
 def run_mapping(code, biz, ref_cols=None):
     """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used)."""
     g = namespace(biz, ref_cols)
@@ -126,6 +184,8 @@ def run_mapping(code, biz, ref_cols=None):
     if not isinstance(C, dict) or "orders" not in C: return {"ok": False, "error": "the program did not build C with C['orders']"}
     errs = dm.check(C)
     if errs: return {"ok": False, "error": "canonical tables failed the checks: " + "; ".join(errs), "C": C}
+    errs = plausibility(C, biz)                                        # content checks: silent mistakes -> repairable errors
+    if errs: return {"ok": False, "error": "the canonical tables look wrong:\n- " + "\n- ".join(errs), "C": C}
     return {"ok": True, "C": C, "notes": str(g.get("NOTES", "")), "coverage": coverage(C), "tables_used": dict(g["T"].used)}
 
 

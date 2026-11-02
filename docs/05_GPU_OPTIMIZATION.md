@@ -52,9 +52,20 @@ file này giải thích lý do và ghi số đo.*
 | v1q35-1 | round-based, Qwen3.5-9B FP8 | 750 + 749 train (2 shard) | 2424 / 2549 | | | 0.900 / 0.877 |
 | p1q14b-1 | `--pipeline`, Qwen3-14B-AWQ | 3000 train | đang chạy | | | |
 | p2q35-1 | `--pipeline`, Qwen3.5-9B FP8 | 3000 train | đang chạy | | | |
+| zc-v4b-1 | pipeline + think-map + escalate 4, kc 6 | 3000 train | 6046 (agent 5717) | 89.5 / 92.7 / 94.2 / 84.3 % | 20.6–21.9 / 22.5 GB | **0.955** |
+| zc-v4b-2 | như trên | 1000 public | 7599 (agent 7252) | 95.5 / 84.9 / 84.5 / 78.7 % | 20.9–21.7 / 22.5 GB | — |
 
 Chi phí cố định mỗi kernel (đo 02/11): `pip install` vLLM từ wheels 398–471 s, chép mô hình 66–158 s, nạp vLLM ~3 phút.
 → thử môi trường dựng sẵn `lelynhan/zc-env-vllm032` (pip --target, gắn qua kernel source): **thất bại** (v4, 02/11).
 `import torch, vllm` thẳng từ mount `/kaggle/input` (hàng chục nghìn file nhỏ) > 900 s, cả 5 kernel chết. Giờ chỉ dùng khi
 `ZC_USE_ENV=1`. Muốn bỏ bước pip thì phải đóng thành **một file tar** (đọc tuần tự nhanh), giải nén ra đĩa local
 rồi mới import; và phải chạy thử nhỏ trước.
+
+### Ghi chú 02/11 tối
+
+- Public chậm hơn train mỗi câu (7.3 s / câu so với 1.9 s): mọi DN public đều phải ánh xạ bằng LLM (thinking) và nhiều câu
+  phải escalation. GPU vẫn bận 79–95 %. Lãng phí lớn nhất không phải GPU rảnh mà là **lần thử hỏng**:
+  - 12.9 % (train) / 21.5 % (public) lần thử viết `import datamate` → nay có import hook (7ed7241);
+  - 8 % lần thử public hết token khi thinking mà chưa ra code → vòng sau tắt thinking (2ea939c).
+- 2×RTX 5090 (đề): giải mã bị giới hạn bởi băng thông bộ nhớ (5090 ~1.8 TB/s so với L4 300 GB/s), nên ước tính nhanh hơn
+  4×L4 vài lần → giới hạn 6 giờ còn dư cho vài nghìn câu. Cần đo lại khi có Docker.

@@ -1,0 +1,2232 @@
+biz_128	tháng này tổng giá trị các phiếu nhập hàng là bao nhiu
+biz_124	Thuốc có hoạt chất Natri clorid tháng này bán được tổng cộng bao nhiêu tiền?
+biz_120	Tổng doanh thu trong ngày hôm nay là bao nhiêu?
+biz_105	tỉ lệ huỷ đơn tháng 6/2025 là nhiêu %
+biz_119	Tháng 7/2025 mặt hàng Otrivin 0,1% xịt mũi chai 10ml bán được tổng cộng bao nhiêu chai?
+biz_109	Trong tháng 1/2025, Mì Omachi sườn hầm nhập vào giá bình quân một thùng là bao nhiêu ạ?
+biz_121	trong tổng doanh thu tháng 7/2025, phần của thuốc kê đơn là bao nhiêu phần trăm
+biz_106	Tháng 5/2025 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_109	dthu các đơn bán qua ddieenj thoại tháng 1/2025 bằng bnhiu % tổng doanh thu tháng 1/2025
+biz_104	đếm số đơn đã huỷ trong tháng 12/2025
+biz_118	tháng này cửa hàng đã chở giao bao nhiêu đợt hàng cho khách nhỉ
+biz_124	dthu 3 tháng liền nhau kết thúc ở tháng 6/2025 là bao nhiêu mỗi tháng, từ tháng cũ đến tháng mới
+biz_111	Tính đến hết ngày 19/08/2026, có bao nhiêu khách còn nợ cửa hàng?
+biz_106	3 mặt hàng bán chạy nhất tuần này là những mặt hàng nào?
+biz_104	Ngày 14/07/2025 cửa hàng bán Cà phê muối (L) với đơn giá bao nhiêu một ly?
+biz_128	tổng dthu trong ngày hôm nay là bao nhiêu vaayj
+biz_117	Cho tôi biết dthu 30 ngày gần nhất
+biz_130	Doanh thu tháng 4/2026 bao nhiêu?
+biz_106	Tháng 5/2026 giá nhập bình quân một hộp Bánh croissant là bao nhiêu vậy?
+biz_124	Tính đến hết ngày 25/05/2026, khách hàng còn nợ cửa hàng tổng cộng bao nhiêu tiền?
+biz_103	Cho hỏi tổng doanh thu quý 2/2026 là bao nhiêu?
+biz_112	tháng 5/2026 cửa hàng có nhiêu % đơn bị huỷ
+biz_128	Cho hỏi tuần trước riêng ca chiều bán được tổng cộng bao nhiêu tiền?
+biz_127	Doanh thu trung bình trên một đơn tháng 3/2025 là bao nhiêu ạ?
+biz_118	Tháng 6/2026 khách mua từ 4 đơn trở lên chiếm bao nhiêu % số khách đã mua nhỉ?
+biz_103	Cho hỏi số đơn bị huỷ trong tháng 8 năm 2025 là bao nhiêu?
+biz_112	Top 3 sp bán nhiều nhất tháng 3 năm 2026 là những gì?
+biz_120	Trong tháng 11/2025, tỉ lệ đơn huỷ là bao nhiêu phần trăm?
+biz_124	Từ ngày 16/03/2025, Fugacar 500mg hộp 1 viên tăng giá lên 23.000đ. So 7 ngày kể từ ngày 16/03/2025 với 7 ngày ngay trước đó, số viên bán ra thay đổi bao nhiêu phần trăm nhỉ?
+biz_127	Xem giúp tháng 2/2026 nhóm hải sản chiếm bao nhiêu % doanh thu?
+biz_125	tháng 5/2025 hàng nào bán chạy nhất
+biz_105	tháng 8/2025 quán bán đc bn ly size m
+biz_118	Quý 4/2025 cửa hàng có bao nhiêu đơn hàng ạ?
+biz_116	Tháng 9/2025 top 5 hàng bán chạy nhất là gì?
+biz_118	cửa hàng có mấy khách nhà ở đường Hai Bà Trưng
+biz_104	Tháng 2/2026 có bao nhiêu đơn hàng bị huỷ?
+biz_128	Ca chiều tuần trước doanh thu được bao nhiêu?
+biz_127	tieenf bán má heo nướng nước mắm tháng 9/2025 là nhiêu
+biz_115	gias trị trung bình một đơn thangs 4/2026 là bao nhiêu
+biz_127	so cùng kỳ năm trước, doanh thu thangs 5/2026 tawng/giamr mấy %
+biz_117	Giúp mình đếm số đợt giao hàng trong tháng 1/2026.
+biz_108	Giá trị trung bình một đơn tháng 10/2025 là bao nhiêu nhỉ?
+biz_103	dthu 3 tháng liền nhau kết thúc ở tháng 12/2025 là bao nhiêu mỗi tháng, từ tháng cũ đến tháng mới?
+biz_116	Doanh thu ngày nào cao nhất trong tháng 7 năm 2026?
+biz_125	Cho hỏi doanh thu ngày nào cao nhất trong tháng 3 năm 2025?
+biz_117	Cho mình hỏi ngày 19/03/2026 cửa hàng bán Nước kiềm Ion Life 19L với đơn giá bao nhiêu một bình?
+biz_127	tháng này, dthu các ddown trả bằng cod và các đơn trả bằng tm mỗi loại bao nhiêu
+biz_112	Tháng 6/2025 có mấy ngày doanh thu đạt 9.800.000 đồng trở lên?
+biz_115	Hôm nay bán được mấy đơn hàng?
+biz_130	Trung bình mỗi đơn tuần trước mang về bao nhiêu dthu?
+biz_130	ê trung bình mỗi đơn tuần trc mang về bao nhiu dthu
+biz_115	Trong giai đoạn từ 20/10/2025 đến hết 26/10/2025, bao nhiêu mặt hàng bị ế nhỉ?
+biz_122	cho hỏi so số viên magne-B6 corbière hộp 5 vỉ x 10 viên bán ra trong 7 ngày kể từ ngày 29/11/2025, ngày tăng giá lên 2.200đ, vs 7 ngày ngay trước ngày đó: tăng hay giảm bao nhiu %
+biz_129	soos đơn hoom nay là bao nhiêu
+biz_106	Tháng này tổng giá trị các phiếu nhập hàng là bao nhiêu?
+biz_111	Trong tháng 1 năm 2026 cửa hàng bán đc mấy ly Cà phê sữa (L)?
+biz_110	cho hỏi số đơn quý 2/2026 là nhiêu
+biz_121	Giá trị trung bình một đơn tuần trước là bao nhiêu vậy?
+biz_104	dthu cuar Sữa tươi trân châu đường đen (L) trong thangs 6 năm 2025 là bao nhiêu
+biz_130	tuần trước doanh thu bình quân mỗi đơn là bao nhiêu
+biz_118	sp bán dc nhiều nhất tuần rồi là gì
+biz_105	Tuần trước doanh thu bình quân mỗi đơn là bao nhiêu
+biz_122	Tỉ lệ huỷ đơn tháng 9/2025 là bao nhiêu %?
+biz_102	Hôm qua cửa hàng bán được mấy đơn?
+biz_116	dthu quý 4/2025 của cửa hàng là bao nhiêu
+biz_130	trong các tháng 11/2025, 12/2025 và 1/2026, cửa hàng có dthu cao nhất vào tháng nào
+biz_129	số đơn bị huỷ trong tháng 1 năm 2025 là bao nhiêu
+biz_106	Xem giúp khách còn nợ cửa hàng tổng cộng bao nhiêu tính đến hết ngày 20/09/2025?
+biz_124	Tháng 10/2025 cửa hàng bán được tổng cộng bao nhiêu viên Zyrtec 10mg hộp 1 vỉ x 10 viên?
+biz_110	Tháng 9/2025 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_112	Trong tháng 7 năm 2026, số sản phẩm xuất hiện ở từ 140 đơn hàng khác nhau trở lên là bao nhiêu?
+biz_120	tháng 2/2025 dthu hàng hông kê đơn là bao nhiêu
+biz_106	Cuối ngày hôm nay Bánh croissant còn mấy hộp chẵn, mấy cái lẻ?
+biz_119	hnay kho còn tồn bnhiu miếng băng cá nhân urgo transparent hộp 100 miếng lúc cuối ngày
+biz_129	Cho tôi biết doanh thu tháng 3/2026.
+biz_130	Cho tôi 3 mặt hàng bán chạy nhất tuần này.
+biz_109	tháng 2/2025 cửa hàng nhập Hạt nêm Knorr 400g bình quân bn tiền một thùng
+biz_109	Đếm số đơn bán trong ca sáng tháng 9/2025.
+biz_114	dthu quý 1/2025 của cửa hàng là bao nhiêu
+biz_104	Cho mình hỏi so với tháng trước đó, doanh thu tháng 2/2026 tăng hay giảm mấy phần trăm?
+biz_118	Tháng 4/2026 xe đã giao tổng cộng mấy đợt hàng?
+biz_123	Đến hết ngày 23/06/2025, số khách còn công nợ với cửa hàng là bao nhiêu?
+biz_115	Trong tháng 4/2025, cửa hàng có mấy đơn ở trạng thái huỷ nhỉ?
+biz_127	Xem giúp tổng doanh thu quý 2/2026 là bao nhiêu?
+biz_130	Giúp mình liệt kê 5 mặt hàng bán chạy nhất tuần rồi.
+biz_120	Tồn kho Bisolvon 8mg hộp 3 vỉ x 10 viên cuối ngày hôm nay là bao nhiêu viên ạ?
+biz_118	Từ đầu tháng này đến hết hôm nay, doanh thu hơn hay kém cùng kỳ tháng trước mấy %?
+biz_119	doanh thu trung bình trên một đơn tháng 5/2025 là bnhiu hả
+biz_123	Lô Oresol 245 DHG hộp 20 gói gần hết hạn nhất có hạn dùng ngày nào?
+biz_106	Tổng dthu tháng 2 năm 2025 là bao nhiêu?
+biz_110	xem giúp số đơn hôm nay là bao nhiêu
+biz_109	Tổng số lon Bia Tiger 330ml bán trong tháng 4/2026 là bao nhiêu?
+biz_103	Từ tháng 8/2025 tới tháng 10/2025, tháng nào cửa hàng bán được nhiều tiền nhất?
+biz_123	check giùm doanh thu nhóm hàng giảm đau hạ sốt tháng 12 năm 2025 là bn
+biz_119	Doanh thu trung bình trên một đơn tháng 3/2026 là bao nhiêu?
+biz_106	tính theo giá vốn, tiền hàng nằm trong kho vào cuối ngày 14/09/2026 là bao nhieeu
+biz_123	cho hỏi tính đến hết ngày 12/07/2025, 5 khách nào đang nợ nhiều nhất, mỗi người còn nợ bao nhiu
+biz_109	pin panasonic aa đổi giá từ 22.000đ lên 23.000đ vào ngày 02/06/2026. 30 ngày kể từ ngày đó bán được nhìu hay ít hơn 30 ngày liền trước bao nhiêu %, tính theo vỉ hả
+biz_110	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_124	tháng 2/2025 mặt hàng naof lời nhất
+biz_122	Tuần rồi khách nào mua nhiều tiền nhất?
+biz_122	cho tooi 5 khách mua nhìu tiền nhất thangs 6/2026
+biz_108	Cho tôi biết doanh thu các đơn của khách nhóm sỉ tháng 8/2025.
+biz_106	So số ly Latte (L) bán ra trong 30 ngày kể từ ngày 05/02/2026, ngày tăng giá lên 53.500đ, với 30 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_109	Trong tháng 5/2025, doanh thu ca chiều hơn hay kém ca sáng bao nhiêu phần trăm vậy?
+biz_123	Tháng 1/2025 cửa hàng bán được tổng cộng bao nhiêu viên Gofen 400 hộp 5 vỉ x 10 viên nang?
+biz_111	Hôm qua cửa hàng bán đc mấy đơn?
+biz_127	Tháng 12/2025 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_108	Tháng 4/2026 mặt hàng Nếp cái hoa vàng bán được tổng cộng bao nhiêu kg?
+biz_121	Cho hỏi tháng 1/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_116	Doanh thu của Tôn lạnh Hoa Sen 0.4mm trong tháng 7 năm 2025 là bao nhiêu?
+biz_101	Cho tôi biết số đơn hôm qua.
+biz_111	Hôm qua bán được bao nhiêu ly?
+biz_128	Cho mình hỏi trung bình mỗi đơn tháng 7/2025 mang về bao nhiêu doanh thu?
+biz_121	Tháng này các thuốc có hoạt chất Cetirizin bán được bao nhiêu tiền?
+biz_124	Acemuc Kids 200mg hộp 30 gói tăng giá lên 3.200đ: so 7 ngày kể từ ngày tăng với 7 ngày ngay trước thì số gói bán ra tăng hay giảm bao nhiêu % nhỉ?
+biz_120	Tháng 7/2025 dthu bình quân mỗi đơn hàng là bao nhiêu?
+biz_116	doanh thu tháng 11/2025 bn
+biz_119	dthu quý 2/2026 của cửa hàng là bnhiu
+biz_104	Tính riêng ngày hôm nay, cửa hàng bán đc bao nhiêu đơn hàng?
+biz_102	tháng 4/2026 bans Bột ngọt Ajinomoto 400g được bao nhiêu tieenf
+biz_104	Tháng 5/2025 cửa hàng có bao nhiêu % đơn bị huỷ ạ?
+biz_122	Cho mình hỏi số đơn từ đầu năm tới hết hôm nay là bao nhiêu?
+biz_123	tiền vốn đang nằm ở các lô còn tồn có hạn dùng từ 28/06/2026 đến hết 26/09/2026 là bnhiu vậy
+biz_116	Top 3 sp bán nhiều nhất tháng 2 năm 2026 là những gì?
+biz_129	Tổng doanh thu quý 1/2025 là bao nhiêu?
+biz_119	Tiền bán Efferalgan 500mg viên sủi hộp 4 vỉ x 4 viên tháng 12/2025 là bao nhiêu?
+biz_124	Cho mình hỏi theo tồn kho ngày 25/05/2026, lô Siro ăn ngon Ích Nhi Plus chai 100ml gần hết hạn nhất có hạn dùng là ngày nào?
+biz_115	So với tháng liền trước, doanh thu tháng 3 năm 2026 thay đổi bao nhiêu %?
+biz_128	doanh thu ngày nào cao nhất trong tháng 6 năm 2026
+biz_112	Trong tháng này, tỉ lệ đơn huỷ là bao nhiêu phần trăm?
+biz_121	Tháng 2/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_127	Top 3 khách hàng có công nợ lớn nhất đến hết ngày 28/07/2026 và số nợ của từng người?
+biz_117	Cho hỏi trong tháng 1 năm 2026, số đơn có doanh thu ≥ 580.000 đồng là bao nhiêu?
+biz_127	Doanh thu các đơn trả bằng tiền mặt tháng này bằng bao nhiêu % tổng doanh thu tháng này?
+biz_107	Cho tôi biết doanh thu hôm qua.
+biz_120	Tháng 4/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_106	Dịp Tết âm lịch 2026 có doanh thu hơn hay kém 17 ngày trước Tết bao nhiêu %?
+biz_124	Từ tháng 4/2025 qua tháng 5/2025 rồi tháng 6/2025, doanh thu có tăng liên tục không?
+biz_119	tổng doanh thu tháng 6 năm 2025 là bao nhiêu
+biz_116	cho hỏi tháng 8/2026 nhóm sắt thép bán đc bao nhiêu tiền
+biz_128	Hôm nay bán được mấy đơn hàng?
+biz_116	Trong quý 1 năm 2026 có tổng cộng bao nhiêu đơn ạ?
+biz_121	Trong tháng 6 năm 2026 cửa hàng bán được mấy hộp Doppelherz Ginkgo hộp 30 viên?
+biz_122	Xem giúp từ ngày 03/07/2026, Fugacar 500mg hộp 1 viên tăng giá lên 23.000đ. So 7 ngày kể từ ngày 03/07/2026 với 7 ngày ngay trước đó, số viên bán ra thay đổi bao nhiêu phần trăm?
+biz_124	Tháng 8/2025 giá nhập bình quân một hộp Oresol 245 DHG hộp 20 gói là bao nhiêu?
+biz_122	doanh thu từ đầu tháng này đến hết hnay hơn hay kém cùng kỳ tháng trc nhiêu phần trăm
+biz_104	Cửa hàng bán được bao nhiêu đơn trong quý 1 năm 2026?
+biz_121	doanh thu 30 ngày gần nhất của cửa hangf là bao nhiêu
+biz_130	từ đầu tháng này đến hết bữa nay, dthu hown hay kém cungf kỳ th trước mấy %
+biz_127	Cho hỏi tháng 9/2025 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_102	Doanh thu tháng 5/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?
+biz_129	Số đơn hôm qua là bao nhiêu
+biz_111	Doanh thu từ khách nhóm thân thiết tháng 3/2025 là bao nhiêu vậy?
+biz_123	Tháng 1/2026 khách Vương Hạnh Chi ghi nợ thêm bao nhiêu và trả nợ đc bao nhiêu? Ghi hai số theo thứ tự: nợ thêm, trả được.
+biz_102	Tính riêng ngày hôm nay, cửa hàng bán đc bao nhiêu đơn hàng
+biz_129	Tỉ trọng của nhóm gỏi trong doanh thu tháng 12/2025 là bao nhiêu %?
+biz_117	tháng 8/2025 cửa hàng nhập thép pomina D10 cây 11.7m bình quân bao nhiêu tieenf một cây
+biz_118	xét 3 tháng 3/2025, 4/2025 và 5/2025, doanh thu tháng naof lớn nhất
+biz_121	Khách nào mua nhiều đơn hàng nhất tháng 10/2025?
+biz_103	tháng 4/2025 ngày nào cuwar hàng bán dc nhìu tiền nhất
+biz_111	Trung bình mỗi đơn tháng 1/2026 mang về bao nhiêu dthu?
+biz_124	Tháng 6/2025 có bao nhiêu đơn hàng có dthu từ 270.000 đồng trở lên?
+biz_112	Tỉ trọng của nhóm trà sữa trong dthu tháng 5/2025 là bao nhiêu %?
+biz_130	Tính từ đầu năm đến hết hôm nay, cửa hàng đã có tổng cộng bao nhiêu đơn hàng?
+biz_124	Thuốc có hoạt chất Paracetamol tháng 7/2025 bán được tổng cộng bao nhiêu tiền?
+biz_104	Ngày 01/12/2025 cửa hàng bán Sinh tố bơ (M) giá bao nhiêu một ly nhỉ?
+biz_116	hqua có tổng cộng bao nhiêu đơn?
+biz_102	Liệt kê 3 khách chi tiêu nhiều nhất trong tháng 6 năm 2025.
+biz_107	Trong quý 3 năm 2025, doanh thu của cửa hàng được bao nhiêu tiền ạ?
+biz_124	Tháng 2/2026 nhân viên mã NV001 bán được bao nhiêu tiền?
+biz_127	Doanh thu quý 1/2026 của cửa hàng là bao nhiêu?
+biz_120	Giá nhập bình quân một hộp Oresol 245 DHG hộp 20 gói trong tháng 2 năm 2026 là bao nhiêu ạ?
+biz_124	Đến hết ngày 12/11/2025, số khách còn công nợ với cửa hàng là bao nhiêu nhỉ?
+biz_106	Tháng 2/2025 doanh thu thay đổi bao nhiêu % so với tháng liền trước?
+biz_105	Tháng 4/2026 ca chiều bán được bao nhiêu tiền?
+biz_108	Cho mình hỏi doanh thu các đơn bán qua Zalo OA và doanh thu các đơn bán tại quầy tháng này lần lượt là bao nhiêu?
+biz_102	Top 3 khách hàng mua nhiều tiền nhất tháng 3/2026 là ai ạ?
+biz_111	Tháng 1/2025 doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_106	tính đến hết ngày 27/10/2025, 3 khách nào đang nợ nhiều nhất, mỗi người còn nợ bao nhiêu
+biz_120	Cuối ngày hôm nay Fugacar 500mg hộp 1 viên còn bao nhiêu viên?
+biz_118	dthu tháng 6/2025 bao nhiêu
+biz_109	tháng 10/2025 lời gộp của cửa hàng là bao nhiêu
+biz_104	số đơn hnay là bao nhiêu
+biz_108	Cho mình hỏi trong tháng 4/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_115	ê đếm số đơn đã huỷ trong tháng 10/2025
+biz_114	Hôm qua cửa hàng bán được bao nhiêu tiền?
+biz_117	trung bình mỗi đơn tháng 1/2026 mang về bao nhiêu dthu
+biz_112	tuần rồi cửa hàng bán đc bnhiu tieenf
+biz_120	Hôm qua cửa hàng có bao nhiêu đơn hàng?
+biz_120	Số lọ Costar Omega 3 1000mg lọ 100 viên bán được trong tháng 3/2026 là bao nhiêu ạ?
+biz_106	Tuần trước riêng ca chiều bán được tổng cộng bao nhiêu tiền?
+biz_109	tháng 1/2026 khách mua từ 3 đơn trở lên chiếm bao nhiu % số khách đã mua
+biz_116	Quý 4/2025 cửa hàng có bao nhiêu đơn hàng nhỉ?
+biz_128	Cho tôi biết doanh thu hôm qua.
+biz_122	Thuốc có hoạt chất Loratadin tháng 5/2025 bán được tổng cộng bao nhiêu tiền?
+biz_103	so vs cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết bữa nay tăng hay giảm nhiêu % hả
+biz_101	xem giúp ngày 25/09/2025 cửa hàng bán Kẹo Alpenliebe 100g giá bao nhiêu một gói
+biz_105	Cho mình hỏi tháng 12/2025 có bao nhiêu ngày đạt doanh thu từ 12.000.000 đồng trở lên?
+biz_121	Cho tôi biết doanh thu tháng 6/2026.
+biz_130	Tháng 9/2025 nhóm cơm mì cháo chiếm bao nhiêu % doanh thu?
+biz_107	Cho tôi biết doanh thu tháng 3/2025.
+biz_106	Tháng 8 năm 2025 bán ra bao nhiêu cái Bánh tiramisu?
+biz_117	trong thangs 3/2025, xét theo doanh thu, ngày nào bán đắt nhất nhỉ
+biz_117	tháng 1/2025 giá nhập bình quân một cây băng keo điện nano 20 yard là bao nhiu
+biz_109	So với tháng trước đó, dthu tháng 10/2025 tăng hay giảm mấy phần trăm
+biz_105	Tháng 6/2025 ai mua hàng nhiều tiền nhất?
+biz_110	tổng doanh thu tháng 5 năm 2025 là bn
+biz_123	Tính đến hết ngày 08/10/2025, tổng số tiền khách còn nợ ở các đơn đã đặt quá 15 ngày là bao nhiêu?
+biz_129	Ngày 14/11/2025 cửa hàng bán Rau củ kho quẹt giá bao nhiêu một đĩa?
+biz_123	Doanh thu từ đầu năm tới hết hnay là bao nhiêu?
+biz_121	cho tôi dthu của tháng 1/2026, tháng 2/2026 vaf tháng 3/2026, ghi lần luwowtj theo thứ tự đó
+biz_119	Doanh thu hôm nay là bao nhiêu?
+biz_130	cho tooi bieets số đơn tuần trước
+biz_122	Trong tháng 4/2025, xét theo dthu, ngày nào bán đắt nhất?
+biz_111	Số đơn hnay là bao nhiêu
+biz_130	so so dia Dau hu chien gion ban ra trong 30 ngay ke tu ngay 01/12/2025, ngay tang gia len 51.500đ, vs 30 ngay ngay truoc ngay do: tang hay giam bao nhiu % nhi
+biz_109	đến hết ngày 24/04/2026, cuwar hàng còn bao nhiêu khách chưa trả hết nợ
+biz_124	tính đến hết ngày 10/08/2025, 3 khách nào đang nợ nhìu nhất, mỗi người còn nợ bao nhiêu
+biz_121	Doanh thu tháng 8/2026 so với tháng 8/2025 tăng hay giảm bao nhiêu %?
+biz_122	Cho hỏi tổng doanh thu quý 1/2026 là bao nhiêu?
+biz_116	ee doanh thu tháng 4/2026 bnhiu
+biz_103	nhang quảng trí bó đổi giá từ 26.000đ lên 27.500đ vào ngày 24/01/2026. 7 ngày kể từ ngày đó bán được nhiều hay ít hơn 7 ngày liền trước bao nhiu %, tính theo bó
+biz_101	Cho tôi biết số đơn hqua
+biz_106	Ai là người lành nghề nhất trong số nhân viên?
+biz_124	Cho mình hỏi so với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?
+biz_108	Cho tôi biết doanh thu hqua
+biz_116	cho tôi biết doanh thu bữa qua
+biz_111	Tháng 2 năm 2025, 5 khách nào chi tiêu nhiều nhất?
+biz_108	Giá nhập bình quân một thùng Bột giặt OMO 3kg trong tháng 6 năm 2025 là bao nhiêu ạ?
+biz_110	Tháng 4/2026 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_102	xem giúp trong tháng 2/2025, cửa hàng có mấy đơn ở trạng thái huỷ
+biz_127	trong tháng 8/2025, cửa hàng có mấy đơn ở trạng thái huỷ
+biz_108	nhân viên mã NV003 tháng 12/2025 bán dc tổng cộng bao nhiu tiền nhỉ
+biz_111	ê doanh thu nhoms hàng sinh tố chiếm bao nhiêu % tổng doanh thu thangs 9 năm 2025
+biz_106	Xem giúp tháng 11/2025 top 5 hàng bán chạy nhất là gì?
+biz_115	Tháng 9/2025 nhóm gas & nước bán được bao nhiêu tiền?
+biz_121	Tháng 3/2025 tiền bán thuốc kê đơn chiếm mấy % tổng doanh thu?
+biz_129	dthu nhoms hàng khai vị chiếm bnhiu phần trăm tổng doanh thu tháng 5 năm 2026
+biz_101	Hôm nay cửa hàng bán được bao nhiêu tiền?
+biz_106	tháng 8/2025 có nhiêu khách mua tuwf 12 đơn trở leen
+biz_115	Cho mình biết doanh thu tháng 4/2026.
+biz_121	Tuần này có tổng cộng bao nhiêu đơn vậy?
+biz_117	So số bình Gas Petrolimex 12kg bán ra trong 14 ngày kể từ ngày 18/04/2026, ngày tăng giá lên 573.500đ, với 14 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu % nhỉ?
+biz_127	Cho mình hỏi tháng 4/2026 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_122	tháng 6/2026 cửa hàng bans dc toongr cộng bao nhiêu tiền
+biz_111	Trong tháng 7/2025, cửa hàng có mấy đơn ở trạng thái huỷ?
+biz_123	Doanh thu tháng 11/2025 hơn hay kém tháng trước bao nhiêu phần trăm?
+biz_109	Trong tháng 11/2025, tiền khách trả bớt nợ các đơn mua chịu được bao nhiêu?
+biz_113	Tiền bán Dây điện Cadivi VCmd 2x2.5 cuộn 100m tháng 2/2025 là bao nhiêu?
+biz_102	hqua dthu được bao nhiêu
+biz_128	hôm qua cuwar hàng bán dc mấy đơn
+biz_129	trong tháng 8/2025, cửa hàng cos mấy đơn ở trạng thái huỷ
+biz_116	đếm số đơn đã huỷ trong tháng 2/2026
+biz_122	Tháng 10/2025 nhóm thực phẩm chức năng bán được bao nhiêu tiền?
+biz_129	tháng 2/2026 cửa hàng thu được bao nhiêu tiền khachs trả nợ ta
+biz_109	Ngày 23/07/2025 cửa hàng bán Tã Bobby M 32 miếng giá bao nhiêu một gói?
+biz_123	doanh thu tháng 10/2025 bnhiu
+biz_128	hqua có tổng cộng bao nhiêu đơn?
+biz_102	Tổng doanh thu trong ngày hôm nay là bao nhiêu nhỉ?
+biz_106	Giúp mình tính đến hết ngày 26/07/2025, khách còn nợ bao nhiêu ở nhóm tuổi nợ 0–7 ngày, 8–15 ngày và trên 15 ngày?
+biz_127	Liệt kê 3 khách chi tiêu nhiều nhất trong tháng 5 năm 2026.
+biz_103	dthu quý 2/2025 của cửa hàng là bao nhiêu
+biz_119	Trong tháng 8/2025, tỉ lệ đơn huỷ là bao nhiêu phần trăm nhỉ?
+biz_117	tháng 1/2025 có mấy đơn có dthu từ 560.000 đồng trowr leen
+biz_112	Trong tháng này, số ly size L bán được là bao nhiêu, tính mọi loại đồ uống?
+biz_106	từ đầu năm đến hết hnay cửa hàng bán được nhiêu tiền
+biz_113	hnay cửa hàng bán đc bao nhiêu tiền?
+biz_105	coi giùm tháng 5/2026 cuwar hàng nhập nhiều tiền hàng nhất từ nhaf cung cấp nào
+biz_102	dthu trung bình trên một đơn tháng 5/2025 là bao nhiêu?
+biz_122	tồn kho Telfast HD 180mg hộp 3 vỉ x 10 viên cuoois ngày hôm nay dc mấy hộp chẵn và mấy viên lẻ vậy
+biz_124	Trung bình mỗi đơn tháng 2/2025 mang về bao nhiêu doanh thu?
+biz_116	Tháng 4/2026 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_104	Tháng 5/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_115	Giai đoạn từ 05/07/2025 đến hết 11/07/2025, cửa hàng có mấy mặt hàng ế hẳn, không ai mua cái nào ạ?
+biz_129	ngày naof trong tháng 6/2025 dthu cao nhaats
+biz_130	Từ tháng 10/2025 tới tháng 12/2025, tháng nào cửa hàng bán đc nhiều tiền nhất?
+biz_127	Tháng 6/2025 khách nào mua nhiều tiền nhất?
+biz_119	trong tháng 11/2025, acemuc kids 200mg hộp 30 gói nhập vào giá bình quân một hộp laf bao nhiêu
+biz_113	Hôm nay cửa hàng bán đc bao nhiêu tiền
+biz_129	Giá trị trung bình một đơn tháng 5/2025 là bao nhiêu vậy?
+biz_117	3 khách hàng có tổng tiền mua cao nhất tuần rồi là ai nhỉ?
+biz_126	Tổng doanh thu tháng 2 năm 2025 là bao nhiêu vậy?
+biz_102	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_121	Trong tháng 3/2025, nhóm vitamin khoáng chất đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_103	Tháng 5/2025 mặt hàng Nếp cái hoa vàng bán đc tổng cộng bao nhiêu kg?
+biz_106	Xem giúp tháng 2/2026 ca chiều so với ca sáng thì số đơn chênh bao nhiêu %?
+biz_115	Tổng doanh thu hôm qua là bao nhiêu ạ?
+biz_130	trong thang 3 nam 2026, so ngay co dthu ≥ 53.000.000 dong la bn
+biz_115	quý 1 năm 2026 cửa hàng bán được tổng cộng bnhiu tiền
+biz_112	Hết hôm nay trong kho còn bao nhiêu hộp Bánh croissant nguyên và bao nhiêu cái lẻ?
+biz_111	tháng 8/2025 doanh thu bình quân mỗi bill là bnhiu
+biz_108	Nhân viên bán giỏi nhất tháng 12/2025 là ai?
+biz_104	bữa qua có tổng cộng bao nhiu ddown
+biz_107	coi giùm trong tháng 7 năm 2025 cuwar hàng bán đươc mấy kg nếp cái hoa vàng
+biz_129	So doanh thu các đơn trả bằng COD với doanh thu các đơn trả bằng tiền mặt tháng này: mỗi bên bao nhiêu?
+biz_103	giai đoạn từ 25/06/2026 đến heets 01/07/2026 có tổng cộng mấy mặt hàng ees, bán ko dc món nào hả
+biz_119	Sản phẩm bán đc nhiều nhất trong tháng 6 năm 2026 là gì
+biz_103	Giá trị trung bình một đơn tháng 3/2026 là bao nhiêu?
+biz_109	Tháng 6/2026 cửa hàng thu được bao nhiêu tiền khách trả nợ?
+biz_118	ê dthu nhóm hàng gas & nước chiếm bao nhiêu phần trăm tổng doanh thu tháng 4 năm 2026
+biz_106	Tính đến hết ngày 05/04/2025, tổng số tiền khách còn nợ ở các đơn đã đặt quá 7 ngày là bao nhiêu?
+biz_116	Tháng 5/2026 doanh thu thay đổi bao nhiêu % so với tháng liền trước?
+biz_108	Cho hỏi doanh thu nhóm hàng mì gói chiếm bao nhiêu phần trăm tổng doanh thu tháng 1 năm 2025?
+biz_103	Cho hỏi tổng tiền nhập hàng tháng này là bao nhiêu?
+biz_119	Tháng 11/2025 tổng giá trị các phiếu nhập hàng là bao nhiêu?
+biz_108	dthu hôm nay là bao nhiêu?
+biz_127	Giúp mình đếm số đơn đã huỷ trong tháng 10/2025.
+biz_103	Cuối ngày 09/07/2026, tổng giá trị hàng còn trong kho tính theo giá vốn là bao nhiêu tiền?
+biz_123	Trong tháng 6/2025, bao nhiêu đơn có tiền hàng đạt 41.000 đồng trở lên?
+biz_123	lô acyclovir stella kem 5% tuýp 5g gần hết hạn nhất có hạn dùng ngày nào
+biz_123	Tháng 1/2025 cửa hàng nhập nhiều tiền hàng nhất từ nhà cung cấp nào?
+biz_128	hnay cửa hàng bán đc bao nhiêu tiền?
+biz_128	Số đơn bị huỷ trong tháng 3 năm 2026 là bao nhiêu nhỉ?
+biz_120	tổng tiền hàng nhập vaof tháng 12/2025 là bao nhiu đó
+biz_102	Cho tôi biết doanh thu tháng 8/2025.
+biz_121	trong tháng 3/2026, nhóm thực phẩm chức năng đóng góp bn % doanh thu cả cửa hàng đó
+biz_109	Tuần trước số đơn ca chiều chênh ca sáng bao nhiêu phần trăm?
+biz_112	Doanh thu trung bình trên một đơn tuần trước là bao nhiêu?
+biz_106	Quán bán được bao nhiêu ly size L trong tháng này, cộng mọi món?
+biz_121	xem giúp tổng dthu quý 2/2026 là bn hả
+biz_105	Số ly Cà phê muối (M) bán được trong tháng 6/2025 là bao nhiêu?
+biz_111	tháng 3/2025 top 5 hàng bán chạy nhất là j
+biz_118	Cho mình hỏi 7 ngày gần nhất cửa hàng bán ra tổng cộng mấy m3?
+biz_129	Trong tổng doanh thu tháng 10/2025, phần của khách nhóm thân thiết là mấy phần trăm?
+biz_110	hnay cửa hangf có nhiêu ddown
+biz_128	đếm số đơn bán trong ca sáng tháng 8/2025
+biz_127	tháng 5/2025 top 5 hàng hot nhất là gì
+biz_110	Doanh thu ngày nào cao nhất trong tháng 9 năm 2025?
+biz_112	Topping Pudding trứng đổi giá từ 10.000đ lên 10.500đ vào ngày 20/07/2026. 7 ngày kể từ ngày đó bán được nhiều hay ít hơn 7 ngày liền trước bao nhiêu %, tính theo phần?
+biz_130	Doanh thu hôm nay là bao nhiêu?
+biz_115	Cho mình 3 mặt hàng bán chạy nhất trong tháng 5/2025.
+biz_111	Hôm qua cửa hàng bán được mấy đơn?
+biz_116	Liệt kê 3 khách chi tiêu nhiều nhất trong tháng 2 năm 2026.
+biz_129	Đếm số đơn đã huỷ trong tháng 2/2025.
+biz_102	Cho hỏi trong tháng 12/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_104	Tháng 2/2026 mặt hàng Cà phê sữa (L) thu về bao nhiêu tiền?
+biz_112	Từ đầu năm đến hết hôm nay cửa hàng bán được bao nhiêu tiền?
+biz_121	Thuốc có hoạt chất Paracetamol + Phenylephrin + Clorpheniramin tháng 4/2025 bán đc tổng cộng bao nhiêu tiền?
+biz_105	Doanh thu 3 tháng liền nhau kết thúc ở tháng 3/2026 là bao nhiêu mỗi tháng, từ tháng cũ đến tháng mới?
+biz_116	trong giai đoạn từ 20/06/2026 đến hết 26/06/2026, bnhiu mặt hàng bị ế
+biz_120	Tổng dthu tháng 10 năm 2025 là bao nhiêu?
+biz_122	So số chai Betadine Gargle súc họng chai 125ml bán ra trong 14 ngày kể từ ngày 22/01/2026, ngày tăng giá lên 79.000đ, với 14 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_124	Giá nhập bình quân một hộp Gaviscon hộp 24 gói x 10ml trong tháng 11 năm 2025 là bao nhiêu?
+biz_130	Xem giúp so số đĩa Má heo nướng nước mắm bán ra trong 7 ngày kể từ ngày 04/06/2026, ngày tăng giá lên 109.000đ, với 7 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_104	Trong tháng 12 năm 2025 cửa hàng bán đc mấy ly Cà phê muối (M)
+biz_121	trong các tháng 11/2025, 12/2025 và 1/2026, cửa hàng có dthu cao nhất vào tháng nào
+biz_127	Tháng 10/2025, doanh thu các đơn bán qua điện thoại và các đơn bán qua Zalo OA mỗi loại bao nhiêu?
+biz_102	giá trị trung bình một đơn tháng 3/2025 là bao nhiêu
+biz_116	Cho mình biết doanh thu hôm qua.
+biz_105	Cho hỏi tỉ lệ huỷ đơn tháng 2/2025 là bao nhiêu %?
+biz_111	Cho mình hỏi tháng 2/2025 quán bán được bao nhiêu ly size L?
+biz_119	Doanh thu thuốc hoạt chất Povidon iod tháng 2/2025 là bao nhiêu?
+biz_119	tháng 5/2026 dthu hàng hok kê đơn là bn ta
+biz_106	ee tuần rồi dthu ca chiều chênh ca sangs nhiêu %
+biz_118	Xét 3 tháng 10/2025, 11/2025 và 12/2025, doanh thu tháng nào lớn nhất?
+biz_106	Trong tháng 7/2026, bao nhiêu đơn có tiền hàng đạt 130.000 đồng trở lên nhỉ?
+biz_127	tháng 2/2026 cửa hàng có bao nhiu % đơn bị huỷ vậy
+biz_123	hàng nào hết hạn trong 120 ngày tới, từ 28/06/2026 đến hết 26/10/2026, mà hiện vẫn còn tồn kho
+biz_122	Tháng 5/2026 doanh thu thay đổi bao nhiêu % so với tháng liền trước?
+biz_103	So với cùng kỳ tháng trước, dthu từ đầu tháng này đến hết hnay tăng hay giảm bao nhiêu %
+biz_128	Tháng 9/2025 tổng giá trị các phiếu nhập hàng là bao nhiêu?
+biz_118	giai đoạn từ 13/03/2026 đến hết 19/03/2026 có tổng cộng mấy mặt hàng ế, bán không đc cái nào
+biz_128	tồn kho bia tiger lon cuối ngày hôm nay là bnhiu lon
+biz_115	Doanh thu của Nước khoáng Lavie 19L trong tháng 7 năm 2025 là bao nhiêu nhỉ?
+biz_130	Số đĩa Gỏi khoai môn hải sản bán đc trong tháng 7/2025 là bao nhiêu?
+biz_128	dthu bữa nay là bn
+biz_105	Cho mình biết doanh thu tháng 1/2026.
+biz_121	Doanh thu nhóm hàng ho cảm cúm tháng 11 năm 2025 là bao nhiêu?
+biz_123	Tổng doanh thu quý 3/2025 là bao nhiêu?
+biz_120	ê dthu tháng 2/2025 hơn hay kém th trước bn %
+biz_119	tổng tieenf nhập hàng tháng này là bnhiu
+biz_106	Tháng 10/2025 cửa hàng bán được tổng cộng bao nhiêu tiền vậy?
+biz_130	Từ đầu năm đến hết hôm nay cửa hàng có bao nhiêu đơn hàng vậy?
+biz_124	Bao nhiêu % khách trong tháng 2/2026 mua từ 6 đơn trở lên
+biz_119	Trong tháng 10/2025, Gaviscon hộp 24 gói x 10ml nhập vào giá bình quân một hộp là bao nhiêu nhỉ?
+biz_105	tổng tiền hàng nhập vào tháng 3/2026 là bnhiu
+biz_111	cửa hàng bán được bao nhiêu đơn trong quý 3 năm 2025
+biz_130	doanh thu từ đầu năm tới heets hnay là bao nhiêu nhỉ
+biz_119	Giá nhập bình quân một hộp Efferalgan 500mg viên sủi hộp 4 vỉ x 4 viên trong tháng 2 năm 2026 là bao nhiêu vậy?
+biz_107	Tháng 1/2026 mặt hàng Nếp cái hoa vàng bán được tổng cộng bao nhiêu kg?
+biz_123	Đến hết ngày 04/12/2025, số tiền còn nợ chia theo tuổi nợ 0–7, 8–15 và trên 15 ngày là bao nhiêu?
+biz_109	Cho tôi biết số đơn hôm qua.
+biz_129	Tháng 4/2025 nhóm nướng chiếm bao nhiêu % doanh thu?
+biz_130	tháng 7/2025 có bao nhiêu mặt hàng xuaats hiện trong its nhất 202 đơn
+biz_121	tháng 12/2025 thuốc kê đơn chiếm bao nhiu % dthu của nhà thuoocs ta
+biz_120	Thuốc có hoạt chất Ibuprofen tháng 9/2025 bán được tổng cộng bao nhiêu tiền?
+biz_121	so số ống Calcium Corbière Extra 10ml hộp 30 ống bán ra trong 30 ngày kể từ ngày 11/05/2026, ngày tăng giá lên 7.100đ, vs 30 ngày ngay trước ngày đó: tăng hay giảm nhiêu %
+biz_126	Tổng dthu hôm qua là bao nhiêu?
+biz_104	Tính riêng ngày hôm nay, cửa hàng bán được bao nhiêu đơn hàng?
+biz_124	Trong tháng 2/2026, nhân viên nào có doanh thu cao nhất?
+biz_114	Tháng 2/2025 mặt hàng Keo dán ống PVC Bình Minh 200g bán được tổng cộng bao nhiêu lon?
+biz_128	Top 5 khách hàng mua nhiều tiền nhất tháng 5/2026 là ai?
+biz_124	Tháng 11/2025 nhóm tiêu hoá chiếm bao nhiêu % doanh thu?
+biz_123	Xem giúp 3 khách hàng có tổng tiền mua cao nhất tuần rồi là ai?
+biz_124	Tháng 11/2025 mặt hàng nào bán chạy nhất?
+biz_123	Tỉ lệ dthu thuốc kê đơn trên tổng doanh thu tháng này là bao nhiêu %?
+biz_122	Xem giúp thuốc có hoạt chất Vitamin C tháng 2/2025 bán được tổng cộng bao nhiêu tiền?
+biz_105	tháng 11/2025 cuwar hangf có bn % đơn bị huỷ nhỉ
+biz_104	Tháng 6/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_122	Doanh thu từ đầu tháng này đến hết hôm nay hơn hay kém cùng kỳ tháng trước bao nhiêu phần trăm?
+biz_104	Hôm nay bán đc mấy đơn?
+biz_117	Trong tháng 3 năm 2025, số đơn có dthu ≥ 590.000 đồng là bao nhiêu?
+biz_115	Cho hỏi tháng 4/2026 mặt hàng Dây điện Cadivi CV 2.5 cuộn 100m bán được tổng cộng bao nhiêu cuộn?
+biz_121	Tồn kho Air-X 80mg viên nhai hộp 10 vỉ x 10 viên cuối ngày hôm nay được mấy vỉ chẵn và mấy viên lẻ?
+biz_125	Tháng 11/2025 bán ra bao nhiêu nồi Lẩu gà lá é?
+biz_103	30 ngày gần nhất có tổng cộng bao nhiêu đơn?
+biz_119	Cho mình biết doanh thu tháng 4/2025.
+biz_129	Tính riêng ngày hôm nay, cửa hàng bán đc bao nhiêu đơn?
+biz_130	thangs 1/2026 bán nghêu hấp sả đc nhiêu tieenf
+biz_127	Tháng 12/2025 khách trả nợ cho các đơn đã mua chịu tổng cộng bao nhiêu tiền?
+biz_112	Xem giúp quán bán được bao nhiêu ly size M trong tháng 6/2025, cộng mọi món?
+biz_107	ee cho tôi bieets dthu bữa qua
+biz_124	tính đến hết ngày 17/01/2026, phân tuổi nợ còn lại theo 3 nhóm 0–7 ngày, 8–15 ngày, trên 15 ngày: mỗi nhóm bn tiền
+biz_109	Liệt kê doanh thu 3 tháng liên tiếp từ tháng 2/2025 đến tháng 4/2025, theo thứ tự thời gian.
+biz_108	Cho mình biết doanh thu tháng 3/2025.
+biz_128	Quý 1 năm 2026 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_120	Doanh thu thuốc hoạt chất Paracetamol + Phenylephrin + Clorpheniramin tháng 1/2025 là bao nhiêu?
+biz_126	Doanh thu tháng 4/2026 bao nhiêu?
+biz_127	Đếm số đơn đã huỷ trong tháng 1/2026.
+biz_111	xem giúp tháng 4/2026 tỉ lệ đơn bị huỷ là bn phần trăm ta
+biz_116	3 khách hàng có tổng tiền mua cao nhất tháng 3/2026 là ai?
+biz_122	Tháng 7/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_105	trà vải (l) đổi giá từ 45.000đ lên 47.000đ vào ngày 24/05/2026. 30 ngày kể từ ngày đó bán được nhiều hay ít hơn 30 ngày liền trước bn %, tính theo ly nhỉ
+biz_109	Cho hỏi tháng này, doanh thu các đơn bán qua điện thoại là bao nhiêu, doanh thu các đơn bán tại quầy là bao nhiêu?
+biz_102	check giùm dthu ngày nào cao nhất trong tháng 2 năm 2026
+biz_127	trong tháng này, tiền khách trar bớt nợ các đơn mua chịu dc bao nhiêu
+biz_103	Liệt kê 3 khách chi tiêu nhiều nhất tuần rồi.
+biz_118	so số cái cb panasonic mcb 2P 20A bán ra trong 14 ngày kể từ ngày 01/02/2026, ngày tăng giá leen 209.500đ, vs 14 ngày ngay trc ngày đó: tăng hay giamr bao nhiêu %
+biz_106	Tính đến hết ngày 16/12/2025, khách hàng còn nợ cửa hàng tổng cộng bao nhiêu tiền?
+biz_125	Xem giúp ngày 15/04/2025 cửa hàng bán Ếch chiên nước mắm với đơn giá bao nhiêu một đĩa?
+biz_128	Tháng 4/2025 bị huỷ mấy đơn?
+biz_102	Ngày 01/11/2025 cửa hàng bán Kem đánh răng P/S 180g với đơn giá bao nhiêu một hộp?
+biz_119	Tháng này nhà thuốc thu được bao nhiêu tiền từ các thuốc có hoạt chất Paracetamol?
+biz_123	Tháng 6/2025 tổng giá trị các phiếu nhập hàng là bao nhiêu nhỉ?
+biz_102	Trong tháng 2/2025, tỉ lệ đơn huỷ là bao nhiêu phần trăm?
+biz_123	tháng 11/2025, dthu các đơn bán qua điện thoaij chiếm bao nhiêu % tổng doanh thu
+biz_105	Tuần trước ca chiều so với ca sáng thì doanh thu chênh bao nhiêu %?
+biz_116	Tháng 7/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_107	Cho tôi biết dthu tháng 1/2026.
+biz_124	tổng doanh thu tháng 5 năm 2025 là bao nhiêu
+biz_117	Từ đầu tháng này đến hết hnay, doanh thu hơn hay kém cùng kỳ tháng trước mấy %?
+biz_116	xem giúp trong giai đoạn từ 05/10/2025 đến hết 11/10/2025, bnhiu mặt hàng bị ế
+biz_102	hqua dthu được bao nhiêu?
+biz_123	Tháng 4/2026, doanh thu các đơn trả bằng COD và các đơn trả bằng ví điện tử mỗi loại bao nhiêu ạ?
+biz_108	Xem giúp so với tháng trước đó, doanh thu tháng 2/2025 tăng hay giảm mấy phần trăm?
+biz_122	dthu thuốc hoạt chất Paracetamol tháng 10/2025 là bao nhiêu?
+biz_108	Khách mua nhiều tiền nhất tháng 1/2026 là ai?
+biz_127	So với tháng trước đó, doanh thu tháng 11/2025 tăng hay giảm mấy phần trăm?
+biz_118	Tháng 2/2026 nhóm điện bán được bao nhiêu tiền?
+biz_117	Cho mình hỏi ngày 30/01/2025 Nước tinh khiết Bidrico 20L tăng giá từ 45.000đ lên 47.000đ. Số bình bán được trong 7 ngày kể từ ngày đó so với 7 ngày trước đó thay đổi bao nhiêu %?
+biz_111	Doanh thu từ khách nhóm thân thiết tháng 4/2026 là bao nhiêu?
+biz_128	Tổng doanh thu tháng 4 năm 2026 là bao nhiêu?
+biz_127	Tháng 12/2025 cửa hàng bán đc tổng cộng bao nhiêu tiền
+biz_111	Xem giúp giá trị trung bình một đơn tháng 11/2025 là bao nhiêu?
+biz_119	Cho mình hỏi trong tháng 2/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_119	Doanh thu thuốc hoạt chất Natri clorid tháng này là bao nhiêu?
+biz_102	Trung bình mỗi đơn tháng 4/2026 mang về bao nhiêu doanh thu?
+biz_122	Đếm số ngày trong tháng 3 năm 2026 mà doanh thu cả ngày từ 7.900.000 đồng trở lên.
+biz_117	Trong số khách đã mua hàng tháng 3/2026, bao nhiêu phần trăm mua từ 4 đơn trở lên?
+biz_104	Doanh thu tháng 4 năm 2026 tăng trưởng bao nhiêu % so với tháng 4 năm 2025?
+biz_116	Cho mình biết doanh thu tháng 12/2025.
+biz_119	Cho tôi 3 khách mua nhiều tiền nhất tháng 9/2025.
+biz_115	Nhóm cát đá tháng 3/2025 bán đc bao nhiêu tiền
+biz_106	Hàng nào hết hạn trong 120 ngày tới, từ 14/09/2026 đến hết 12/01/2027, mà hiện vẫn còn tồn kho vậy?
+biz_122	Doanh thu có tăng liên tục qua 3 tháng 12/2025, 1/2026, 2/2026 không?
+biz_112	tháng 8/2025 bán ra bao nhiêu ly trà đào cam sả (m) ta
+biz_128	Hôm 26/12/2025, Tôm sốt Thái bán ra với đơn giá bao nhiêu tiền một đĩa?
+biz_111	dthu nhóm hàng sinh tố chiếm bao nhiêu % tổng doanh thu tháng 6 năm 2025
+biz_102	Hôm qua doanh thu được bao nhiêu?
+biz_122	Tổng doanh thu tháng 3 năm 2026 là bao nhiêu ạ?
+biz_117	tuần trc doanh thu bình quân mỗi đơn hàng là bao nhiêu
+biz_101	Tháng 10/2025 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_109	Tuần trước riêng ca chiều bán được tổng cộng bao nhiêu tiền nhỉ?
+biz_107	Mặt hàng bán chạy nhất tháng 3 năm 2025 là mặt hàng nào ạ?
+biz_102	Cho tôi biết doanh thu tháng 4/2025.
+biz_104	5 khách hàng có tổng tiền mua cao nhất tháng 9/2025 là ai?
+biz_130	Tháng 6/2026 nhóm nướng chiếm bao nhiêu % doanh thu?
+biz_116	hnay cửa hàng bán đc bao nhiêu tiền
+biz_116	Xem giúp giá bán một bộ Công tắc 1 chiều Panasonic Wide kèm mặt vào ngày 09/05/2026 là bao nhiêu?
+biz_110	Cho tôi biết số đơn hqua.
+biz_106	dthu các đơn trả bằng chuyển khoản tháng 9/2025 là bao nhiêu?
+biz_102	Tháng 4 năm 2025, 5 khách nào chi tiêu nhiều nhất?
+biz_130	Cho hỏi tháng 4/2026 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_129	giá trị trung bình một đơn tháng 4/2026 là bao nhieeu
+biz_117	Top 5 khách hàng mua nhiều tiền nhất tuần rồi là ai?
+biz_129	Trong tháng 10/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_124	Tháng 3/2025 nhóm mắt mũi họng bán được bao nhiêu tiền?
+biz_130	Tổng dthu tuần này là bao nhiêu
+biz_104	Trong quý 4 năm 2025, doanh thu của cửa hàng được bao nhiêu tiền?
+biz_101	Mặt hàng bán chạy nhất tháng 6 năm 2026 là mặt hàng nào vậy?
+biz_110	Tổng doanh thu trong ngày hôm nay là bao nhiêu?
+biz_128	Nhóm khai vị tháng 7/2026 bán được bao nhiêu tiền?
+biz_125	Cho hỏi mặt hàng bán chạy nhất tháng 1 năm 2026 là mặt hàng nào?
+biz_124	cho hoir giá trị trung bình một đơn tháng 5/2025 laf bao nhiu
+biz_127	Giá trị trung bình một đơn tháng 8/2025 là bao nhiêu?
+biz_122	Tháng 1/2025 có bao nhiêu ngày đạt dthu từ 8.600.000 đồng trở lên?
+biz_117	Trong tháng 12/2025, bao nhiêu đơn có tiền hàng đạt 3.100.000 đồng trở lên?
+biz_118	Cho tôi biết doanh thu 7 ngày gần nhất.
+biz_121	Xem giúp tháng 8/2025 mặt hàng Blackmores Bio C 1000mg hộp 31 viên bán được tổng cộng bao nhiêu hộp?
+biz_108	Cho mình hỏi tuần trước ca chiều so với ca sáng thì doanh thu chênh bao nhiêu %?
+biz_112	Cho mình hỏi tháng 5/2026 mặt hàng Trà vải (M) thu về bao nhiêu tiền?
+biz_124	Trong tháng 5/2025, tiền khách trả bớt nợ các đơn mua chịu được bao nhiêu?
+biz_107	Tháng 9/2025 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_106	Giúp mình tính đến hết ngày 29/10/2025, 3 khách nào đang nợ nhiều nhất, mỗi người còn nợ bao nhiêu?
+biz_128	Tính doanh thu các đơn do khách nhóm thân thiết mua tháng 11/2025.
+biz_109	dem so mat hang co mat o ≥ 112 don khac nhau trong thang 10/2025
+biz_128	Tháng 9/2025 bán ra bao nhiêu đĩa Sò huyết xào me vậy?
+biz_117	ê tháng 4/2026 bán bay thợ hồ total 160mm được nhiêu tiền
+biz_105	check giùm khách hay khen nhân viên nào nhất
+biz_120	Xem giúp hết hôm nay, Băng cá nhân Urgo Transparent hộp 100 miếng còn lại mấy miếng trong kho?
+biz_116	Tháng 7/2025 top 3 hàng bán chạy nhất là gì?
+biz_104	Tháng 3/2026 doanh thu thay đổi bao nhiêu % so với tháng liền trước?
+biz_119	tháng 3/2025 tiền bán thuốc kê đơn chiếm mấy % tổng doanh thu
+biz_109	Giúp mình tính đến hết ngày 14/06/2025, có bao nhiêu khách còn nợ cửa hàng?
+biz_121	Từ ngày 17/06/2026, Clarityne 10mg hộp 1 vỉ x 10 viên tăng giá lên 7.800đ. So 7 ngày kể từ ngày 17/06/2026 với 7 ngày ngay trước đó, số viên bán ra thay đổi bao nhiêu phần trăm nhỉ?
+biz_111	trung bình mooix đơn tháng 6/2026 mang về bao nhiu dthu
+biz_115	Doanh thu trung bình trên một đơn tháng 11/2025 là bao nhiêu?
+biz_105	Nhà cung cấp nào được cửa hàng nhập hàng nhiều tiền nhất tháng này vậy?
+biz_124	Hàng nào có tổng lãi gộp cao nhất tháng 4/2025 vậy?
+biz_104	Tháng 9/2025 bán Topping Kem cheese được bao nhiêu tiền vậy?
+biz_122	tính riêng ngày hôm nay, dthu của cửa hàng dc nhiêu tiền ta
+biz_127	Tháng 2/2026, doanh thu các đơn bán qua điện thoại chiếm bao nhiêu phần trăm tổng doanh thu?
+biz_103	So với cùng kỳ tháng trước, dthu từ đầu tháng này đến hết hnay tăng hay giảm bao nhiêu %
+biz_118	Trong tháng 5/2026, nhóm xi măng đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_123	tháng này khách quách bình anh ghi nợ thêm bao nhiu và trả nợ đươc bao nhiêu? ghi hai số theo thứ tự: nợ thêm, trả được
+biz_121	dthu từ đầu năm tới hết hnay là bao nhiêu?
+biz_128	dthu tháng 8/2025 hơn hay kém tháng trước bao nhiêu phần trăm?
+biz_108	check giùm nhân viên mã NV003 tháng 9/2025 bán được tổng cộng bn tiền
+biz_127	dthu trung bình trên một đơn tháng 2/2026 là bao nhiêu?
+biz_119	Tháng 5/2026 mặt hàng Clarityne 10mg hộp 1 vỉ x 10 viên thu về bao nhiêu tiền?
+biz_129	thangs 3/2026 món cơm chiên dương châu thu về bnhiu tieenf
+biz_114	check giùm sp bán dc nhieeuf nhất trong tháng 5 năm 2026 là chi
+biz_129	Giúp mình đếm số đơn đã huỷ trong tháng 6/2025.
+biz_120	Tỉ trọng doanh thu các đơn bán qua Zalo OA trong tổng doanh thu tháng này là bao nhiêu phần trăm ạ?
+biz_104	khách mua nhìu tiền nhất tháng 1/2026 là ai z
+biz_105	Từ đầu năm đến hết hôm nay cửa hàng bán được bao nhiêu tiền?
+biz_122	tháng 10/2025 tiền bán thuốc kê đơn chiếm mấy % tổng doanh thu hả
+biz_111	Tháng 9/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_107	Tổng doanh thu quý 1/2026 là bao nhiêu?
+biz_126	Xem giúp tổng doanh thu hôm qua là bao nhiêu?
+biz_120	hnay cửa hàng bán đc bao nhiêu tiền?
+biz_121	Cho mình hỏi cuối ngày hôm nay Cetirizin 10mg Domesco hộp 10 vỉ x 10 viên trong kho còn bao nhiêu vỉ chẵn, lẻ bao nhiêu viên?
+biz_128	giá nhập bình quân một thùng Bia Tiger lon trong tháng 3 năm 2026 là bao nhiêu
+biz_116	Cộng mọi mặt hàng tính theo bình, hôm qua bán ra đc mấy bình?
+biz_126	cho tooi biết dthu bữa qua
+biz_122	Đếm số ngày trong tháng 6 năm 2026 mà dthu cả ngày từ 8.600.000 đồng trở lên.
+biz_124	hnay kho còn tồn bao nhiêu chai Siro ăn ngon Ích Nhi Plus chai 100ml lúc cuối ngày?
+biz_103	soos kg nếp cái hoa vàng bán đươc trong thangs 9/2025 là bn
+biz_127	Tháng 4/2026 bán Bò lá lốt nướng được bao nhiêu tiền?
+biz_108	Tính doanh thu các đơn do khách nhóm thân thiết mua tháng 3/2026.
+biz_103	Doanh thu 3 tháng liền nhau kết thúc ở tháng 11/2025 là bao nhiêu mỗi tháng, từ tháng cũ đến tháng mới?
+biz_118	dthu trung bình trên một đơn tháng 1/2026 là bao nhiêu?
+biz_116	Cho mình biết số đơn hôm qua.
+biz_124	Xem giúp trừ hết chi phí rồi thì tháng 1/2025 còn lãi ròng bao nhiêu?
+biz_121	Khách nào chi nhiều tiền nhất cho cửa hàng trong tháng 2/2025?
+biz_118	doanh thu trung bình trên một đơn tháng 7/2026 là bn
+biz_112	7 ngày gần nhất cửa hàng có bnhiu bill
+biz_108	Tháng 6/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_113	tháng 5/2026 cửa hàng bán đươc tổng cộng bn tiền
+biz_129	Cho hỏi tháng 1/2025 bán ra bao nhiêu đĩa Ba chỉ chiên cháy cạnh?
+biz_120	dthu tháng 4/2026 hown hay kém th trước bao nhiêu % vậy
+biz_129	Xem giúp tháng 1/2026 top 3 hàng bán chạy nhất là gì?
+biz_123	trong tháng này, tỉ lệ đơn huỷ là bao nhiu %
+biz_111	Tỉ trọng của nhóm trà sữa trong doanh thu tháng 2/2026 là bao nhiêu %?
+biz_104	Tháng 4/2025 quán bán được bao nhiêu ly size M?
+biz_106	top 3 khách có công nợ lớn nhất đến hết ngày 14/09/2026 và số nợ cuar từng nguwowif
+biz_106	tháng 5/2026 quán bán ra total mấy ly size M, cộng tất cả các món
+biz_109	Tháng 6/2026 khách Tô Phúc Huy ghi nợ thêm bao nhiêu và trả nợ đc bao nhiêu? Ghi hai số theo thứ tự: nợ thêm, trả được.
+biz_105	Cho mình hỏi tháng 5/2026 riêng ca sáng bán được tổng cộng bao nhiêu tiền?
+biz_106	Tháng 7/2025, Võ Thảo Khánh ghi nợ thêm bao nhiêu tiền và đã trả nợ được bao nhiêu?
+biz_109	coi giùm so vs tháng liền trc, dthu tháng 4 năm 2025 thay đổi bao nhiêu %
+biz_118	Xem giúp tháng 3/2026 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_116	đếm giúp tôi số mặt hàng ế đến mức trong giai đoạn từ 11/11/2025 đến hết 17/11/2025 không bans dc lần nào
+biz_116	dthu trung bình trên một đơn tháng 6/2025 là bao nhiêu
+biz_124	Tháng 1/2025 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_128	Tháng 8/2026 doanh thu thay đổi bao nhiêu % so với tháng liền trước ạ?
+biz_129	Tháng 6/2026 khách trả nợ cho các đơn đã mua chịu tổng cộng bao nhiêu tiền?
+biz_123	Hết ngày 28/06/2026, số hàng còn trong kho đáng bao nhiêu tiền, tính theo giá vốn?
+biz_117	cho bảng 3 khách còn nợ nhìu nhất tính đến hết ngày 20/05/2026, kèm số tiền còn nợ
+biz_108	Nhân viên mã NV002 tháng 9/2025 bán được tổng cộng bao nhiêu tiền nhỉ?
+biz_112	Tháng 3/2026 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_124	coi giùm Cefuroxim 500mg Vidipha hộp 10 vỉ x 10 viên tăng giá lên 3.600đ: so 30 ngày kể từ ngày tăng vs 30 ngày ngay trc thì số viên bán ra tăng hay giảm bao nhiêu %
+biz_108	Hôm nay cửa hàng có bao nhiêu đơn?
+biz_128	Hôm qua có tổng cộng bao nhiêu đơn?
+biz_112	Bao nhiêu khách mua ít nhất 11 đơn trong tháng 10 năm 2025?
+biz_120	Hôm qua doanh thu được bao nhiêu?
+biz_119	Giá trị trung bình một đơn tháng 4/2026 là bao nhiêu?
+biz_123	đến hết ngày 21/06/2025, cửa hàng còn bao nhiu khách chưa trả hết nợ
+biz_109	trong tháng 3/2025, khách Giang Phương Thu mua chịu thêm nhiêu và trả bớt nợ được bao nhiêu? Trả lời hai số: nợ thêm, trả được
+biz_118	cho hỏi tháng 7/2025 có tổng cộng bao nhiu đợt giao hàng z
+biz_107	Tháng 5/2026 bán Xúc xích Vissan 5 cây được bao nhiêu tiền?
+biz_124	Cho mình 5 khách mua nhiều tiền nhất tháng 6/2025.
+biz_124	số đơn từ đầu nawm tới hết bữa nay là bao nhiêu
+biz_128	Tổng tiền hàng nhập vào tháng 12/2025 là bao nhiêu?
+biz_124	Kể từ khi Prospan siro ho chai 100ml lên giá 97.500 đồng/chai, 14 ngày đầu bán đc nhiều hay ít hơn 14 ngày liền trước đó bao nhiêu phần trăm, tính theo số chai?
+biz_127	Tháng 3/2026 doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_122	Thuốc có hoạt chất Povidon iod tháng này bán đc tổng cộng bao nhiêu tiền
+biz_121	dthu từ đầu năm tới hết hnay là bao nhiêu
+biz_115	Đếm giúp tôi số mặt hàng bán chậm đến mức trong giai đoạn từ 06/05/2025 đến hết 12/05/2025 không bán được lần nào.
+biz_119	tổng dthu tháng 4 năm 2026 là bao nhiêu
+biz_104	So cùng kỳ năm trước, doanh thu tháng 5/2026 tăng/giảm mấy phần trăm vậy?
+biz_110	Xem giúp doanh thu ngày nào cao nhất trong tháng 5 năm 2026?
+biz_124	Từ hồi Prospan siro ho chai 100ml lên giá 97.500đ, so 30 ngày kể từ ngày đổi giá với 30 ngày trước đó, trung bình mỗi ngày số chai bán ra tăng hay giảm bao nhiêu %?
+biz_104	trong tháng 3/2026, tỉ lệ đơn huỷ là nhiêu %
+biz_125	hqua cửa hàng bán được bao nhiêu tiền
+biz_128	Cho tôi biết doanh thu tháng 8/2025.
+biz_109	Tháng 4/2026 giá nhập bình quân một thùng Mì Hảo Hảo tôm chua cay là bao nhiêu?
+biz_112	nước ép cam (l) đổi gias từ 45.000đ lên 47.000đ vào ngày 15/08/2025. 14 ngày kể từ ngày đó bán được nhìu hay ít hơn 14 ngày liền trc bnhiu %, tính theo ly đó
+biz_117	ddeems soos đợt giao hàng trong tháng 3/2025
+biz_126	xem giúp dthu của Lẩu nấm hải sản trong tháng 5 năm 2025 là bn
+biz_117	Tháng 8/2025 bán ra bao nhiêu m Tôn lạnh Hoa Sen 0.4mm?
+biz_121	Cho hỏi tháng này thuốc kê đơn chiếm bao nhiêu phần trăm doanh thu của nhà thuốc?
+biz_121	Cho tôi dthu của tháng 2/2026, tháng 3/2026 và tháng 4/2026, ghi lần lượt theo thứ tự đó
+biz_123	So với tháng trước đó, doanh thu tháng 3/2026 tăng hay giảm mấy phần trăm?
+biz_108	Doanh thu tháng 2/2026 bao nhiêu?
+biz_127	So với tháng liền trước, doanh thu tháng 6 năm 2026 thay đổi bao nhiêu %?
+biz_105	thangs 3/2025 tiền nhập hàng từ nhà cung cấp nào cao nhất
+biz_117	doanh thu từ đầu tháng này đến hết bữa nay hơn hay kém cùng kỳ tháng rồi bnhiu %
+biz_107	Tổng dthu tháng 7 năm 2025 là bao nhiêu
+biz_130	doanh thu 30 ngày gần nhất của cửa hàng là bao nhiêu
+biz_122	trong tháng 9/2025, xét theo dthu, ngày naof bán đắt nhất
+biz_127	Hôm qua cửa hàng bán được bao nhiêu tiền?
+biz_122	thangs 2/2025 tỉ lệ đơn bị huỷ là bn phần trawm
+biz_111	số đơn bị huỷ trong tháng 8 năm 2025 là bao nhiêu
+biz_124	Khách mua nhiều tiền nhất tháng 7/2025 là ai?
+biz_126	Tháng 8/2025 bán ra bao nhiêu đĩa Lòng mề gà xào sa tế ạ?
+biz_105	Cho tôi doanh thu của tháng 8/2025, tháng 9/2025 và tháng 10/2025, ghi lần lượt theo thứ tự đó.
+biz_102	Tính riêng ngày hôm nay, cửa hàng bán được bao nhiêu đơn hàng?
+biz_119	Tháng 2/2026 giá nhập bình quân một hộp Phosphalugel hộp 26 gói là bao nhiêu?
+biz_120	Tồn kho Plusssz Max Multivitamin viên sủi tuýp 20 viên cuối ngày hôm nay là bao nhiêu tuýp vậy?
+biz_127	Cho tôi doanh thu các đơn bán qua điện thoại và doanh thu các đơn bán qua Zalo OA tháng 7/2025.
+biz_105	Cho mình hỏi từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bao nhiêu % so với cùng kỳ tháng trước?
+biz_116	tháng 8/2026 cửa hàng bán được tổng cộng bn tiền z
+biz_108	tỉ trọng của nhóm sữa trong dthu thangs 6/2025 laf bao nhiêu %
+biz_112	tuần nayf dthu đươc bao nhiêu
+biz_127	Cho hỏi hôm nay bán được mấy đơn hàng?
+biz_102	Tổng doanh thu hôm qua là bao nhiêu?
+biz_107	ngày nào trong thangs 8/2025 dthu cao nhất
+biz_111	Doanh thu tháng 2/2026 so với cùng kỳ năm ngoái thay đổi bao nhiêu phần trăm?
+biz_107	dthu ngày nào cao nhất trong tháng 6 năm 2025
+biz_112	tháng 7/2025 nhóm nước ép bán dc bao nhiu tiền
+biz_120	tháng này nhà thuốc thu dc bn tiền từ các thuốc có hoạt chất povidon iod
+biz_121	Ngày 29/07/2025 Prospan siro ho chai 100ml tăng giá từ 93.000đ lên 97.500đ. Số chai bán đc trong 30 ngày kể từ ngày đó so với 30 ngày trước đó thay đổi bao nhiêu %?
+biz_105	Xem giúp từ đầu tháng này đến hết hôm nay, doanh thu hơn hay kém cùng kỳ tháng trước mấy %?
+biz_111	trong tháng 7 năm 2025 cửa hàng bán được mấy ly Nước ép dưa hấu (L)
+biz_114	Tháng 1/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_128	dthu tháng 10/2025 bao nhiêu?
+biz_123	Cho hỏi tháng 4/2026 giá nhập bình quân một hộp Panadol Extra hộp 15 vỉ x 12 viên là bao nhiêu?
+biz_115	Tỉ trọng của nhóm điện trong dthu tháng 4/2025 là bao nhiêu %?
+biz_121	tính đến cuối ngày hôm nay, trong kho còn mấy lọ V.Rohto Vitamin nhỏ mắt lọ 13ml vậy
+biz_123	ee cho tôi biết dthu thangs 12/2025
+biz_103	Tháng 1/2026 ai là khách mua nhiều lần nhất, tính theo số đơn?
+biz_121	Số hộp Doppelherz Ginkgo hộp 30 viên bán đc trong tháng 4/2025 là bao nhiêu?
+biz_129	So với tháng trước đó, dthu tháng 6/2025 tăng hay giảm mấy phần trăm?
+biz_119	tháng 1/2025 cửa hàng bỏ ra bnhiu tiền nhập hàng
+biz_117	Trong tháng 10 năm 2025, số khách mua ít nhất 4 đơn là bao nhiêu?
+biz_103	Giá trị trung bình một đơn tuần trước là bao nhiêu?
+biz_122	Povidine 10% chai 90ml lên giá 19.000đ từ ngày 14/03/2026; so 7 ngày kể từ ngày tăng giá với 7 ngày ngay trước, lượng bán tính theo chai tăng hay giảm nhiêu %
+biz_106	Tháng này, doanh thu từ khách nhóm thân thiết chiếm bao nhiêu phần trăm tổng doanh thu của cửa hàng vậy?
+biz_116	tháng 3/2026 có bao nhiêu bill bị huỷ
+biz_103	Doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu phần trăm so với cùng kỳ tháng trước nhỉ?
+biz_104	Tháng 12/2025 quán bán được bao nhiêu ly size L?
+biz_127	Tính đến hết ngày 28/07/2026, 5 khách nào đang nợ nhiều nhất, mỗi người còn nợ bao nhiêu?
+biz_123	Dịp Tết 2026, mặt hàng nào bán chạy nhất ạ?
+biz_112	Tháng 4/2025 quán bán ra tổng cộng mấy ly size M, cộng tất cả các món vậy?
+biz_105	Xem giúp trong tháng 5 năm 2025, số đơn có doanh thu ≥ 55.000 đồng là bao nhiêu?
+biz_112	coi gium so so ly Nuoc ep dua hau (L) ban ra trong 14 ngay ke tu ngay 25/11/2025, ngay tang gia len 45.000đ, voi 14 ngay ngay trc ngay do: tang hay giam bao nhieu % ta
+biz_124	Tháng 3/2026, doanh thu từ khách nhóm thân thiết chiếm bao nhiêu phần trăm tổng doanh thu của cửa hàng?
+biz_105	Giá trị trung bình một đơn tháng 9/2025 là bao nhiêu?
+biz_120	trong tháng 5 năm 2026 cuwar hàng bán dduwowcj mấy chai Siro ho cảm Ích Nhi chai 90ml ta
+biz_121	Cho mình 3 mặt hàng bán chạy nhất tuần rồi.
+biz_111	tính đến hết ngày 19/08/2026, khách hàng còn nowj cửa hàng tổng cộng bao nhiêu tiền
+biz_109	Trong tháng 12 năm 2025, số khách mua ít nhất 3 đơn là bao nhiêu?
+biz_117	Cho mình hỏi tháng 11/2025 tiền nhập hàng từ nhà cung cấp nào cao nhất?
+biz_123	Tháng 6/2025 các mặt hàng nhóm vitamin khoáng chất thu đc tổng cộng bao nhiêu tiền?
+biz_122	Cho hỏi cuối ngày hôm nay Savi Losartan 50mg hộp 3 vỉ x 10 viên còn mấy hộp chẵn, mấy viên lẻ?
+biz_107	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_124	coi giumf nhà cung cấp nào có tổng tiền nhaapj hàng lớn nhất tháng 4/2025
+biz_119	dthu trung bình trên một đơn tháng 2/2026 là bao nhiêu?
+biz_128	Tháng 7/2026 bán Cánh gà chiên nước mắm được bao nhiêu tiền?
+biz_114	hqua cos tổng cộng nhiêu ddown
+biz_111	trong toongr dthu tháng 8/2025, revenue các ddown bán qua zalo oa chiếm nhiêu %
+biz_108	Cho tôi biết doanh thu tháng 5/2025.
+biz_122	Tháng 1/2026 mặt hàng nào bán chạy nhất?
+biz_119	Doanh thu thuốc hoạt chất Paracetamol tháng 9/2025 là bao nhiêu?
+biz_112	Cho mình hỏi doanh thu từ đầu năm tới hết hôm nay là bao nhiêu?
+biz_129	tỉ lệ huỷ đơn tháng 9/2025 laf nhiêu %
+biz_111	check giùm tổng dthu tháng 3 năm 2026 là bn
+biz_127	Tháng 5/2026 có bao nhiêu đơn bị huỷ?
+biz_130	trong tháng 7 năm 2026, số đơn có doanh thu ≥ 1.100.000 đồng là bnhiu
+biz_106	xem giúp tháng 3 năm 2026, 3 khách nào chi tiêu nhìu nhất
+biz_122	Xem giúp doanh thu nhóm hàng dùng ngoài chiếm bao nhiêu phần trăm tổng doanh thu tháng 7 năm 2025?
+biz_127	bữa qua cuwar hàng bán đươc bn tiền vaayj
+biz_120	tổng doanh thu tháng 9 năm 2025 là bao nhiêu
+biz_119	tỉ lệ huỷ đơn tháng 2/2026 là bao nhiêu %
+biz_103	dthu tuần rồi của cửa hàng là bao nhiêu
+biz_119	check giùm giá bán mootj chai dầu gió xanh con ó chai 12ml vaof ngày 16/01/2026 là bnhiu
+biz_117	trung bình mỗi đơn tuần rồi mang veef bao nhiu dthu
+biz_122	check giùm tháng 12/2025 nhóm dùng ngoài bán đươc bn tieenf
+biz_106	Giá trị trung bình một đơn tháng 9/2025 là bao nhiêu?
+biz_118	Doanh thu tháng 8/2026 hơn hay kém tháng trước bao nhiêu phần trăm?
+biz_130	Doanh thu tháng 5/2026 bao nhiêu?
+biz_106	Doanh thu từng tháng của 3 tháng 11/2025, 12/2025, 1/2026 lần lượt là bao nhiêu?
+biz_102	Tháng này tỉ lệ đơn bị huỷ là bao nhiêu phần trăm nhỉ?
+biz_119	Xem giúp tồn kho Efferalgan 500mg viên sủi hộp 4 vỉ x 4 viên cuối ngày hôm nay là bao nhiêu viên?
+biz_127	Tháng 7/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_111	Cho mình hỏi số ly Sinh tố xoài (M) bán được trong tháng 1/2026 là bao nhiêu?
+biz_128	Tháng 5/2025 bị huỷ mấy đơn vậy?
+biz_111	Tháng 1/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_117	Ca sáng tháng 5/2025 doanh thu được bao nhiêu vậy?
+biz_103	dthu tháng 3/2026 hơn hay kém th trước bn %
+biz_126	Hàng nào bán chạy nhất tháng 1/2025?
+biz_111	Giá bán một ly Espresso (single) vào ngày 11/01/2025 là bao nhiêu nhỉ?
+biz_127	Tháng 6/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_102	check giùm trung binhf mỗi đơn tháng 4/2025 mang về nhiêu dthu
+biz_103	Tuần trước doanh thu bình quân mỗi đơn hàng là bao nhiêu nhỉ?
+biz_104	trung bình mỗi đơn tháng 4/2026 mang về bao nhiêu dthu
+biz_121	dthu bữa nay là bao nhiêu
+biz_108	Giá nhập bình quân một thùng Nước mắm Nam Ngư 750ml trong tháng 6 năm 2025 là bao nhiêu?
+biz_120	Số hộp Pharmaton Essential hộp 30 viên bán được trong tháng 7/2025 là bao nhiêu?
+biz_122	Từ 1/1 năm nay đến hết hôm nay đã bán đc bao nhiêu đơn?
+biz_129	Tháng 6/2026 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_121	tỉ lệ huỷ đơn tháng 6/2025 laf bao nhiêu %
+biz_110	trong quý 2 năm 2026, dthu của cửa hàng đươc bn tiền
+biz_115	So với tháng trước đó, doanh thu tháng 9/2025 tăng hay giảm mấy phần trăm?
+biz_120	Xem giúp trong tháng 2/2025, Yumangel hộp 20 gói nhập vào giá bình quân một hộp là bao nhiêu?
+biz_112	Tháng 6/2026 nhóm đá xay bán đc bao nhiêu tiền?
+biz_109	Trong quý 2 năm 2026, doanh thu của cửa hàng được bao nhiêu tiền?
+biz_128	Giá trị trung bình một đơn tháng 7/2026 là bao nhiêu?
+biz_130	giá trị trung bình một đơn tuần rồi là bao nhiêu
+biz_120	Số gói bán được hqua là bao nhiêu, cộng mọi mặt hàng tính theo gói?
+biz_122	Tháng 10/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_117	giá bán một bao Xi măng Hà Tiên PCB40 bao 50kg vào ngày 17/09/2025 là bao nhiêu
+biz_108	Tuần trước ca chiều so với ca sáng thì dthu chênh bao nhiêu %
+biz_116	tổng dthu hqua là bao nhiêu
+biz_104	Số đơn hàng hnay là bao nhiêu?
+biz_118	so vs cùng kỳ th trước, dthu từ đầu tháng này đến hết hôm nay tăng hay giảm bnhiu %
+biz_129	Trong tháng 1/2025, xét theo dthu, ngày nào bán đắt nhất?
+biz_126	tháng 1/2026 bán ra bao nhiu đĩa Gỏi khoai môn hải sản đó
+biz_108	Đếm số đơn đã huỷ trong tháng 1/2026.
+biz_106	so vs cùng kỳ tháng rồi, dthu từ đầu tháng này đến hết hnay tăng hay giảm bn %
+biz_130	trong tháng 8/2025, tir leej đơn huỷ là bn %
+biz_127	trong tháng 5 năm 2026 cửa hàng bán được mấy đĩa cơm chiên dương châu z
+biz_111	Trung bình mỗi đơn tháng 9/2025 mang về bao nhiêu dthu
+biz_103	Số đơn từ đầu năm tới hết hôm nay là bao nhiêu?
+biz_117	tháng 1/2026 có mấy khách mua từ 5 đơn trở lên
+biz_109	Cho tôi biết tháng này khách Lê Bảo Hoàng nợ thêm bao nhiêu tiền, đã trả bớt nợ đc bao nhiêu
+biz_111	So với tháng trước đó, dthu tháng 7/2026 tăng hay giảm mấy phần trăm?
+biz_109	Tính từ đầu năm đến hết hnay, cửa hàng đã có tổng cộng bao nhiêu đơn?
+biz_119	Doanh thu tháng 3 năm 2026 tăng trưởng bao nhiêu % so với tháng 3 năm 2025?
+biz_122	Cho tôi biết doanh thu 30 ngày gần nhất.
+biz_104	hôm 09/05/2026, sữa tươi trân châu đường đen (m) bán ra vowis ddown giá bnhiu tiền một ly
+biz_106	Đến hết ngày 19/06/2026, số khách còn công nợ với cửa hàng là bao nhiêu nhỉ?
+biz_119	Trong tháng 4/2025, Hapacol 250 hộp 24 gói nhập vào giá bình quân một hộp là bao nhiêu?
+biz_122	Doanh thu từ đầu tháng này đến hết hôm nay hơn hay kém cùng kỳ tháng trước bao nhiêu phần trăm?
+biz_116	tỉ trọng của nhóm cát đá trong dthu tháng 7/2025 là bao nhiêu %
+biz_104	trung bình mỗi đơn tháng 4/2025 mang về bao nhiêu doanh thu z
+biz_129	Tiền bán Chân gà nướng tháng 1/2025 là bao nhiêu nhỉ?
+biz_114	Cho tôi biết số đơn hôm qua.
+biz_108	Tháng 3/2026 top 5 hàng bán chạy nhất là gì?
+biz_105	Tháng 10/2025 riêng ca chiều bán được tổng cộng bao nhiêu tiền?
+biz_104	cho tôi biết số đơn hqua
+biz_109	Tháng 5/2025 mặt hàng Dầu ăn Simply 2L thu về bao nhiêu tiền?
+biz_115	Ngày nào trong tháng 1/2026 dthu cao nhất?
+biz_121	Tháng này nhà thuốc bán hàng không kê đơn đc bao nhiêu tiền
+biz_103	Từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bao nhiêu % so với cùng kỳ tháng trước?
+biz_104	Doanh thu của Cold brew (M) trong tháng 9 năm 2025 là bao nhiêu?
+biz_117	so vs cùng kỳ th trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiu % hả
+biz_122	Cho mình biết doanh thu tháng 8/2025.
+biz_109	dthu nhóm hangf sữa chiếm bao nhiêu phần trăm tổng revenue tháng 6 năm 2025
+biz_111	Tháng 1/2026 doanh thu các đơn bán qua Zalo OA được bao nhiêu?
+biz_121	cho tôi bieets doanh thu thangs 8/2026
+biz_121	Tháng 5/2026 có bao nhiêu đơn bị huỷ?
+biz_128	Cho tôi biết doanh thu tháng 11/2025.
+biz_103	đếm số đơn đã huỷ trong tháng 4/2025
+biz_120	Cho hỏi tháng 2/2025, doanh thu các đơn bán qua Zalo OA và các đơn bán tại quầy mỗi loại bao nhiêu?
+biz_116	Cho tôi biết doanh thu hôm qua.
+biz_115	tỉ lệ huỷ đơn tháng 11/2025 là bao nhiêu % ta
+biz_104	tháng 11/2025 mặt hàng trà sữa ô long (l) bán đc total bn ly
+biz_126	Tháng 11/2025 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_123	Xem giúp quý 3/2025 cửa hàng có bao nhiêu đơn hàng?
+biz_111	tháng 5/2026 ngày nào cửa hàng bán được nhiều tiền nhất
+biz_115	Trong tháng 2/2026, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_118	Ngày 01/07/2025 cửa hàng bán Thép cuộn phi 6 Hòa Phát giá bao nhiêu một kg?
+biz_106	Đến hết ngày 11/04/2025, số tiền khách còn thiếu là bao nhiêu?
+biz_117	Giá nhập bình quân một cây Thép Pomina D14 cây 11.7m trong tháng 5 năm 2025 là bao nhiêu nhỉ?
+biz_102	tháng 4/2026 ngày nào cửa hàng bán được nhiều tiền nhất
+biz_123	tính đến hết ngày 29/03/2026, khách hàng còn nợ cửa hàng tổng cộng bao nhiêu tiền
+biz_118	tháng 5/2025 có mấy mặt hàng đc mua ở 78 đơn khác nhau trở lên z
+biz_127	Trong tháng 5/2025, cửa hàng có mấy đơn ở trạng thái huỷ vậy?
+biz_122	Năm nay, tính từ đầu năm đến hết hôm nay, dthu của cửa hàng là bao nhiêu?
+biz_122	Cho tôi biết doanh thu tháng 2/2025.
+biz_128	check giùm tháng 11/2025 tổng giá trị các phiếu nhập hàng là bn
+biz_121	tháng 10/2025 mặt hàng Clarityne 10mg hộp 1 vỉ x 10 viên thu veef bao nhiu tiền z
+biz_117	Doanh thu của Thép Pomina D10 cây 11.7m trong tháng 6 năm 2025 là bao nhiêu ạ?
+biz_129	giá bán một đĩa ốc bươu nhồi thịt vào ngày 21/10/2025 là bnhiu vậy
+biz_128	coi giumf toongr dthu trong ngày hôm nay là bnhiu
+biz_105	số đơn quý 1/2026 là bao nhiu
+biz_127	Cho hỏi tháng 8/2025 mặt hàng Lẩu gà lá é thu về bao nhiêu tiền?
+biz_117	Từ tháng 2/2026 đến tháng 4/2026, doanh thu tháng sau có luôn cao hơn tháng trước không?
+biz_111	Ngày nào trong tháng 11/2025 doanh thu cao nhất?
+biz_115	doanh thu ngày nào cao nhất trong tháng 3 năm 2025 ddos
+biz_117	Xem giúp Xi măng INSEE Power-S bao 50kg lên giá 105.000đ từ ngày 30/01/2026; so 14 ngày kể từ ngày tăng giá với 14 ngày ngay trước, lượng bán tính theo bao tăng hay giảm bao nhiêu phần trăm?
+biz_109	Trung bình mỗi đơn tuần trước mang về bao nhiêu dthu?
+biz_129	Cho hỏi ngày 26/05/2026 cửa hàng bán Nghêu hấp sả với đơn giá bao nhiêu một phần?
+biz_122	Doanh thu trung bình trên một đơn tuần trước là bao nhiêu nhỉ?
+biz_129	So doanh thu các đơn trả bằng ví điện tử với doanh thu các đơn trả bằng tiền mặt tháng 6/2026: mỗi bên bao nhiêu?
+biz_115	Cho tôi biết dthu hôm qua.
+biz_125	Tính riêng ngày hôm nay, cửa hàng bán được bao nhiêu đơn hàng?
+biz_121	dthu thuốc hoạt chất Povidon iod tháng 10/2025 là bao nhiêu?
+biz_115	Xem giúp tháng 8/2025 doanh thu thay đổi bao nhiêu % so với tháng liền trước?
+biz_104	Tháng 11/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_105	đếm số đơn hàng tháng 2/2026 có tiền hàng từ 56.000 đồng trở lên
+biz_108	doanh thu các đơn bán qua zalo oa chiếm mấy % tổng doanh thu tháng nayf đó
+biz_129	doanh thu tháng 7/2026 so với cùng kỳ năm ngoái thay đổi bao nhiêu phần trăm
+biz_119	Trong tháng 2/2025, tỉ lệ đơn huỷ là bao nhiêu phần trăm nhỉ?
+biz_130	Trong tháng 8 năm 2025, số sản phẩm xuất hiện ở từ 187 đơn khác nhau trở lên là bao nhiêu
+biz_116	Doanh thu hôm nay là bao nhiêu?
+biz_117	tháng này xe đã giao tổng cộng mấy đợt hàng
+biz_105	Cho tôi dthu của tháng 2/2026, tháng 3/2026 và tháng 4/2026, ghi lần lượt theo thứ tự đó.
+biz_110	hnay bán được mấy đơn hàng?
+biz_109	Doanh thu nhóm hàng gạo tháng 2 năm 2025 là bao nhiêu?
+biz_102	Số đơn hnay là bao nhiêu?
+biz_102	tháng 12/2025 top 5 hàng chạy nhất là chi
+biz_119	Giúp mình đếm số đơn bán trong ca chiều tháng 8/2025.
+biz_111	coi giùm tháng 6/2026 quán bán ra tổng cộng mấy ly size L, cộng tất cả các món z
+biz_106	Xem giúp tháng 1/2026 cửa hàng bỏ ra bao nhiêu tiền nhập hàng?
+biz_129	Cho mình 5 khách mua nhiều tiền nhất tháng 2/2025.
+biz_109	Tháng 3/2025 cửa hàng nhập Trà xanh 0 độ 455ml bình quân bao nhiêu tiền một thùng?
+biz_104	Tháng 3/2026 mặt hàng Sữa tươi trân châu đường đen (M) thu về bao nhiêu tiền?
+biz_129	top 3 khách mua nhìu tiền nhất thangs 7/2026 laf ai
+biz_104	Tháng 6/2025 dthu bình quân mỗi đơn là bao nhiêu?
+biz_104	doanh thu hôm nay là bnhiu
+biz_125	Tháng 11/2025 cửa hàng bán được tổng cộng bao nhiêu tiền nhỉ?
+biz_116	check giùm tháng 7/2025 ngày nào cửa hàng bán được nhìu tiền nhất
+biz_106	Tháng 9/2025 nhóm trà sữa bán được bao nhiêu tiền?
+biz_129	trong tháng 1/2025, tiền khách trả bớt nợ các đơn mua chịu đươc bao nhiêu
+biz_127	Cho mình biết doanh thu tháng 11/2025.
+biz_102	check giùm bữa qua cuwar hàng có bao nhieeu bill
+biz_124	Tháng 1/2025 thuốc kê đơn chiếm bao nhiêu phần trăm doanh thu của nhà thuốc?
+biz_115	giai đoạn từ 20/02/2026 đến hết 26/02/2026 có total mấy mawtj hàng ế, bán hông dc cái nào
+biz_123	Cho hỏi doanh thu dịp Tết năm nay thay đổi bao nhiêu % so với dịp Tết năm ngoái?
+biz_103	7 ngày gần nhất doanh thu đc bao nhiêu?
+biz_129	Trong tháng này, tỉ lệ đơn huỷ là bao nhiêu phần trăm nhỉ?
+biz_112	dthu của Soda chanh dây (M) trong tháng 12 năm 2025 là bao nhiêu?
+biz_114	Hôm nay cửa hàng bán được bao nhiêu tiền?
+biz_128	tháng 4/2026 giá nhập bình quân một thùng bia heineken lon là bao nhiu
+biz_117	7 ngày gần nhất, cửa hàng có mấy mặt hàng ế hẳn, ko ai mua cái nào?
+biz_116	Giai đoạn từ 29/11/2025 đến hết 05/12/2025 có tổng cộng mấy mặt hàng ế, bán ko được cái nào?
+biz_116	Doanh thu trung bình trên một đơn tháng 7/2026 là bao nhiêu ạ?
+biz_123	Trong tổng dthu tháng 6/2025, phần của khách nhóm sỉ là mấy phần trăm
+biz_119	Xem giúp so với tháng trước đó, doanh thu tháng 6/2026 tăng hay giảm mấy phần trăm?
+biz_120	trong tháng này, tỉ lệ đơn huỷ là bn phần trăm
+biz_129	cho tôi biết dthu bữa qua
+biz_116	Cho hỏi giá bán một cây Ống PVC Bình Minh D50 cây 4m vào ngày 15/12/2025 là bao nhiêu?
+biz_108	Trong tháng 10/2025, xét theo dthu, ngày nào bán đắt nhất?
+biz_111	Xem giúp doanh thu nhóm hàng nước ép chiếm bao nhiêu phần trăm tổng doanh thu tháng 1 năm 2026?
+biz_127	dthu hnay là bao nhiêu
+biz_128	Tổng doanh thu quý 3/2025 là bao nhiêu?
+biz_121	Trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu vậy?
+biz_120	Tháng 12/2025 doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_101	Doanh thu của Coca Cola 330ml trong tháng 5 năm 2026 là bao nhiêu?
+biz_117	Cho hỏi ai là khách hàng chi tiêu nhiều nhất trong tháng 8 năm 2025?
+biz_114	Trong quý 3 năm 2025, dthu của cửa hàng được bao nhiêu tiền?
+biz_130	Cá lóc nướng trui đổi giá từ 208.500đ lên 219.000đ vào ngày 05/08/2025. 14 ngày kể từ ngày đó bán được nhiều hay ít hơn 14 ngày liền trước bao nhiêu %, tính theo con?
+biz_103	check giùm so số chai nước tương maggi 700ml bán ra trong 7 ngày kể từ ngày 17/02/2026, ngày tăng giá lên 31.500đ, vs 7 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu % đó
+biz_129	tháng 3/2025, các khách thuoocj nhóm thân thiết mua total bao nhieeu tiền hàng
+biz_128	dthu hnay là bao nhiu
+biz_112	tháng 4/2025 cửa hàng bán đc tổng cộng bao nhiêu tiền
+biz_108	tháng 3/2025 doanh thu các đơn bán tại quầy đươc nhiêu
+biz_121	coi giùm tháng 6/2025 các mặt hàng nhóm dụng cụ y tế thu được tổng cộng bn tiền
+biz_111	Cho mình doanh thu các đơn trả bằng tiền mặt và doanh thu các đơn trả bằng COD tháng 4/2026.
+biz_117	Tháng 1/2025 cửa hàng bán được tổng cộng bao nhiêu tiền nhỉ?
+biz_118	Tháng 1/2026 dthu thay đổi bao nhiêu % so với tháng liền trước?
+biz_108	cho tôi 5 khách mua nhìu tiền nhất tháng 1/2025
+biz_108	Doanh thu tháng 5/2025 tăng hay giảm bao nhiêu phần trăm so với tháng trước?
+biz_118	Tháng 7/2026 top 5 hàng bán chạy nhất là gì?
+biz_121	Tháng 7/2025 có mấy khách mua từ 6 đơn trở lên nhỉ?
+biz_107	Hôm nay cửa hàng bán được bao nhiêu tiền?
+biz_114	Số đơn hàng hnay là bao nhiêu?
+biz_111	Trong tháng này, tỉ lệ đơn huỷ là bao nhiêu phần trăm?
+biz_109	So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?
+biz_129	đếm số đơn đã huỷ trong tháng 4/2025
+biz_124	tháng này cửa hangf có bn % đơn bij huỷ
+biz_112	Quán bán đc bao nhiêu ly size L trong tháng 8/2025, cộng mọi món?
+biz_129	dthu tháng 8/2025 bao nhiêu?
+biz_103	ê tháng 10/2025 có nhiêu khách mua từ 4 đơn trở lên
+biz_103	Từ ngày 25/12/2025, Xúc xích Vissan 5 cây tăng giá lên 26.000đ. So 7 ngày kể từ ngày 25/12/2025 với 7 ngày ngay trước đó, số gói bán ra thay đổi bao nhiêu phần trăm ạ?
+biz_128	cho tôi biết số đơn hôm qua
+biz_104	Tổng doanh thu tháng 7 năm 2025 là bao nhiêu?
+biz_104	Doanh thu của Sinh tố xoài (L) trong tháng 3 năm 2026 là bao nhiêu?
+biz_116	tháng 8/2025 bán ổ cắm đôi 3 chấu panasonic wide WEV1582SW dc bao nhiêu tiền
+biz_120	tháng 11/2025 ca sáng bán được mấy đơn
+biz_108	Tuần trước riêng ca sáng bán được tổng cộng bao nhiêu tiền?
+biz_115	tháng 3/2026 bị huỷ mấy đơn
+biz_115	Tổng doanh thu trong ngày hôm nay là bao nhiêu?
+biz_112	trong tháng 4 năm 2026 cửa hàng bán đc mấy ly sinh tố xoài (m)
+biz_111	Doanh thu của Trà sữa trân châu (L) trong tháng 2 năm 2025 là bao nhiêu?
+biz_103	Trung bình mỗi đơn tháng 4/2026 mang về bao nhiêu doanh thu?
+biz_117	Cho mình biết doanh thu tháng 4/2025.
+biz_102	Tháng 4/2026 có bao nhiêu đơn hàng bị huỷ?
+biz_123	Tháng 5/2025 tổng giá trị các phiếu nhập hàng là bao nhiêu?
+biz_105	Liệt kê 5 mặt hàng bán chạy nhất tuần rồi.
+biz_114	Tháng 2/2026 bán ra bao nhiêu thùng Sơn lót Jotun Jotashield chống kiềm 5L vậy?
+biz_124	Tỉ lệ doanh thu thuốc kê đơn trên tổng doanh thu tháng 5/2025 là bao nhiêu %?
+biz_109	tính đến hết ngày 22/04/2026, khách còn nợ bao nhiêu ở nhóm tuổi nợ 0–7 ngày, 8–15 ngày và trên 15 ngày
+biz_128	Xem giúp tháng 8/2026 nhập hàng hết bao nhiêu tiền?
+biz_117	Keo dán gạch Weber.tai fix xám 25kg đổi giá từ 300.000đ lên 315.000đ vào ngày 17/01/2026. 7 ngày kể từ ngày đó bán đc nhìu hay ít hơn 7 ngày liền trước bao nhiêu %, tính theo bao
+biz_114	Giá bán một bao Bột trét Jotun nội thất 40kg vào ngày 03/05/2026 là bao nhiêu?
+biz_105	coi giùm tháng 3/2026 có bao nhiêu bill bị huỷ
+biz_120	Trong tháng 10/2025, Gofen 400 hộp 5 vỉ x 10 viên nang nhập vào giá bình quân một hộp là bao nhiêu vậy?
+biz_111	Cho hỏi tổng doanh thu tháng 3 năm 2025 là bao nhiêu?
+biz_108	Tháng 12/2025 ngày nào cửa hàng bán đc nhiều tiền nhất?
+biz_118	7 ngày gần nhất có tổng cộng mấy mặt hàng ế, bán không được cái nào?
+biz_125	hqua cửa hàng bán đc bao nhiêu tiền
+biz_122	Cho hỏi tháng 2/2025 cửa hàng nhập Hapacol 150 hộp 24 gói bình quân bao nhiêu tiền một hộp?
+biz_117	Tháng 2/2025 dthu ca chiều chênh ca sáng bao nhiêu phần trăm
+biz_122	trong tháng 7 năm 2025 cửa hàng bán đc mấy chai Siro ho Bổ phế Nam Hà Chỉ Khái Lộ chai 125ml
+biz_128	doanh thu trung bình trên một đơn tháng 11/2025 là bao nhiêu
+biz_120	Cho tôi 3 mặt hàng bán chạy nhất trong tháng 11/2025.
+biz_102	Tháng 10/2025 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_112	hnay bán đc mấy đơn hàng
+biz_119	Doanh thu trung bình trên một đơn tháng 11/2025 là bao nhiêu vậy?
+biz_112	xem giúp dthu từ đầu tháng này đến hết hnay hơn hay kém cùng kỳ tháng rồi bn % vậy
+biz_108	cho hỏi hnay kho còn tồn bao nhiu gói đậu phộng rang muối 200g lúc cuối ngày
+biz_104	Tháng 10/2025 doanh thu thay đổi bao nhiêu % so với tháng liền trước?
+biz_122	từ đầu tháng này đến hết bữa nay, doanh thu hơn hay kém cùng kỳ tháng trc mấy %
+biz_111	Doanh thu các đơn bán qua Zalo OA và doanh thu các đơn bán tại quầy tháng 2/2026 lần lượt là bao nhiêu?
+biz_106	Khách nào mua nhiều đơn hàng nhất tháng 7/2025?
+biz_128	Số đơn hôm nay là bao nhiêu?
+biz_115	Trong tháng 4 năm 2026 cửa hàng bán được mấy cây Thép Pomina D16 cây 11.7m?
+biz_127	Tháng 1/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm nhỉ?
+biz_113	hôm qua dthu được bn
+biz_105	So dthu các đơn trả bằng COD với doanh thu các đơn trả bằng ví điện tử tháng 10/2025: mỗi bên bao nhiêu?
+biz_112	Tháng 1/2026 bán Espresso (double) đc bao nhiêu tiền?
+biz_102	tieenf bán Bia Sài Gòn Special 330ml tháng 5/2026 là nhiêu
+biz_106	dthu của cà phê muối (l) trong tháng 1 năm 2025 là bnhiu
+biz_104	Tháng 5/2026 dthu bình quân mỗi đơn là bao nhiêu?
+biz_127	cộng mọi mặt hàng tính theo lon, bữa qua bán ra được mấy lon
+biz_106	Doanh thu tháng 8/2026 so với tháng 8/2025 tăng hay giảm bao nhiêu %?
+biz_112	giá trị trung bình một đơn tháng 4/2026 là nhiêu
+biz_103	xem giups tỉ lệ huyr đơn tháng này là nhiêu %
+biz_102	Số đơn bị huỷ trong tháng 7 năm 2025 là bao nhiêu?
+biz_117	khách nào mua nhìu đơn nhất tháng 11/2025 vậy
+biz_118	Liệt kê doanh thu 3 tháng liên tiếp từ tháng 7/2025 đến tháng 9/2025, theo thứ tự thời gian.
+biz_109	Giúp mình tính theo giá vốn, tiền hàng nằm trong kho vào cuối ngày 05/08/2026 là bao nhiêu?
+biz_127	Hôm qua tổng cộng bán được bao nhiêu nồi?
+biz_124	tháng này khách bạch hằng long ghi nợ thêm bao nhiêu và trả nợ đươc bao nhiêu? ghi hai số theo thứ tự: nợ thêm, trả được
+biz_121	Trừ thuốc kê đơn ra, tháng 8/2026 các mặt hàng còn lại bán được bao nhiêu tiền?
+biz_105	Cho mình 3 mặt hàng bán chạy nhất tuần này.
+biz_103	coi giùm tuần rồi top 3 hàng hot nhất là j
+biz_130	Cho tôi biết doanh thu tháng 6/2026.
+biz_130	30 ngày gần nhất có tổng cộng bao nhiêu đơn?
+biz_129	Tỉ trọng doanh thu của khách nhóm thân thiết trong tổng doanh thu tháng 6/2025 là bao nhiêu phần trăm?
+biz_128	trong tháng 2 nawm 2026 cửa hàng bán được maays đĩa Đậu que xào tỏi
+biz_105	Số ly Nước ép cam (M) bán đc trong tháng 9/2025 là bao nhiêu?
+biz_123	Xem giúp hàng nào có tổng lãi gộp cao nhất tháng 1/2026?
+biz_110	Doanh thu tháng 6/2026 bao nhiêu?
+biz_103	Doanh thu ngày nào cao nhất trong tháng 9 năm 2025?
+biz_117	Tháng 2/2026 cửa hàng bỏ ra bao nhiêu tiền nhập hàng nhỉ?
+biz_124	tháng 8/2025 dthu từ khách nhóm sỉ dc nhiêu
+biz_128	Cho hỏi giá trị trung bình một đơn tháng 4/2025 là bao nhiêu?
+biz_115	Tỉ lệ huỷ đơn tháng 10/2025 là bao nhiêu % ạ?
+biz_108	Tháng 4/2026 nhân viên mã NV003 bán được bao nhiêu tiền?
+biz_108	Tổng tiền bán hàng của ca sáng tuần trước là bao nhiêu?
+biz_102	Hôm nay cửa hàng bán đc bao nhiêu tiền
+biz_110	Ngày nào trong tháng 12/2025 doanh thu cao nhất?
+biz_130	check giùm từ tháng 2/2025 đến tháng 4/2025, dthu tháng sau có luôn cao hơn tháng trc k hả
+biz_112	30 ngày gần nhất cửa hàng bán đươc bn tiền
+biz_119	xem giúp tháng 10/2025 nhập hàng hết bao nhiu tiền vậy
+biz_111	Trong tháng 5/2026, số ly size L bán đc là bao nhiêu, tính mọi loại đồ uống?
+biz_114	Tổng doanh thu tháng 4 năm 2026 là bao nhiêu?
+biz_120	Tháng 5/2025 giá nhập bình quân một hộp Smecta hộp 30 gói là bao nhiêu?
+biz_116	Cho mình hỏi trong tháng 1/2026, nhóm ống nước đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_104	thangs 10/2025 tỉ lệ đơn bị huỷ là bao nhiu %
+biz_109	Xem giúp tháng 7/2025 lãi gộp của cửa hàng là bao nhiêu?
+biz_102	coi giùm trong quý 1 năm 2025, dthu của cửa hàng được bao nhiêu tiền
+biz_129	Doanh thu của Gỏi khoai môn hải sản trong tháng 8 năm 2025 là bao nhiêu?
+biz_117	Trong tháng 4/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_101	ê revenue ngày nào cao nhất trong tháng 7 năm 2026
+biz_110	Tổng dthu trong ngày hôm nay là bao nhiêu?
+biz_118	Cho mình hỏi giá nhập bình quân một cây Thép Pomina D12 cây 11.7m trong tháng 6 năm 2025 là bao nhiêu?
+biz_119	Trong tháng 1/2026, UPSA-C 1g viên sủi tuýp 10 viên nhập vào giá bình quân một tuýp là bao nhiêu?
+biz_120	Trong tháng 5/2025, xét theo doanh thu, ngày nào bán đắt nhất ạ?
+biz_118	ngayf nào trong tháng 4/2025 dthu cao nhất
+biz_123	tháng 8/2025 thu được bao nhiêu tiền từ các thuốc phải kê đơn
+biz_123	Xem giúp tháng 1/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_111	Xem giúp tỉ trọng doanh thu các đơn bán qua điện thoại trong tổng doanh thu tháng 2/2025 là bao nhiêu phần trăm?
+biz_120	trung bình mỗi đơn tháng 2/2025 mang về bao nhiêu dthu
+biz_102	Tháng 12 năm 2025, 5 khách nào chi tiêu nhiều nhất?
+biz_130	Xem giúp tháng 9/2025 mặt hàng Đậu que xào tỏi bán được tổng cộng bao nhiêu đĩa?
+biz_123	Tháng 7/2025 thu hồi được bao nhiêu tiền công nợ từ khách mua chịu?
+biz_129	check giùm trong tháng 10/2025, cửa hàng có mấy đơn ở trạng thái huỷ
+biz_108	dthu trung bình treen một đơn tháng 7/2025 là bnhiu
+biz_115	Giá trị trung bình một đơn tháng 2/2026 là bao nhiêu?
+biz_105	đếm số ngày trong tháng 10 năm 2025 mà dthu cả ngày từ 13.000.000 đồng trở lên
+biz_123	dthu 3 tháng liền nhau kết thúc ở tháng 4/2025 là bnhiu mỗi tháng, từ tháng cũ đến tháng mới
+biz_127	check giùm hqua có tổng cộng bao nhiêu đơn
+biz_109	Ca chiều tháng 10/2025 có tổng cộng bao nhiêu đơn?
+biz_122	Tháng 1/2026 nhóm dụng cụ y tế bán được bao nhiêu tiền?
+biz_112	So số ly Trà vải (L) bán ra trong 30 ngày kể từ ngày 05/06/2025, ngày tăng giá lên 47.000đ, với 30 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_105	Cho mình hỏi trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu?
+biz_103	ê tuần rồi dthu được bn
+biz_104	Trong tháng 1/2026, số ly size M bán được là bao nhiêu, tính mọi loại đồ uống?
+biz_102	tháng 9/2025 món nếp cái hoa vàng bán đươc tổng cộng bnhiu kg
+biz_123	Tổng tiền bán hàng của ca sáng tháng 5/2026 là bao nhiêu?
+biz_109	cho hỏi khách đoàn thảo sơn tháng 1/2026 nợ thêm bn, trả được bao nhiêu vaayj
+biz_120	Cho tôi biết dthu thuốc kê đơn tháng 3/2025.
+biz_130	Top 3 sản phẩm bán nhiều nhất tháng 6 năm 2026 là những gì nhỉ?
+biz_118	Tính từ ngày 1/1 đến hết hôm nay, dthu năm nay là bao nhiêu?
+biz_124	Cho hỏi cuối ngày hôm nay Plusssz Max Multivitamin viên sủi tuýp 20 viên còn bao nhiêu tuýp?
+biz_113	tiền bán công tắc 1 chiều panasonic wide kèm mặt tháng 2/2026 là nhiêu ta
+biz_103	Tháng 7/2025 khách mua từ 3 đơn trở lên chiếm bao nhiêu % số khách đã mua vậy?
+biz_130	Xem giúp tháng 5/2026 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_130	cho tooi biết dthu thangs 2/2025
+biz_112	Doanh thu trung bình trên một đơn tuần trước là bao nhiêu?
+biz_124	Tuần rồi top 5 hàng bán chạy nhất là gì?
+biz_128	dthu ca chiều thangs 12/2025 laf nhiêu
+biz_105	Giúp mình liệt kê 3 mặt hàng bán chạy nhất tuần rồi.
+biz_129	Cho mình hỏi trong tháng 9/2025, tiền khách trả bớt nợ các đơn mua chịu được bao nhiêu?
+biz_112	Cho mình biết doanh thu 7 ngày gần nhất.
+biz_108	check giùm toonf kho trà xanh 0 độ 455ml cuối ngày hôm nay là bao nhiêu chai
+biz_102	Tổng doanh thu tháng 1 năm 2026 là bao nhiêu?
+biz_106	so số ly trà sữa trân châu (m) bán ra trong 30 ngày kể từ ngày 23/04/2026, ngày tăng giá lên 44.000đ, với 30 ngày ngay trc ngày đó: tăng hay giảm bn %
+biz_128	trong tháng 5/2025, bia tiger lon nhập vào giá bình quân một thùng là bn z
+biz_117	Liệt kê 5 mặt hàng bán chạy nhất tháng 9/2025.
+biz_121	Cho hỏi bao nhiêu khách mua ít nhất 6 đơn trong tháng 8 năm 2025?
+biz_128	trong tháng 6/2026, nhoms gỏi đóng góp bao nhieeu % dthu cả cửa hàng
+biz_130	Ngày 01/03/2025 cửa hàng bán Bia Tiger lon với đơn giá bao nhiêu một lon ạ?
+biz_116	Trong tháng 4/2026, cửa hàng có mấy đơn ở trạng thái huỷ vậy?
+biz_105	Tồn cuối hôm nay của Bánh croissant là mấy hộp chẵn, mấy cái lẻ?
+biz_108	Tháng này nhập hàng hết bao nhiêu tiền?
+biz_115	tháng 9/2025 bị huỷ mấy đơn nhỉ
+biz_115	hqua tổng cộng bán được bao nhiêu cái
+biz_107	Quý 2 năm 2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_115	liệt kê 5 mặt hangf chạy nhất thangs 2/2025
+biz_126	Trong quý 3 năm 2025, doanh thu của cửa hàng được bao nhiêu tiền?
+biz_104	dthu hoom nay là bn
+biz_122	hapacol 250 hộp 24 gói đổi giá từ 2.000đ lên 2.100đ vào ngày 21/05/2026. 14 ngày kể từ ngày đó bán dc nhiều hay ít hơn 14 ngày liền trước bao nhiêu %, tính theo gói
+biz_128	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_130	Từ đầu năm đến hết hnay cửa hàng bán đc bao nhiêu tiền?
+biz_118	Khách nào chi nhiều tiền nhất cho cửa hàng tuần rồi?
+biz_113	ê tháng 7/2025 hàng nào chạy nhất
+biz_129	Cho tôi biết số đơn hôm qua.
+biz_120	tháng 3/2026 tỉ lệ đơn bị huỷ là bnhiu %
+biz_119	dthu ngày nào cao nhất trong tháng 1 năm 2025
+biz_106	Trung bình mỗi đơn tháng 2/2025 mang về bao nhiêu doanh thu?
+biz_124	cho hỏi tháng 1/2025 tổng giá trị các phiếu nhập hàng là bnhiu
+biz_128	dthu ca sáng tháng 5/2026 là bao nhiêu?
+biz_111	Tháng 9/2025 có bao nhiêu đơn hàng bị huỷ?
+biz_124	Tháng 3/2026 các thuốc có hoạt chất Natri clorid bán được bao nhiêu tiền?
+biz_108	trong tổng doanh thu tháng này, phaanf của khachs nhóm thân thiết là mấy %
+biz_112	cho tôi biết dthu tháng 5/2025
+biz_109	tháng 5/2025, trung bình mỗi đơn của khách nhóm thân thiết là bao nhiêu tiền hàng
+biz_119	coi giùm hôm nay kho còn tồn bn tuýp kudos vitamin c 1000mg viên sủi tuýp 20 viên lúc cuối ngayf
+biz_120	Cho mình hỏi hôm 19/03/2026, Fugacar 500mg hộp 1 viên bán ra với đơn giá bao nhiêu tiền một viên?
+biz_123	Giá nhập bình quân một hộp Telfast HD 180mg hộp 3 vỉ x 10 viên trong tháng 8 năm 2025 là bao nhiêu nhỉ?
+biz_116	Trong tháng 8/2025, nhóm sơn đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_121	Tháng 4/2025 các thuốc có hoạt chất Paracetamol bán được bao nhiêu tiền?
+biz_115	tháng 4/2025 bans ống pvc bình minh D50 cây 4m được nhiêu tieenf
+biz_115	Doanh thu ngày nào cao nhất trong tháng 4 năm 2025?
+biz_118	tháng 7/2026 có mấy ngày doanh thu đạt 49.000.000 đồng trở lên
+biz_118	Cho mình hỏi tháng 7/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_113	dthu hqua của cửa hàng là nhiêu
+biz_112	Tháng 5/2026 có mấy ngày doanh thu đạt 11.000.000 đồng trở lên?
+biz_124	Cho hỏi đến hết ngày 21/06/2025, số khách còn công nợ với cửa hàng là bao nhiêu?
+biz_116	cho hỏi dthu tháng 2/2026 hơn hay kém tháng trc bnhiu phần trăm hả
+biz_112	Doanh thu 3 tháng 5/2025, 6/2025, 7/2025 có tăng liên tục ko?
+biz_128	tuần rồi số đơn ca chiều chênh ca sáng bao nhiêu % đó
+biz_112	Cho hỏi so số ly Trà sữa ô long (L) bán ra trong 14 ngày kể từ ngày 13/07/2026, ngày tăng giá lên 53.500đ, với 14 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_102	Quý 3 năm 2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_101	Tháng 7/2025 mặt hàng Nếp cái hoa vàng bán được tổng cộng bao nhiêu kg?
+biz_122	tháng 1/2025 mặt hàng Nurofen for Children hỗn dịch chai 60ml bán đươc tổng cộng bao nhiêu chai nhỉ
+biz_113	Cho tôi biết dthu hqua.
+biz_105	Tháng 6/2025 có bao nhiêu đơn hàng có doanh thu từ 130.000 đồng trở lên?
+biz_115	Cho mình hỏi số đơn hàng hôm qua là bao nhiêu?
+biz_114	Tổng doanh thu tháng 11 năm 2025 là bao nhiêu?
+biz_102	tháng 1/2025 tir lệ đơn bij huỷ là bn %
+biz_124	Theo tồn kho ngày 25/05/2026, có mấy lô hàng còn tồn sẽ hết hạn từ nay đến hết ngày 22/09/2026?
+biz_127	Cho tôi doanh thu các đơn trả bằng ví điện tử và doanh thu các đơn trả bằng COD tháng 8/2025.
+biz_119	Doanh thu tháng 4/2026 hơn hay kém tháng trước bao nhiêu phần trăm?
+biz_120	Hết hnay, Amlodipin 5mg Domesco hộp 3 vỉ x 10 viên còn lại mấy viên trong kho
+biz_102	số đơn quys 3/2025 là nhiêu
+biz_130	Ngày 14/09/2025 Rau củ kho quẹt tăng giá từ 69.000đ lên 72.500đ. Số đĩa bán được trong 7 ngày kể từ ngày đó so với 7 ngày trước đó thay đổi bao nhiêu %?
+biz_104	hoom qua cuwar hàng bán dc nhiêu tiền
+biz_116	Tháng 2/2026 bán Xi măng INSEE Power-S bao 50kg được bao nhiêu tiền?
+biz_123	Tháng 2/2025 cửa hàng thu được bao nhiêu tiền khách trả nợ?
+biz_122	So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?
+biz_129	Trung bình mỗi đơn tháng 2/2026 mang về bao nhiêu dthu
+biz_103	trong số khachs có mua tháng 8 năm 2025, tỉ lệ khách mua ít nhất 4 đơn là bnhiu %
+biz_113	check giùm bữa qua cửa hàng bán được bao nhiêu tiền
+biz_125	Cho hỏi trong tháng 3 năm 2025 cửa hàng bán được mấy đĩa Gỏi khoai môn hải sản?
+biz_112	Trong tháng 1/2026, nhóm trà đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng vậy?
+biz_124	Doanh thu tháng 2 năm 2026 tăng trưởng bao nhiêu % so với tháng 2 năm 2025?
+biz_122	coi giùm tháng 11/2025 bans Enterogermina 2 tỷ/5ml hộp 20 ống đc bn tieenf
+biz_125	Số đĩa Rau muống xào tỏi bán được trong tháng 3/2025 là bao nhiêu?
+biz_113	coi giùm cho tôi biết doanh thu tháng 10/2025
+biz_120	Doanh thu hôm nay là bao nhiêu?
+biz_127	Doanh thu tháng 6/2025 bao nhiêu?
+biz_103	trong tháng 8/2025, tỉ lệ đơn huỷ là bn %
+biz_108	tỉ lệ huỷ đơn tháng này là bao nhiu %
+biz_105	Trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu?
+biz_119	Giá nhập bình quân một hộp Salonpas cao dán hộp 24 gói x 10 miếng trong tháng 3 năm 2025 là bao nhiêu?
+biz_112	doanh thu 3 tháng 4/2026, 5/2026, 6/2026 cos tăng liên tục khoong
+biz_105	cho hoi ngay 24/09/2025 cappuccino (l) tang gia tu 51.000đ len 53.500đ. so ly ban dc trong 7 ngay ke tu ngay do so voi 7 ngay trc do thay doi bao nhieu %
+biz_123	Doanh thu trung bình trên một đơn tháng 2/2025 là bao nhiêu ạ?
+biz_115	Hôm qua cửa hàng bán được mấy đơn?
+biz_108	tháng 10/2025 nhập hàng hết bn tiền hả
+biz_106	xem giúp cho tôi biết lời gộp tháng 9 nawm 2025
+biz_105	Từ tháng 8/2025 đến tháng 10/2025, doanh thu tháng sau có luôn cao hơn tháng trước không?
+biz_125	quý 2 năm 2025 cửa hàng bán dc tổng cộng bnhiu tiền
+biz_114	Hôm nay bán được mấy đơn hàng?
+biz_123	Tháng 6/2025 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_102	Giúp mình đếm số đơn đã huỷ trong tháng 11/2025.
+biz_123	tháng 7/2025 hàng nào lời nhất hả
+biz_120	Cho hỏi tổng tiền bán các mặt hàng không kê đơn tháng 10/2025 là bao nhiêu?
+biz_118	Cho hỏi từ ngày 31/05/2026, Thép cuộn phi 6 Hòa Phát tăng giá lên 17.500đ. So 14 ngày kể từ ngày 31/05/2026 với 14 ngày ngay trước đó, số kg bán ra thay đổi bao nhiêu phần trăm?
+biz_122	Từ tháng 4/2025 tới tháng 6/2025, tháng nào cửa hàng bán được nhiều tiền nhất nhỉ?
+biz_129	tỉ trọng của nhóm cơm mì cháo trong dthu tháng 10/2025 là bao nhiêu %
+biz_128	Cho mình hỏi tuần trước số đơn ca chiều chênh ca sáng bao nhiêu phần trăm?
+biz_105	Tổng doanh thu trong ngày hôm nay là bao nhiêu?
+biz_115	Tháng 12/2025 doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_118	Đếm số đợt giao hàng trong tháng 4/2025.
+biz_122	7 ngày gần nhất doanh thu được bao nhiêu?
+biz_106	Đến hết ngày 17/12/2025, số khách còn công nợ với cửa hàng là bao nhiêu?
+biz_123	Doanh thu thuốc hoạt chất Vitamin C tháng này là bao nhiêu?
+biz_124	Tổng tiền nhập hàng tháng 3/2026 là bao nhiêu?
+biz_109	Trong tháng 11/2025, Giấy vệ sinh Pulppy 10 cuộn nhập vào giá bình quân một thùng là bao nhiêu?
+biz_111	Xem giúp doanh thu trung bình trên một đơn tháng 6/2025 là bao nhiêu?
+biz_105	Cuối ngày hôm nay Bánh tiramisu còn bao nhiêu cái vậy?
+biz_106	Tháng 6/2026 nhóm bánh chiếm bao nhiêu % doanh thu?
+biz_111	Cho mình hỏi tháng 3/2026 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_111	Tháng này thu hồi được bao nhiêu tiền công nợ từ khách mua chịu?
+biz_124	ê ngày nào trong tháng 8/2025 doanh thu cao nhất
+biz_123	Tháng 1/2025 dthu bình quân mỗi đơn là bao nhiêu?
+biz_111	Giúp mình tính riêng ngày hôm nay, doanh thu của cửa hàng được bao nhiêu tiền?
+biz_120	Tháng 3/2026 các thuốc có hoạt chất Cetirizin bán được bao nhiêu tiền nhỉ?
+biz_121	Xu hướng doanh thu 3 tháng 9/2025 → 10/2025 → 11/2025: có phải tháng 10/2025 cao hơn tháng 9/2025 và tháng 11/2025 cao hơn tháng 10/2025 ạ?
+biz_105	Cho hỏi Bánh croissant lên giá 37.000đ từ ngày 28/07/2025; so 7 ngày kể từ ngày tăng giá với 7 ngày ngay trước, lượng bán tính theo cái tăng hay giảm bao nhiêu phần trăm?
+biz_111	So với tháng liền trước, dthu tháng 4 năm 2026 thay đổi bao nhiêu %?
+biz_130	Cho hỏi tuần này mặt hàng nào bán chạy nhất?
+biz_109	Cho mình bảng 3 khách còn nợ nhiều nhất tính đến hết ngày 05/08/2026, kèm số tiền còn nợ.
+biz_113	Hôm qua doanh thu được bao nhiêu?
+biz_103	Hàng nào bán chạy nhất tuần rồi?
+biz_129	Giúp mình liệt kê 5 mặt hàng bán chạy nhất tháng 7/2025.
+biz_116	Cho hỏi tỉ trọng của nhóm xi măng trong doanh thu tháng 3/2026 là bao nhiêu %?
+biz_103	Trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu?
+biz_104	So với tháng liền trước, doanh thu tháng 9 năm 2025 thay đổi bao nhiêu %?
+biz_122	ê tháng 11/2025 cửa hàng bán được tổng cộng nhiêu tiền
+biz_108	trong tổng dthu tháng 4/2026, phần của khachs nhoms thân thiết là mấy %
+biz_106	tổng dthu tháng 1 năm 2025 là bao nhiu
+biz_105	từ ngày 18/04/2025, topping thạch cà phê tăng giá lên 7.400đ. so 7 ngày kể từ ngày 18/04/2025 với 7 ngày ngay trc đó, số phần bán ra thay đổi bnhiu phần trăm
+biz_121	Từ tháng 4/2025 đến tháng 6/2025, doanh thu mỗi tháng là bao nhiêu? Ghi 3 số theo thứ tự thời gian.
+biz_112	thangs 10/2025 quán bán ra total maays ly size L, cộng tất cả các món nhỉ
+biz_120	toongr tieenf nhập hàng tháng này là bao nhiêu
+biz_129	xem giúp top 5 khách có công nợ lớn nhất đến hết ngày 14/08/2026 và số nợ của từng người
+biz_120	cho hỏi 5 mawtj hangf chạy nhất tháng 12/2025 là những mặt hàng nào
+biz_118	cong tac 1 chieu panasonic wide kem mat doi gia tu 39.000đ len 41.000đ vao ngay 20/08/2025. 14 ngay ke tu ngay do ban duoc nhiu hay it hon 14 ngay lien truoc bao nhieu %, tinh theo bo
+biz_108	Doanh thu nhóm hàng hoá phẩm chiếm bao nhiêu phần trăm tổng doanh thu tháng 6 năm 2025?
+biz_112	Cho tôi biết dthu tuần trước.
+biz_104	Cho mình hỏi doanh thu của Sinh tố xoài (L) trong tháng 12 năm 2025 là bao nhiêu?
+biz_127	tỉ lệ huỷ đơn thangs 11/2025 là bn %
+biz_112	dthu nhóm hàng cà phê tháng 10 năm 2025 là nhiêu
+biz_116	tháng 3/2026 cuwar hàng bán được tổng cộng bao nhiêu tiền
+biz_106	đến hết ngày 25/04/2026, các khoản nợ có tuổi quá 15 ngày còn bao nhiu tiền
+biz_119	Tháng này doanh thu hàng không kê đơn là bao nhiêu vậy?
+biz_125	Tổng doanh thu tháng 1 năm 2026 là bao nhiêu?
+biz_123	coi giùm tinhs từ ngày 1/1 đến hết bữa nay, dthu năm nay là nhiêu
+biz_106	Tuần trước tổng cộng bán được bao nhiêu ly?
+biz_119	Tháng 5/2025 bán ra bao nhiêu lọ V.Rohto Vitamin nhỏ mắt lọ 13ml?
+biz_109	tính doanh thu các đơn trả bawngf chuyển khoản tháng 5/2025
+biz_120	coi giùm giá nhập bình quân một hộp Amoxicillin 500mg Domesco hộp 10 vỉ x 10 viên trong tháng 2 năm 2026 là nhiêu
+biz_129	số đơn hàng hnay là bao nhiêu
+biz_117	son maxilite trong nha 18L len gia 787.500đ tu ngay 06/04/2025; so 30 ngay ke tu ngay tang gia vs 30 ngay ngay trc, luong ban tinh theo thung tang hay giam bnhiu %
+biz_129	dthu ngày nào cao nhất trong tháng 3 năm 2026?
+biz_123	Nhân viên Phùng Thu Trang làm việc có tận tâm với khách không?
+biz_104	Ai là khách hàng chi tiêu nhiều nhất trong tháng 12 năm 2025 nhỉ?
+biz_118	hết hôm nay, gạch thẻ đặc 4x8x18 còn laij mấy viên trong kho
+biz_111	soos bill hqua là bn
+biz_124	Trong tháng 1/2025, khách Hà Lan Nhung mua chịu thêm bao nhiêu và trả bớt nợ được bao nhiêu? Trả lời hai số: nợ thêm, trả được.
+biz_109	Tổng tiền bán hàng của ca sáng tuần trước là bao nhiêu?
+biz_129	Số lon bán được hôm qua là bao nhiêu, cộng mọi mặt hàng tính theo lon?
+biz_106	thangs 5/2025 dthu các đơn trả bawngf cod đươc bao nhiêu
+biz_111	Tháng 5/2026, các khách thuộc nhóm thân thiết mua tổng cộng bao nhiêu tiền hàng?
+biz_113	hnay cửa hàng bán đc bao nhiêu tiền?
+biz_103	từ ngày 27/01/2026, Nước suối Lavie 1.5L tăng giá lên 10.500đ. So 14 ngày kể từ ngày 27/01/2026 vs 14 ngày ngay trước đó, số chai bán ra thay đổi bao nhiêu %
+biz_122	Doanh thu 3 tháng 7/2025, 8/2025, 9/2025 có tăng liên tục ko?
+biz_111	Tỉ trọng doanh thu của khách nhóm thân thiết trong tổng doanh thu tháng 1/2026 là bao nhiêu phần trăm?
+biz_109	Xem giúp khách Thái Nhung Hải tháng này nợ thêm bao nhiêu, trả được bao nhiêu?
+biz_121	Trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu?
+biz_101	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_129	dthu tháng 2/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?
+biz_118	Trong tháng 8 năm 2025, số sp xuất hiện ở từ 64 đơn khác nhau trở lên là bao nhiêu
+biz_102	Khách nào chi nhiều tiền nhất cho cửa hàng trong tháng 1/2026 ạ?
+biz_108	Doanh thu quý 3/2025 của cửa hàng là bao nhiêu?
+biz_116	giai đoạn từ 12/08/2025 đến hết 10/09/2025 có tổng cộng mấy mặt hàng ế, bán ko được cái nào
+biz_105	ê trong tháng 2/2025, soos ly size l bán dc là nhiêu, tính mọi loại ddoof uống ta
+biz_124	Cho bảng 3 khách còn nợ nhiều nhất tính đến hết ngày 05/10/2025, kèm số tiền còn nợ.
+biz_119	So cùng kỳ năm trước, doanh thu tháng 1/2026 tăng/giảm mấy phần trăm?
+biz_122	Doanh thu nhóm hàng ho cảm cúm chiếm bao nhiêu phần trăm tổng doanh thu tháng 9 năm 2025?
+biz_128	dthu từ khách nhóm thân thiết tháng 6/2026 là bao nhiêu?
+biz_112	cho hỏi nhoms nước ép tháng 5/2026 bán dc bao nhiêu tiền
+biz_118	đếm số khách đã mua ≥ 4 đơn trong tháng 4/2025
+biz_120	Trung bình mỗi đơn tháng 1/2025 mang về bao nhiêu doanh thu?
+biz_120	Tháng 7/2025 tiền bán thuốc kê đơn là bao nhiêu?
+biz_115	Trong tháng 5 năm 2025 cửa hàng bán được mấy cái Thước thủy nhôm Total 60cm?
+biz_112	Doanh thu tháng 7/2025 bao nhiêu?
+biz_108	Tháng 6/2025 bán ra bao nhiêu kg Nếp cái hoa vàng vậy?
+biz_118	tính từ ngày 1/1 đến hết hôm nay, doanh thu năm nay là bao nhiêu
+biz_129	Tháng 6/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_122	so so chai siro tiffy chai 30ml ban ra trong 14 ngay ke tu ngay 09/05/2026, ngay tang gia len 17.000đ, voi 14 ngay ngay trc ngay do: tang hay giam bao nhieu %
+biz_127	coi giùm tỉ lệ huỷ đơn tháng này là bao nhiu %
+biz_106	tháng 4/2026 nhaapj hàng hết bnhiu tieenf
+biz_102	Đếm số đơn đã huỷ trong tháng 8/2025.
+biz_126	Cho hỏi sản phẩm bán được nhiều nhất trong tháng 8 năm 2025 là gì?
+biz_124	Tính đến hết ngày 26/10/2025, các đơn đặt đã hơn 15 ngày mà khách chưa trả hết còn nợ bao nhiêu tiền?
+biz_105	Ngày 27/03/2025 Trà chanh (L) tăng giá từ 31.000đ lên 32.500đ. Số ly bán được trong 7 ngày kể từ ngày đó so với 7 ngày trước đó thay đổi bao nhiêu %?
+biz_124	Xu hướng doanh thu 3 tháng 6/2025 → 7/2025 → 8/2025: có phải tháng 7/2025 cao hơn tháng 6/2025 và tháng 8/2025 cao hơn tháng 7/2025 nhỉ?
+biz_119	tháng 11/2025 ca chiều bán dc bnhiu tiền
+biz_112	Tháng này thu hồi được bao nhiêu tiền công nợ từ khách mua chịu?
+biz_118	Cộng mọi mặt hàng tính theo bình, 7 ngày gần nhất bán ra đc mấy bình?
+biz_119	tổng dthu hqua là nhiêu
+biz_105	Tháng 3/2025 riêng ca chiều bán được tổng cộng bao nhiêu tiền?
+biz_128	Doanh thu tháng 4/2026 so với tháng 4/2025 tăng hay giảm bao nhiêu %?
+biz_123	coi giùm dthu nhóm hàng mắt mũi họng chieems bn % toongr revenue tháng 7 năm 2025
+biz_102	ê trong tháng 12/2025, cửa hàng có mấy đơn ở trạng thái huỷ hả
+biz_130	Doanh thu tháng 12/2025 bao nhiêu?
+biz_111	tỉ lệ huỷ đơn tháng 8/2025 là bao nhiêu %
+biz_120	giá trị trung binhf một ddown tháng 4/2026 là bn nhỉ
+biz_112	Tuần trước doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_125	cho hỏi tháng 10/2025 cửa hàng bán được tổng cộng bnhiu tieenf
+biz_112	tháng 6/2026 có nhiêu ngày đạt dthu từ 12.000.000 đồng trở leen
+biz_118	Cho mình hỏi tháng 2/2025 mặt hàng Đinh 5 phân thu về bao nhiêu tiền?
+biz_117	trung bình mỗi đơn tháng 11/2025 mang về nhiêu dthu
+biz_123	Giá trị trung bình một đơn tháng 3/2025 là bao nhiêu vậy?
+biz_116	tháng 2/2026 bán thép hộp 40x80 dày 1.4mm cây 6m dc bao nhiêu tiền
+biz_108	Doanh thu trung bình trên một đơn tháng 2/2025 là bao nhiêu?
+biz_120	Tháng 12/2025 riêng ca sáng bán được tổng cộng bao nhiêu tiền?
+biz_117	trong tháng 3/2026, xe chở đươc bn đợt hàng
+biz_123	xem giúp tính đến hết ngày 27/02/2026, tổng số tiền khách còn nợ ở các đơn đã đặt quá 15 ngày là bao nhiêu
+biz_125	Tính riêng ngày hôm nay, doanh thu của cửa hàng được bao nhiêu tiền?
+biz_127	Doanh thu các đơn trả bằng COD và doanh thu các đơn trả bằng ví điện tử tháng 10/2025 lần lượt là bao nhiêu?
+biz_125	cho tôi biết dthu hôm qua
+biz_109	Tháng 7/2026, doanh thu các đơn trả bằng tiền mặt là bao nhiêu, doanh thu các đơn trả bằng COD là bao nhiêu?
+biz_124	liệt kê 3 khách nợ nhìu nhất tính đến hết ngày 07/07/2025, kèm số tiền còn nợ
+biz_123	cho tôi biết số ddown 30 ngày gần nhất
+biz_124	30 ngày gần nhất cửa hàng bán được mấy đơn
+biz_105	tháng 11/2025 bán topping trân châu đen được bnhiu tiền
+biz_112	Cho tôi biết dthu tuần trước.
+biz_109	tháng 10/2025 cửa hàng thu dc bao nhiêu tiền khách trả nợ
+biz_119	Cho mình hỏi tiền bán Berocca Performance viên sủi tuýp 10 viên tháng 2/2025 là bao nhiêu?
+biz_106	Tính đến hết ngày 23/03/2026, khách còn nợ cửa hàng tổng cộng bao nhiêu tiền?
+biz_115	Tháng 5/2025 bán Gạch ống 8x8x18 Tuynel đc bao nhiêu tiền?
+biz_103	Xét 3 tháng 1/2026, 2/2026 và 3/2026, doanh thu tháng nào lớn nhất?
+biz_104	so vs th trước đó, doanh thu tháng 12/2025 tăng hay giảm mấy %
+biz_128	Tháng 2/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_121	tháng 2/2025 ngày nào cửa hàng bán đươc nhiều tiền nhất vaayj
+biz_117	những sp nào đang còn hàng có hạn dùng từ 20/05/2026 đến heets 18/08/2026
+biz_119	Cho tôi biết dthu tháng 9/2025
+biz_129	So với tháng liền trước, doanh thu tháng 7 năm 2026 thay đổi bao nhiêu % vậy?
+biz_111	Cho mình hỏi tháng 7/2025 khách trả nợ cho các đơn đã mua chịu tổng cộng bao nhiêu tiền?
+biz_117	doanh thu của bộ đèn tuýp led T8 1.2m 18W rạng đông trong tháng 4 năm 2025 là bao nhiêu
+biz_123	Cho hỏi trong tháng 4/2026, khách Hà Loan Sơn mua chịu thêm bao nhiêu và trả bớt nợ được bao nhiêu? Trả lời hai số: nợ thêm, trả được.
+biz_115	Cho tôi biết dthu tháng 10/2025.
+biz_110	dthu bữa nay là bao nhiu hả
+biz_105	Trong tháng 3/2026, số ly size M bán đc là bao nhiêu, tính mọi loại đồ uống?
+biz_102	cho tôi biết dthu tháng 7/2025
+biz_103	7 ngày gần nhất cửa hàng bán được mấy đơn vậy?
+biz_112	Doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu phần trăm so với cùng kỳ tháng trước?
+biz_102	Trong quý 1 năm 2026, doanh thu của cửa hàng được bao nhiêu tiền?
+biz_129	Tổng doanh thu hôm qua là bao nhiêu?
+biz_111	Trong quý 4 năm 2025 có tổng cộng bao nhiêu đơn?
+biz_118	tháng này cửa hangf có bao nhiêu % đơn bị huỷ
+biz_118	tháng 8/2025 xe ddax giao total mấy đợt hàng
+biz_129	Ngày nào trong tháng 2/2026 doanh thu cao nhất?
+biz_104	Cho hỏi doanh thu tháng 10/2025 bao nhiêu?
+biz_117	Hết hôm nay, Gas Saigon Petro 12kg còn lại mấy bình trong kho?
+biz_120	Cho mình hỏi tổng tiền nhập hàng tháng 1/2025 là bao nhiêu?
+biz_130	check giùm tháng 2/2025 ai là khách mua nhìu lần nhất, tính theo số đơn ta
+biz_122	Tháng 1/2025 các mặt hàng nhóm dùng ngoài thu được tổng cộng bao nhiêu tiền?
+biz_118	Tỉ lệ huỷ đơn tháng 3/2025 là bao nhiêu % vậy?
+biz_123	Trong tháng 12 năm 2025, số khách mua ít nhất 4 đơn là bao nhiêu?
+biz_125	Tổng dthu trong ngày hôm nay là bao nhiêu
+biz_114	Trong quý 4 năm 2025 có tổng cộng bao nhiêu đơn ạ?
+biz_114	Trong tháng 5/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_121	prospan siro ho chai 100ml len gia 97.500đ tu ngay 29/07/2025; so 7 ngay ke tu ngay tang gia vs 7 ngay ngay trc, luong ban tinh theo chai tang hay giam bnhiu phan tram
+biz_116	Tháng 8/2025 bị huỷ mấy đơn nhỉ?
+biz_112	dthu từ đầu tháng này đến hết hnay hơn hay kém cùng kỳ tháng trước bao nhiêu phần trăm?
+biz_129	tháng 6/2026 tỉ lệ đơn bị huỷ là bnhiu %
+biz_128	Số đơn hàng hôm nay là bao nhiêu ạ?
+biz_106	check giùm dthu nhoms hàng bánh chiếm bnhiu % tổng doanh thu thangs 1 năm 2026
+biz_118	Tỉ trọng của nhóm cát đá trong doanh thu tháng 8/2026 là bao nhiêu %?
+biz_109	cho hỏi trong tháng 12/2025, khách nữ chiếm bao nhiu % doanh thu
+biz_119	Giúp mình tính đến cuối ngày hôm nay, trong kho còn mấy viên Strepsils Cool hộp 2 vỉ x 12 viên?
+biz_114	Tháng 1/2026 ngày nào cửa hàng bán được nhiều tiền nhất nhỉ?
+biz_112	Tính từ ngày 1/1 đến hết hnay, doanh thu năm nay là bao nhiêu?
+biz_121	ê dthu từ đầu tháng này đến hết bữa nay tăng hay giảm bao nhiêu phần trăm so vs cùng kỳ th trước
+biz_104	tháng 3/2026 hàng Bánh croissant thu về nhiêu tiền đó
+biz_123	Nhóm vitamin khoáng chất tháng 4/2025 bán được bao nhiêu tiền?
+biz_118	Xem giúp tháng 3/2025 bán Dây điện Cadivi CV 1.5 cuộn 100m được bao nhiêu tiền?
+biz_118	Giá trị trung bình một đơn tuần trước là bao nhiêu?
+biz_103	Tính từ ngày 1/1 đến hết hôm nay, doanh thu năm nay là bao nhiêu?
+biz_115	Tỉ trọng của nhóm ống nước trong doanh thu tháng 12/2025 là bao nhiêu % ạ?
+biz_104	Xem giúp tháng 4/2025 bán ra bao nhiêu ly Trà đào cam sả (M)?
+biz_105	Cho tôi biết số đơn tuần trước.
+biz_123	Tháng này, dthu các đơn bán tại quầy là bao nhiêu, doanh thu các đơn bán qua điện thoại là bao nhiêu?
+biz_130	Tháng 6/2026 các mặt hàng nhóm cơm mì cháo thu được tổng cộng bao nhiêu tiền?
+biz_113	Hôm 04/10/2025, Ống PVC Bình Minh D50 cây 4m bán ra với đơn giá bao nhiêu tiền một cây?
+biz_124	lê phúc đạt có lễ phép, chu đáo với khách hông
+biz_116	Tiền bán Kẽm buộc 1mm tháng 6/2026 là bao nhiêu vậy?
+biz_112	e dem so mat hang co mat o ≥ 187 don hang khac nhau trong thang 7/2026
+biz_105	Trong tháng 1 năm 2026 cửa hàng bán được mấy ly Cappuccino (M)?
+biz_106	Khách Vũ Cường Quân tháng 9/2025 nợ thêm bao nhiêu, trả được bao nhiêu nhỉ?
+biz_115	So với tháng liền trước, doanh thu tháng 2 năm 2026 thay đổi bao nhiêu %?
+biz_106	Cho mình hỏi tháng 3/2025 khách Đinh Tâm Long ghi nợ thêm bao nhiêu và trả nợ được bao nhiêu? Ghi hai số theo thứ tự: nợ thêm, trả được.
+biz_106	Cho mình hỏi lấy số nhập trừ số bán của Bánh croissant trong tháng 10/2025 thì được bao nhiêu cái?
+biz_112	tháng 4/2026 quán bán được bnhiu ly size l
+biz_121	Tính từ ngày 1/1 đến hết hôm nay, doanh thu năm nay là bao nhiêu?
+biz_123	Cho tôi biết dthu tháng 9/2025.
+biz_119	Trong tổng doanh thu tháng 5/2025, phần của thuốc kê đơn là bao nhiêu phần trăm ạ?
+biz_112	dthu trung bình trên một đơn tháng 2/2026 là bao nhiêu?
+biz_123	top 5 khách hàng có công nợ lớn nhất đến hết ngày 12/10/2025 và số nợ của từng người
+biz_128	tháng 10/2025 nhập hàng hết bao nhiêu tiền
+biz_127	check giùm bữa qua cửa hàng bán đc bao nhiêu tiền
+biz_109	Giá nhập bình quân một thùng Bia Heineken 330ml trong tháng 9 năm 2025 là bao nhiêu?
+biz_113	Trong tháng 1/2026, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_110	Tính riêng ngày hôm nay, cửa hàng bán được bao nhiêu đơn hàng?
+biz_116	Số đơn hàng quý 3/2025 là bao nhiêu?
+biz_130	dem so khach da mua ≥ 8 don trong thang 12/2025
+biz_103	Cho hỏi từ ngày 02/02/2026, Nước mắm Nam Ngư 750ml tăng giá lên 42.000đ. So 14 ngày kể từ ngày 02/02/2026 với 14 ngày ngay trước đó, số chai bán ra thay đổi bao nhiêu phần trăm?
+biz_116	dthu của Máy bơm nước Panasonic GP-129JXK 125W trong tháng 12 năm 2025 là bao nhiêu?
+biz_103	Phở Vifon bò đổi giá từ 9.000đ lên 9.400đ vào ngày 29/06/2025. 7 ngày kể từ ngày đó bán đc nhiều hay ít hơn 7 ngày liền trước bao nhiêu %, tính theo gói?
+biz_112	tháng 9/2025 cửa hàng bán dc tổng cộng bn tiền
+biz_123	Đếm số khách đã mua ≥ 5 đơn trong tháng 5/2026.
+biz_128	tỉ trọng của nhóm cơm mì cháo trong dthu tháng 8/2025 là bnhiu %
+biz_119	Tháng 3/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_104	tháng 7/2025 tỉ lệ đơn bij huỷ là bao nhiêu %
+biz_106	tuần trc ca chiều có bnhiu bill
+biz_114	Hôm qua có tổng cộng bao nhiêu đơn?
+biz_123	Ngày 18/02/2025 cửa hàng bán Enervon hộp 10 vỉ x 10 viên với đơn giá bao nhiêu một viên?
+biz_129	hqua cửa hàng bán đươc bao nhiêu tiền ta
+biz_124	Tháng 4/2025 doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_126	Xem giúp tiền bán Nghêu hấp sả tháng 12/2025 là bao nhiêu?
+biz_106	cho bảng 3 khách còn nowj nhiều nhất tính ddeens hết ngày 30/06/2026, kèm số tiền còn nợ
+biz_112	Cho tôi doanh thu của tháng 3/2026, tháng 4/2026 và tháng 5/2026, ghi lần lượt theo thứ tự đó.
+biz_102	Cho mình hỏi hôm nay cửa hàng có bao nhiêu đơn?
+biz_115	Xem giúp tháng 1/2026 mặt hàng Chống thấm Kova CT-11A tường 20kg bán được tổng cộng bao nhiêu thùng?
+biz_126	Ngày 03/05/2026 cửa hàng bán Vú heo nướng sa tế với đơn giá bao nhiêu một đĩa?
+biz_130	Từ tháng 3/2025 qua tháng 4/2025 rồi tháng 5/2025, doanh thu có tăng liên tục ko?
+biz_104	cho hỏi quán bán được bao nhiu ly size m trong tháng này, cộng mọi món
+biz_120	doanh thu tháng 1/2026 tăng hay giảm nhiêu % so với tháng trước
+biz_108	Tháng 4/2025 giá nhập bình quân một thùng Dầu ăn Simply 2L là bao nhiêu vậy?
+biz_108	dthu từ khách nhóm sỉ tháng 1/2025 là bao nhiu
+biz_120	hết hnay, Enterogermina 2 tỷ/5ml hộp 20 ống còn lại mấy ống trong kho
+biz_118	Giá trị trung bình một đơn tháng 3/2026 là bao nhiêu?
+biz_101	soos kg nếp cái hoa vàng bán đc trong tháng 9/2025 là bao nhiêu
+biz_116	Cho mình hỏi hôm 30/01/2026, Bếp gas đôi Rinnai RV-375SW bán ra với đơn giá bao nhiêu tiền một cái?
+biz_121	Doanh thu tuần này của cửa hàng là bao nhiêu?
+biz_130	cho hỏi dthu từng tháng của 3 tháng 11/2025, 12/2025, 1/2026 lần lượt là bao nhiêu
+biz_130	So cùng kỳ năm trước, doanh thu tháng 4/2026 tăng/giảm mấy phần trăm ạ?
+biz_116	Liệt kê 5 khách chi tiêu nhiều nhất trong tháng 3 năm 2026.
+biz_123	Doanh thu thuốc hoạt chất Cetirizin tháng này là bao nhiêu?
+biz_110	toongr dthu hôm qua là bn
+biz_130	hôm nay kho còn tồn bao nhiêu lon coca-cola lon lúc cuối ngày
+biz_104	Tháng 2/2026 doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_113	Tháng 10/2025 mặt hàng nào bán chạy nhất?
+biz_115	Cho mình hỏi giá trị trung bình một đơn tháng 3/2026 là bao nhiêu?
+biz_117	Trong tháng 9/2025, xét theo doanh thu, ngày nào bán đắt nhất nhỉ?
+biz_130	Xem giúp giá bán một con Cá lóc nướng trui vào ngày 12/06/2025 là bao nhiêu?
+biz_128	ngày 25/05/2026 cửa hàng bán khô mực nướng với đơn giá bao nhiu một con
+biz_130	Doanh thu nhóm hàng lẩu tháng 3 năm 2026 là bao nhiêu ạ?
+biz_116	Cộng mọi mặt hàng tính theo cây, hôm qua bán ra được mấy cây ạ?
+biz_129	Doanh thu trung bình trên một đơn tháng 6/2026 là bao nhiêu?
+biz_107	Doanh thu của Nước rửa chén Sunlight 750g trong tháng 7 năm 2025 là bao nhiêu?
+biz_113	tổng doanh thu trong ngày hôm nay là nhiêu
+biz_124	Doanh thu thuốc kê đơn tháng này bằng bao nhiêu phần trăm tổng doanh thu?
+biz_128	Đếm số đơn đã huỷ trong tháng 9/2025.
+biz_126	hqua cửa hàng bán đc bao nhiêu tiền?
+biz_117	30 ngày gần nhất dthu được bao nhiêu?
+biz_120	tháng 8/2025 nhà thuốc bans thuốc kê đơn đc bn tiền nhir
+biz_111	Tháng 2/2025 mặt hàng Cà phê muối (L) bán được tổng cộng bao nhiêu ly?
+biz_130	tu ngay 24/03/2026, khoai tay chien tang gia len 41.000đ. so 7 ngay ke tu ngay 24/03/2026 voi 7 ngay ngay trc do, so dia ban ra thay doi bao nhieu %
+biz_109	Tháng 4/2026 có bao nhiêu khách mua từ 3 đơn trở lên nhỉ?
+biz_105	trong tháng 8 năm 2025 cửa hàng bán dc mấy ly sinh tố bơ (m)
+biz_124	Tháng 4/2025 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_128	Cho mình hỏi so với ca sáng, doanh thu ca chiều tuần trước chênh bao nhiêu %?
+biz_109	Tháng 3/2025 giá nhập bình quân một thùng Nước suối Lavie 1.5L là bao nhiêu?
+biz_104	Quán bán được bao nhiêu ly size M trong tháng 7/2025, cộng mọi món?
+biz_101	Tháng 12/2025 cửa hàng bán được tổng cộng bao nhiêu tiền nhỉ?
+biz_109	có bao nhiêu khách đang còn thiếu tiền cửa hàng tính tới hết ngày 30/08/2025
+biz_108	tổng tiền nhập hàng tháng 1/2025 là nhiêu
+biz_105	Sữa tươi trân châu đường đen (M) lên giá 47.000đ từ ngày 11/06/2026; so 7 ngày kể từ ngày tăng giá với 7 ngày ngay trước, lượng bán tính theo ly tăng hay giảm bao nhiêu phần trăm?
+biz_117	Tháng 2/2026 cửa hàng có bao nhiêu % đơn bị huỷ ạ?
+biz_109	hqua cửa hàng bán được mấy đơn
+biz_102	So với tháng liền trước, doanh thu tháng 5 năm 2025 thay đổi bao nhiêu %?
+biz_120	Đến cuối ngày 12/06/2026, shop có mấy mặt hàng đang hết hàng?
+biz_106	Tháng 2/2025, doanh thu các đơn trả bằng ví điện tử chiếm bao nhiêu phần trăm tổng doanh thu?
+biz_112	Tuần trước doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_109	Doanh thu 3 tháng 2/2026, 3/2026, 4/2026 có tăng liên tục không?
+biz_120	Tỉ trọng dthu các đơn bán qua điện thoại trong tổng doanh thu tháng 2/2026 là bao nhiêu phần trăm?
+biz_116	cho hỏi trong tháng 11/2025, tỉ lệ ddown huỷ là bnhiu phần trăm
+biz_124	Lợi nhuận ròng tháng 6 năm 2025 là bao nhiêu?
+biz_106	tháng 4/2025 quán bán được bn ly size m ta
+biz_105	Từ 1/1 năm nay đến hết hnay đã bán đc bao nhiêu đơn?
+biz_120	coi giumf doanh thu trung bình trên một đơn thangs 3/2026 là bao nhiêu
+biz_120	Tính riêng ngày hôm nay, doanh thu của cửa hàng được bao nhiêu tiền?
+biz_116	tháng 7/2025 bán ra bn gói keo chà ron weber 1kg
+biz_103	Xem giúp doanh thu từ đầu năm tới hết hôm nay là bao nhiêu?
+biz_107	tháng 2/2026 cửa hàng bán đươc total bao nhiu tiền
+biz_127	cho hỏi bữa qua có tổng cộng bao nhiêu đơn nhỉ
+biz_102	liệt kê 5 khách chi tiêu nhiều nhất trong tháng 7 năm 2025
+biz_103	Doanh thu của Bánh Chocopie 12 cái trong tháng 6 năm 2025 là bao nhiêu?
+biz_111	Doanh thu hôm nay là bao nhiêu?
+biz_116	dthu tháng 8/2025 tăng hay giảm bao nhiêu phần trăm so với th trước
+biz_110	Hôm qua cửa hàng bán được bao nhiêu tiền?
+biz_101	xem giúp tháng 9/2025 hàng nào chạy nhất
+biz_122	trung bình mỗi đơn tuần rồi mang về bn doanh thu
+biz_107	Tổng doanh thu tháng 6 năm 2026 là bao nhiêu?
+biz_115	dthu hôm nay là bao nhiêu?
+biz_128	Giúp mình tính đến cuối ngày hôm nay, trong kho còn mấy lon Bia Tiger Bạc lon?
+biz_121	Tháng 5/2025 có bao nhiêu đơn hàng có doanh thu từ 42.000 đồng trở lên?
+biz_118	đếm số ngày trong tháng 9 năm 2025 mà dthu cả ngày từ 59.000.000 đồng trở lên
+biz_121	trong 3 tháng từ tháng 6/2026 đến tháng 8/2026, tháng nào có doanh thu cao nhất z
+biz_118	Tháng 5/2026 cửa hàng bán đc tổng cộng bao nhiêu tiền
+biz_107	Số kg Nếp cái hoa vàng bán đc trong tháng 8/2025 là bao nhiêu?
+biz_123	tuoi no khach den het ngay 24/10/2025: so tien con no cua nhom 0–7 ngay, 8–15 ngay, tren 15 ngay lan luot la bao nhieu
+biz_104	so với th trước đó, doanh thu tháng 6/2025 tăng hay giảm mấy %
+biz_104	check giùm so vs tháng liền trc, dthu tháng 4 năm 2026 thay đổi bnhiu %
+biz_128	Tháng này cửa hàng có bao nhiêu % đơn bị huỷ nhỉ?
+biz_121	Tháng này nhà thuốc thu được bao nhiêu tiền từ các thuốc có hoạt chất Paracetamol + Phenylephrin + Clorpheniramin?
+biz_115	doanh thu tháng 6/2025 nhiêu ta
+biz_104	thangs 8/2025 quán bans đươc bao nhiêu ly size l
+biz_105	So tiền mua hàng tháng 11/2025 của khách ở đường Nguyễn Tất Thành với khách ở đường Bạch Đằng: bên nào nhiều hơn?
+biz_108	tháng 3/2026 khách nào mua nhìu tiền nhất
+biz_115	trong quý 3 năm 2025, dthu của cửa hàng đươc bao nhiêu tieenf
+biz_102	Cho mình biết số đơn hôm qua.
+biz_112	Tổng doanh thu tháng 6 năm 2025 là bao nhiêu?
+biz_111	Xem giúp số ly Sữa tươi trân châu đường đen (L) bán được trong tháng 7/2025 là bao nhiêu?
+biz_127	tháng 2/2026 ngày nào cửa hàng bán dc nhiều tiền nhất
+biz_107	check giùm cho tôi biết doanh thu tháng 10/2025
+biz_117	Có bao nhiêu mặt hàng vẫn đang bán mà trong 7 ngày gần nhất không bán ra được cái nào?
+biz_115	đếm giúp tôi số mawtj hàng ế đến mức trong giai đoạn từ 29/07/2025 đến hết 04/08/2025 không bán dc lần nào
+biz_124	thuốc có hoạt chất loratadin thangs 6/2025 bán được tổng cộng bnhiu tiền
+biz_106	từ đầu tháng này đến hết hôm nay, doanh thu hơn hay kém cùng kỳ tháng trc mấy %
+biz_106	xem giúp cửa hàng bán đươc bao nhiêu đơn trong quý 3 năm 2025
+biz_121	30 ngày gaanf nhất cửa hangf bán được bao nhiêu tiền
+biz_102	Hôm qua cửa hàng có bao nhiêu đơn hàng?
+biz_130	tuần trc dthu bình quân mỗi bill là bao nhiu
+biz_126	Hôm qua cửa hàng bán được bao nhiêu tiền ạ?
+biz_128	Cho tôi biết doanh thu hôm qua.
+biz_116	Xem giúp 3 mặt hàng bán chạy nhất tháng 3/2026 là những mặt hàng nào?
+biz_115	Tháng 3/2026 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_128	Đếm số đơn đã huỷ trong tháng 7/2026.
+biz_124	tháng 9/2025 cửa hangf có bao nhiêu % đơn bij huỷ
+biz_121	revenue tuần rồi của cuwar hàng laf bnhiu
+biz_124	Ai là người bán có doanh thu cao nhất tháng 2 năm 2025?
+biz_113	Tháng 3/2026 mặt hàng Thép Pomina D10 cây 11.7m bán đc tổng cộng bao nhiêu cây
+biz_123	Tháng 3/2025, số nhập trừ số bán của Telfast HD 180mg hộp 3 vỉ x 10 viên là bao nhiêu viên?
+biz_102	Tháng 3/2026 có bao nhiêu đơn hàng bị huỷ?
+biz_116	Giai đoạn từ 15/02/2026 đến hết 21/02/2026, cửa hàng có mấy mặt hàng ế hẳn, không ai mua cái nào nhỉ?
+biz_117	từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bnhiu % so vs cùng kỳ th trước
+biz_109	5 khách hàng có tổng tiền mua cao nhất tháng 1/2025 là ai?
+biz_104	Tháng 11/2025 quán bán ra tổng cộng mấy ly size M, cộng tất cả các món nhỉ?
+biz_121	Tháng này, doanh thu các đơn bán qua điện thoại chiếm bao nhiêu phần trăm tổng doanh thu?
+biz_127	Tháng 2/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_108	trung bình mỗi đơn tháng 9/2025 mang về bn dthu
+biz_122	Tháng 5/2025 thu được bao nhiêu tiền từ các thuốc phải kê đơn?
+biz_115	So với tháng trước đó, doanh thu tháng 3/2025 tăng hay giảm mấy phần trăm?
+biz_111	Xem giúp doanh thu tháng 3 năm 2026 tăng trưởng bao nhiêu % so với tháng 3 năm 2025?
+biz_117	Trong tháng 2 năm 2026 cửa hàng bán được mấy cây Thép Pomina D14 cây 11.7m?
+biz_110	Hôm qua cửa hàng bán đc bao nhiêu tiền?
+biz_102	tháng 9/2025 bán dầu ăn tường an 1L được bao nhiêu tiền
+biz_118	Tháng 7/2025 các mặt hàng nhóm xi măng thu được tổng cộng bao nhiêu tiền?
+biz_130	Trong tháng 10/2025, tỉ lệ đơn huỷ là bao nhiêu phần trăm nhỉ?
+biz_117	Tháng 4/2026 cửa hàng có bao nhiêu % đơn bị huỷ vậy?
+biz_117	Tháng 4/2026 giá nhập bình quân một Bộ van dây gas Namilux là bao nhiêu?
+biz_106	Đếm số mặt hàng có mặt ở ≥ 92 đơn hàng khác nhau trong tháng 2/2025.
+biz_107	Tháng 12/2025 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_106	Tháng 2/2025 cửa hàng có bao nhiêu % đơn bị huỷ nhỉ?
+biz_122	Tháng 10/2025 nhà thuốc thu được bao nhiêu tiền từ các thuốc có hoạt chất Natri clorid ạ?
+biz_115	tháng 5/2025 hàng nước khoáng lavie 19L bán được tổng cộng nhiêu bình
+biz_105	Trong tháng 5/2025, số ly size M bán đc là bao nhiêu, tính mọi loại đồ uống?
+biz_129	bữa qua toongr cộng bán dduwowcj bnhiu lon
+biz_105	Từ đầu tháng này đến hết hôm nay, dthu thay đổi bao nhiêu % so với cùng kỳ tháng trước?
+biz_129	xem giúp tháng 2/2026 bị huỷ mấy đơn z
+biz_106	Khách mua nhiều tiền nhất tháng 3/2026 là ai?
+biz_118	Cuối ngày hôm nay CB Panasonic MCB 2P 20A còn bao nhiêu cái?
+biz_107	Trong tháng 2 năm 2026 cửa hàng bán được mấy kg Nếp cái hoa vàng?
+biz_125	tháng 1/2025 cửa hangf bán đc total bn tieenf
+biz_130	Tổng doanh thu 7 ngày gần nhất là bao nhiêu?
+biz_120	trong thangs 5/2025, số đơn ca chiều hơn hay kém ca sáng bao nhiêu % vậy
+biz_116	Cho mình hỏi tháng 3/2026 nhóm cát đá chiếm bao nhiêu % doanh thu?
+biz_115	Số đơn hàng hôm nay là bao nhiêu?
+biz_123	Sản phẩm mang lại lợi nhuận gộp lớn nhất trong tháng 3 năm 2025 là gì vậy?
+biz_112	Tuần trước cửa hàng bán ra tổng cộng mấy ly?
+biz_116	Có bao nhiêu mặt hàng vẫn đang bán mà trong giai đoạn từ 12/02/2026 đến hết 18/02/2026 không bán ra được cái nào?
+biz_105	Tháng 12/2025 quán bán ra tổng cộng mấy ly size L, cộng tất cả các món?
+biz_111	xem giúp tháng 7/2025 dthu thay đổi bn % so vs tháng liền trc hả
+biz_102	Ngày nào trong tháng 6/2025 doanh thu cao nhất?
+biz_102	Tháng 3/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_130	Trong tháng 5/2026, tỉ lệ đơn huỷ là bao nhiêu phần trăm?
+biz_110	Ngày nào trong tháng 5/2025 doanh thu cao nhất vậy?
+biz_115	Xem giúp doanh thu tháng 7/2025 bao nhiêu?
+biz_108	Cho hỏi hôm 17/02/2026, Tương ớt Chinsu 250g bán ra với đơn giá bao nhiêu tiền một chai?
+biz_129	Tháng 7/2025 doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_109	Xem giúp tháng 5/2025 có mấy khách mua từ 5 đơn trở lên?
+biz_121	Trong tháng 4/2026, bao nhiêu đơn có tiền hàng đạt 130.000 đồng trở lên?
+biz_112	cho tôi biết doanh thu hqua
+biz_130	Cho mình hỏi tháng 2/2025 bị huỷ mấy đơn?
+biz_123	tổng dthu tháng 11 năm 2025 là bn
+biz_108	số kg nếp cái hoa vàng bán đươc trong tháng 4/2025 là bn nhir
+biz_104	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_111	Xem giúp hôm qua có tổng cộng bao nhiêu đơn?
+biz_115	Giá trị trung bình một đơn tháng 5/2025 là bao nhiêu vậy?
+biz_119	trừ thuốc kê đơn ra, tháng 6/2025 các mặt hàng còn lại bán đc bao nhiêu tiền hả
+biz_108	Trong tháng 3/2026, tỉ lệ đơn huỷ là bao nhiêu phần trăm vậy?
+biz_103	tồn kho red bull 250ml cuối ngày hôm nay là bao nhiêu lon
+biz_103	Tháng 8/2025 mặt hàng Nếp cái hoa vàng bán đc tổng cộng bao nhiêu kg
+biz_113	Trong quý 2 năm 2026, dthu của cửa hàng được bao nhiêu tiền
+biz_127	Tính riêng ngày hôm nay, dthu của cửa hàng đc bao nhiêu tiền?
+biz_102	trung bình mỗi đơn tháng 7/2025 mang về bao nhiêu dthu
+biz_130	Cho hỏi trong tháng 5/2025, nhóm gỏi đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_111	Cho mình hỏi số ly Sinh tố xoài (M) bán được trong tháng 8/2025 là bao nhiêu?
+biz_110	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_124	coi giùm tháng 6/2025 cửa hàng thu đc bnhiu tiền khách trả nợ
+biz_130	Xem giúp so số đĩa Cơm chiên Dương Châu bán ra trong 14 ngày kể từ ngày 22/06/2026, ngày tăng giá lên 76.000đ, với 14 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_109	cho tôi biết dthu tháng 11/2025
+biz_111	Cho hỏi tỉ trọng của nhóm đá xay trong doanh thu tháng 9/2025 là bao nhiêu %?
+biz_108	Trong tổng dthu tháng 3/2025, phần của khách nhóm thân thiết là mấy phần trăm
+biz_102	Tính riêng ngày hôm nay, doanh thu của cửa hàng được bao nhiêu tiền?
+biz_121	Cho hỏi trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu?
+biz_130	dthu hôm qua của cửa hàng là bao nhiêu
+biz_126	Cho hỏi tháng 1/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_113	Hôm qua cửa hàng bán được bao nhiêu tiền?
+biz_112	nước ép dưa hấu (l) lên giá 45.000đ từ ngày 25/11/2025; so 7 ngày kể từ ngày tăng giá với 7 ngày ngay trước, lượng bán tính theo ly tăng hay giảm nhiêu %
+biz_129	Trong tháng 4/2026, nhóm nướng đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_114	Trong quý 2 năm 2025 có tổng cộng bao nhiêu đơn nhỉ?
+biz_116	Liệt kê 3 khách chi tiêu nhiều nhất trong tháng 12 năm 2025.
+biz_121	Đếm số đơn hàng tháng 11/2025 có tiền hàng từ 290.000 đồng trở lên.
+biz_119	Liệt kê 5 khách chi tiêu nhiều nhất trong tháng 3 năm 2025.
+biz_118	Cho hỏi ai là khách có số đơn mua nhiều nhất trong tháng 1 năm 2026?
+biz_123	tháng này doanh thu từ khách nhóm sỉ đc bao nhiu đó
+biz_116	Giúp mình đếm số đơn đã huỷ trong tháng 6/2025.
+biz_105	Top 5 sp bán nhiều nhất tuần này là những gì?
+biz_109	tháng này thu hồi được nhiêu tiền công nợ từ khách mua chịu
+biz_118	doanh thu 30 ngày gần nhất của cửa hangf laf bao nhiêu z
+biz_130	Tháng 12/2025 ngày nào cửa hàng bán được nhiều tiền nhất ạ?
+biz_120	trong quý 2 năm 2025, dthu của cửa hàng được nhiêu tiền vậy
+biz_109	Xem giúp so số lon Red Bull 250ml bán ra trong 7 ngày kể từ ngày 05/01/2026, ngày tăng giá lên 13.000đ, với 7 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_112	Ngày 23/08/2025 Cà phê muối (M) tăng giá từ 35.000đ lên 37.000đ. Số ly bán được trong 7 ngày kể từ ngày đó so với 7 ngày trước đó thay đổi bao nhiêu %?
+biz_121	Tháng 3/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_115	tỉ trọng của nhóm gas & nước trong doanh thu tháng 2/2026 là bnhiu %
+biz_129	Ai là khách chi tiêu nhiều nhất trong tháng 4 năm 2026
+biz_129	Doanh thu nhóm hàng hải sản chiếm bao nhiêu phần trăm tổng doanh thu tháng 3 năm 2025?
+biz_130	Tháng 1/2026 mặt hàng Trà đá thu về bao nhiêu tiền?
+biz_128	Tuần trước ca chiều bán được mấy đơn?
+biz_109	Tháng 4/2025 lãi gộp của cửa hàng là bao nhiêu?
+biz_118	Cho mình hỏi hôm nay cửa hàng có bao nhiêu đơn?
+biz_105	Từ ngày 29/09/2025, Matcha latte (M) tăng giá lên 54.000đ. So 30 ngày kể từ ngày 29/09/2025 với 30 ngày ngay trước đó, số ly bán ra thay đổi bao nhiêu phần trăm nhỉ?
+biz_128	Xem giúp khách nào chi nhiều tiền nhất cho cửa hàng trong tháng 2/2026?
+biz_103	Tuần này cửa hàng bán được bao nhiêu tiền?
+biz_121	xem giúp tồn cuối bữa nay của amoxicillin 500mg domesco hộp 10 vỉ x 10 viên là mấy vỉ chẵn, mấy viên lẻ z
+biz_118	Cho tôi biết doanh thu 30 ngày gần nhất.
+biz_123	Tính đến hết ngày 28/06/2026, lô Kẹo ngậm Bổ phế Nam Hà Candy hộp 10 vỉ x 8 viên gần hết hạn nhất có hạn dùng ngày nào?
+biz_108	Cho hỏi tháng 2/2025 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_120	So với ca sáng, số đơn ca chiều tháng 4/2025 chênh bao nhiêu %?
+biz_128	Xem giúp giá trị trung bình một đơn tháng 5/2025 là bao nhiêu?
+biz_106	Cho hỏi trung bình mỗi đơn tháng 5/2025 mang về bao nhiêu doanh thu?
+biz_119	Tháng 4/2026 nhà thuốc thu được bao nhiêu tiền từ các thuốc có hoạt chất Loratadin?
+biz_102	Doanh thu tháng 3/2026 so với tháng 3/2025 tăng hay giảm bao nhiêu %?
+biz_126	Trong tháng 2 năm 2025 cửa hàng bán được mấy đĩa Bò lá lốt nướng?
+biz_123	trong số khách đã mua hàng tháng 8/2025, nhiêu % mua từ 4 đơn trở lên
+biz_116	soos bill quý 2/2026 là bnhiu
+biz_123	thuốc có hoạt chất nhôm phosphat người lớn nên uống mỗi lần mấy viên
+biz_115	Cho mình hỏi tổng doanh thu tháng 3 năm 2025 là bao nhiêu?
+biz_123	Từ tháng 12/2025 qua tháng 1/2026 rồi tháng 2/2026, doanh thu có tăng liên tục không?
+biz_118	Từ ngày 02/09/2026, Gạch ống 8x8x18 Tuynel tăng giá lên 1.400đ. So 7 ngày kể từ ngày 02/09/2026 với 7 ngày ngay trước đó, số viên bán ra thay đổi bao nhiêu phần trăm?
+biz_108	cho tooi biết doanh thu hqua
+biz_117	Cho mình hỏi mặt hàng bán chạy nhất tuần rồi là mặt hàng nào?
+biz_129	Cho mình hỏi trong tháng 7/2026, nhóm khai vị đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_124	Tính đến hết ngày 11/12/2025, có bao nhiêu khách còn nợ cửa hàng?
+biz_112	tháng này, bạch hùng ngân ghi nợ thêm bn tiền và đã trả nợ được bao nhiêu
+biz_110	doanh thu hôm qua của cửa hangf laf bn ta
+biz_110	Tổng doanh thu quý 3/2025 là bao nhiêu?
+biz_103	Từ 1/1 năm nay đến hết hôm nay đã bán được bao nhiêu đơn?
+biz_105	tháng 2/2025 cửa hàng bỏ ra bao nhiêu tiền nhập hàng
+biz_119	xem giúp tổng tiền bán các mặt hàng k kê đơn tháng 4/2026 là nhiêu
+biz_106	Ngày 06/02/2026 Espresso (double) tăng giá từ 41.000đ lên 43.000đ. Số ly bán được trong 7 ngày kể từ ngày đó so với 7 ngày trước đó thay đổi bao nhiêu %?
+biz_120	trong tháng 8/2025, nhóm mắt mũi họng đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng
+biz_108	Tháng 8/2025, doanh thu ca chiều tăng hay giảm bao nhiêu % so với ca sáng vậy?
+biz_126	doanh thu tháng 5/2026 bao nhiêu
+biz_103	Từ tháng 11/2025 qua tháng 12/2025 rồi tháng 1/2026, doanh thu có tăng liên tục không?
+biz_104	Top 3 sản phẩm bán nhiều nhất tháng 4 năm 2025 là những gì?
+biz_108	dthu các đơn bán tại quầy tháng 1/2026 là bao nhiêu?
+biz_123	Trong tổng doanh thu tháng 5/2026, phần của khách nhóm thân thiết là mấy phần trăm?
+biz_126	quý 2 năm 2025 cửa hàng bán đc tổng cộng bao nhiêu tiền
+biz_108	tháng này, dthu các đơn bán qua điện thoại chiếm bao nhiêu % tổng doanh thu ta
+biz_126	Tổng doanh thu quý 4/2025 là bao nhiêu?
+biz_108	Tháng 8/2025 nhóm mì gói chiếm bao nhiêu % doanh thu?
+biz_120	Tháng này nhà thuốc thu đc bao nhiêu tiền từ các thuốc có hoạt chất Natri clorid?
+biz_122	Trong tháng này, tỉ lệ đơn huỷ là bao nhiêu phần trăm?
+biz_106	tháng 2/2025 quán bán đc bao nhiu ly size l
+biz_114	cho tôi biết dthu hôm qua
+biz_103	Doanh thu từ đầu tháng này đến hết hôm nay hơn hay kém cùng kỳ tháng trước bao nhiêu phần trăm?
+biz_109	xem giúp dthu tháng 7 năm 2026 tăng trưởng bn % so với tháng 7 năm 2025 nhỉ
+biz_118	Tuần rồi ai mua hàng nhiều tiền nhất?
+biz_129	Tháng 7/2025 nhóm chiên xào chiếm bao nhiêu % doanh thu?
+biz_109	Ngày 25/05/2025 cửa hàng bán Mì Hảo Hảo tôm chua cay với đơn giá bao nhiêu một gói?
+biz_127	tháng 9/2025 dthu thay đổi bnhiu % so vs tháng liền trước
+biz_120	Cho tôi biết dthu hqua
+biz_105	Xem giúp tháng 12/2025, doanh thu ca chiều tăng hay giảm bao nhiêu % so với ca sáng?
+biz_102	Tính riêng ngày hôm nay, cửa hàng bán được bao nhiêu đơn
+biz_117	top 3 sp bán nhiều nhất tháng 4 năm 2026 là những j
+biz_117	Ngày 25/02/2026 cửa hàng bán Ống PVC Bình Minh D32 cây 4m giá bao nhiêu một cây?
+biz_119	Tháng 9/2025 các mặt hàng nhóm vitamin khoáng chất thu đc tổng cộng bao nhiêu tiền?
+biz_124	Tháng 9/2025 bán hàng không cần đơn bác sĩ được bao nhiêu tiền?
+biz_127	Cho hỏi trong tháng 3 năm 2025 cửa hàng bán được mấy tô Canh chua cá lóc?
+biz_122	Từ tháng 4/2025 đến tháng 6/2025, doanh thu mỗi tháng là bao nhiêu? Ghi 3 số theo thứ tự thời gian.
+biz_104	cho hỏi trong tháng này, tỉ lệ đơn huỷ là bao nhiêu phần trăm
+biz_114	tổng doanh thu trong ngày hôm nay là bao nhiu
+biz_127	Cho hỏi so với tháng trước đó, doanh thu tháng 1/2026 tăng hay giảm mấy phần trăm?
+biz_105	Tuần rồi top 3 hàng bán chạy nhất là gì?
+biz_111	đếm số đơn đã huỷ trong tháng 6/2025
+biz_101	số bill hôm qua là bao nhiêu
+biz_122	So số viên Zyrtec 10mg hộp 1 vỉ x 10 viên bán ra trong 30 ngày kể từ ngày 06/02/2026, ngày tăng giá lên 8.300đ, với 30 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu % nhỉ?
+biz_101	Tháng 10/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_129	xem giúp top 3 khách hàng có công nợ lớn nhất đến hết ngày 14/08/2026 và số nợ của từng người
+biz_111	check giùm tổng dthu hqua là nhiêu
+biz_118	tỉ lệ huỷ đơn tháng 4/2026 là bn %
+biz_101	cho tôi biết số đơn hqua
+biz_123	Tháng 1/2025 dthu hàng không kê đơn là bao nhiêu?
+biz_111	Trong tháng 1/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_115	Top 3 sản phẩm bán nhiều nhất tháng 4 năm 2026 là những gì?
+biz_101	Cho tôi biết số đơn hqua.
+biz_116	số đơn hoom nay là nhiêu
+biz_130	Tháng 4/2025 có mấy mặt hàng được mua ở 231 đơn khác nhau trở lên?
+biz_130	Tính riêng ngày hôm nay, cửa hàng bán đc bao nhiêu đơn?
+biz_120	Giúp mình đếm số đơn đã huỷ trong tháng 5/2025.
+biz_115	Hôm qua doanh thu được bao nhiêu?
+biz_124	tháng 11/2025 cửa hàng bán dc total bao nhiêu tieenf
+biz_122	check giùm tiffy dey hộp 25 vỉ x 4 viên đổi giá từ 1.100đ lên 1.200đ vào ngày 09/06/2026. 14 ngày kể từ ngày đó bán đc nhiều hay ít hơn 14 ngày liền trc bao nhiêu %, tính theo viên
+biz_130	doanh thu nhóm hàng lẩu tháng 4 năm 2025 là bao nhiêu
+biz_105	Có mấy ngày trong tháng 2/2025 cửa hàng bán đc từ 10.000.000 đồng trở lên
+biz_128	thangs 7/2025 nhóm cơm mì cháo bán dduwowcj nhiêu tiền
+biz_130	tháng 9/2025 các mặt hàng nhóm lẩu thu đc tổng cộng bao nhiêu tiền
+biz_130	Tháng 4/2026 nhóm chiên xào chiếm bao nhiêu % doanh thu?
+biz_102	tháng 1/2026 doanh thu bình quaan mooix đơn là nhiêu
+biz_116	check giùm trung bình mỗi đơn tháng 6/2026 mang về bn dthu
+biz_104	Hôm nay bán được mấy đơn hàng?
+biz_118	tháng 4 năm 2026, 3 khách nào chi tieeu nhiều nhất vậy
+biz_125	xem giúp tiền bán cơm chiên dương châu tháng 3/2025 laf bao nhiêu z
+biz_102	xem giúp tháng 6/2025 có bao nhiu bill bị huỷ vậy
+biz_118	Đếm số mặt hàng có mặt ở ≥ 42 đơn hàng khác nhau trong tháng 7/2025.
+biz_128	tính đến cuối ngày hôm nay, trong kho conf maays lon bia heineken lon
+biz_112	Espresso (double) đổi giá từ 41.000đ lên 43.000đ vào ngày 06/11/2025. 30 ngày kể từ ngày đó bán được nhiều hay ít hơn 30 ngày liền trước bao nhiêu %, tính theo ly?
+biz_119	tổng tieenf hangf nhập vào tháng 1/2026 là bao nhiu
+biz_127	Trong tháng 3/2026, tiền khách trả bớt nợ các đơn mua chịu được bao nhiêu?
+biz_128	check giumf ngày nào trong tháng 5/2025 dthu cao nhất
+biz_108	dthu ngày nào cao nhất trong tháng 3 năm 2025?
+biz_130	Giá trị trung bình một đơn tuần trước là bao nhiêu nhỉ?
+biz_117	doanh thu ngày nào cao nhất trong tháng 8 năm 2025
+biz_108	Doanh thu nhóm hàng gạo tháng 9 năm 2025 là bao nhiêu ạ?
+biz_107	Tiền bán Bia Tiger 330ml tháng 3/2025 là bao nhiêu?
+biz_120	Hôm nay kho còn tồn bao nhiêu viên Metformin Stella 500mg hộp 6 vỉ x 10 viên lúc cuối ngày nhỉ?
+biz_118	Doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu phần trăm so với cùng kỳ tháng trước?
+biz_122	ê tháng 6/2025 tir leej đơn bị huỷ là bao nhiêu %
+biz_118	Cho mình hỏi tháng 4/2025 khách hàng nào mua nhiều đơn nhất?
+biz_116	Trung bình mỗi đơn tháng 10/2025 mang về bao nhiêu doanh thu ạ?
+biz_116	5 mặt hàng bán chạy nhất tháng 6/2025 là những mặt hàng nào vậy?
+biz_129	tiền bans giò heo muối chiên giòn thangs 4/2025 là bn
+biz_102	Giúp mình đếm số đơn đã huỷ trong tháng 1/2025.
+biz_124	Xem giúp tháng 2/2026 tiền hàng các đơn do nhân viên mã NV002 bán cộng lại là bao nhiêu?
+biz_117	cuối ngày hoom nay lưới B40 mạ kẽm khổ 1.5m còn mấy cuộn 10m chẵn, maays m lẻ
+biz_127	xem giúp tháng 4/2025 doanh thu bình quân mỗi bill là bao nhiêu đó
+biz_118	Top 3 khách mua nhiều tiền nhất tuần rồi là ai
+biz_127	tính riêng ngày hôm nay, cửa hàng bán được bao nhiu bill
+biz_104	Tháng 11/2025 mặt hàng Trà vải (L) thu về bao nhiêu tiền?
+biz_109	Tháng 5/2026 riêng ca sáng bán được tổng cộng bao nhiêu tiền vậy?
+biz_128	Tỉ trọng doanh thu của khách nhóm thân thiết trong tổng doanh thu tháng 12/2025 là bao nhiêu phần trăm ạ?
+biz_112	tháng 2/2026 cửa hàng có bn % đơn bị huỷ
+biz_118	tháng 1/2026 có mấy ngày doanh thu đạt 53.000.000 đồng trở lên nhỉ
+biz_123	ai là người bán có doanh thu cao nhaats tháng 1 năm 2025
+biz_118	Cho mình hỏi so số m3 Cát san lấp bán ra trong 14 ngày kể từ ngày 19/05/2026, ngày tăng giá lên 291.500đ, với 14 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_117	Cho hỏi tháng 4/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_103	Doanh thu tháng 6/2025 hơn hay kém tháng trước bao nhiêu phần trăm?
+biz_109	Giúp mình đếm số khách đã mua ≥ 3 đơn trong tháng 3/2026.
+biz_128	Đếm số đơn đã huỷ trong tháng 11/2025.
+biz_106	trong tháng 11/2025, bao nhiêu sp có mặt trong ít nhất 145 bill
+biz_130	trong thang 12 nam 2025, so ngay co dthu ≥ 44.000.000 dong la bao nhieu
+biz_125	Cho tôi biết doanh thu hôm qua.
+biz_116	trong giai đoạn từ 07/10/2025 đến hết 13/10/2025, bao nhiu mặt hàng bị ế
+biz_103	giai đoạn từ 21/07/2025 đến heets 27/07/2025 có mấy món ế, k bán dc cái nào
+biz_109	Tháng 1/2026 nhân viên mã NV003 bán được bao nhiêu tiền?
+biz_124	trong tháng này, tiền khách trả bowts nợ các đơn mua chịu được bao nhiêu
+biz_111	bữa qua có tổng coongj bao nhiu đơn
+biz_102	tháng 2/2025 dthu thay đổi bao nhiêu % so vs tháng liền trước
+biz_130	cho hỏi Sụn gà rang muối lên giá 103.000đ từ ngayf 14/11/2025; so 7 ngày kể từ ngày tăng giá vowis 7 ngày ngay trc, lượng bán tính theo đĩa tăng hay giảm bn % ta
+biz_116	Tháng 1/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_119	trong tháng 4/2026, Hapacol 250 hộp 24 gói nhập vào giá bình quân một hộp là bao nhiêu
+biz_128	Trong tháng 6/2026, cửa hàng có mấy đơn ở trạng thái huỷ vậy?
+biz_115	Giá trị trung bình một đơn tháng 2/2025 là bao nhiêu?
+biz_107	hôm nay cuwar hangf bán đươc bao nhiu tiền z
+biz_127	coi giùm trong thangs 4/2026, cửa hàng có mấy đơn ở trạng thais huỷ
+biz_122	Tuần trước doanh thu bình quân mỗi đơn hàng là bao nhiêu?
+biz_121	dthu 30 ngày gần nhất của cửa hàng là bao nhiêu?
+biz_103	Cho tôi biết số đơn 30 ngày gần nhất.
+biz_118	Trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu?
+biz_105	Từ tháng 7/2025 qua tháng 8/2025 rồi tháng 9/2025, doanh thu có tăng liên tục không?
+biz_103	ngày 07/05/2025 nước suối aquafina 500ml tăng giá từ 5.000đ lên 5.200đ. số chai bán đươc trong 14 ngày kể từ ngày đó so vs 14 ngày trc đó thay ddooir bao nhiu % vậy
+biz_112	coi giùm Topping Kem cheese lên giá 13.000đ từ ngày 25/11/2025; so 14 ngày kể từ ngày tăng giá vs 14 ngày ngay trước, lượng bán tính theo phần tăng hay giảm bao nhiu phần trăm
+biz_124	Tháng 7/2025 cửa hàng lãi ròng được bao nhiêu tiền nhỉ?
+biz_105	Cho hỏi tháng 3/2025 bán ra bao nhiêu ly Sinh tố xoài (L)?
+biz_106	trong quý 3 năm 2025, dthu của cửa hàng được bao nhiêu tiền
+biz_115	tháng 9/2025 cuwar hàng bán được tổng coongj nhiêu tiền
+biz_108	coi giùm nhân viên bán giỏi nhất tháng 7/2025 là ai
+biz_127	Cho tôi 5 khách mua nhiều tiền nhất tháng 9/2025.
+biz_124	check giùm tính riêng ngày hôm nay, doanh thu của cửa hàng đươc bn tiền ta
+biz_118	heets hoom nay trong kho còn bnhiu cây băng keo điện nano 20 yard nguyên và bao nhiêu cuộn lẻ đó
+biz_109	tổng dthu 7 ngày gần nhất là bao nhiêu
+biz_117	Tháng 4/2026 mặt hàng Máy bơm nước Panasonic GP-129JXK 125W bán được tổng cộng bao nhiêu cái?
+biz_120	xem giúp tháng 2/2026 cửa hàng có bnhiu % đơn bị huỷ vậy
+biz_108	Tháng 5/2025 mặt hàng Nếp cái hoa vàng bán đc tổng cộng bao nhiêu kg?
+biz_103	Số đơn hàng hqua là bao nhiêu
+biz_108	Tháng 4/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm vậy?
+biz_129	Tháng 12/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_128	Doanh thu nhóm hàng khai vị chiếm bao nhiêu phần trăm tổng doanh thu tháng 7 năm 2026?
+biz_118	Cho mình hỏi tháng 2/2025 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_127	Tổng doanh thu tháng 10 năm 2025 là bao nhiêu?
+biz_104	Tháng 5/2025 bán ra bao nhiêu ly Cold brew (L)?
+biz_122	Tháng 3/2026 mặt hàng Gaviscon hộp 24 gói x 10ml thu về bao nhiêu tiền?
+biz_105	cho tôi biết dthu tháng 2/2025
+biz_126	tháng 5/2025 ngày nào cửa hàng bán được nhìu tiền nhất
+biz_102	Doanh thu hôm nay là bao nhiêu?
+biz_103	So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu % ạ?
+biz_102	check giùm cho tooi biết soos đơn hqua
+biz_113	cho hỏi hqua dthu được bao nhiu
+biz_102	Tháng 3/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_115	Có bao nhiêu mặt hàng vẫn đang bán mà trong giai đoạn từ 22/10/2025 đến hết 28/10/2025 không bán ra đc cái nào?
+biz_104	giá trị trung bình một đơn tháng 8/2025 là bn nhỉ
+biz_115	Cho tôi biết doanh thu tháng 5/2025.
+biz_102	Số kg Nếp cái hoa vàng bán đc trong tháng 5/2026 là bao nhiêu?
+biz_130	coi giùm từ đầu tháng này đến hết bữa nay, doanh thu hơn hay kém cùng kỳ tháng rồi mấy %
+biz_103	từ thangs 9/2025 qua tháng 10/2025 r tháng 11/2025, doanh thu có tăng liên tục hok vaayj
+biz_110	Tính riêng ngày hôm nay, cửa hàng bán được bao nhiêu đơn hàng?
+biz_104	Quán bán được bao nhiêu ly size L trong tháng này, cộng mọi món nhỉ?
+biz_101	Xem giúp tổng doanh thu tháng 7 năm 2026 là bao nhiêu?
+biz_105	Ca sáng tháng 12/2025 doanh thu được bao nhiêu?
+biz_115	Tỉ trọng của nhóm xi măng trong doanh thu tháng 8/2025 là bao nhiêu %?
+biz_122	Giá bán một viên Fugacar 500mg hộp 1 viên vào ngày 11/06/2026 là bao nhiêu?
+biz_115	trong tháng 6 năm 2025 cửa hàng bán đươc mấy kg kẽm buộc 1mm
+biz_124	Tháng 3/2025 cửa hàng nhập Salonpas cao dán hộp 24 gói x 10 miếng bình quân bao nhiêu tiền một hộp nhỉ?
+biz_111	So doanh thu các đơn bán qua điện thoại với doanh thu các đơn bán tại quầy tháng này: mỗi bên bao nhiêu nhỉ?
+biz_124	Tháng 6/2025 ai là khách mua nhiều lần nhất, tính theo số đơn?
+biz_105	7 ngày gần nhất cửa hàng bán được nhiêu tiền vậy
+biz_102	Doanh thu tháng 6/2025 bao nhiêu?
+biz_118	Tháng 2/2025 có mấy mặt hàng được mua ở 35 đơn khác nhau trở lên?
+biz_103	Cho hỏi trong tháng 10/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_119	cửa hàng bán đc bn đơn trong quý 4 năm 2025 đó
+biz_106	Giá bán một ly Trà sữa ô long (L) vào ngày 30/03/2026 là bao nhiêu?
+biz_106	Cho mình biết doanh thu tuần này.
+biz_126	Trong tháng 3/2026, xét theo dthu, ngày nào bán đắt nhất?
+biz_119	Trong tháng 5/2025, tỉ lệ đơn huỷ là bao nhiêu phần trăm nhỉ?
+biz_121	Xem giúp hàng nào bán chạy nhất tháng 6/2025?
+biz_120	Trong tháng 12/2025, Enterogermina 2 tỷ/5ml hộp 20 ống nhập vào giá bình quân một hộp là bao nhiêu?
+biz_121	Cho mình hỏi tỉ lệ huỷ đơn tháng 8/2025 là bao nhiêu %?
+biz_101	thangs 8/2025 bán Yakult 65ml dduwowcj bao nhiêu tiền
+biz_118	tháng 9/2025 dthu bình quân mỗi đơn hàng là bao nhiêu
+biz_124	Khách nhóm thân thiết tháng 6/2025 mua trung bình bao nhiêu tiền hàng mỗi đơn?
+biz_129	Tháng này, doanh thu các đơn trả bằng COD là bao nhiêu, doanh thu các đơn trả bằng chuyển khoản là bao nhiêu?
+biz_104	Cho tôi biết doanh thu tháng 2/2026.
+biz_102	Cho hỏi tháng 1/2026 bị huỷ mấy đơn?
+biz_124	Xem giúp đến hết ngày 28/06/2025, số khách còn công nợ với cửa hàng là bao nhiêu?
+biz_105	tu ngay 21/03/2026, sinh to xoai (l) tang gia len 50.500đ. so 7 ngay ke tu ngay 21/03/2026 voi 7 ngay ngay truoc do, so ly ban ra thay doi bao nhieu %
+biz_106	Có bao nhiêu khách đang còn thiếu tiền cửa hàng tính tới hết ngày 12/04/2025 nhỉ?
+biz_109	Hôm qua cửa hàng có bao nhiêu đơn
+biz_115	tháng 3/2026 bán ra bao nhiêu bao keo dán gạch weber.tai fix xám 25kg
+biz_106	ê tháng 8/2025 doanh thu bình quân mỗi bill là bn
+biz_120	Xem giúp top 3 sản phẩm bán nhiều nhất tháng 1 năm 2025 là những gì?
+biz_121	Efferalgan 500mg viên sủi hộp 4 vỉ x 4 viên lên giá 3.400đ từ ngày 22/11/2025; so 7 ngày kể từ ngày tăng giá với 7 ngày ngay trước, lượng bán tính theo viên tăng hay giảm bao nhiêu phần trăm?
+biz_105	Cho hỏi tháng 12/2025, số đơn ca chiều tăng hay giảm bao nhiêu % so với ca sáng?
+biz_122	Cho hỏi tháng 3/2025 cửa hàng lãi gộp bao nhiêu tiền?
+biz_123	Tháng 9/2025 tiền bán thuốc kê đơn chiếm mấy % tổng dthu?
+biz_115	Trong tháng 8/2025, cửa hàng có mấy đơn ở trạng thái huỷ?
+biz_116	Doanh thu tháng 3/2026 hơn hay kém tháng trước bao nhiêu phần trăm?
+biz_101	check giùm tổng dthu tháng 11 năm 2025 là bao nhiêu
+biz_130	xem giup tu ngay 02/07/2026, com trang tang gia len 10.500đ. so 14 ngay ke tu ngay 02/07/2026 vs 14 ngay ngay truoc do, so phan ban ra thay doi bao nhieu phan tram
+biz_118	Xem giúp hôm 19/08/2025, Xi măng INSEE Power-S bao 50kg bán ra với đơn giá bao nhiêu tiền một bao?
+biz_103	Tháng 2/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_115	Tháng 12/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_128	Cho mình hỏi trong tháng 2 năm 2026 cửa hàng bán được mấy đĩa Rau muống xào tỏi?
+biz_129	coi giùm tháng 1/2025 bán ra bn đĩa Đậu que xào tỏi
+biz_129	cho hỏi tháng 3/2026 bán má heo nướng nước mắm dc nhiêu tiền
+biz_120	tháng 5/2026 riêng ca chiều bán được toongr coongj bao nhiêu tiền
+biz_109	hôm nay kho còn tồn bao nhiu hộp Kem đánh răng P/S 180g lúc cuối ngày
+biz_111	Tháng 3/2025 thu hồi được bao nhiêu tiền công nợ từ khách mua chịu?
+biz_119	Doanh thu ngày nào cao nhất trong tháng 9 năm 2025?
+biz_111	Tháng 2/2025 bị huỷ mấy đơn?
+biz_118	trong số khách đã mua hàng tháng 7/2026, bnhiu phần trăm mua từ 4 đơn trở lên
+biz_120	Số đơn bị huỷ trong tháng 11 năm 2025 là bao nhiêu vậy?
+biz_123	Tính đến hết ngày 28/06/2026, khách còn nợ cửa hàng tổng cộng bao nhiêu tiền
+biz_115	dthu nhóm hàng hoàn thiện tháng 2 năm 2026 là bao nhiêu?
+biz_128	Tháng 12/2025 mặt hàng Gỏi xoài tôm nướng thu về bao nhiêu tiền ạ?
+biz_120	Thuốc có hoạt chất Loratadin tháng 9/2025 bán được tổng cộng bao nhiêu tiền?
+biz_120	Doanh thu tháng 9/2025 tăng hay giảm bao nhiêu phần trăm so với tháng trước?
+biz_125	Quý 1/2025 cửa hàng có bao nhiêu đơn?
+biz_103	Giúp mình liệt kê 5 mặt hàng bán chạy nhất tháng 3/2025.
+biz_124	trong tháng 1/2025, khách nghiêm mai hiếu mua chiuj thêm bao nhiêu và trả bớt nợ được bao nhiêu? trả lời hai số: nợ thêm, trả dduwowcj
+biz_122	dthu thuốc hoạt chất Loratadin tháng 1/2025 là bao nhiêu?
+biz_117	Từ đầu tháng này đến hết hôm nay, doanh thu hơn hay kém cùng kỳ tháng trước mấy % vậy?
+biz_129	Cho hỏi trong tháng 11/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_102	Số đơn quý 1/2026 là bao nhiêu?
+biz_107	Tháng 4/2026 bán ra bao nhiêu kg Nếp cái hoa vàng?
+biz_112	từ ngày 11/12/2025, Nước ép cam (M) tăng gias lên 41.000đ. So 30 ngày kể từ ngày 11/12/2025 với 30 ngày ngay trc đó, soos ly bán ra thay đổi bnhiu % vậy
+biz_124	Giúp mình liệt kê 3 mặt hàng bán chạy nhất tháng 4/2026.
+biz_106	Tháng 9/2025 số đơn ca chiều chênh ca sáng bao nhiêu phần trăm?
+biz_130	giá trị trung bình một đơn tuần rồi là nhiêu
+biz_118	giai đoạn từ 17/02/2026 đến hết 23/02/2026, cửa hàng có mấy mặt hàng ees hẳn, ko ai mua cái nào
+biz_130	Ai trong cửa hàng đc khách quý mến nhất?
+biz_111	Giúp mình liệt kê 5 khách nợ nhiều nhất tính đến hết ngày 19/08/2026, kèm số tiền còn nợ.
+biz_114	Cho mình biết doanh thu tháng 3/2025.
+biz_108	tháng 4/2026 bị huỷ mấy đơn z
+biz_102	Tháng 12/2025 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_111	Quán bán đc bao nhiêu ly size M trong tháng 2/2026, cộng mọi món
+biz_103	Cho mình hỏi trong giai đoạn từ 14/12/2025 đến hết 20/12/2025 có bao nhiêu mặt hàng không bán được cái nào?
+biz_118	ngay 02/08/2026 son lot jotun jotashield chong kiem 5L tang gia tu 720.000đ len 756.000đ. so thung ban duoc trong 30 ngay ke tu ngay do so vs 30 ngay trc do thay doi bao nhieu %
+biz_120	tháng này các thuốc có hoạt chất Cetirizin bán được bao nhieeu tiền
+biz_105	Doanh thu từng tháng của 3 tháng 11/2025, 12/2025, 1/2026 lần lượt là bao nhiêu?
+biz_109	Hôm qua cửa hàng bán được mấy đơn ạ?
+biz_120	Tháng 2/2025 bán ra bao nhiêu tuýp Acyclovir Stella kem 5% tuýp 5g vậy?
+biz_118	từ đầu tháng này đến hết bữa nay, doanh thu thay đổi bao nhiu % so vs cùng kỳ th trước
+biz_111	Hôm qua bán được bao nhiêu ly?
+biz_115	tiền bán gas petrolimex 12kg tháng 2/2026 là bn
+biz_122	tồn kho efticol 0,9% lốc 10 lọ x 10ml cuối ngày hôm nay được mấy lốc chẵn và mấy lọ lẻ
+biz_109	Cho mình hỏi trong tháng 2/2026, khách Cao Hà Mai mua chịu thêm bao nhiêu và trả bớt nợ được bao nhiêu? Trả lời hai số: nợ thêm, trả được.
+biz_129	cho hỏi tháng 11/2025 cửa hàng bán được tổng cộng bao nhiêu tiền
+biz_108	Cho hỏi trong tháng 10/2025, cửa hàng có mấy đơn ở trạng thái huỷ?
+biz_116	hôm qua cửa hàng bán dc bn tiền
+biz_105	tháng này, dthu các đơn bán tại quầy là nhiêu, doanh thu các đơn bán qua zalo oa là bao nhiêu z
+biz_129	Cho tôi biết doanh thu các đơn của khách nhóm thân thiết tháng 6/2025.
+biz_105	ngay 21/08/2025 cappuccino (m) tang gia tu 45.000đ len 47.000đ. so ly ban duoc trong 7 ngay ke tu ngay do so vs 7 ngay trc do thay doi bao nhieu %
+biz_105	Từ tháng 9/2025 đến tháng 11/2025, doanh thu mỗi tháng là bao nhiêu? Ghi 3 số theo thứ tự thời gian.
+biz_114	check giùm tháng 9/2025 ngày nào cửa hàng bán dc nhiều tiền nhất
+biz_102	so với tháng liền trc, dthu tháng 12 năm 2025 thay đổi bao nhiu % z
+biz_130	So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?
+biz_111	Quán bán được bao nhiêu ly size M trong tháng 6/2025, cộng mọi món?
+biz_117	liệt kê 3 mặt hàng hot nhất tháng 11/2025
+biz_129	số đơn bị huỷ trong tháng 5 năm 2026 là bao nhiu ta
+biz_115	Cho tôi biết dthu tháng 2/2025.
+biz_112	Tháng 4/2026 cửa hàng nhập Bánh tiramisu bình quân bao nhiêu tiền một hộp vậy?
+biz_119	Tháng 12/2025 mặt hàng Oresol 245 DHG hộp 20 gói thu về bao nhiêu tiền?
+biz_118	Tháng 5/2026 các mặt hàng nhóm xi măng thu được tổng cộng bao nhiêu tiền?
+biz_122	Tháng 2/2026 nhóm giảm đau hạ sốt bán được bao nhiêu tiền?
+biz_115	Tháng 7/2025 ngày nào cửa hàng bán đc nhiều tiền nhất?
+biz_120	Xem giúp tỉ lệ doanh thu thuốc kê đơn trên tổng doanh thu tháng 12/2025 là bao nhiêu %?
+biz_126	tiền bán gỏi xoài khô cá sặc tháng 5/2025 là bao nhiu
+biz_109	Giúp mình đếm số đơn hàng tháng 9/2025 có tiền hàng từ 180.000 đồng trở lên.
+biz_127	Cho tôi 3 khách mua nhiều tiền nhất tháng 4/2026.
+biz_115	Cửa hàng bán được bao nhiêu đơn trong quý 4 năm 2025?
+biz_106	cho hỏi số đơn 7 ngày gaanf nhất là bnhiu hả
+biz_120	dthu tháng 3/2025 bao nhiêu
+biz_112	Trong tháng 10 năm 2025 cửa hàng bán đc mấy ly Sữa tươi trân châu đường đen (L)?
+biz_102	cho hỏi top 3 khách mua nhiều tieenf nhaats tháng 12/2025 là ai
+biz_116	Tháng 10/2025 bán ra bao nhiêu cây Thép Pomina D14 cây 11.7m?
+biz_123	Plusssz Max Multivitamin viên sủi tuýp 20 viên lên giá 44.000đ từ ngày 20/11/2025; so 7 ngày kể từ ngày tăng giá vs 7 ngày ngay truwowcs, lượng bán tính theo tuýp tăng hay giảm bnhiu % z
+biz_115	Cho hỏi trong tháng này, tỉ lệ đơn huỷ là bao nhiêu phần trăm?
+biz_122	Tháng 4/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_116	Trong tháng 8/2025, nhóm ống nước đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_114	Cho hỏi hôm 02/07/2025, Gạch thẻ đặc 4x8x18 bán ra với đơn giá bao nhiêu tiền một viên?
+biz_111	Tháng 7/2026 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_117	Quý 1 năm 2025 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_124	tháng 6/2025 ngày nào cửa hàng bán dc nhìu tiền nhất
+biz_129	Tháng 4/2025 ai mua hàng nhiều tiền nhất vậy?
+biz_108	đếm soos đơn ddax huỷ trong tháng 6/2025
+biz_127	Quý 2 năm 2025 cửa hàng bán được tổng cộng bao nhiêu tiền nhỉ?
+biz_105	Giúp mình tính đến cuối ngày hôm nay, trong kho còn mấy cái Bánh croissant?
+biz_102	Doanh thu trung bình trên một đơn tháng 10/2025 là bao nhiêu vậy?
+biz_120	Tổng tiền hàng nhập vào tháng 7/2025 là bao nhiêu?
+biz_103	xem giup nuoc suoi lavie 1.5L doi gia tu 10.000đ len 10.500đ vao ngay 27/01/2026. 30 ngay ke tu ngay do ban duoc nhieu hay it hon 30 ngay lien truoc bnhiu %, tinh theo chai
+biz_123	Năm nay, tính từ đầu năm đến hết hôm nay, doanh thu của cửa hàng là bao nhiêu?
+biz_104	Doanh thu tháng 5/2026 bao nhiêu nhỉ?
+biz_124	doanh thu ngày nào cao nhất trong tháng 5 năm 2025
+biz_106	tới hết ngày 17/10/2025, cửa hàng còn bn tiền khách nợ chưa thu
+biz_108	Trong tuần trước, dthu ca chiều hơn hay kém ca sáng bao nhiêu phần trăm?
+biz_118	cho tôi biết dthu tháng 9/2025
+biz_121	Tổng dthu tuần này là bao nhiêu?
+biz_129	tổng doanh thu tháng 1 năm 2026 là bnhiu
+biz_117	Trong tháng 5 năm 2025, số đơn có doanh thu ≥ 1.500.000 đồng là bao nhiêu vậy?
+biz_122	dthu ngày nào cao nhất trong tháng 7 năm 2025 đó
+biz_107	Tháng 6/2025 cửa hàng bán được tổng cộng bao nhiêu tiền nhỉ?
+biz_102	Tháng 5/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_108	Doanh thu ngày nào cao nhất trong tháng 8 năm 2025 vậy?
+biz_110	Tổng doanh thu hôm qua là bao nhiêu?
+biz_124	Chênh lệch nhập trừ bán của Smecta hộp 30 gói trong tháng 4 năm 2026 là bao nhiêu gói?
+biz_105	Doanh thu tháng 8/2025 bao nhiêu?
+biz_103	Từ đầu tháng này đến hết hôm nay, doanh thu hơn hay kém cùng kỳ tháng trước mấy %?
+biz_121	Cho mình hỏi doanh thu 3 tháng 6/2026, 7/2026, 8/2026 có tăng liên tục không?
+biz_105	Doanh thu tháng 9/2025 bao nhiêu vậy?
+biz_112	Tháng 6/2026 có bao nhiêu ngày đạt doanh thu từ 10.000.000 đồng trở lên?
+biz_121	Cho hỏi tháng 9/2025 thu được bao nhiêu tiền từ các thuốc phải kê đơn?
+biz_115	Tháng 2/2025 có bao nhiêu đơn bị huỷ
+biz_118	tháng 2/2025 có total bao nhiu đợt giao hangf
+biz_108	Giúp mình tính doanh thu các đơn do khách nhóm thân thiết mua tháng 1/2025.
+biz_104	Số đơn hàng hôm nay là bao nhiêu?
+biz_101	tháng 6/2026 bán ra bao nhiu kg Nếp cái hoa vàng
+biz_122	cho hỏi ngày 07/02/2025 enterogermina 2 tỷ/5ml hộp 20 ống tăng giá từ 9.200đ lên 9.700đ. số ống bán dc trong 7 ngày kể từ ngày đó so vs 7 ngày trc đó thay đổi bao nhiêu %
+biz_113	Tháng 1/2026 bán ra bao nhiêu kg Thép cuộn phi 8 Hòa Phát ạ?
+biz_118	so vs cùng kỳ th trước, dthu từ đầu tháng này đến hết bữa nay tăng hay giảm bao nhiêu %
+biz_115	dthu nhóm hàng sắt thép chiếm nhiêu % toongr doanh thu tháng 10 năm 2025
+biz_104	Xem giúp hàng nào bán chạy nhất tháng 4/2025?
+biz_116	Tháng 6/2026 cửa hàng bán đc tổng cộng bao nhiêu tiền?
+biz_119	ê tỉ trọng cuar nhóm giảm đau hạ sốt trong revenue tháng 2/2026 là bao nhiu % ta
+biz_128	Giá nhập bình quân một thùng Bia Tiger Bạc lon trong tháng 5 năm 2026 là bao nhiêu?
+biz_120	Tháng 4/2025 các thuốc có hoạt chất Paracetamol + Phenylephrin + Clorpheniramin bán được bao nhiêu tiền?
+biz_114	Ngày nào trong tháng 4/2025 doanh thu cao nhất vậy?
+biz_111	nhóm đá xay tháng 2/2025 bán được bao nhiêu tiền
+biz_112	tháng 7/2026 quán bán đươc nhiêu ly size m
+biz_121	cho tooi bieets doanh thu tháng 4/2025
+biz_130	Ngày 17/01/2026 cửa hàng bán Mực chiên nước mắm với đơn giá bao nhiêu một đĩa nhỉ?
+biz_120	Tháng 11/2025 cửa hàng bỏ ra bao nhiêu tiền nhập hàng vậy?
+biz_102	Tháng 2/2025 dthu bình quân mỗi đơn là bao nhiêu?
+biz_113	trong tháng 5 năm 2026 cửa hàng bán dc mấy thùng gạch lát nền prime 60x60 thùng 4 viên ddos
+biz_105	Tháng 4/2026 ngày nào cửa hàng bán đc nhiều tiền nhất?
+biz_119	cho hỏi dthu ngày nào cao nhaats trong tháng 3 năm 2025
+biz_117	Cho mình hỏi so số bình Gas Petrolimex 12kg bán ra trong 7 ngày kể từ ngày 18/04/2026, ngày tăng giá lên 573.500đ, với 7 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_125	Cho mình hỏi trong tháng 1/2025, xét theo doanh thu, ngày nào bán đắt nhất?
+biz_118	Mặt hàng bán chạy nhất tuần rồi là mặt hàng nào?
+biz_119	so vs ca sangs, doanh thu ca chiều tháng 4/2026 chênh bao nhiu % nhỉ
+biz_117	doanh thu tuần rồi của cửa hàng là bao nhiêu hả
+biz_115	Giai đoạn từ 07/10/2025 đến hết 13/10/2025, cửa hàng có mấy mặt hàng ế hẳn, không ai mua cái nào?
+biz_126	Tháng 12/2025 ngày nào cửa hàng bán đc nhiều tiền nhất?
+biz_121	trong tháng 5/2025, khách nào mua nhìu đơn nhất
+biz_104	cho hỏi dthu thangs 11/2025 hơn hay kém tháng trc bnhiu phần trawm
+biz_117	Doanh thu tháng 6/2025 bao nhiêu?
+biz_111	Tháng này quán bán được bao nhiêu ly size L?
+biz_116	Đếm số đơn đã huỷ trong tháng 8/2026.
+biz_109	tu ngay 20/06/2025, bia tiger 330ml tang gia len 19.000đ. so 14 ngay ke tu ngay 20/06/2025 vs 14 ngay ngay truoc do, so lon ban ra thay doi bao nhieu % ha
+biz_108	trong tháng 2/2025, Nước rửa chén Sunlight 750g nhập vào giá bình quân một thùng là bao nhiu
+biz_103	Tiền bán Bàn chải Colgate tháng 9/2025 là bao nhiêu ạ?
+biz_106	Tháng 7/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_106	Tuần trước riêng ca sáng bán được tổng cộng bao nhiêu tiền?
+biz_106	Trong tháng này, tiền khách trả bớt nợ các đơn mua chịu đc bao nhiêu?
+biz_105	Tháng 2/2025 giá nhập bình quân một hộp Bánh tiramisu là bao nhiêu?
+biz_107	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_104	Tháng 10/2025 quán bán đc bao nhiêu ly size M
+biz_129	tiền bán giò heo muối chiên giòn thangs 3/2025 là nhiêu
+biz_113	Tháng 6/2026 mặt hàng Keo dán gạch Weber.tai fix xám 25kg thu về bao nhiêu tiền vậy?
+biz_122	dthu nhoms hàng thực phẩm chức năng chiếm nhiêu % tổng revenue tháng 11 năm 2025 hả
+biz_102	thangs 2/2026 top 3 hàng chạy nhất laf gì ta
+biz_103	Trong giai đoạn từ 23/07/2025 đến hết 29/07/2025, bao nhiêu mặt hàng bị ế?
+biz_108	Doanh thu tháng 8/2025 tăng hay giảm bao nhiêu phần trăm so với tháng trước?
+biz_127	Tính dthu các đơn trả bằng tiền mặt tháng 10/2025.
+biz_125	Hôm qua doanh thu được bao nhiêu?
+biz_130	Cho hỏi tồn kho Bia Tiger lon cuối ngày hôm nay là bao nhiêu lon?
+biz_115	Trong giai đoạn từ 01/07/2025 đến hết 07/07/2025 có bao nhiêu mặt hàng ko bán đc cái nào
+biz_101	dthu ngày nào cao nhất trong tháng 6 năm 2026?
+biz_104	Hôm qua doanh thu được bao nhiêu?
+biz_129	tháng 6 năm 2026, 5 khách nào chi tiêu nhiều nhất hả
+biz_106	Xem giúp ngày 11/02/2026 cửa hàng bán Sinh tố xoài (M) giá bao nhiêu một ly?
+biz_127	Tháng 6/2025 cửa hàng thu được bao nhiêu tiền khách trả nợ?
+biz_118	Trong 14 ngày gần nhất có bao nhiêu mặt hàng không bán được cái nào?
+biz_104	ngayf nào trong tháng 10/2025 dthu cao nhaats
+biz_129	ê dthu trung bình trên một đơn tháng 7/2026 là bnhiu hả
+biz_104	tháng 2/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm
+biz_117	Tháng 12/2025 bán Thép Pomina D12 cây 11.7m được bao nhiêu tiền?
+biz_127	So với tháng trước đó, doanh thu tháng 4/2026 tăng hay giảm mấy phần trăm?
+biz_119	Cho hỏi trong tháng 2/2026, cửa hàng có mấy đơn ở trạng thái huỷ?
+biz_108	tháng 11/2025 dthu bình quaan mỗi bill là bao nhiêu
+biz_109	dthu có tăng liên tục qua 3 tháng 4/2026, 5/2026, 6/2026 không?
+biz_101	Số kg Nếp cái hoa vàng bán được trong tháng 11/2025 là bao nhiêu?
+biz_112	Xem giúp 7 ngày gần nhất cửa hàng bán được mấy đơn?
+biz_113	Doanh thu hôm qua của cửa hàng là bao nhiêu?
+biz_130	trong tháng này, tỉ lệ đơn huỷ là bnhiu %
+biz_126	Mặt hàng bán chạy nhất tháng 1 năm 2026 là mặt hàng nào vậy?
+biz_124	Cho tôi biết dthu các đơn của khách nhóm sỉ tháng 4/2025.
+biz_121	dthu từ đầu tháng này đến hết hôm nay tăng hay giảm bn phần trăm so với cùng kỳ th trước
+biz_109	Giá bán một hộp Sữa TH true MILK 180ml vào ngày 08/07/2026 là bao nhiêu?
+biz_104	Xem giúp doanh thu ngày nào cao nhất trong tháng 8 năm 2025?
+biz_126	số đĩa gỏi bò bóp thấu bán đươc trong tháng 12/2025 là bn
+biz_121	Xem giúp hết hôm nay trong kho còn bao nhiêu hộp Clorpheniramin 4mg DHG hộp 10 vỉ x 20 viên nguyên và bao nhiêu vỉ lẻ?
+biz_127	Doanh thu tháng 3/2026 bao nhiêu?
+biz_120	Trong tháng 1/2026, nhóm dị ứng đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_120	tháng 7/2025 cửa hàng có bao nhiêu % đơn bị huỷ
+biz_102	Giá bán một gói Bánh quy Cosy 200g vào ngày 16/02/2026 là bao nhiêu ạ?
+biz_117	Trong tháng 1 năm 2026, số khách mua ít nhất 3 đơn là bao nhiêu?
+biz_117	tỉ lệ huỷ đơn thangs 3/2026 là bao nhiêu % hả
+biz_111	Doanh thu hôm nay là bao nhiêu?
+biz_130	Doanh thu 30 ngày gần nhất của cửa hàng là bao nhiêu?
+biz_119	Giúp mình đếm số đơn đã huỷ trong tháng 5/2025.
+biz_128	Tháng 8/2025 ai mua hàng nhiều tiền nhất ạ?
+biz_102	Ngày 27/03/2026 cửa hàng bán Đậu phộng rang muối 200g giá bao nhiêu một gói?
+biz_109	Tháng 5/2025 nhân viên mã NV002 bán được bao nhiêu tiền?
+biz_105	Cho hỏi trung bình mỗi đơn tháng 3/2026 mang về bao nhiêu doanh thu?
+biz_112	Năm nay, tính từ đầu năm đến hết hnay, dthu của cửa hàng là bao nhiêu?
+biz_111	Khách nhóm thân thiết đóng góp bao nhiêu % tổng doanh thu tháng 6/2026 nhỉ?
+biz_121	Tháng 7/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_119	Tháng 9/2025 nhà thuốc thu được bao nhiêu tiền từ các thuốc có hoạt chất Vitamin C?
+biz_122	Tháng này nhà thuốc thu được bao nhiêu tiền từ các thuốc có hoạt chất Cetirizin?
+biz_112	Doanh thu nhóm hàng đá xay chiếm bao nhiêu phần trăm tổng doanh thu tháng 2 năm 2026?
+biz_112	Cho hỏi nhóm nước ép tháng 6/2026 bán được bao nhiêu tiền?
+biz_130	Tổng doanh thu tháng 4 năm 2025 là bao nhiêu vậy?
+biz_119	cho hỏi tháng 11/2025 giá nhập bình quân một lốc efticol 0,9% lốc 10 lọ x 10ml là bn
+biz_115	giai đoạn từ 19/02/2026 đến hết 25/02/2026 có total mấy mặt hàng ế, bán ko đc cái nào
+biz_119	Tháng 5/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_127	Tháng 11/2025 bị huỷ mấy đơn?
+biz_122	xem giúp trong thangs 11/2025, nhóm kháng sinh đóng góp bnhiu % doanh thu cả cửa hàng
+biz_109	cho hỏi thangs 10/2025 hàng nào lời nhất
+biz_123	tu ngay 24/09/2025, panadol cam cum hop 15 vi x 12 vien tang gia len 1.300đ. so 14 ngay ke tu ngay 24/09/2025 vs 14 ngay ngay trc do, so vien ban ra thay doi bao nhiu phan tram
+biz_108	Tháng 11/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_121	dthu trung bình trên một đơn tuần rồi là bao nhiu vaayj
+biz_119	tháng 1/2025 ai mua hàng nhìu tiền nhất
+biz_104	Hôm nay cửa hàng bán được bao nhiêu tiền?
+biz_106	tháng 11/2025 ai là khách mua nhìu lần nhất, tính theo số đơn đó
+biz_104	Xem giúp ngày 18/03/2026 cửa hàng bán Sinh tố bơ (M) với đơn giá bao nhiêu một ly?
+biz_104	Tháng 4/2026 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_115	check giùm trong thangs 8/2025, xét theo dthu, ngày nào bán đắt nhất
+biz_115	tỉ lệ huỷ đơn tháng 6/2025 là nhiêu %
+biz_127	ngày 16/03/2025 cửa hàng bán Ếch chiên nước mắm với đơn giá bnhiu một đĩa
+biz_123	tháng 12/2025 có bao nhiu đơn có doanh thu từ 290.000 đồng trở lên hả
+biz_103	check gium so so goi snack lay's vi tu nhien 56g ban ra trong 30 ngay ke tu ngay 18/12/2025, ngay tang gia len 13.500đ, vs 30 ngay ngay truoc ngay do: tang hay giam bao nhieu %
+biz_109	dthu ca sáng tháng 12/2025 là bao nhiêu?
+biz_121	ê pharmaton essential hộp 30 viên lên giá 231.500đ từ ngày 20/05/2025; so 30 ngày kể từ ngày tăng giá với 30 ngày ngay trc, lượng bán tính theo hộp tăng hay giảm bao nhiu %
+biz_125	Trong tháng 9/2025, xét theo dthu, ngày nào bán đắt nhất?
+biz_125	Xem giúp quý 4 năm 2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_114	Cho tôi biết doanh thu tháng 3/2026.
+biz_108	Ca chiều tuần trước có tổng cộng bao nhiêu đơn?
+biz_103	So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?
+biz_117	check giùm tuần rồi ca chiều bán dc nhiêu tiền
+biz_105	Tháng 10/2025 ca sáng bán được bao nhiêu tiền vậy?
+biz_115	Số cây Ống luồn dây điện Sino SP D20 cây 2.92m bán đc trong tháng 6/2025 là bao nhiêu
+biz_124	Doanh thu tháng 1/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?
+biz_120	Khách nào chi nhiều tiền nhất cho cửa hàng trong tháng 5/2026 nhỉ?
+biz_122	Tổng doanh thu tháng 9 năm 2025 là bao nhiêu?
+biz_130	Ngày nào trong tháng 4/2026 doanh thu cao nhất?
+biz_130	Tính từ ngày 1/1 đến hết hôm nay, doanh thu năm nay là bao nhiêu?
+biz_116	tháng 2/2026 ngày nào cửa hàng bán đc nhìu tiền nhất
+biz_120	tir lệ huyr đơn tháng 5/2026 là bn %
+biz_130	Từ đầu năm đến hết hôm nay cửa hàng có bao nhiêu đơn
+biz_111	Trung bình mỗi đơn tháng 5/2025 mang về bao nhiêu doanh thu?
+biz_130	Tháng 5/2025 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_118	Xem giúp ngày nào trong tháng 5/2026 doanh thu cao nhất?
+biz_108	dthu từ khách nhóm thân thiết tháng 7/2025 là bao nhiêu?
+biz_121	Xem giúp tháng 4/2026 khách ở đường Nguyễn Văn Linh mua tổng cộng bao nhiêu tiền?
+biz_107	Trong tháng 6 năm 2025 cửa hàng bán được mấy kg Nếp cái hoa vàng?
+biz_115	Tháng 2/2025 ngày nào cửa hàng bán đc nhiều tiền nhất?
+biz_106	Đếm số đơn hàng tháng 4/2025 có tiền hàng từ 55.000 đồng trở lên.
+biz_111	Ngày nào trong tháng 3/2026 doanh thu cao nhất?
+biz_119	Cho mình hỏi tháng 12/2025 bán ra bao nhiêu chai Nurofen for Children hỗn dịch chai 60ml?
+biz_130	ê tháng 4/2026 nhóm hải sản chiếm bnhiu % dthu vậy
+biz_129	Cho tôi biết doanh thu hôm qua.
+biz_127	Cho mình 3 khách mua nhiều tiền nhất tháng 8/2025.
+biz_112	Giá bán một ly Bạc xỉu (M) vào ngày 22/08/2025 là bao nhiêu vậy?
+biz_110	Doanh thu hôm nay là bao nhiêu?
+biz_105	tháng 4/2026 cửa hàng bán dduwowcj tổng cộng bao nhieeu tiền
+biz_113	tháng 7/2025 bán ra bao nhiêu cây thép hộp 40x80 dày 1.4mm cây 6m
+biz_122	Tháng 11/2025 khách nam mua tổng cộng bao nhiêu tiền?
+biz_118	Tổng doanh thu trong ngày hôm nay là bao nhiêu?
+biz_122	Thuốc có hoạt chất Loratadin tháng 6/2025 bán được tổng cộng bao nhiêu tiền?
+biz_115	xem giúp số đơn bị huỷ trong tháng 6 năm 2025 là bao nhiêu z
+biz_105	Tổng doanh thu 7 ngày gần nhất là bao nhiêu vậy?
+biz_111	Cho tôi biết doanh thu hôm qua.
+biz_122	Trong các tháng 5/2025, 6/2025 và 7/2025, cửa hàng có doanh thu cao nhất vào tháng nào?
+biz_124	Kể từ khi Decolgen Forte hộp 30 vỉ x 4 viên lên giá 1.400 đồng/viên, 14 ngày đầu bán được nhiều hay ít hơn 14 ngày liền trước đó bao nhiêu phần trăm, tính theo số viên?
+biz_104	tháng 4/2025 tỉ lệ đơn bị huỷ là bao nhiu phần trăm
+biz_105	tổng dthu 30 ngày gần nhất là bao nhiêu
+biz_121	Doanh thu ngày nào cao nhất trong tháng 5 năm 2026?
+biz_104	cho tôi bieets dthu thangs 1/2026
+biz_113	ê bữa nay cửa hàng bán được bao nhiu tiền
+biz_105	tháng này cửa hàng bỏ ra bao nhiu tiền nhập hàng
+biz_112	coi giumf tieenf bán Trà vải (L) tháng 3/2025 là bao nhiêu
+biz_112	Cho hỏi tháng 8/2025 quán bán ra tổng cộng mấy ly size M, cộng tất cả các món?
+biz_130	dthu các đơn trả bằng COD và doanh thu các đơn trả bằng tiền mặt tháng này lần lượt là bao nhiêu
+biz_123	tháng này, dthu từ khách nhóm sỉ chiếm bn % tổng doanh thu của cửa hàng
+biz_127	Cho mình hỏi giá trị trung bình một đơn tháng 5/2025 là bao nhiêu?
+biz_112	Tháng 6/2026 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_103	Đến hết ngày 09/07/2026, số tiền khách còn thiếu là bao nhiêu?
+biz_101	cho tôi bieets dthu tháng 5/2026
+biz_120	Tháng 5/2025 nhóm ho cảm cúm bán đc bao nhiêu tiền?
+biz_108	Trong tháng 3/2026, nhóm bánh kẹo đóng góp bao nhiêu phần trăm doanh thu cả cửa hàng?
+biz_111	Liệt kê 3 khách nợ nhiều nhất tính đến hết ngày 19/08/2026, kèm số tiền còn nợ.
+biz_129	Tính đến hết ngày 14/08/2026, khách hàng còn nợ cửa hàng tổng cộng bao nhiêu tiền?
+biz_112	Giúp mình liệt kê 3 mặt hàng bán chạy nhất tuần rồi.
+biz_101	Hôm qua có tổng cộng bao nhiêu đơn nhỉ?
+biz_118	bn khách mua ít nhất 3 đơn trong tháng 12 năm 2025 vậy
+biz_118	dthu nhóm hàng cát đá tháng 7 năm 2026 là bao nhiêu?
+biz_101	Cho tôi biết doanh thu tháng 1/2026.
+biz_110	soos bill hqua là nhiêu đó
+biz_121	Cho tôi biết doanh thu tháng 7/2025.
+biz_115	tháng 1/2026 ai mua hàng nhìu tiền nhất
+biz_117	tính đến cuối ngày hôm nay, trong kho còn mấy bao Bột trét Jotun nội thất 40kg
+biz_130	Xem giúp tháng 7/2025 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_128	Số lon bán được hôm qua là bao nhiêu, cộng mọi mặt hàng tính theo lon?
+biz_107	Hôm qua cửa hàng bán được bao nhiêu tiền?
+biz_112	dthu nhóm hàng bánh chiếm bao nhiêu phần trăm tổng doanh thu tháng 2 năm 2026?
+biz_116	Tháng 8/2026 dthu thay đổi bao nhiêu % so với tháng liền trước
+biz_118	dthu ngày naof cao nhất trong tháng 7 nawm 2026 z
+biz_116	doanh thu trung bình trên một đơn tháng 8/2025 là bao nhiêu
+biz_119	Tổng dthu tháng 2 năm 2025 là bao nhiêu?
+biz_125	Trong tháng 12 năm 2025 cửa hàng bán được mấy đĩa Má heo nướng nước mắm vậy?
+biz_116	Cho hỏi tháng 9/2025 mặt hàng Thép Pomina D16 cây 11.7m thu về bao nhiêu tiền?
+biz_116	Tháng 12/2025 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_129	Số đơn bị huỷ trong tháng 4 năm 2026 là bao nhiêu?
+biz_127	Doanh thu tháng 4/2025 bao nhiêu?
+biz_108	So cùng kỳ năm trước, dthu tháng 4/2026 tăng/giảm mấy phần trăm?
+biz_127	Tháng 6/2026 thu hồi được bao nhiêu tiền công nợ từ khách mua chịu?
+biz_109	tháng 10/2025 cửa hàng bán dc tổng cộng bnhiu tiền
+biz_126	Tháng 3/2025 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_126	Tổng doanh thu tháng 7 năm 2025 là bao nhiêu?
+biz_117	Tháng 9/2025 tổng giá trị các phiếu nhập hàng là bao nhiêu?
+biz_112	Trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu?
+biz_117	Từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bao nhiêu % so với cùng kỳ tháng trước?
+biz_122	Tổng doanh thu tuần trước là bao nhiêu?
+biz_117	Tháng 8/2025 có bao nhiêu đơn có doanh thu từ 3.300.000 đồng trở lên?
+biz_111	Tháng 8/2025 cửa hàng thu được bao nhiêu tiền khách trả nợ?
+biz_104	tháng 2/2026 bán ra nhiêu phần topping thạch cà phê
+biz_111	Tháng 7/2025 quán bán ra tổng cộng mấy ly size M, cộng tất cả các món ạ?
+biz_113	Cho hỏi tháng 4/2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_127	Trung bình mỗi đơn tháng 11/2025 mang về bao nhiêu dthu
+biz_115	coi giùm trong tháng 8 năm 2025 cửa hàng bán được mấy cuộn Dây điện Cadivi VCmd 2x2.5 cuộn 100m z
+biz_106	dthu của nước ép cam (l) trong tháng 12 nawm 2025 là bao nhiêu
+biz_115	Tháng 12/2025 bán Công tắc 1 chiều Panasonic Wide kèm mặt được bao nhiêu tiền?
+biz_122	có bnhiu khách hàng ở đường hậu giang
+biz_110	quý 4/2025 cuwar hàng có bn order ddos
+biz_115	ngày 23/05/2025 cửa hàng bán nước tinh khiết bidrico 20L giá bao nhiu một bình
+biz_105	Tháng 2/2026 có mấy đơn có dthu từ 130.000 đồng trở lên?
+biz_103	Tổng dthu trong ngày hôm nay là bao nhiêu?
+biz_130	tháng 9/2025 có mấy đơn có doanh thu từ 430.000 đồng trở lên
+biz_122	So với tháng liền trước, doanh thu tháng 8 năm 2025 thay đổi bao nhiêu %?
+biz_122	Trung bình mỗi đơn tuần trước mang về bao nhiêu doanh thu?
+biz_115	Giai đoạn từ 16/03/2026 đến hết 22/03/2026, cửa hàng có mấy mặt hàng ế hẳn, không ai mua cái nào?
+biz_106	trong tháng 5/2025, tiền khách trả bớt nợ các đơn mua chịu được bao nhiêu
+biz_116	gias trị trung bình một đơn tháng 9/2025 là bao nhiu
+biz_121	So số viên UPSA-C 1g viên sủi tuýp 10 viên bán ra trong 14 ngày kể từ ngày 22/03/2026, ngày tăng giá lên 3.900đ, với 14 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_116	trong tháng 4/2026, tỉ lệ đơn huỷ là bao nhiu phần trăm
+biz_107	Tháng 5/2025 mặt hàng Nếp cái hoa vàng bán được tổng cộng bao nhiêu kg?
+biz_128	Giá bán một đĩa Trứng chiên thịt bằm vào ngày 10/10/2025 là bao nhiêu?
+biz_118	Trong số khách có mua tháng 1 năm 2026, tỉ lệ khách mua ít nhất 4 đơn là bao nhiêu %?
+biz_127	Khách còn nợ cửa hàng tổng cộng bao nhiêu tính đến hết ngày 28/07/2026?
+biz_105	cho hoir giá bán một ly cà phê sữa (l) vào ngày 10/06/2025 laf bnhiu
+biz_118	hnay cửa hàng bán đc bao nhiêu tiền
+biz_117	xem giúp tuần rồi, số ddown ca chiều tăng hay giảm bao nhiu % so vs ca sáng
+biz_112	So số ly Sinh tố xoài (L) bán ra trong 30 ngày kể từ ngày 04/09/2025, ngày tăng giá lên 50.500đ, với 30 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu % nhỉ?
+biz_103	Xem giúp tháng 3/2025 ngày nào cửa hàng bán được nhiều tiền nhất?
+biz_106	check giùm trong tháng này, tỉ lệ đơn huỷ là nhiêu phần trăm nhỉ
+biz_111	Cho tôi biết doanh thu các đơn của khách nhóm thân thiết tháng 1/2026.
+biz_108	So với tháng liền trước, doanh thu tháng 4 năm 2026 thay đổi bao nhiêu %?
+biz_113	ê số kg Thép cuộn phi 8 Hòa Phát bán đươc trong tháng 5/2025 là bao nhiêu
+biz_115	Xem giúp giá trị trung bình một đơn tháng 1/2026 là bao nhiêu?
+biz_105	Cho hỏi tháng 3/2026 cửa hàng có bao nhiêu % đơn bị huỷ?
+biz_106	Cho hỏi tháng 8/2026 ca chiều bán được bao nhiêu tiền?
+biz_110	Doanh thu hôm nay là bao nhiêu vậy?
+biz_128	Xem giúp trong tháng 4/2025, Bia Heineken lon nhập vào giá bình quân một thùng là bao nhiêu?
+biz_109	check giumf dthu tết năm nay so vs tết năm trc thay đổi mấy phần trăm
+biz_120	Cho mình hỏi tháng 1/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_113	Tổng doanh thu tháng 6 năm 2025 là bao nhiêu?
+biz_128	số đĩa Lòng mề gà xào sa tế bán dc trong tháng 6/2025 là bao nhiu
+biz_124	đến hết ngày 21/10/2025, số khách còn công nợ với cửa hàng là bao nhiêu
+biz_119	Tổng doanh thu tháng 5 năm 2026 là bao nhiêu?
+biz_104	Tháng 5/2025 quán bán đc bao nhiêu ly size L?
+biz_110	Doanh thu hnay là bao nhiêu
+biz_106	3 mặt hangf chạy nhất tháng 1/2025 là những mặt hàng nào
+biz_118	xem giúp số đơn từ đầu năm tới hết bữa nay là bao nhiêu
+biz_105	30 ngày gần nhất có tổng cộng bao nhiêu đơn?
+biz_117	xem giúp trong tháng 4/2026, nước kiềm ion life 19L nhập vào giá bình quân một bình là bn hả
+biz_114	Cho mình hỏi số kg Đinh 5 phân bán được trong tháng 9/2025 là bao nhiêu?
+biz_104	cho tôi 3 khách mua nhiều tieenf nhất tháng 1/2026
+biz_105	tỉ lệ huỷ đơn tháng này là bao nhiu %
+biz_129	dthu tháng 5 năm 2026 tăng trưởng bao nhiêu % so với tháng 5 năm 2025?
+biz_106	Tháng 3/2026 cửa hàng bán đc tổng cộng bao nhiêu cái Bánh tiramisu?
+biz_104	Xem giúp quán bán được bao nhiêu ly size M trong tháng 9/2025, cộng mọi món?
+biz_119	Quý 1 năm 2025 cửa hàng bán được tổng cộng bao nhiêu tiền?
+biz_117	Có bao nhiêu mặt hàng vẫn đang bán mà trong 7 ngày gần nhất không bán ra được cái nào?
+biz_114	cho hỏi dthu tháng 7/2025 bao nhiêu đó
+biz_130	dthu thangs 7/2026 hơn hay kém th trước bao nhiu % ta
+biz_112	nhân viên nào có tay nghề cao nhất tiệm
+biz_126	hnay cửa hàng bán đc bao nhiêu tiền?
+biz_128	Doanh thu tháng 6/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?
+biz_116	Cho hỏi tháng 8/2025 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_122	Cho mình hỏi so số tuýp Plusssz Max Multivitamin viên sủi tuýp 20 viên bán ra trong 30 ngày kể từ ngày 29/10/2025, ngày tăng giá lên 42.000đ, với 30 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_117	Có bao nhiêu khách hàng ở đường Trần Não?
+biz_105	Giá nhập bình quân một hộp Bánh croissant trong tháng 12 năm 2025 là bao nhiêu?
+biz_116	Số cây Thép Pomina D14 cây 11.7m bán được trong tháng 9/2025 là bao nhiêu?
+biz_122	So số viên Strepsils Cool hộp 2 vỉ x 12 viên bán ra trong 30 ngày kể từ ngày 05/03/2026, ngày tăng giá lên 1.800đ, với 30 ngày ngay trước ngày đó: tăng hay giảm bao nhiêu %?
+biz_101	Cho mình hỏi doanh thu tháng 3/2026 bao nhiêu?
+biz_106	Trong tháng 10/2025, tỉ lệ đơn huỷ là bao nhiêu phần trăm?
+biz_124	trong tháng này, khách huỳnh nhung đức mua chịu thêm nhiêu và trả bớt nợ đc bao nhieeu? trả lời hai số: nợ thêm, trả được
+biz_123	5 mặt hàng bán chạy nhất tháng 6/2025 là những mặt hàng nào
+biz_120	Cho mình hỏi tuần trước ca sáng có bao nhiêu đơn hàng?
+biz_127	xem giúp tổng dthu trong ngày hôm nay là bn
+biz_128	Tháng 1/2026 bị huỷ mấy đơn nhỉ?
+biz_105	liệt kê 3 khách nợ nhiều nhất tính đến hết ngày 24/06/2026, kèm số tiền còn nợ
+biz_126	Tổng doanh thu tháng 3 năm 2025 là bao nhiêu vậy?
+biz_107	tổng dthu hôm qua là bao nhiêu
+biz_128	Ngày nào trong tháng 1/2026 doanh thu cao nhất?
+biz_118	Doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu phần trăm so với cùng kỳ tháng trước?
+biz_110	Trong quý 1 năm 2026, doanh thu của cửa hàng được bao nhiêu tiền vậy?
+biz_120	ê tuần trước dthu ca chiều chênh ca sáng bn phần trăm z
+biz_122	thuốc có hoạt chất vitamin c tháng 10/2025 bán được tổng cộng bao nhiêu tiền
+biz_111	Cho hỏi doanh thu tháng 4 năm 2026 tăng trưởng bao nhiêu % so với tháng 4 năm 2025?
+biz_128	dthu ca chiều tháng 7/2026 là bao nhiêu?
+biz_117	doanh thu 30 ngày gần nhất của cửa hàng là bao nhiêu
+biz_103	Giúp mình tính từ đầu năm đến hết hôm nay, cửa hàng đã có tổng cộng bao nhiêu đơn hàng?
+biz_109	Tháng 2/2025, khách đường Lê Trọng Tấn và khách đường Trần Não, bên nào mua nhiều tiền hơn nhỉ?
+biz_101	Giá bán một gói Thuốc lá Vinataba vào ngày 28/07/2025 là bao nhiêu?
+biz_103	Tháng 12/2025 bán Bánh Oreo 133g được bao nhiêu tiền ạ?
+biz_104	Tháng 7/2025 dthu bình quân mỗi đơn hàng là bao nhiêu?
+biz_102	So với tháng liền trước, doanh thu tháng 8 năm 2025 thay đổi bao nhiêu %?
+biz_104	Số đơn bị huỷ trong tháng 3 năm 2026 là bao nhiêu nhỉ?
+biz_118	tháng 2/2025 nhóm điện chiếm bnhiu % doanh thu
+biz_119	Xem giúp ngày 01/05/2026 cửa hàng bán Povidine 10% chai 90ml giá bao nhiêu một chai?
+biz_108	Doanh thu tháng 3 năm 2026 tăng trưởng bao nhiêu % so với tháng 3 năm 2025?
+biz_119	Tuần trước riêng ca chiều bán đc tổng cộng bao nhiêu tiền?
+biz_110	Hôm qua cửa hàng bán được bao nhiêu tiền?
+biz_129	coi giùm tháng 3/2025 doanh thu bình quân mỗi đơn là bao nhiu z
+biz_112	ngay 10/09/2025 soda chanh day (m) tang gia tu 35.000đ len 37.000đ. so ly ban duoc trong 14 ngay ke tu ngay do so vs 14 ngay truoc do thay doi bao nhieu %
+biz_105	giá trị trung bình một đơn tháng 3/2025 là bao nhiêu ta
+biz_122	Trừ thuốc kê đơn ra, tháng 2/2026 các mặt hàng còn lại bán được bao nhiêu tiền?
+biz_124	Trừ thuốc kê đơn ra, tháng 4/2026 các mặt hàng còn lại bán đc bao nhiêu tiền
+biz_109	Doanh thu tháng 4/2026 bao nhiêu?
+biz_104	trong quý 2 năm 2025 có tổng cộng bao nhiêu đơn
+biz_104	Cho tôi biết doanh thu hqua.
+biz_122	Trong tổng dthu tháng 2/2025, phần của thuốc kê đơn là bao nhiêu phần trăm
+biz_124	Tuần trước ca chiều có bao nhiêu đơn hàng?
+biz_128	Tháng 9/2025 riêng ca sáng bán được tổng cộng bao nhiêu tiền?
+biz_119	hqua cửa hàng bán ra tổng cộng mấy gói?
+biz_101	Tổng dthu hqua là bao nhiêu?
+biz_116	So với tháng liền trước, dthu tháng 6 năm 2025 thay đổi bao nhiêu %?
+biz_129	Cho hỏi trong tháng 3/2025, cửa hàng có mấy đơn ở trạng thái huỷ?
+biz_116	Tháng 6/2026 tỉ lệ đơn bị huỷ là bao nhiêu phần trăm?
+biz_123	Tuần trước ca chiều bán được mấy đơn?
+biz_121	Strepsils Cool hop 2 vi x 12 vien doi gia tu 1.600đ len 1.700đ vao ngay 24/07/2026. 7 ngay ke tu ngay do ban duoc nhiu hay it hon 7 ngay lien trc bao nhiu %, tinh theo vien
+biz_130	tháng 3/2026 ngày nào cửa hàng bán được nhìu tiền nhất

@@ -1,0 +1,11 @@
+{
+ "questions": 3000,
+ "changed": 1587,
+ "period_detected": 2976,
+ "questions_per_rule": {
+  "abbr": 1256,
+  "accent": 790,
+  "telex": 235,
+  "month": 35
+ }
+}

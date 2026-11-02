@@ -976,7 +976,7 @@ def run_dp(a):
                         txt = open(p, encoding="utf-8").read(); w.write(txt[:txt.rfind("\n") + 1])   # complete lines only
             os.replace(tmp, os.path.join(a.out, f))
     while any(p.poll() is None for p in procs):                        # keep the merged submission current (Rule 8: time-outs)
-        merge(); time.sleep(30)
+        merge(); time.sleep(5)
     rcs = [p.wait() for p in procs]
     for g in range(n): print(f"--- shard{g} rc={rcs[g]}\n" + "".join(open(os.path.join(a.out, f"shard{g}.log")).readlines()[-12:]), flush=True)
     merge(("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"))

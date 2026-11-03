@@ -155,5 +155,57 @@ check("pack_share brand", S.pack_share(may, brand="Bobby"), dm.pct(2, 5))
 check("size_qty Số 4", S.size_qty(may, "Số 4"), 1)
 check("top_brands diapers", S.top_brands(may, 1, group="bỉm tã"), ["Huggies"])
 
+check("brand_sales", dict(S.brand_sales(may, group="bỉm tã")), {"Bobby": 2, "Huggies": 3})
+
+# ---------------------------------------------------------------- rule reader templates on these shops (qparse.parse_industry)
+import qparse
+
+
+def rule(shop, q, today):
+    r = qparse.parse(q, today, shop)
+    if r is None: return None
+    return r[0], dm.run_program(r[1], shop, today).get("answer")
+
+
+check("rule voucher", rule(S, "Tháng 5/2026 voucher giảm cho khách tổng bao nhiêu?", "2026-05-31"), ("ind_voucher", 10000))
+check("rule points", rule(S, "05/2026 khach dung diem tru duoc bao nhieu tien?", "2026-05-31"), ("ind_points", 5000))
+check("rule shipping", rule(S, "5/26 tiem thu phi ship duoc bao nhieu tien?", "2026-05-31"), ("ind_shipping", 15000))
+check("rule new members", rule(S, "Số khách thành viên đăng ký mới th 5/26?", "2026-05-31"), ("ind_new_members", 2))
+check("rule pack share size", rule(S, "Trong tổng số bịch bỉm bán tháng này, bỉm size M chiếm bao nhiêu %?", "2026-05-31"), ("ind_pack_share", dm.pct(3, 5)))
+
+# repair shop again (S_r) and phone shop (S_p) for their templates
+rows = [("2025-07-01", "Đạt", "Air Blade 59A1-111.11", "thay nhớt + vá ruột", 150000, None),
+        ("2025-07-01", "a Đạt", "AB 59A1-111.11", "nhớt hộp số", 80000, None),
+        ("2025-07-02", "A.Phúc", "Wave Alpha 59B2-222.22", "sửa điện, thay bóng đèn", 200000, None),
+        ("2025-07-03", "Phúc", "alpha 59B2-222.22", "bh vá", 0, "bảo hành")]
+t = pd.DataFrame(rows, columns=["date", "staff", "xe", "work", "money", "note"]); vp = t["xe"].map(split_vehicle)
+lines = pd.DataFrame({"order_id": [f"r{i}" for i in range(len(t))], "order_date": t["date"], "staff": t["staff"], "item_name": "phiếu sửa xe",
+                      "line_amount": t["money"], "qty": 1, "vehicle": [v for v, _ in vp], "plate": [p for _, p in vp], "work": t["work"],
+                      "warranty": t["note"].eq("bảo hành"), "note": t["note"]})
+O, L = dm.finalize(lines, dedupe=False)
+S_r = dm.Shop({"orders": O, "lines": L, "staff": pd.DataFrame({"staff": ["Hà Loan Đạt", "Đoàn Bảo Phúc"], "commission_pct": [30, 20]})}, "2025-07-31")
+check("rule tickets of a mechanic", rule(S_r, "Tháng 7/2025 thợ Hà Loan Đạt mần được bao nhiêu lượt xe?", "2025-07-31"), ("ind_staff_tickets", 2))
+check("rule job", rule(S_r, "Tháng 7/2025 tiệm thay dầu láp cho bao nhiêu lượt xe?", "2025-07-31"), ("ind_job", 1))
+check("rule commission one", rule(S_r, "Tháng 7/2025 thợ Đoàn Bảo Phúc lãnh bao nhiêu tiền huê hồng?", "2025-07-31"), ("ind_commission", 40000))
+check("rule avg ticket", rule(S_r, "Th7/2025 không tính xe quay lại bảo hành, bình quân 1 phiếu sửa hết bnhiu tiền?", "2025-07-31"), ("ind_avg_ticket", dm.money(430000 / 3)))
+check("rule regular vehicles", rule(S_r, "Tháng 7 năm 2025 có mấy chiếc xe vô sửa từ 2 lần trở lên?", "2025-07-31"), ("ind_regular_vehicles", 1))
+check("rule warranty visits", rule(S_r, "07/2025 tiệm nhận mấy phiếu bảo hành?", "2025-07-31"), ("ind_warranty_visits", 1))
+check("plain revenue still general", rule(S_r, "Tổng dthu tháng 7/2025 là bnhiu?", "2025-07-31"), ("revenue", 430000))
+
+# ---------------------------------------------------------------- building materials: deliveries by order date, due dates
+lines = pd.DataFrame([("A", "2026-03-02", "Xi măng", 10, 1000000), ("B", "2026-03-05", "Cát", 5, 500000), ("C", "2026-04-01", "Xi măng", 4, 400000)],
+                     columns=["order_id", "order_date", "item_name", "qty", "line_amount"])
+orders = pd.DataFrame({"order_id": ["A", "B", "C"], "order_date": ["2026-03-02", "2026-03-05", "2026-04-01"], "status": ["hoàn thành", "trả hàng", "hoàn thành"],
+                       "due_date": ["2026-04-10", None, "2026-05-01"]})
+O, L = dm.finalize(lines, orders)
+dl = pd.DataFrame({"order_id": ["A", "A", "B", "C"], "delivery_date": ["2026-03-03", "2026-03-20", "2026-03-06", "2026-04-02"], "trip_no": [1, 2, 1, 1],
+                   "item_name": ["Xi măng", "Xi măng", "Cát", "Xi măng"], "qty_base": [6, 4, 5, 4]})
+S_v = dm.Shop({"orders": O, "lines": L, "deliveries": dl}, "2026-04-30")
+check("delivered_qty (orders of March, returned order's trip counts)", S_v.delivered_qty(dm.month(2026, 3)), 15)
+check("delivered_qty item, up to a day", S_v.delivered_qty(dm.month(2026, 3), "2026-03-10", item="Xi măng"), 6)
+check("orders in >= 2 trips", S_v.n_orders_by_trips(dm.month(2026, 3)), 1)
+check("due in April", S_v.n_due_orders(dm.month(2026, 4)), 1)
+check("due after today", S_v.n_due_orders(d="2026-04-30", after=True), 1)
+
 print("FAILED" if fails else "PASS", fails)
 sys.exit(1 if fails else 0)

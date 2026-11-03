@@ -309,7 +309,7 @@ def map_status(series, overrides=None):
 # ------------------------------------------------------------------ canonical tables
 ORDER_COLS = ["order_id", "order_time", "order_date", "customer_id", "customer_name", "customer_group", "staff", "channel",
               "payment_method", "status", "valid", "revenue", "order_discount", "shipping_fee", "vat", "total_payable",
-              "paid_at_purchase", "note", "tradein", "points_discount", "plate", "vehicle", "work", "warranty"]   # last 6: industries (src/industry.py)
+              "paid_at_purchase", "note", "due_date", "tradein", "points_discount", "plate", "vehicle", "work", "warranty"]   # last 6: industries (src/industry.py)
 LINE_COLS = ["order_id", "line_no", "order_time", "order_date", "status", "valid", "item_code", "item_name", "item_group", "unit",
              "qty", "factor", "qty_base", "base_unit", "unit_price", "line_discount", "line_amount", "unit_cost", "returned_qty", "imei"]
 WALKIN = re.compile(r"^(khach le|khach vang lai|vang lai|le|khach|walk in|walkin|khach hang le|kh le|kl|k l|khl|kvl|guest|none|nan|0|-|khong ten|an danh)$")
@@ -551,7 +551,7 @@ def check(C):
     return errs
 
 
-CANON_DOC = """C["orders"]: order_id, order_time, order_date, customer_id, customer_name (None = walk-in), customer_group, staff, channel, payment_method, status (hoàn thành|huỷ|trả hàng|đang giao), valid (bool: counts for revenue), revenue (rulebook revenue of the order), order_discount, shipping_fee, vat, total_payable, paid_at_purchase
+CANON_DOC = """C["orders"]: order_id, order_time, order_date, customer_id, customer_name (None = walk-in), customer_group, staff, channel, payment_method, status (hoàn thành|huỷ|trả hàng|đang giao), valid (bool: counts for revenue), revenue (rulebook revenue of the order), order_discount, shipping_fee, vat, total_payable, paid_at_purchase, due_date (ngày phải trả of a credit order)
 C["lines"]: order_id, order_time, order_date, status, valid, item_code, item_name, item_group, unit, qty, factor, qty_base, base_unit, unit_price, line_discount, line_amount, unit_cost
 C["items"]: item_code, item_name, item_group, base_unit, unit_cost, price, size (the catalogue's size / number column: 'M', 'XL', 'Số 4'; when it has one), ... ; C["purchases"]: receipt_id, receipt_date, supplier, item_code, item_name, unit, qty, factor, qty_base, unit_cost, amount, cancelled
 C["payments"]: order_id, pay_time, pay_date, amount, method ; C["stock"]: item_code, item_name, qty_base (snapshot at stock_date) ; C["lots"]: lot_id, item_code, expiry, qty_in_base, unit_cost_base, ...
@@ -1244,6 +1244,40 @@ class Shop(industry.IndustryMetrics):
         if self.today is not None: g = g[g["delivery_date"] <= self.today]
         g = g[p.mask(g["delivery_date"])]; return int(g[["order_id", "trip_no"]].drop_duplicates().shape[0])
 
+    def _delivered(self, ordered, d=None, item=None):
+        """delivery rows up to the end of day d (default today) of the orders PLACED in period `ordered` (not cancelled)."""
+        g = self.C.get("deliveries"); require(g is not None and len(g), "no delivery records")
+        g = g.copy(); g["delivery_date"] = pd.to_datetime(g["delivery_date"]).dt.normalize(); g["order_id"] = g["order_id"].astype(str)
+        d = _ts(d) if d is not None else self.today
+        if d is not None: g = g[g["delivery_date"] <= d]
+        o = self.orders(ordered, valid=None); o = o[o["status"] != "huỷ"]
+        g = g[g["order_id"].isin(set(o["order_id"].astype(str)))]
+        if item is not None:
+            names = self._item_keys(item) if hasattr(self, "_item_keys") else item
+            g = g[self._match(g, ("item_code", "item_name"), names)]
+        return g
+
+    def delivered_qty(self, ordered, d=None, item=None):
+        """quantity (base units) delivered up to the end of day d of the orders placed in `ordered` ('các đơn đặt tháng 3, tới hôm
+        nay đã chở đi bao nhiêu thùng X'); every trip counts, also of orders returned later (rulebook 'Vật liệu xây dựng')."""
+        return _num(pd.to_numeric(self._delivered(ordered, d, item)["qty_base"], errors="coerce").sum())
+
+    def n_orders_by_trips(self, ordered, d=None, min_trips=2):
+        """orders placed in `ordered` delivered in at least min_trips trips up to the end of day d ('đơn đã giao từ 2 đợt trở lên')."""
+        g = self._delivered(ordered, d); col = "trip_no" if "trip_no" in g.columns else "delivery_date"
+        return int((g.groupby("order_id")[col].nunique() >= int(min_trips)).sum())
+
+    def n_due_orders(self, p=None, d=None, after=False):
+        """credit orders (not cancelled, placed up to day d = today by default) whose due date (orders.due_date, 'ngày phải trả')
+        falls in period p; after=True: due strictly after day d (a due date ON d is not later)."""
+        require("due_date" in self.O.columns and self.O["due_date"].notna().any(), "the data does not record due dates of credit orders")
+        d = _ts(d) if d is not None else self.today
+        o = self.O[self.O["status"] != "huỷ"]
+        if d is not None: o = o[o["order_date"] <= d]
+        due = pd.to_datetime(o["due_date"], errors="coerce").dt.normalize(); o = o[due.notna()]; due = due[due.notna()]
+        if after: return int((due > d).sum())
+        return int(p.mask(due).sum()) if p is not None else int(len(o))
+
     def pct_customers(self, p, min_orders, **f):
         """percent of the customers who bought in p that have at least min_orders valid orders."""
         s = self.customer_sales(p, by="n_orders", **f); return pct((s >= min_orders).sum(), len(s))
@@ -1261,7 +1295,7 @@ def shop_api(shop):
              "debt_aging", "debt_older_than", "debt_flow", "share", "increasing", "weekday_avg", "peak_hour", "size_qty", "unsold_items",
              "purchase_total", "avg_purchase_price", "supplier_ranking", "top_supplier", "import_minus_sales", "stock_at", "stock_split",
              "stock_value", "lot_stock", "lots_expiring", "items_expiring", "out_of_stock", "nearest_expiry", "price_on", "price_change_date", "price_effect",
-             "gross_profit", "net_profit", "n_delivery_trips", "pct_customers", "factor"] + industry.INDUSTRY_NAMES
+             "gross_profit", "net_profit", "n_delivery_trips", "pct_customers", "factor", "delivered_qty", "n_orders_by_trips", "n_due_orders"] + industry.INDUSTRY_NAMES
     return {n: getattr(shop, n) for n in names}
 
 
@@ -1344,7 +1378,8 @@ rankings descending with ties by code, money rounded half-up to whole VND, perce
   weekday_avg(p, weekday 0=Mon..6=Sun, by="revenue"|"orders"|"qty") -> per-weekday average, divided by the number of such days in p,
   out_of_stock(d) -> names of items bought to be sold whose stock is 0 at the end of d (by code),
   factor(item, unit).
-- Profit: gross_profit(p, **f), net_profit(p); deliveries: n_delivery_trips(p).
+- Profit: gross_profit(p, **f), net_profit(p); deliveries: n_delivery_trips(p), delivered_qty(ordered_period, d=TODAY, item=None),
+  n_orders_by_trips(ordered_period, d=TODAY, min_trips=2); credit due dates: n_due_orders(p, d=TODAY) / n_due_orders(d=TODAY, after=True).
 - Helpers: growth(new, old) (% change, negative when it fell), pct(part, whole), money(x), round_half_up(x, nd), rank(values, k),
   key(s) (accent-free comparison key), require(cond, why). raise Unanswerable(why) when the data cannot answer (rulebook §7);
   a metric raises it itself when the period has no data at all or the needed information is not recorded.

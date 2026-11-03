@@ -67,15 +67,31 @@ procs = {}
 for k in range(nk):
     procs[k] = launch(k); time.sleep(2)
 print(f"launched {nk} kernels", flush=True)
-# failover: a kernel whose push hit the account's GPU-session cap (account busy elsewhere) moves to the next account
+# failover: a kernel whose push hit the account's weekly GPU quota or its 2-session cap moves to the next account: first the
+# --accounts list, then every other account with a token (03/11: phuongnehe and nguynduylm had used their 30 h; the old
+# failover only tried the listed accounts). Accounts found out of quota are remembered for the ISO week (~/.cache/zc_quota.json).
+import json, datetime
+QF = os.path.expanduser("~/.cache/zc_quota.json"); WEEK = datetime.date.today().strftime("%G-W%V")
+def quota_out():
+    try: return {a for a, w in json.load(open(QF)).items() if w == WEEK}
+    except Exception: return set()
+def mark_quota(acc):
+    try: q = json.load(open(QF))
+    except Exception: q = {}
+    q[acc] = WEEK; os.makedirs(os.path.dirname(QF), exist_ok=True); json.dump(q, open(QF, "w"))
+ALL_ACC = [a for a in ACCOUNTS] + [a for a in sorted(os.path.basename(f)[4:] for f in glob.glob(os.path.expanduser("~/.kaggle/tok_*")))
+                                   if a not in ACCOUNTS and a != "nhatlong1103"]
 tried = {k: {slots[k % len(slots)][0]} for k in range(nk)}
+busy = {}                                                                   # account -> kernels this fanout moved there
 while procs:
     for k, p in list(procs.items()):
         if p.poll() is None: continue
         del procs[k]; slug = f"{prefix}-{k + 1}"; log = open(os.path.join(work, slug + ".log")).read()
         gpu = k < len(slots) and "--cpu" not in sys.argv
-        if "STATUS=PUSH_FAILED" in log and len(tried[k]) < len(ACCOUNTS):
-            acc = [a for a in ACCOUNTS[k % len(ACCOUNTS):] + ACCOUNTS if a not in tried[k]][0]; tried[k].add(acc)
+        if "weekly GPU quota" in log: mark_quota(json.load(open(os.path.join(work, slug, "kernel-metadata.json")))["id"].split("/")[0])   # the account it was pushed to
+        cand = [a for a in ALL_ACC if a not in tried[k] and a not in quota_out() and busy.get(a, 0) < 2]
+        if "STATUS=PUSH_FAILED" in log and cand:
+            acc = cand[0]; tried[k].add(acc); busy[acc] = busy.get(acc, 0) + 1
             make(os.path.join(work, slug), slug, jobs[k::nk], acc, gpu); time.sleep(40)
             print(f"{slug}: push failed -> retry on {acc}", flush=True); procs[k] = launch(k); continue
         res = glob.glob(os.path.join(work, slug + "_out", "results", "**", "submission.jsonl"), recursive=True)   # outputs stay in <work>

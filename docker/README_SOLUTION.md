@@ -32,4 +32,4 @@ built from it). No public or private test data is used for training or tuning.
 
 `/app/predict.sh` (entry point): reads `/data`, writes `/result/submission.jsonl` and `/result/logs/<id>.json`
 (id, final answer, elapsed time, generated programs, execution output, votes) plus `/result/logs/run.log`.
-Defaults: `K=4 KC=4 BUDGET=20400` (seconds, 5 h 40 min for the agent), `QUANT=fp8`, `PIPE=1`.
+Defaults: `K=4 KC=8 BUDGET=20400` (seconds, 5 h 40 min for the agent), `QUANT=fp8`, `PIPE=1`.

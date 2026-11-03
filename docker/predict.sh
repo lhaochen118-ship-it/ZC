@@ -11,7 +11,7 @@ NGPU=$(nvidia-smi -L | wc -l)
 mkdir -p "$RESULT/logs" /tmp/zc
 # 6 h limit includes start-up and model loading: 5 h 40 min budget for the agent (fast mode / abstain when short of time)
 # defaults = the best configuration measured on train leave-one-out (v4b 02/11: PA 0.955; mapping fixes after it)
-K=${K:-4}; KC=${KC:-6}; QW=${QW:-4}; ESC=${ESC:-4}; BUDGET=${BUDGET:-20400}; DP=${DP:-$NGPU}; QUANT=${QUANT:-fp8}; PIPE=${PIPE:-1}; EXTRA=${EXTRA:-}
+K=${K:-4}; KC=${KC:-8}; QW=${QW:-4}; ESC=${ESC:-4}; BUDGET=${BUDGET:-20400}; DP=${DP:-$NGPU}; QUANT=${QUANT:-fp8}; PIPE=${PIPE:-1}; EXTRA=${EXTRA:-}
 [ "$PIPE" = "1" ] && EXTRA="--pipeline $EXTRA"
 [ -n "$QUANT" ] && EXTRA="--quant $QUANT $EXTRA"
 # Multi-run vote (src/vote.py): run 1 writes /result incrementally (a time-out still leaves its answers); while the budget

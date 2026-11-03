@@ -202,3 +202,16 @@ runs that reached the question. Train, every subset of the runs v6–v9:
 time on train (99 of 116 samples in v6–v9; other samples: 7 %). Example: "siro tiffy chai 30ml" answered with
 "Tiffy Dey hộp 25 vỉ" by all 8 samples, which outvoted the correct rule. Such a sample now neither votes nor counts.
 Re-voting the logged runs reproduces 3000 / 3000 answers and gains +0.0003 to +0.002 PA per run, never less.
+
+**v10** (commit 277cfd6: kc 8 + `--map-retry`):
+
+| Run | PA | Correct / wrong / abstain | Wall |
+|---|---|---|---|
+| v10-1 train | 0.957 | 2927 / 55 / 18 | 5292 s |
+| v10-3 public (repeat) | — | 40 abstain (lowest so far); 89.5 % of answers equal the 4-run vote | 4694 s |
+
+- biz_123 recovered (0.72; v9: −0.08).
+- biz_110 fell to −0.20 (24 wrong). Both mapping candidates carried the revenue warning (revenue +100 % against
+  "Tiền hàng"), so the least bad one was chosen.
+- Vote over the 5 train runs v6–v10: **0.9817** (2966 / 21 / 13). Best triple: v8 + v9 + v10, 0.980.
+- The mapping phase still takes 1100–2950 s per LLM-mapped public business; v11 targets this with budget forcing.

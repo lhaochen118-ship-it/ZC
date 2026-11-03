@@ -4,6 +4,17 @@
 và gửi điểm rồi mới chạy tiếp.** Token: 11 acc ở `~/.kaggle/tok_<user>` (gồm huyenco, mucnokieu; Duylan = duylnng,
 HaiDinh = hai1108, NguyenManh = nguyenmanh0404).*
 
+## Mới (khung 03/11 tối) — portal v22 = 0.71
+
+| File nộp | Train | Public 3 lần chạy (nhất trí / đa số / tách) | Abstain | So với v22 (giống / thêm trả lời / thêm abstain / đổi) |
+|---|---|---|---|---|
+| `submissions/v23/submission.jsonl` | 0.978 (biz_123 0.48, may rủi ánh xạ) | 834 / 101 / 65 | 49 | 903 / 48 / 21 / 28 |
+| v24 (đang chạy) | | | | |
+
+- v23 = toolkit ngành mới (`src/industry.py`); v24 = các sửa ở EXPERIMENT_LOG entry 15. User: chạy 2 bản (v23, v24) rồi
+  **dừng chờ điểm**.
+- Acc hết quota GPU tuần (W45): caotienminh1, phuongnehe, nguynduylm (`~/.cache/zc_quota.json`, fanout tự bỏ qua).
+
 ## Mới (khung 03/11 chiều)
 
 | File nộp | Train (1 lần) | Public 3 lần chạy (nhất trí / đa số / tách) | Abstain | Đáp án 0 | So với v19 (giống / thêm trả lời / thêm abstain / đổi) |

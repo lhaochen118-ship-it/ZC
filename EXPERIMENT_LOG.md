@@ -421,3 +421,36 @@ and the submission recipe). Routine disabled.
   runs' choices fall in the same rule-answer cluster; the pooled ranking sometimes picks a singleton cluster (dev_008,
   dev_014), so pooling with the present ranking is not obviously more stable. Train (labelled) study running.
 - Waiting for the user's portal scores of v21 / v22 before any new run (user instruction).
+
+## Entry 15 — 2026-11-03 19:00: portal v22 = 0.71; v23 (industry toolkit); v24 fixes
+
+**Portal (user): v22 = 0.71** (best so far; v19 0.687). User: continue from v22, two more versions, then stop for scores.
+
+**v23 = 92dd902: toolkit for the public rulebook's new industries** (`src/industry.py`, mixed into `dm.Shop`; tests
+`tests/test_industry.py`). Phone shops: devices vs accessories, model lines (`…GB`), brands, trade-ins, khách phải trả,
+instalments (remaining / overdue / terms due / overdue customers) counted in the debts, warranty visits and rate. Repair
+shops: tickets (warranty included), jobs of the 'Làm gì' cell (taxonomy with the rulebook's plain 'nhớt' / 'ruột' / 'sửa điện'),
+plates, vehicle-line spellings, regular vehicles, mechanics across spellings, commission table. Mother & baby: vouchers /
+points / shipping, new members, diaper pack shares, brands. The industry's canonical tables go into the MAPPING prompt and the
+toolkit into the ANSWER prompts of shops of that industry only; `industry.detect()` finds the industry from the data when the
+README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1 / 32 unchanged.
+- Train (linhmai24): 0.978; only biz_123 fell (0.48: 15 of 16 mapping attempts failed on column names, known hard shop).
+- Public 3 runs: 834 unanimous / 101 majority / 65 split; the LLM mappings now build the industry tables (dev_014:
+  instalments, instalment_payments, tradeins, warranty; dev_012 staff; dev_013 customers). → `submissions/v23` (49 abstain,
+  v22 76). Vs v22: 903 identical, 48 newly answered (dev_014 29), 21 newly abstained, 28 changed.
+- Ops: phuongnehe and nguynduylm out of weekly GPU quota; the old fanout failover only tried the listed accounts and raced a
+  manual relaunch (two sessions of zc-v23-3 on hai1108). Fixed in fanout (all accounts with a token, quota remembered per week).
+
+**Found on the v22 / v23 public logs (no labels), fixed generally in v24:**
+- subjective qualities the rulebook does not define ('ngon nhất', 'thân thiện', 'khó tính', 'nhiệt tình', 'uy tín', 'đáng tin
+  cậy', 'trung thực', 'chất lượng tốt') → unanswerable (§7); 9 public questions, 0 train; v22 answered 6 with a name.
+- debts written only as free-text notes (dev_008: 5 debt questions 'unanswerable'): `debt_from_note`, `orders.debt_end`,
+  soft check against what C records (a v23 mapping made payments = the order total).
+- `n_orders(p, status='huỷ')` always 0 (valid=True first): status filters look at every status; `prev_month(this_month)` =
+  same days of last month (rulebook); 'năm nay tính tới hôm nay' = ytd; 'th7, th8, th9/2026' = three months; a year read as
+  top-k; 'o đờ' = đơn, 'xi ô đi' = COD, 'quan thu về' = quán; 'Tại tiệm' = tại quầy; regional 'pho mát' = 'phô mai', 'xây trát' =
+  'xây tô' (and the grounding check compares regional forms: 6 right samples of dev_004 were dropped as ungrounded).
+- repair mapping that hand-wrote a wrong nickname → full-name map (dev_012): (day, person) check against the book, aliases for
+  raw staff lists; raw-table samples of implemented industries removed and their standard rules keep weight 4 (dev_010
+  confidence 0.98 → 0.84 in v23); rule templates for the industry functions (weight 2), deliveries by order date, due dates;
+  customer-group check (dev_008); second mapping batch when every candidate has a heavy warning (dev_014 run 3).

@@ -214,6 +214,14 @@ def strip_accents(s):
 def key(s): return strip_accents(norm_text(s))
 
 
+HONORIFIC = re.compile(r"^(?:a|anh|c|chi|e|em|co|chu|bac|thay|tho)\s+(?=\S)")   # not 'ông' / 'bà' (also surnames)
+
+
+def person_key(s):
+    """key of a person's name without the honorific a book puts in front ('A.Phúc', 'a Phúc', 'anh Phúc' -> 'phuc')."""
+    return HONORIFIC.sub("", key(s))
+
+
 def _ckey(s):
     """key for matching names: a number glued to its unit or not is the same name ('chai 30 ml' = 'chai 30ml')."""
     return re.sub(r"(?<=\d) (?=(?:ml|l|g|kg|mg|cm|mm|m|m2|m3|gr|lit|oz|cc|w|kw|v)\b)", "", key(s))
@@ -624,16 +632,18 @@ class Shop:
         ('Từ Hải Thanh' ~ 'Từ Hải Thanh 0359470831'). Two or more such values: no match (never merges people)."""
         m = self._match(df, cols, v)
         if m.any() or isinstance(v, (list, tuple, set)): return m
-        q = key(v).split()
+        q = person_key(v).split()
         if not q: return m
         hits = set()
         for c in cols:
             if c not in df.columns: continue
             for x in df[c].dropna().unique():
-                kx = key(x).split()
+                kx = person_key(x).split()
                 if kx and (kx == q[-len(kx):] or q == kx[-len(q):] or (kx[:len(q)] == q and all(t.isdigit() for t in kx[len(q):]))):
                     hits.add(x)
-        return self._match(df, cols, next(iter(hits))) if len(hits) == 1 else m
+        if len({person_key(x) for x in hits}) == 1:                     # 'Phúc', 'a Phúc', 'A.Phúc': one person, every spelling
+            return self._match(df, cols, list(hits))
+        return m
 
     @staticmethod
     def _need(df, cols, what):

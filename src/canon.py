@@ -262,7 +262,7 @@ def warning_penalty(w):
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
     return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith("lines.item_name holds the short names") \
-        else 10.0 if w.startswith("orders.order_time has no time") else 2.0
+        else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names")) else 2.0
 
 
 def rank_score(r):
@@ -352,6 +352,29 @@ def secondary_checks(C, biz):
                 w.append(f"lines.item_name holds the short names of {t}.{hit[0]} ({hit[2]:.0%} of the lines) while {t}.{hit[1]} has the full item "
                          f"names that questions use: map item_name to {t}.{hit[1]} through {hit[0]} (with the item group / type of that table)")
                 break
+    # 1a'''. staff written as given names / nicknames ('Đạt', 'a Phúc', 'A.Phúc') while a table lists the full names: answers
+    #       must give the name as the data's list writes it, and filters by full name miss the other spellings
+    if "staff" in o and o["staff"].notna().mean() > 0.3:
+        sv = [x for x in o["staff"].dropna().astype(str).unique() if x.strip()]
+        if 2 <= len(sv) <= 300:
+            done = False
+            for t, df in biz.tables.items():
+                if done or not 2 <= len(df) <= 500: continue
+                for c in df.columns:
+                    if str(c).startswith("_") or not (df[c].dtype == object or pd.api.types.is_string_dtype(df[c])): continue
+                    names = [x for x in df[c].dropna().astype(str).unique() if x.strip()]
+                    if not 2 <= len(names) <= 200 or sum(len(dm.key(n).split()) >= 2 for n in names) < 0.8 * len(names): continue
+                    fk = [dm.key(n).split() for n in names]; fset = {dm.key(n) for n in names}
+                    def full_of(x):
+                        g = dm.person_key(x).split()
+                        hit = [n for n, k in zip(names, fk) if g and k[-len(g):] == g]
+                        return hit[0] if len(hit) == 1 else None
+                    share = sum(1 for x in sv if full_of(x)) / len(sv); exact = sum(1 for x in sv if dm.key(x) in fset) / len(sv)
+                    if share >= 0.8 and exact < 0.5:
+                        ex = ", ".join(f"'{x}' -> '{full_of(x)}'" for x in sv[:3] if full_of(x))
+                        w.append(f"orders.staff holds given names / nicknames ({ex}) while {t}.{c} lists the full names: map staff to the full "
+                                 "name of that list (one person = one name; answers name people as the data's list writes them)")
+                        done = True; break
     # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)

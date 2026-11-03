@@ -316,5 +316,14 @@ check("short item names of a lookup table", any(x.startswith("lines.item_name ho
 l23b = l23.copy(); l23b["item_name"] = l23b["item_name"].map(dict(zip(biz23.tables["GhiTat"]["Ghi tắt"], biz23.tables["GhiTat"]["Tên hàng"])))
 check("full item names: no warning", not any(x.startswith("lines.item_name holds") for x in canon.secondary_checks({"orders": o23, "lines": l23b}, biz23)))
 
+O24 = pd.DataFrame({"order_id": [f"R{i}" for i in range(60)], "order_date": pd.Timestamp("2026-03-04"), "status": "hoàn thành",
+                    "staff": ["Đạt", "a Phúc", "A.Phúc", "Phúc", "a Đức", "Đức"] * 10, "revenue": 10.0, "valid": True})
+biz24 = types.SimpleNamespace(tables={"Tho": pd.DataFrame({"Họ tên": ["Hà Loan Đạt", "Đoàn Bảo Phúc", "Lương Chi Đức"]})}, readme="", raw={})
+w24 = canon.secondary_checks({"orders": O24}, biz24)
+check("staff nicknames vs a list of full names", any(x.startswith("orders.staff holds given names") for x in w24), w24)
+sh24 = dm.Shop({"orders": O24}, today="2026-03-31")
+check("a full name matches every spelling of the nickname", int(sh24._match_person(sh24.O, ("staff",), "Đoàn Bảo Phúc").sum()) == 30
+      and int(sh24._match_person(sh24.O, ("staff",), "Hà Loan Đạt").sum()) == 10)
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

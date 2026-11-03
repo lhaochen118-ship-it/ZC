@@ -112,7 +112,7 @@ check("person: ambiguous / unknown", mp("customer_name", "An") == [] and mp("cus
 import qparse
 tpl = lambda q: (qparse.parse(q, "2026-07-31") or (None,))[0]
 for q, want in [("coi gium thang 8/2025 dthu binh quan moi order la bao nhieu", "aov"),
-                ("tháng này doanh thu các đơn bán tại quầy là bao nhiêu, doanh thu các đơn bán qua zalo là bao nhiêu", None),
+                ("tháng này doanh thu các đơn bán tại quầy là bao nhiêu, doanh thu các đơn bán qua zalo là bao nhiêu", "rev_pair"),
                 ("thang 2/2026 co bao nhieu mat hang xuat hien trong it nhat 107 don hang", "items_in_n_orders"),
                 ("cho hoi 3 mat hang hot nhat tuan roi la nhung mat hang nao", "top_items"),
                 ("tháng 6/2026 có bao nhiêu ngày đạt doanh thu từ 12.000.000 đồng trở lên", "n_days_rev_ge"),
@@ -210,6 +210,19 @@ for q, want in [("tính đến hết ngày 10/03/2025, có mấy mặt hàng cò
                 ("những sản phẩm nào đang còn hàng có hạn dùng từ 10/03/2025 đến hết 09/04/2025", "items_expiring"),
                 ("Đến cuối ngày 12/06/2026, shop có mấy mặt hàng đang hết hàng?", "n_out_of_stock")]:
     check(f"qparse: {q[:40]}", tpl(q) == want, tpl(q))
+
+# 18. general phrasings (public test wording, not train): AOV without 'doanh thu', 'N ngày gần nhất', two channels asked
+# separately, shift comparison 'chênh ... bao nhiêu %', debt counts / totals, '% số khách' is not '% so với', month ranges
+for q, want in [("Giá trị trung bình một đơn tháng 6/2026 là bao nhiêu?", "aov"), ("Dthu 7 ngay gan nhat bnhiu z?", "revenue"),
+                ("Th này đơn bán qua Zalo OA dthu bnhiu, còn đơn bán tại quầy bnhiu?", "rev_pair"),
+                ("5/2025 dthu ca chieu chenh ca sang may %?", "growth_shift"), ("Tới ngày 27/03/2026 tiền khách nợ chưa thu còn bnhiu?", "debt_total"),
+                ("Đến hết ngày 06/09/2026 đếm khách còn thiếu tiền tiệm được nhiêu người z?", "n_debtors"),
+                ("Đến hết hôm nay, khách Ngô Nam Ngân còn thiếu bao nhiêu tiền góp", None),
+                ("Tháng 4/2026 khách mua từ 3 đơn trở lên chiếm bao nhiêu % số khách đã mua?", "pct_customers"),
+                ("So cùng kỳ năm trước, doanh thu tháng 4/2026 tăng/giảm mấy phần trăm?", "growth_yoy"),
+                ("Trong 7 ngày gần nhất có bao nhiêu mặt hàng không bán được cái nào?", "unsold"), ("quý 4/2025 cửa hàng có bao nhiêu order đó", "n_orders")]:
+    check(f"qparse: {q[:40]}", tpl(q) == want, tpl(q))
+check("month range", qparse.parse_period(qparse.untelex(qparse.K("Th9/2025 đến hết th11/2025 có bao nhiêu xe")), "2026-06-30")[1] == 'between("2025-09-01", "2025-11-30")')
 
 # 17. --map-fallback: the chosen mapping says unanswerable -> the same programs' vote on the next mapping; an answer on
 # the chosen mapping is kept even when the alternate disagrees; answer agreement singles out an outlier candidate

@@ -376,3 +376,14 @@ Submissions: `submissions/v15`, `submissions/v18` (pushed); v19 when its public 
 
 **Runs.** v20 = de097f9 + 5dba631 (weekday averages per the public rulebook), train + public ×3 (caotienminh1,
 duylnng). v21 = d0007a9 (parser fixes + mapping checks), launched next.
+
+**v20 train (12:27; 5dba631 = ref-adapt + weekday averages; caotienminh1).** PA **0.991** (2975 / 2 / 23): dev 0.998
+(1974 / 1 / 1), **holdout 0.977** (1001 / 1 / 22; v19 0.961). Holdout shops are unseen, the closest proxy for public: the
+README-gap adaptation of reference mappings is what moved. Wall 3844 s; GPU busy 84–90 %, peak 21.6 / 22.5 GB.
+
+**More mapping checks found on public (a052d46, e7f79fd; train references 0 flagged, oracle unchanged).**
+- dev_014: lines keep the sales book's abbreviations ('CL 9D') although a lookup sheet maps them to full names + type
+  (every chosen mapping of the 3 v19 runs) → warning "lines.item_name holds the short names of …" (penalty 20).
+- dev_012: mechanics written 'Đạt' / 'a Phúc' / 'A.Phúc' while DanhSachTho lists the full names (most candidates) →
+  warning "orders.staff holds given names …" (penalty 10); dm.person_key drops honorifics so a full name matches every
+  spelling of the same person (1555 tickets instead of 523).

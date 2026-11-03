@@ -223,7 +223,8 @@ HONORIFIC = re.compile(r"^(?:a|anh|c|chi|e|em|co|chu|bac|thay|tho)\s+(?=\S)")   
 # Regional words for the same thing (North / Central -> one form): questions name items in another region's words
 # ('Canh chua cá tràu' = 'Canh chua cá lóc', 'Đậu phụ rán giòn' = 'Đậu hũ chiên giòn', 'Cốc sạc' = 'Củ sạc'). Used only when no
 # item matches the name itself; longer phrases first.
-REGIONAL = [("đậu phụ", "đậu hũ"), ("đậu hủ", "đậu hũ"), ("tàu hũ", "đậu hũ"), ("tàu hủ", "đậu hũ"), ("cá tràu", "cá lóc"), ("cá quả", "cá lóc"),
+REGIONAL = [("pho mát", "phô mai"), ("phó mát", "phô mai"), ("phomat", "phô mai"), ("xây trát", "xây tô"), ("vữa trát", "vữa tô"),
+            ("đậu phụ", "đậu hũ"), ("đậu hủ", "đậu hũ"), ("tàu hũ", "đậu hũ"), ("tàu hủ", "đậu hũ"), ("cá tràu", "cá lóc"), ("cá quả", "cá lóc"),
             ("cá chuối", "cá lóc"), ("cốc sạc", "củ sạc"), ("hoa quả", "trái cây"), ("thịt lợn", "thịt heo"), ("găng tay", "bao tay"),
             ("tất chân", "bao chân"), ("mì chính", "bột ngọt"), ("xì dầu", "nước tương"), ("bí ngô", "bí đỏ"), ("mướp đắng", "khổ qua"),
             ("rau mùi", "ngò"), ("giò lụa", "chả lụa"), ("hột vịt", "trứng vịt"), ("hột gà", "trứng gà"), ("xà phòng", "xà bông"),

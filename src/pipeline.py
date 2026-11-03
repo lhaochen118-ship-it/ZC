@@ -611,7 +611,8 @@ class Pipeline:
         if not used: return True
         c = q.get("_clean") if isinstance(q.get("_clean"), dict) else {}
         texts = [self._ck(q["question"])] + ([self._ck(c["clean"])] if c.get("clean") else [])
-        return all(any(self._mentioned(t, nk) for t in texts for nk in names) for names in used)
+        texts += [dm.regional_key(x) for x in [q["question"]] + ([c["clean"]] if c.get("clean") else [])]   # 'Cát xây trát' names 'Cát xây tô'
+        return all(any(self._mentioned(t, nk) or self._mentioned(t, dm.regional_key(nk)) for t in texts for nk in names) for names in used)
 
     def vote(self, st):
         """the vote on the chosen mapping; --map-fallback M: when it abstains or says unanswerable, the vote of the same

@@ -265,6 +265,7 @@ def warning_penalty(w):
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
     return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "the data has an instalment book")) \
+        or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)", w) \
         else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) else 2.0
 
 
@@ -478,6 +479,24 @@ def secondary_checks(C, biz):
                     raise StopIteration
     except StopIteration: pass
     except Exception as e: print(f"[canon] staff-name check failed: {type(e).__name__}: {e}", flush=True)
+    # 1e. order-level columns filled with ONE value for every order (v24 public dev_013 seed 1: orders["order_discount"] = the
+    #     voucher total of the whole table, orders["channel"] = the first order's channel): every answer on them is wrong
+    if len(o) > 50:
+        rev_sum = float(pd.to_numeric(o["revenue"], errors="coerce").fillna(0).sum()) if "revenue" in o else 0.0
+        for col in ("order_discount", "shipping_fee", "points_discount", "tradein"):
+            if col not in o: continue
+            x = pd.to_numeric(o[col], errors="coerce").fillna(0)
+            if x.nunique() == 1 and float(x.iloc[0]) != 0:
+                w.append(f"orders.{col} is {float(x.iloc[0]):.0f} on every order: a total over the whole table was assigned to each order; "
+                         f"{col} is the amount OF THAT ORDER (group the lines by order_id, or take the order's own cell)")
+            elif rev_sum > 0 and float(x.abs().sum()) > 0.5 * rev_sum:
+                w.append(f"orders.{col} adds up to {float(x.abs().sum()) / rev_sum:.0%} of the revenue: it must hold only that order's {col} amount")
+        for col, pat in (("channel", r"kenh\w*|nguondon|nguonban|channel"), ("payment_method", r"(?:phuongthuc|hinhthuc)(?:tt|thanhtoan)?|thanhtoanbang|loaitt|payment\w*")):
+            if col not in o or o[col].dropna().astype(str).nunique() != 1: continue
+            src_ = next((f"{t}.{c}" for t, df in biz.tables.items() if len(df) >= 50 for c in df.columns
+                         if re.fullmatch(pat, _fold(c)) and df[c].dropna().astype(str).str.strip().nunique() >= 2), None)
+            if src_: w.append(f"orders.{col} has the single value {o[col].dropna().iloc[0]!r} on every order but {src_} records several: map "
+                              "each order's own value")
     # 1d. books of the public rulebook's industries present in the raw data but missing from C (v24 public dev_014 run 2: the chosen
     #     mapping had no instalment book, every instalment answer 0): the toolkit can only use what C holds
     have = {t for t, v in C.items() if isinstance(v, pd.DataFrame) and len(v)}

@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 04:45 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-03 06:15 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự. Khung 12 giờ
 của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26KaZP68Dmg8JL2RGcbVS` và báo kết quả.*
 
@@ -25,6 +25,24 @@ của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26
   (temp 0.6, top-k 20) + budget forcing (`--think-budget 12288`).
 - 327acf2: bỏ phiếu chỉ tính mẫu LLM "bám câu hỏi" (tên hàng trong chương trình phải có trong câu); cảnh báo cột bị
   `frame()` bỏ qua (chỉ ánh xạ LLM).
+
+## Khung 6 giờ thứ hai (04:55 → 11:00 UTC 03/11) — routine `trig_01U26KaZP68Dmg8JL2RGcbVS` bật lại, tắt sau 11:00
+
+- Làm sạch câu hỏi: đã xong (`question_cleaning/`).
+- File nộp v11 cho user: `submissions/v11/submission.jsonl` (bỏ phiếu 3 lần chạy) + `submission_single_run.jsonl`.
+- Code mới (chưa có kết quả GPU):
+  - b628bc9: `--sel-agree 30` (chọn ánh xạ theo đồng thuận đáp án), `--map-fallback 2` (ánh xạ kế tiếp khi ánh xạ chọn
+    không trả lời được; replay v11: 0.967 → 0.974);
+  - 7c28f66: bộ đọc luật phủ thêm (oracle train 2967 / 1 / 32; public phủ 662 → 693).
+- Đang chạy:
+  - **v13** (69c0d8d) — thnliu ×2, linhmai24 ×2, launched 05:12;
+  - **v14** (b628bc9) — nguynduylm, phuongnehe ×2, hai1108 (v14-2 đẩy tay), launched 05:44;
+  - **v15** (7c28f66) — preflight 06:12, sẽ chạy trên caotienminh1 ×2 + duylnng ×2.
+- Mỗi run: `runs/vNN/zc-vNN-1` train, `-2` public seed 0, `-3` seed 1, `-4` seed 2.
+- Việc tiếp:
+  1. chấm train v13 / v14 / v15, so v11 (0.975);
+  2. tạo file nộp từ bỏ phiếu 3 lần chạy public của bản tốt nhất → `submissions/vNN/submission.jsonl`;
+  3. log, STATUS; 11:00 tắt routine và báo user.
 
 ## Kết quả cuối khung 12 giờ (04:45 UTC 03/11) — không còn kernel nào chạy
 

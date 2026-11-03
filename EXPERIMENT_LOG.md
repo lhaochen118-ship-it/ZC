@@ -305,3 +305,16 @@ Re-voting the logged runs reproduces 3000 / 3000 answers and gains +0.0003 to +0
   - v15 public, v16 (ce0c688 + 234e2f8);
   - v17 (speed: `--spec-mtp 2 --kv-dtype fp8` vs plain, public subset);
   - v18 (a0e5c08 + 4b85565: industry sections, summary rows, all fixes), train + public ×3.
+
+**v17 (speed test: public `--subset 28`, same code, lelynhan)**
+
+| | Plain | `--spec-mtp 2 --kv-dtype fp8` |
+|---|---|---|
+| fp8 KV cache | — | **not supported** by vLLM 0.32 for Qwen3.5 (engine init fails; the fallback drops it) |
+| KV cache / GPU | 201k tokens | 176k (the MTP drafter takes memory) |
+| Load | ~280 s | 806 s (two refused inits) |
+| Mapping phase, summed over 10 LLM shops | 11361 s | 10637 s (−6 %) |
+| Mapping samples that ran | 55 / 80 | 51 / 80 |
+| Wall | 3160 s | 3944 s |
+
+→ Neither is worth it: the defaults stay plain (no MTP, model-dtype KV).

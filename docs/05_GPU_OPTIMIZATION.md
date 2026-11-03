@@ -69,3 +69,9 @@ rồi mới import; và phải chạy thử nhỏ trước.
   - 8 % lần thử public hết token khi thinking mà chưa ra code → vòng sau tắt thinking (2ea939c).
 - 2×RTX 5090 (đề): giải mã bị giới hạn bởi băng thông bộ nhớ (5090 ~1.8 TB/s so với L4 300 GB/s), nên ước tính nhanh hơn
   4×L4 vài lần → giới hạn 6 giờ còn dư cho vài nghìn câu. Cần đo lại khi có Docker.
+
+## Đo 03/11 (v17, 4×L4, Qwen3.5-9B FP8, vLLM 0.32)
+- KV cache 201k token / L4 (7 GiB sau trọng số): pha ánh xạ (8 mẫu thinking dài / DN) bị giới hạn bởi KV, không bởi lịch.
+- `--kv-dtype fp8`: vLLM 0.32 không khởi tạo được với Qwen3.5 → không dùng.
+- `--spec-mtp 2`: chạy được nhưng pha ánh xạ chỉ nhanh 6 %, KV còn 176k → không bật.
+- nvidia-smi: bận ~100 % ở thân run, 47 % 10 phút đầu (nạp mô hình), ~60 % ở đuôi.

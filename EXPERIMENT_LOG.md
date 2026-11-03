@@ -403,3 +403,8 @@ v21's README-revenue check flags exactly runs 2 / 3's mappings (penalty 100) and
   samples a run drew (checks that reject wrong readings; pool candidates across runs);
 - the vote should not count a run whose mapping is detectably wrong as much as one whose mapping is clean.
 - caotienminh1 reached the weekly GPU quota (30 h); v22-1 / v22-2 moved to thnliu.
+
+**14:25 — handoff.** Mapping-aware vote (7fa70f2): splits go to the one run whose chosen mapping is clearly cleaner
+(penalty gap ≥ 10); on v20 offline 15 splits resolved, 10 to v19's answer. v21 (8dca4a2) and v22 (20cfec7) still running
+on Kaggle at the end of this chat; their outputs must be downloaded in the next one (handoff/STATUS.md lists the kernels
+and the submission recipe). Routine disabled.

@@ -616,14 +616,19 @@ class Engine:
         if a.quant: kw["quantization"] = a.quant
         if getattr(a, "max_num_seqs", 0): kw["max_num_seqs"] = a.max_num_seqs
         if getattr(a, "max_batched_tokens", 0): kw["max_num_batched_tokens"] = a.max_batched_tokens
+        if getattr(a, "kv_dtype", ""): kw["kv_cache_dtype"] = a.kv_dtype     # 'fp8': twice the KV tokens (L4: 201k -> ~400k)
         t0 = time.time(); base = dict(model=a.model, tensor_parallel_size=tp, dtype="half" if half else "auto", max_model_len=a.max_len,
                                       gpu_memory_utilization=a.gpu_util, enable_prefix_caching=True, seed=0, enforce_eager=a.eager)
         spec = {"speculative_config": {"method": "mtp", "num_speculative_tokens": a.spec_mtp}} if getattr(a, "spec_mtp", 0) else {}
-        try: self.llm = LLM(**base, **kw, **spec)
-        except Exception as e:                                         # this vLLM / model has no MTP drafter: plain decoding
-            if not spec: raise
-            print(f"[engine] MTP speculative decoding unavailable ({type(e).__name__}: {str(e)[:200]}); plain decoding", flush=True)
-            import gc, torch; gc.collect(); torch.cuda.empty_cache(); self.llm = LLM(**base, **kw); spec = {}
+        tries = [(kw, spec)]                                             # then without the options this vLLM / model may lack
+        if spec: tries.append((kw, {}))
+        if "kv_cache_dtype" in kw: tries += [({k: v for k, v in kw.items() if k != "kv_cache_dtype"}, spec)] + ([({k: v for k, v in kw.items() if k != "kv_cache_dtype"}, {})] if spec else [])
+        for n, (kw_, spec_) in enumerate(tries):
+            try: self.llm = LLM(**base, **kw_, **spec_); kw, spec = kw_, spec_; break
+            except Exception as e:
+                if n == len(tries) - 1: raise
+                print(f"[engine] {kw_.get('kv_cache_dtype', '')} {spec_} unavailable ({type(e).__name__}: {str(e)[:200]}); retrying without it", flush=True)
+                import gc, torch; gc.collect(); torch.cuda.empty_cache()
         self.kv_tokens = self._kv_tokens()
         self.prefix_budget = a.prefix_budget or (self.kv_tokens // 2 if self.kv_tokens else 32000)
         print(f"[engine] {os.path.basename(a.model.rstrip('/'))} tp={tp} {kw} {spec} loaded in {time.time() - t0:.0f}s | "
@@ -827,6 +832,7 @@ def build_parser():
     ap.add_argument("--gpu-util", type=float, default=0.92, help="vLLM gpu_memory_utilization (weights + activations + KV cache)")
     ap.add_argument("--max-num-seqs", type=int, default=0, help="vLLM max concurrent sequences (0 = vLLM default)")
     ap.add_argument("--max-batched-tokens", type=int, default=0, help="vLLM max tokens per scheduler step (0 = vLLM default)")
+    ap.add_argument("--kv-dtype", default="", help="vLLM kv_cache_dtype ('fp8': twice the KV tokens; '' = model dtype)")
     ap.add_argument("--spec-mtp", type=int, default=0, help="speculative decoding with the model's MTP head, N draft tokens (Qwen3.5); falls back to plain decoding")
     ap.add_argument("--fake-responder", default="", help="tests: python file defining responder(conv) -> text; no model is loaded")
     return ap

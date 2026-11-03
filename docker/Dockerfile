@@ -4,7 +4,9 @@
 FROM vllm/vllm-openai:v0.32.0
 
 ARG MODEL_NAME=Qwen3.5-9B
-RUN pip install --no-cache-dir "pandas>=2.2,<4" "openpyxl>=3.1" "python-calamine>=0.3" "numpy<3"
+# pandas / numpy as in the Kaggle runs that were scored (run_kaggle.py logs them: pandas 2.3.3, numpy 2.1.3, Python 3.13):
+# pandas 3 maps NaN dictionary keys differently (one public question changed between the two), so the version is pinned
+RUN pip install --no-cache-dir "pandas==2.3.3" "numpy==2.1.3" "openpyxl>=3.1" "python-calamine>=0.3"
 WORKDIR /app
 COPY src/ /app/src/
 COPY docker/predict.sh /app/predict.sh

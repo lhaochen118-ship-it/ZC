@@ -17,7 +17,7 @@ and a static business split leaves GPUs idle at the end. Here:
 Prompts, seeds, temperatures, repair messages and voting are those of the round-based path, so runs stay comparable."""
 import os, re, time, json, pickle
 from collections import Counter, defaultdict, deque
-import agent, fewshot, dm, canon as canonmod
+import agent, fewshot, dm, ingest, canon as canonmod
 
 
 def bind(mod):
@@ -405,6 +405,17 @@ class Pipeline:
         m = json.load(open(f, encoding="utf-8")); self.maps[b] = None if m.get("none") else m
         return True, self.maps[b]
 
+    def unused_card(self, b, can):
+        """cards of the raw tables the chosen mapping left out (dev_014: instalments, trade-ins, warranty visits answered
+        'unanswerable' because only C was shown, though programs can read T). Cached per business."""
+        if not hasattr(self, "_ucard"): self._ucard = {}
+        if b not in self._ucard:
+            un = [t for t in (can.get("unused") or []) if t in self.bizs[b].tables and len(self.bizs[b].tables[t])][:8]
+            try: cards = [ingest.table_card(t, self.bizs[b].tables[t]) for t in un]
+            except Exception: cards = []
+            self._ucard[b] = ("\n\n# RAW TABLES NOT IN C (in T, original column names)\n" + "\n\n".join(cards)) if cards else ""
+        return self._ucard[b]
+
     def industry(self, b):
         """(title, body, new) of b's rulebook industry section, or None (agent.industry_of; cached)."""
         if not hasattr(self, "_ind"): self._ind = {}
@@ -454,7 +465,7 @@ class Pipeline:
             if can:
                 exs = self.ex.pick(q["question"], k=a.shots, exclude_business=b if self.exclude_own else None)
                 msgs = [{"role": "system", "content": agent.SYSTEM_LIB},
-                        {"role": "user", "content": agent.user_msg_lib(self.rulebook, readme, can["card"], fewshot.render_examples(exs), q)}]
+                        {"role": "user", "content": agent.user_msg_lib(self.rulebook, readme, can["card"] + self.unused_card(b, can), fewshot.render_examples(exs), q)}]
             else:
                 msgs = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, readme, agent.CARDS[b], q)}]
             if n_raw:

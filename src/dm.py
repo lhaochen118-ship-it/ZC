@@ -216,7 +216,7 @@ def key(s): return strip_accents(norm_text(s))
 
 def _ckey(s):
     """key for matching names: a number glued to its unit or not is the same name ('chai 30 ml' = 'chai 30ml')."""
-    return re.sub(r"(?<=\d) (?=[a-z])", "", key(s))
+    return re.sub(r"(?<=\d) (?=(?:ml|l|g|kg|mg|cm|mm|m|m2|m3|gr|lit|oz|cc|w|kw|v)\b)", "", key(s))
 
 
 CANON_STATUS = ("hoàn thành", "huỷ", "trả hàng", "đang giao")

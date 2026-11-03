@@ -15,9 +15,9 @@ and a static business split leaves GPUs idle at the end. Here:
 - with `--claim-dir` (set by agent.run_dp), the GPU processes claim businesses in a shared order (most questions first)
   by atomic file creation: a GPU that finishes early takes the next business instead of idling.
 Prompts, seeds, temperatures, repair messages and voting are those of the round-based path, so runs stay comparable."""
-import os, time, json
+import os, re, time, json, pickle
 from collections import Counter, defaultdict, deque
-import agent, fewshot, canon as canonmod
+import agent, fewshot, dm, canon as canonmod
 
 
 def bind(mod):
@@ -190,6 +190,7 @@ class Pipeline:
         self.mine, self.others = set(), set()                             # chunks claimed by THIS process; businesses mapped elsewhere
         self.inflight_q, self.done_chunks = 0, 0
         self.norms = {}                                                  # b -> question Normalizer
+        self.vocabs = {}                                                 # b -> item name / code key -> the item's name keys
         self.t0, self.ntok, self.n_answered, self.n_q = time.time(), 0, 0, len(qs)
         self.mt_map = a.compile_tokens * (3 if a.think_map else 1); self.written = set()
         self.k_now = a.k
@@ -385,7 +386,7 @@ class Pipeline:
             confirm = bool(getattr(a, "confirm", 0)) and a.qw > 0 and bool(can) and k > 1
             # --confirm: phase 1 = rule program + greedy sample; phase 2 = the other k-1 samples, only when phase 1 disagrees
             st = {"att": {}, "rule": None, "pending": (1 if confirm else k) + (1 if (a.qw > 0 and can) else 0), "t": time.time(), "w": {},
-                  "phase": 1 if confirm else 2}
+                  "phase": 1 if confirm else 2, "q": q, "b": b if can else None}
             path = "L" if can else "B"
             def settle(q=q, st=st, path=path):
                 st["pending"] -= 1                                       # st["settle"]: THIS question's settle (a bare name
@@ -427,13 +428,63 @@ class Pipeline:
         return bool(rr and rr.get("ok") and rr.get("answer") and g and g.get("answer") is not None
                     and agent.canon_of(g["answer"]) == agent.canon_of(rr["answer"]))
 
+    _UNIT = r"(?:ml|l|g|kg|mg|cm|mm|m|m2|m3|gr|lit|oz|cc|w|kw|v)\b"
+    GEN = set("hop chai goi vi vien lon ly cai tuyp ml g kg mg l thung bao loc x va size m s".split())
+
+    @classmethod
+    def _ck(cls, s): return re.sub(r"(?<=\d) (?=" + cls._UNIT + ")", "", dm.key(s))   # 'chai 30 ml' = 'chai 30ml'
+
+    def vocab(self, b):
+        """item name / code key -> name keys of that item, from the mapping chosen for b (grounding check)."""
+        if b in self.vocabs: return self.vocabs[b]
+        V = {}
+        try:
+            known, can = self.mapping_of(b)
+            C = pickle.load(open(can["path"], "rb"))["C"] if known and can and can.get("path") else {}
+            for t in ("lines", "items"):
+                df = C.get(t)
+                if df is None or "item_name" not in df.columns: continue
+                sub = df[[c for c in ("item_code", "item_name") if c in df.columns]].drop_duplicates()
+                for cd, nm in zip(sub["item_code"] if "item_code" in sub.columns else [None] * len(sub), sub["item_name"]):
+                    if nm is None or (isinstance(nm, float) and nm != nm): continue
+                    nk = self._ck(nm)
+                    if len(nk) >= 3: V.setdefault(nk, set()).add(nk)
+                    if cd is not None and not (isinstance(cd, float) and cd != cd) and len(self._ck(cd)) >= 3: V.setdefault(self._ck(cd), set()).add(nk)
+        except Exception as e: print(f"[pipe] {b}: no item vocabulary for the grounding check ({type(e).__name__}: {e})", flush=True)
+        self.vocabs[b] = V; return V
+
+    @classmethod
+    def _mentioned(cls, text, nk):
+        """the item name (or 3 consecutive words of it, not only units / numbers) occurs in the question text."""
+        if re.search(r"(^|\s)" + re.escape(nk) + r"(\s|$)", text): return True
+        w = nk.split()
+        return any(any(x not in cls.GEN and not re.search(r"\d", x) for x in w[i:i + 3])
+                   and re.search(r"(^|\s)" + re.escape(" ".join(w[i:i + 3])) + r"(\s|$)", text) for i in range(len(w) - 2))
+
+    def grounded(self, q, code, b):
+        """False when an LLM program names an item of the shop that the question does not mention ('siro tiffy chai 30ml'
+        answered with 'Tiffy Dey hộp 25 vỉ'): such samples were wrong 85 % of the time on train (99 of 116, v6-v9), the
+        others 7 %. Such a sample gets no vote and is left out of the total."""
+        if b is None or not code: return True
+        V = self.vocab(b)
+        if not V: return True
+        used = [V[u] for u in (self._ck(x or y) for x, y in re.findall(r'"([^"\n]{3,80})"|\'([^\'\n]{3,80})\'', code)) if u in V]
+        if not used: return True
+        c = q.get("_clean") if isinstance(q.get("_clean"), dict) else {}
+        texts = [self._ck(q["question"])] + ([self._ck(c["clean"])] if c.get("clean") else [])
+        return all(any(self._mentioned(t, nk) for t in texts for nk in names) for names in used)
+
     def vote(self, st):
-        """weighted vote: rule program qw, every LLM sample its weight (1); conf = top / total weight of all voters."""
+        """weighted vote: rule program qw, every LLM sample its weight (1); conf = top / total weight of all voters. An LLM
+        sample naming an item the question does not mention (grounded() False) neither votes nor counts."""
         a = self.a; votes, rep = Counter(), {}; rr = st["rule"]; total = sum(st["w"].get(s, 1.0) for s in st["att"])
         if rr and rr.get("ok"):
             c = agent.canon_of(rr["answer"]); votes[c] += a.qw; rep[c] = rr["answer"]; total += a.qw
+        st["ungrounded"] = []
         for s in sorted(st["att"]):
             r = agent.last_ok(st["att"][s])
+            if r and st.get("q") is not None and not self.grounded(st["q"], r.get("code"), st.get("b")):
+                total -= st["w"].get(s, 1.0); st["ungrounded"].append(s); continue
             if r: c = agent.canon_of(r["answer"]); votes[c] += st["w"].get(s, 1.0); rep.setdefault(c, r["answer"])
         if votes and total:
             top, n = votes.most_common(1)[0]; conf = n / total
@@ -475,6 +526,7 @@ class Pipeline:
         final, best, conf, votes = self.vote(st)
         samples = {(f"{s}{path}" if s < k else f"{s}E"): st["att"][s] for s in sorted(st["att"])}
         if st.get("esc"): samples["escalated"] = st["esc"]
+        if st.get("ungrounded"): samples["ungrounded"] = st["ungrounded"]
         rr = st["rule"]
         if rr: samples["rule"] = rr
         if q["id"] in self.written: return                              # already abstained at the hard time limit

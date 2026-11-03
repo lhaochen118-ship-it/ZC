@@ -388,8 +388,22 @@ def normalize_aliases(C):
     return done
 
 
-def run_mapping(code, biz, ref_cols=None):
-    """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used, unused, warnings)."""
+def skipped_warnings(biz):
+    """columns an LLM mapping lost without an error: frame() skips a raw name the table does not have (biz_123 in v6:
+    purchases built from chi_tiet_nhap with NgayNhapKho / MaNhaCungCap, columns of phieu_nhap -> no receipt date, no
+    supplier: every purchase question abstained). Reference transfers skip absent columns by design: not checked."""
+    w, seen = [], set()
+    for col, raw in dm.frame.skipped:
+        if (col, raw) in seen or len(w) >= 8: continue
+        seen.add((col, raw)); where = [t for t, df in biz.tables.items() if raw in df.columns]
+        w.append(f"frame() skipped {col}={raw!r}: the table given to frame() has no column {raw!r}, so {col} is missing"
+                 + (f"; {raw!r} is a column of {', '.join(where[:3])}: merge that table in first (or map {col} from it)" if where else ""))
+    return w
+
+
+def run_mapping(code, biz, ref_cols=None, llm=False):
+    """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used, unused, warnings). llm: the
+    columns frame() skipped are warnings (an LLM program names the columns of this business)."""
     g = namespace(biz, ref_cols)
     dm._TOOLKIT_NS.clear(); dm._TOOLKIT_NS.update(g)                  # `from builder import frame` -> this namespace
     dm.frame.skipped = []
@@ -407,6 +421,7 @@ def run_mapping(code, biz, ref_cols=None):
     unused = [t for t in biz.tables if t not in g["T"].accessed and t not in g["RAW"].accessed]
     try: warns = secondary_checks(C, biz)
     except Exception as e: warns = []; print(f"[canon] secondary checks failed: {type(e).__name__}: {e}", flush=True)
+    if llm: warns += skipped_warnings(biz)
     return {"ok": True, "C": C, "notes": str(g.get("NOTES", "")), "coverage": coverage(C), "tables_used": dict(g["T"].used), "unused": unused,
             "warnings": warns}
 

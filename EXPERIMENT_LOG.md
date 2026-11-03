@@ -156,3 +156,49 @@ v6-train (rule reader fixes).
 - Determinism, public: v9 vs v9-3 gave the same answer on 80.4 % of questions (v5: 88.3 %). Mapping success itself
   is random for dev_014 (mapped in v7 / v9, not in v9-3), and near-tied candidates flip in dev_004 / dev_012.
 - Next (v10): when every sample of a business fails, a second batch (`--map-retry`); kc 8 now that selection is better.
+
+## Entry 9 — 2026-11-03: multi-run vote, errors shared by every run, looping thinking, grounding
+
+**Multi-run vote** (`src/vote.py`, `docker/predict.sh` runs up to 3 times while the budget allows): per-question
+plurality over independent runs (seed bases 0, 1, 2), abstaining runs give no vote, the top answer needs ≥ 0.4 of the
+runs that reached the question. Train, every subset of the runs v6–v9:
+
+| Runs | PA |
+|---|---|
+| 1 (each) | 0.928 – 0.969 |
+| 2 (each pair) | 0.956 – 0.972 (about the mean of the two) |
+| 3 (each triple) | 0.976 – 0.981 |
+| 4 | 0.980 (2960 correct / 19 wrong / 21 abstain) |
+
+**Errors every run shares** (the vote cannot fix them; 40 non-correct questions of the 4-run vote):
+- biz_123 (sqlite, 17 tables): 22 of the 40. Its LLM mappings fail 2 of 3 times; the chosen one in v6 built purchases
+  from `chi_tiet_nhap` with `NgayNhapKho` / `MaNhaCungCap`, which are columns of `phieu_nhap`. `frame()` skipped them
+  silently, so there was no receipt date and no supplier, and every purchase question abstained. → An LLM mapping now
+  gets a warning for each column `frame()` skipped, naming the table that has it. The warning goes into the
+  completeness round and into the ranking.
+- "hôm qua bán được bao nhiêu ly": all 4 runs answered 0 with `size_qty(p, "ly")` or counted every unit, and the
+  rule reader had no pattern. → New rule `unit_qty` → `item_qty(p, base_unit=…)` (rulebook: only items of that base
+  unit), plus a `size_qty` fallback.
+- "số kg nếp cái hoa vàng": the rule reader read `kg` as the negation "không". → `kg` after a number or a quantity word
+  is now the unit.
+- One item code with two spellings ("Siro Tiffy chai 30 ml" / "30ml", "Red Bull 250 ml" / "250ml") counted half the
+  sales. → Item filters now match every code and spelling of the item.
+- Oracle (rules on reference mappings): 2754 / 3 / 243 → **2791 correct / 1 wrong / 208 unparsed**, no question lost.
+
+**Mapping failures** (v6–v9, 600 LLM mapping samples; 375 run):
+- OK at round 0 / 1 / 2: 207 / 99 / 69.
+- "no python code block" is 153 of the 895 failed attempts: the thinking loops ("Wait, …") up to the 18k-token limit.
+  This hits 21 % of the first attempts and 35 % of the greedy sample, and costs about 10 min of an L4 each.
+  → StepLLM no longer decodes thinking greedily (temperature 0.6, top-k 20, per the Qwen3.5 card). It also uses budget
+  forcing (s1, Muennighoff et al. 2025): at `--think-budget` 12288 tokens, the end of the reasoning is appended and the
+  same request continues with the rest of its budget for the program.
+- Other fixes:
+  - a sales book without order codes gets one record per row (58 attempts stopped at "lines need an order_id");
+  - `frame()` accepts functions (13 pickling errors);
+  - a KeyError on a skipped column names the missing raw column;
+  - table names work as variables.
+
+**Grounding of answer programs**: an LLM sample that names an item the question does not mention was wrong 85 % of the
+time on train (99 of 116 samples in v6–v9; other samples: 7 %). Example: "siro tiffy chai 30ml" answered with
+"Tiffy Dey hộp 25 vỉ" by all 8 samples, which outvoted the correct rule. Such a sample now neither votes nor counts.
+Re-voting the logged runs reproduces 3000 / 3000 answers and gains +0.0003 to +0.002 PA per run, never less.

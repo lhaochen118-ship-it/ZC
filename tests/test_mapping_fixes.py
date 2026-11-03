@@ -177,5 +177,21 @@ code = "t = ban_hang\nlines = frame(t, order_date='Ngày', item_name='Hàng', qt
 r = canon.run_mapping(code, bz)
 check("skip hint + table variable", not r["ok"] and "frame() skipped unit_price='Gia'" in r["error"] and "NameError" not in r["error"], r.get("error"))
 
+# 14. an LLM mapping whose frame() skips a raw column gets a warning naming the table that has it (not for references);
+# _ckey glues a number to a unit only; an answer program naming an item the question does not mention gets no vote
+code2 = "t = ban_hang\nlines = frame(t, order_date='Ngày', item_name='Hàng', qty='SL', line_amount='Giá', customer_name='Khách')\norders, lines = finalize(lines, dedupe=False)\nC = {'orders': orders, 'lines': lines}"
+bz2 = types.SimpleNamespace(tables={"ban_hang": raw, "khach": pd.DataFrame({"Khách": ["x"]})}, raw={}, readme="")
+w_llm = canon.run_mapping(code2, bz2, llm=True).get("warnings") or []; w_ref = canon.run_mapping(code2, bz2).get("warnings") or []
+check("skipped column warning", any("skipped customer_name='Khách'" in x and "column of khach" in x for x in w_llm) and not any("skipped" in x for x in w_ref), (w_llm, w_ref))
+check("_ckey units only", dm._ckey("Siro chai 30 ml") == "siro chai 30ml" and dm._ckey("ngay 05 2025 bia") == "ngay 05 2025 bia")
+import pipeline
+P = pipeline.Pipeline
+pg = types.SimpleNamespace(_ck=P._ck, _mentioned=P._mentioned)
+pg.vocab = lambda b: {P._ck(n): {P._ck(n)} for n in ("Siro Tiffy chai 30ml", "Tiffy Dey hộp 25 vỉ x 4 viên", "Nước suối Aquafina 500ml")}
+gq = lambda q, code: P.grounded(pg, {"question": q}, code, "b")
+check("grounding", not gq("so so chai siro tiffy chai 30 ml ban ra", 'price_effect("Tiffy Dey hộp 25 vỉ x 4 viên", 14)')
+      and gq("so so chai siro tiffy chai 30 ml ban ra", 'price_effect("Siro Tiffy chai 30ml", 14)')
+      and gq("nuoc suoi aquafina ban duoc bao nhieu", 'item_qty(p, item="Nước suối Aquafina 500ml")') and gq("doanh thu thang 5", "revenue(month(2025, 5))"))
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

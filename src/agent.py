@@ -408,7 +408,7 @@ def run_mapping(task):
         biz = _lru(_BIZ, bid, lambda: load_biz(_CTX["cache"], _CTX["split"], bid))
         meta = canonmod.load_meta().get(rid, {}).get("tables") if rid and not rid.startswith("fmt:") else None
         arm(300)
-        try: r = canonmod.run_mapping(code, biz, meta)
+        try: r = canonmod.run_mapping(code, biz, meta, llm=rid is None)
         finally: disarm()
         if r["ok"]:
             C = r.pop("C"); pickle.dump({"C": C, "notes": r["notes"], "v2": True, "data_end": canonmod.data_end(biz)}, open(out_path, "wb"), protocol=4)

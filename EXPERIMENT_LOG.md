@@ -243,3 +243,34 @@ Re-voting the logged runs reproduces 3000 / 3000 answers and gains +0.0003 to +0
   - train: 0.941 (dev 0.991; holdout 0.844, because biz_123 got a wrong mapping, −0.21); mapping success on train
     89 / 112, the same as v11 (87 / 112).
   - Not proven better: the defaults stay as tested (repairs with reasoning, 2 rounds).
+
+## Entry 11 — 2026-11-03 05:30: mapping choice per question (offline study), v13 / v14
+
+- The v11 train errors are almost all mapping errors:
+  - biz_123: 35 questions; the rule programs raise AttributeError / KeyError on the chosen mapping, which has no
+    purchase or prescription columns;
+  - biz_114: 6 questions; an outlier candidate with coverage 14, while the other 7 had 10–12;
+  - biz_124: 5 questions.
+- **Selection by answer agreement**, study of v9–v12 (56 business-runs; `scratchpad/consensus_study.py`):
+  - method: run each candidate's rule programs on the business's questions; a candidate gains W × the share of
+    questions where its answer equals the majority answer of the other candidates;
+  - mean rule PA of the chosen candidate: 0.919 → 0.930 at W 30 (2 choices changed, none worse);
+  - W 100 and 300 made some choices worse;
+  - oracle (best candidate): 0.949.
+- **Replay of v11 train** (`src/replay.py`, all 30 businesses):
+
+| Strategy | PA | Correct / wrong / abstain |
+|---|---|---|
+| run (logged answers) | 0.975 | 2950 / 25 / 25 |
+| top1 (replay ranking) | 0.967 | 2932 / 32 / 36 |
+| vote2 / vote3 (top 2 / 3 mappings voting together) | 0.964 / 0.942 | worse |
+| **fb2 / fb3** (next mapping only when the first abstains or says unanswerable) | **0.974** | 2943 / 21 / 36 |
+
+- Implemented (b628bc9):
+  - `--sel-agree 30`;
+  - `--map-fallback 2`: the programs also run on the next mapping inside the same CPU task, so no extra LLM call;
+  - the rule program also runs on the alternate when it fails on the chosen mapping;
+  - `--map-vote` stays off.
+- Runs:
+  - v13 (69c0d8d: expiry / out-of-stock templates), train + public ×3, thnliu / linhmai24;
+  - v14 (b628bc9: + agreement + fallback), train + public ×3.

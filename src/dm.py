@@ -303,16 +303,24 @@ def _first_nonnull(g):
     v = g.dropna(); return v.iloc[0] if len(v) else None
 
 
-_SUMMARY_ID = re.compile(r"^(tong|cong|total|sum|subtotal|grand total)\b")
+_SUMMARY_ID = re.compile(r"^(?:(?:tong|cong)(?:\s+(?:cong|ngay|thang|tuan|nam|quy|tien|so|\d+)|\s*$)|total|sum|subtotal|grand total)\b")
+_SUMMARY_COLS = ("order_id", "customer_name", "customer_id", "note", "staff")
 
 
 def _summary_rows(df):
-    """summary rows of an export ('tổng 01/05', 'Cộng', 'Total' in the order-code column, no date: dev_010 had one per day,
-    2 % of the rows, and every mapping failed 'orders without a date'): they are not orders and would count twice."""
-    if "order_id" not in df.columns or not len(df): return pd.Series(False, index=df.index)
-    m = df["order_id"].astype(str).map(key).str.match(_SUMMARY_ID)
+    """summary rows of an export: 'tổng 01/05' in the order-code column (dev_010, one per day) or 'Cộng ngày 01/05/2025' in
+    the customer column with a blank code (biz_110: 428 rows; the blank code made each one a line of the order above,
+    revenue +100 %). A row is a summary when an order-level text cell reads tổng / cộng (+ ngày, tháng, tiền, a number
+    ...) / total and the row has no date. Item names are not looked at ('Cộng cà phê' is an item)."""
+    if not len(df): return pd.Series(False, index=df.index)
+    m = pd.Series(False, index=df.index)
+    for c in _SUMMARY_COLS:
+        if c in df.columns: m |= df[c].map(lambda x: isinstance(x, str) and bool(_SUMMARY_ID.match(key(x))))
     if "order_date" in df.columns: m &= pd.to_datetime(df["order_date"], errors="coerce").isna()
-    if m.any(): print(f"finalize: {int(m.sum())} summary rows dropped (order code like {df.loc[m, 'order_id'].iloc[0]!r}, no date)")
+    elif "order_time" in df.columns: m &= pd.to_datetime(df["order_time"], errors="coerce").isna()
+    if m.any():
+        c = next(c for c in _SUMMARY_COLS if c in df.columns and df.loc[m, c].map(lambda x: isinstance(x, str)).any())
+        print(f"finalize: {int(m.sum())} summary rows dropped ({c} like {df.loc[m, c].dropna().iloc[0]!r}, no date)")
     return m
 
 
@@ -333,6 +341,7 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
         # mappings of such books do (58 failed mapping attempts in v6-v9 stopped here)
         L["order_id"] = "row" + pd.Series(range(len(L)), index=L.index).astype(str)
         print("finalize: the lines have no order_id: every row is one record (a sales book without order codes)")
+    L = L[~_summary_rows(L)].reset_index(drop=True)                    # before a blank code continues the order above
     if "order_id" not in L.columns:
         raise ValueError("lines need an order_id column (the code shared by the lines of one order). When the file has one row per "
                          "order (no item lines), build lines from the same rows: frame(t, order_id=<order code column>, "

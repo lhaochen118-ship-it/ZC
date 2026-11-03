@@ -1,73 +1,50 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 00:05 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
-(kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự.*
+*Cập nhật: 2026-11-03 01:15 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+(kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự. Khung 12 giờ
+của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26KaZP68Dmg8JL2RGcbVS` và báo kết quả.*
 
-## Kết quả mới nhất (03/11 00:05) — EXPERIMENT_LOG entry 8
+## Kết quả (train 3000 câu, LOO; EXPERIMENT_LOG entry 8–9)
 
-| Run | dev | holdout | all | public abstain |
-|---|---|---|---|---|
-| v6-1 (rule reader on cleaned text + fixes) | 0.974 | **0.961** | **0.969** | — |
-| v8-1 (+ import hook) | 0.976 | 0.948 | 0.966 | 108 |
-| v9-1 (+ selection by rule programs + --confirm) | **0.989** | 0.809 | 0.928 | **51** |
+| Hệ | dev | holdout | all |
+|---|---|---|---|
+| v6-1 (một lần chạy, tốt nhất) | 0.974 | 0.961 | 0.969 |
+| v9-1 | 0.989 | 0.809 | 0.928 |
+| **bỏ phiếu 4 lần chạy v6–v9** (`src/vote.py`) | | | **0.980** (2960 / 19 / 21) |
+| bỏ phiếu 3 lần chạy (mọi bộ ba) | | | 0.976 – 0.981 |
 
-Holdout swings with mapping luck (v9: no mapping for biz_123). Public determinism v9 ×2: 80.4 % of answers identical.
-Next: v10 = v9 + --map-retry + kc 8 (train, public, public repeat); then the final configuration + submission file.
+- Oracle luật trên ánh xạ tham chiếu: **2791 đúng / 1 sai / 208 chưa đọc** (trước 2754 / 3 / 243).
+- File nộp public đã có: `submissions/public_vote4_v7-v9.jsonl` (bỏ phiếu v7-2, v8-2, v9-2, v9-3; 60 abstain; đã kiểm
+  định dạng). Sẽ thay bằng bản bỏ phiếu các lần chạy mới nhất (v11) khi xong.
 
-## Đã xong trong khung chat này (sau restart 12:53 UTC)
+## Code mới từ 00:00 (đã commit, chưa có kết quả GPU)
 
-- `question_cleaning/` + `src/qnorm.py`: 3000 câu train đã làm sạch (khôi phục dấu 99.3 % từ / 93.6 % câu, LOBO).
-- Chunk stealing (`src/pipeline.py`), đã qua test.
-- Kiểm tra ánh xạ (`canon.plausibility`): 0 dương tính giả trên 36 tham chiếu; bắt được ánh xạ sai của 107/126/127/110.
-- Ingest: cột ngày dạng số serial Excel → datetime (chỉ đổi biz_107 `ngay_ban`).
-- Hậu kiểm câu trả lời (`agent.answer_flags`, 4/2930 cờ giả trên đáp án chuẩn) + **escalation** (`--escalate N`: thêm N
-  mẫu thinking cho câu conf < 0.75 / unanswerable / bị cờ; thêm chương trình trên bảng thô nếu ánh xạ bỏ sót bảng).
-- Vòng "đầy đủ" cho ánh xạ (`--complete-map`): hỏi lại một lần khi ánh xạ bỏ sót bảng thô.
-- Câu đã làm sạch + kỳ hiển thị cạnh câu gốc trong prompt (`--qclean`).
-- Routine tự tiếp tục: `trig_01U26KaZP68Dmg8JL2RGcbVS` (mỗi 2 giờ, vào phiên này).
+- fefaec6: bỏ phiếu nhiều lần chạy — `src/vote.py`, `--seed-base`, `docker/predict.sh` chạy tối đa 3 lần trong ngân sách.
+- 76b676e: luật `unit_qty` ("bán được bao nhiêu ly"), `kg` không còn bị đọc thành "không", lọc mặt hàng theo mọi mã / cách
+  viết, `frame()` nhận hàm, sổ bán không mã đơn, gợi ý KeyError, tên bảng làm biến; StepLLM: thinking không greedy
+  (temp 0.6, top-k 20) + budget forcing (`--think-budget 12288`).
+- 327acf2: bỏ phiếu chỉ tính mẫu LLM "bám câu hỏi" (tên hàng trong chương trình phải có trong câu); cảnh báo cột bị
+  `frame()` bỏ qua (chỉ ánh xạ LLM).
 
-## Đang chạy (19:35 UTC)
+## Đang chạy (01:15 UTC)
 
-- **v5** (`runs/v5`, launched 18:49; commit 2ea939c, compile-tokens 6144): zc-v5-1 train esc4, -2 public esc4,
-  -3 train esc4 lặp lại (đo tất định), -4 train esc0, -5 public lặp lại (đo độ trùng đáp án). Xong khoảng 20:30–21:00.
-- **v6-train** (`runs/v6`, launched 19:23 trên mucnokieu, commit 8793c4f: rule reader đọc câu đã làm sạch + sửa mẫu câu +
-  toolkit).
-- Sau v6 (chưa chạy GPU): f461753 (cảnh báo nhập không có mặt hàng, sổ kho coi như snapshot, quy đổi rỗng), c65757a
-  (CANON_DOC đủ bảng, đổi tên cột alias: delivery_batch → trip_no sửa 10 câu biz_117; cảnh báo nợ biz_111).
-  docker/predict.sh: cấu hình tốt nhất (kc 6, qw 4, think-map, escalate 4, compile 6144).
-- **v7** (`runs/v7`, launched 19:52 trên huyenco, commit fddf7f3 = mọi sửa tới giờ): zc-v7-1 train, zc-v7-2 public.
-  Log in phiên bản pandas của Kaggle → ghim vào docker/Dockerfile (hiện cho phép 2.2–3.x).
-- Script: `scratchpad/agree_runs.py A B` (độ trùng đáp án, |ΔPA|), `scratchpad/revote.py run [qw...]` (bầu lại offline).
-- v5 train: esc4 0.946 (dev 0.979 / holdout 0.881), esc0 0.934 — không tăng vì phương sai ánh xạ (biz_123 0.19,
-  biz_105, biz_117). Đang nghiên cứu offline: chọn ánh xạ theo kết quả chương trình luật trên câu hỏi (`scratchpad/select_study.py`).
-- Commit sau v8 (chưa chạy GPU): 9778bec `--confirm` (luật + mẫu greedy trước: offline cùng PA, bớt 61 % mẫu LLM),
-  6dc6cbb cảnh báo nhóm hàng / đơn trả / tỉ lệ nợ.
-- **Tất định (public v5 ×2): chỉ 88.3 % đáp án trùng** — ánh xạ khác nhau ở 7/13 DN. v9 (lelynhan, linhmai24: train,
-  public, public lặp; code mới: chọn ánh xạ theo chương trình luật + --confirm 1) và v9i (thnliu: public ×2 với
-  VLLM_BATCH_INVARIANT=1) đang qua preflight (≈ 21:05).
-- Container restart 20:03: runner + watcher chạy lại bằng `--attach` (8 kernel v5/v6/v7 vẫn RUNNING trên Kaggle).
-- Chưa chạy GPU (gom vào **v8**): 7ed7241 import hook `import datamate` (12.9 % lần thử train / 21.5 % public từng lỗi
-  ModuleNotFoundError), e75c49a (Period thay ngày, lọc theo cột bất kỳ, nợ cần dữ liệu thanh toán).
-- Watcher `watch_done.py` nền; `active_runs.txt` = v5, v6.
-- Oracle train (eval_lib --clean): 2754 đúng / 3 sai / 243 chưa đọc (sáng nay 2666 / 36 / 298). EXPERIMENT_LOG entry 5.
-- Việc sau khi v5 / v6 xong: chấm, so v4b (0.955), đo |ΔPA| giữa 2 lần train giống nhau, độ trùng 2 lần public; nếu
-  tốt → chạy public bản v6 làm ứng viên nộp; còn lại: chọn ánh xạ cho DN mới (dev_012 sửa xe, dev_014 điện thoại).
+- **v10** (`scratchpad/runs/v10`, launched 00:04, commit 277cfd6: kc 8 + map-retry + confirm): zc-v10-1 train,
+  zc-v10-2 public, zc-v10-3 public lặp lại (duylnng, caotienminh1).
+- **v11s** (`runs/v11s`, hai1108, launched 00:55, commit 76b676e): public `--subset 28` — kiểm tra trên GPU budget forcing /
+  tham số sampling thinking (cổng kiểm tra: phần GPU đổi → chạy nhỏ trước). Xem `compile_logs.jsonl`: tỉ lệ
+  "no python code block" và thời gian ánh xạ mỗi DN (v9-2: 1300–3900 s).
+- Preflight v11 chạy trước (scratchpad `prepreflight.py runs/../v11.jobs`, ghi dấu cache của fanout khi qua).
+- Watcher: `automation/watch_done.py <scratchpad>/runs --max 115` (run_in_background, timeout 7200000);
+  `runs/active_runs.txt` = v10, v11s.
 
-## Làm sạch câu hỏi (15:25 UTC) — gần xong
-
-- Đã sửa (luật chung + test): bảo vệ tên trong dữ liệu (bigram tên) và chữ dính số khỏi Telex / viết tắt / ngữ cảnh;
-  entity linking chỉ đổi DẤU (giữ hoa thường của người dùng; từ người dùng gõ dấu là chuẩn; khớp cả ≥ 3 từ liên tiếp
-  của tên; tên không dấu chỉ cho mượn từ không dấu có thật như 'lon'); `e` đầu câu → ê; `35.000d` → đ; `nhieu` không có
-  từ hỏi → bao nhiêu; `có … hong` → không.
-- LOBO (scratchpad `eval_qnorm_sig.py`, so khớp bỏ qua vị trí dấu thanh): **98.1 % câu / 99.79 % từ** (trước 94.5 %).
-- Còn lại: ghép kết quả LLM (zc-v4-5) bằng `make.py --llm`, duyệt từng câu luật ≠ LLM, cập nhật README, commit.
 ## Việc tiếp theo (thứ tự)
 
-0. User (02/11 15:00): làm sạch 3000 câu tới 100 % rồi mới phát triển tiếp mô hình; v4 vẫn chạy.
-   → luật đã xong (commit 'question cleaning: name protection …'); còn bước ghép LLM khi zc-v4-5 xong.
-
-1. `tests/run_all.sh` PASS → commit → preflight → chạy **v4** (pipeline + think-map + kc 6 + escalate 4 + complete-map +
-   qclean) train + public, và **ablation** escalate 0 (acc khác) để đo phần đóng góp.
-2. Chấm v4 (report.py), phân tích lỗi còn lại theo DN / loại câu; cập nhật EXPERIMENT_LOG.
-3. Nếu tốt: tạo file nộp public từ run public v4 (`results/pub/submission.jsonl`) cho user.
-4. Tiếp tục: chọn ánh xạ theo đồng thuận đáp án giữa nhiều ứng viên (replay), kiểm tra bảng phụ (kho, lô, nhập), Docker 5090.
+1. v11s xong và không lỗi (có đáp án, thời gian ánh xạ ngắn lại) → chạy **v11** = commit mới nhất, 4 kernel:
+   `python3 automation/fanout.py $R/v11 zc-v11 "$(cat $S/v11.jobs)" 4 --accounts hai1108,huyenco --l4 --ks nhatlong1103/zc-assets,lelynhan/zc-m-qwen35-9b`
+   (train, public seed 0 / 1 / 2); thêm `v11` vào `active_runs.txt`.
+2. Chấm v10 train (`score.json`, `scratchpad/vote_errors.py`), so v6–v9; đo độ trùng public v10-2 / v10-3.
+3. Khi v11 xong: chấm train; bỏ phiếu 3 lần chạy public v11 (`src/vote.py out.jsonl run1 run2 run3`) →
+   `automation/make_submission.py <dir> data/raw/public_test/public_test public_v11_vote3` → commit file nộp.
+4. Cập nhật EXPERIMENT_LOG (entry 10: v10, v11), file này; 03:30 UTC: tắt routine, báo user.
+5. Sau đó: ghim pandas trong `docker/Dockerfile` theo bản Kaggle (log của run_kaggle); biz_123 / DN sqlite phức tạp
+  (ánh xạ LLM hỏng 2/3 lần): thêm vòng sửa cho ánh xạ hoặc tách ánh xạ theo nhóm bảng.

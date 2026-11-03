@@ -339,3 +339,40 @@ v18 public vote: 69 abstains; 3-run agreement up on every shop that was unstable
 
 'Unanswerable' answers in the new-industry shops fell: dev_012 3 → 0, dev_013 4 → 0, dev_014 20 → 15.
 Submissions: `submissions/v15`, `submissions/v18` (pushed); v19 when its public runs end.
+
+## Entry 13 — 2026-11-03 12:00: public scores v15 / v18 / v19, where the public errors are, parser and mapping-check fixes
+
+**Portal scores (user).** PA = right − wrong over 1000, so with the abstain count known:
+
+| Submission | PA | Right | Wrong | Abstain | Unanswerable answers |
+|---|---|---|---|---|---|
+| v13 vote | 0.637 | 785 | 148 | 67 | 61 |
+| v15 vote | 0.634 | 792 | 158 | 50 | 53 |
+| v18 vote | 0.669 | 800 | 131 | 69 | 48 |
+| **v19 vote** | **0.687** | **801** | **114** | 85 | 30 |
+
+- Right answers are flat at ~800 since v15; every gain since came from **fewer wrong answers**. v18 → v19 is mostly
+  dev_014: 15 'unanswerable' answers (the mapping had left out the trade-in / instalment tables) became abstains.
+- The versions answer **the same way on almost every question**: v18 vs v19, only 4 questions both answered differently.
+  The ~114 remaining errors are therefore shared by every run: a vote over more runs cannot remove them.
+- v19 3-run agreement: 820 unanimous, 95 majority (2 of 3), 85 split (abstain). The split / majority questions are in
+  dev_003 (35 majority), dev_009 (9), dev_012 (28), dev_013 (13), dev_014 (48).
+- The 30 'unanswerable' answers of v19 look right by rulebook §7 (no group column in dev_002 / dev_004, no customer
+  gender / street / cancel reason in any shop; subjective or medical questions).
+
+**Where the shared errors can come from (no labels; found from the logs).**
+1. Rule programs that misread the question (55 public questions where every LLM sample disagreed with the rule; the
+   LLM won 42 and 13 abstained): slang ('10 củ', '3tr7', 'o đờ', 'bq', 'đh', 'cất hàng'), top-N after the period,
+   reversed growth for 'so với A thì B', several months answered with the first one, an unlinked item / name answered
+   with the shop's revenue. → general parser fixes (d0007a9); train oracle unchanged (2967 / 1 / 32).
+2. Mapping errors no check saw. dev_003, one LLM mapping: order revenue minus the order voucher on 34 of 61k orders
+   (every monthly revenue answer off by 10–30k VND) and order_time without the time of day (afternoon-shift revenue 0).
+   → new soft checks: revenue vs the sum of the order's line amounts (penalty 100) and order_time all 00:00 while the
+   data has times (penalty 10); shift / peak hour raise on such data instead of answering 0. On the 195 candidate
+   mappings of the 3 v19 public runs they flag exactly that mapping (chosen for dev_003 in 1 of the 3 runs; the vote
+   had overruled it) and 2 dev_010 candidates that were not chosen; 36 train references: 0 flagged.
+3. Reference transfers that ignore the shop's README conventions (dev_002 toppings in the dish cell, dev_005 chained
+   unit factors, dev_006): v20 (`--ref-adapt 3`, de097f9) rewrites the reference for these gaps.
+
+**Runs.** v20 = de097f9 + 5dba631 (weekday averages per the public rulebook), train + public ×3 (caotienminh1,
+duylnng). v21 = d0007a9 (parser fixes + mapping checks), launched next.

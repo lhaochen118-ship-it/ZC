@@ -32,6 +32,9 @@ def main():
     import agent
     ap = agent.build_parser()
     work = tempfile.mkdtemp(prefix="preflight_")
+    import atexit, signal                                               # removed on success, failure or kill (SIGTERM / Ctrl-C):
+    atexit.register(shutil.rmtree, work, True)                          # stopped preflights once left 22 GB in /tmp
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     # 1. flags
     for j in jobs:
         if j[0] != "run_kaggle.py" or len(j) < 3: fail(f"job must be 'run_kaggle.py <split> OUT/... <args>': {j}")

@@ -3,7 +3,9 @@
 # Each test's last line must contain PASS, otherwise the suite stops with exit code 1 (no silent pass).
 set -uo pipefail
 cd "$(dirname "$0")/.."
-S=${SCRATCH:-$(mktemp -d)}
+if [ -n "${SCRATCH:-}" ]; then S=$SCRATCH; else
+    S=$(mktemp -d); trap 'rm -rf "$S"' EXIT; trap 'exit 143' TERM INT   # own temp dir removed on exit / kill (22 GB once piled up)
+fi
 SPLIT=data/raw/train/train
 CACHE=${CACHE:-$S/cache_train}
 [ -d "$CACHE" ] || python3 src/ingest.py $SPLIT $CACHE 4 > /dev/null

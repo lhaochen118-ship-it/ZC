@@ -200,5 +200,16 @@ check("sheet alias", list(Tt["BanHang_KhachHang"].columns) == ["_source", "a"] a
 try: Tt["Sheet1"]; check("ambiguous sheet name raises", False)
 except KeyError: pass
 
+# 16. rulebook templates: items with lots in stock expiring in a window (earliest expiry first, then code), out of stock
+lots2 = pd.DataFrame({"lot_id": ["L1", "L2", "L3"], "item_code": ["B", "A", "A"], "expiry": ["2025-04-01", "2025-04-01", "2025-03-20"],
+                      "qty_in_base": [5, 5, 5], "receipt_date": pd.to_datetime(["2025-01-01"] * 3)})
+it2 = pd.DataFrame({"item_code": ["A", "B", "X"], "item_name": ["Thuốc A", "Thuốc B", "Thuốc X"]})
+sh2 = dm.Shop({"orders": orders, "lines": lines, "items": it2, "lots": lots2, "lot_sales": ls.iloc[:0]}, today="2025-03-10")
+check("items_expiring", sh2.items_expiring("2025-03-10", "2025-04-30") == ["Thuốc A", "Thuốc B"] and sh2.items_expiring("2025-03-10", "2025-03-31") == ["Thuốc A"])
+for q, want in [("tính đến hết ngày 10/03/2025, có mấy mặt hàng còn lô tồn sắp hết hạn trong 30 ngày tới, tức hạn dùng từ 10/03/2025 đến hết 09/04/2025", "n_items_expiring"),
+                ("những sản phẩm nào đang còn hàng có hạn dùng từ 10/03/2025 đến hết 09/04/2025", "items_expiring"),
+                ("Đến cuối ngày 12/06/2026, shop có mấy mặt hàng đang hết hàng?", "n_out_of_stock")]:
+    check(f"qparse: {q[:40]}", tpl(q) == want, tpl(q))
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

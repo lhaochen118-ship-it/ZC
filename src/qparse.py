@@ -237,17 +237,24 @@ def parse(q, today, shop=None):
         return None
     if has(r"nhap tru ban|tru so ban|chenh lech nhap") and item is not None and P: return "import_minus_sales", ans("number", f"import_minus_sales({J(item)}, {P})")
     # ---------------- lots / expiry
-    if has(r"han dung|het han|\blo\b"):
+    if has(r"han dung|het han\b|\blo\b"):                                  # ('het hang' = out of stock, below)
         d = "TODAY"
-        m = re.search(r"den het (?:ngay )?(\d{1,2})/(\d{1,2})/(20\d\d)", t) or re.search(r"(?:toi|den) (?:het )?(?:ngay )?(\d{1,2})/(\d{1,2})/(20\d\d)", t)
-        until = _dc(_date(*m.group(1, 2, 3))) if m else None
+        ms = re.findall(r"den het (?:ngay )?(\d{1,2})/(\d{1,2})/(20\d\d)", t) or re.findall(r"(?:toi|den) (?:het )?(?:ngay )?(\d{1,2})/(\d{1,2})/(20\d\d)", t)
+        until = _dc(_date(*ms[-1])) if ms else None                       # the LAST date: 'tính đến hết ngày D, ... hạn dùng từ D đến hết D2'
         n = re.search(r"(\d+) ngay toi", t)
         if until is None and n: until = f"TODAY + {int(n.group(1))} * D"
         if has(r"gan het han nhat|het han som nhat|gan het han nhut") and item is not None: return "nearest_expiry", ans("date", f"nearest_expiry({J(item)}, {d})")
         if until is not None:
             if has(r"tien von|gia tri|bao nhieu tien|bnhiu tien"): return "expiring_value", ans("number", f"money((lots_expiring({d}, {until})['remaining'] * lots_expiring({d}, {until})['unit_cost_base']).sum())")
             if has(r"may lo|bao nhieu lo|so lo|bnhiu lo"): return "expiring_lots", ans("number", f"len(lots_expiring({d}, {until}))")
+            if has(r"(?:may|bao nhieu|bnhiu|bn|so) (?:mat hang|san pham|loai|thuoc|sp)\b"): return "n_items_expiring", ans("number", f"len(items_expiring({d}, {until}))")
+            if has(r"(?:hang|san pham|mat hang|thuoc|sp|loai) nao|nhung (?:san pham|mat hang|hang|thuoc)|liet ke"):
+                return "items_expiring", ans("list", f"items_expiring({d}, {until})")
         return None
+    if has(r"het hang") and not has(r"het han\b|nhap|ban chay"):
+        d = until_day(q, today)
+        if has(r"(?:may|bao nhieu|bnhiu|bn|so) (?:mat hang|san pham|loai|sp)\b"): return "n_out_of_stock", ans("number", f"len(out_of_stock({d}))")
+        if has(r"(?:hang|san pham|mat hang|sp|loai) nao|nhung (?:san pham|mat hang|hang)|liet ke"): return "out_of_stock", ans("list", f"out_of_stock({d})")
     # ---------------- stock
     if has(r"gia von|tien von") and has(r"kho|\bton\b|hang ton"): return "stock_value", ans("number", f"stock_value({until_day(q, today)})")
     if has(r"ton kho|con ton|trong kho|con lai trong kho|ton cuoi|kho con|con bao nhieu|con may") and not rev:

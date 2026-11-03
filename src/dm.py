@@ -991,6 +991,32 @@ class Shop:
         """lots in stock at the end of day d whose expiry is in [d, until]."""
         L = self.lot_stock(d); return L[(L["expiry"] >= _ts(d)) & (L["expiry"] <= _ts(until))]
 
+    def items_expiring(self, d, until):
+        """items with a lot in stock at the end of day d expiring in [d, until] -> catalogue names, earliest expiry of the
+        item first, then item code (rulebook: liệt kê hàng theo hạn dùng: hạn sớm nhất của mặt hàng trước, cùng hạn theo mã)."""
+        L = self.lots_expiring(d, until)
+        if not len(L): return []
+        k = "item_code" if "item_code" in L.columns else "item_name"
+        g = L.groupby(k)["expiry"].min().reset_index(); g["_c"] = g[k].astype(str)
+        return [self.item_name(c) for c in g.sort_values(["expiry", "_c"], kind="mergesort")[k]]
+
+    def out_of_stock(self, d):
+        """items bought to be sold (in the stock list, the lots or the purchases: not dishes made on site) whose stock
+        is 0 at the end of day d -> catalogue names by item code (rulebook: mặt hàng hết hàng cuối ngày)."""
+        keys = []
+        for t in ("stock", "lots", "purchases", "ledger"):
+            df = self.C.get(t)
+            if df is not None and len(df):
+                k = "item_code" if "item_code" in df.columns else "item_name"
+                keys = list(dict.fromkeys(df[k].dropna().astype(str))); break
+        require(keys, "no stock records")
+        out = []
+        for c in sorted(keys):
+            try:
+                if float(self.stock_at(c, d)) <= 0: out.append(self.item_name(c))
+            except Unanswerable: pass
+        return out
+
     def nearest_expiry(self, item, d):
         L = self.lot_stock(d); L = L[self._match(L, ("item_code", "item_name"), self._item_keys(item)) & (L["expiry"] >= _ts(d))]
         require(len(L), f"no lot of {item} in stock"); return L["expiry"].min().strftime("%Y-%m-%d")
@@ -1057,7 +1083,7 @@ def shop_api(shop):
              "top_customers", "n_customers", "staff_sales", "debts", "debt_total", "debt_by_customer", "n_debtors", "top_debtors",
              "debt_aging", "debt_older_than", "debt_flow", "share", "increasing", "weekday_avg", "peak_hour", "size_qty", "unsold_items",
              "purchase_total", "avg_purchase_price", "supplier_ranking", "top_supplier", "import_minus_sales", "stock_at", "stock_split",
-             "stock_value", "lot_stock", "lots_expiring", "nearest_expiry", "price_on", "price_change_date", "price_effect",
+             "stock_value", "lot_stock", "lots_expiring", "items_expiring", "out_of_stock", "nearest_expiry", "price_on", "price_change_date", "price_effect",
              "gross_profit", "net_profit", "n_delivery_trips", "pct_customers", "factor"]
     return {n: getattr(shop, n) for n in names}
 
@@ -1137,6 +1163,8 @@ rankings descending with ties by code, money rounded half-up to whole VND, perce
 - Purchases / stock: purchase_total(p), avg_purchase_price(item, p, unit=None), top_supplier(p, by="amount"|"receipts"),
   supplier_ranking(p, by), import_minus_sales(item, p), stock_at(item, d), stock_split(item, d, big_unit) -> [big, base],
   stock_value(d), lot_stock(d), lots_expiring(d, until) -> DataFrame (remaining, unit_cost_base, expiry), nearest_expiry(item, d),
+  items_expiring(d, until) -> names of items with a lot in stock expiring in [d, until] (earliest expiry first, then code),
+  out_of_stock(d) -> names of items bought to be sold whose stock is 0 at the end of d (by code),
   factor(item, unit).
 - Profit: gross_profit(p, **f), net_profit(p); deliveries: n_delivery_trips(p).
 - Helpers: growth(new, old) (% change, negative when it fell), pct(part, whole), money(x), round_half_up(x, nd), rank(values, k),

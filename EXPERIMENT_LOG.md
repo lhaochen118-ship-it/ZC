@@ -387,3 +387,10 @@ README-gap adaptation of reference mappings is what moved. Wall 3844 s; GPU busy
 - dev_012: mechanics written 'Đạt' / 'a Phúc' / 'A.Phúc' while DanhSachTho lists the full names (most candidates) →
   warning "orders.staff holds given names …" (penalty 10); dm.person_key drops honorifics so a full name matches every
   spelling of the same person (1555 tickets instead of 523).
+
+**v20 public (13:22).** Vote of 3 runs → `submissions/v20/` (117 abstain, 22 unanswerable). Each run 6762–7071 s.
+3-run agreement 788 unanimous / 95 majority / 117 split. Against v19's submission: 918 identical, 52 newly abstained
+(dev_003 18, dev_009 9 — mapping choice differing between runs; v21's revenue-vs-lines / README-revenue checks target
+exactly these), 20 newly answered, 10 changed. The README adaptation changed no answer of the reference-mapped
+public shops (dev_005 identical, dev_002 one change): its train holdout gain does not show on public. Expected portal
+score ≈ v19's; v21 is the candidate.

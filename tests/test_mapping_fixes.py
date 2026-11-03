@@ -332,5 +332,22 @@ o25, l25 = dm.finalize(L25, dedupe=False); sh25 = dm.Shop({"orders": o25, "lines
 check("model line = the name before the storage size", sh25.item_qty(dm.month(2026, 1), item="Xiaomi Redmi Note 14") == 2
       and sh25.item_qty(dm.month(2026, 1), item="Xiaomi Redmi Note 14 128GB Đen") == 1 and sh25.item_qty(dm.month(2026, 1), item="Xiaomi Redmi Note 14 Pro") == 1)
 
+L26 = pd.DataFrame({"order_id": ["A", "B", "C", "D", "E"], "order_date": pd.to_datetime(["2025-10-04"] * 5), "status": "hoàn thành",
+                    "item_name": ["Canh chua cá lóc", "Đậu hũ chiên giòn", "Củ sạc nhanh 25W Samsung", "Bao tay bao chân sơ sinh set 3 đôi", "Trái cây nghiền HiPPiS"],
+                    "qty": 1, "line_amount": [100.0, 50.0, 30.0, 20.0, 10.0]})
+o26, l26 = dm.finalize(L26, dedupe=False); sh26 = dm.Shop({"orders": o26, "lines": l26}, today="2025-10-31"); P26 = dm.month(2025, 10)
+check("regional words name the same item", [sh26.revenue(P26, item=x) for x in ("Canh chua cá tràu", "Đậu phụ rán giòn", "Cốc sạc nhanh 25W Samsung",
+      "Găng tay tất chân sơ sinh set 3 đôi", "Hoa quả nghiền HiPPiS")] == [100, 50, 30, 20, 10]
+      and "item=\"Canh chua cá lóc\"" in (qparse.parse("Tháng 10/2025 bán Canh chua cá tràu được bao nhiêu tiền?", "2025-10-31", sh26) or ("", ""))[1])
+L27 = pd.DataFrame({"order_id": ["A", "B", "C", "D"], "order_date": pd.to_datetime(["2026-05-04"] * 4), "status": "hoàn thành",
+                    "item_name": ["Tã quần Bobby size XL 62 miếng", "Tã quần Bobby size XXL 44 miếng", "Tã dán Bobby size M 76 miếng", "Tã dán X size M"],
+                    "qty": [2, 3, 4, 5], "line_amount": 10.0})
+o27, l27 = dm.finalize(L27, dedupe=False); P27 = dm.month(2026, 5)
+it27 = pd.DataFrame({"item_name": list(L27["item_name"]), "size": ["Size XL", "Size XXL", "Size M", None]})
+sh27 = dm.Shop({"orders": o27, "lines": l27, "items": it27}, today="2026-05-31"); sh27b = dm.Shop({"orders": o27, "lines": l27}, today="2026-05-31")
+check("size from the catalogue column (empty size = none), else 'size M' in the name",
+      (sh27.size_qty(P27, "XL"), sh27.size_qty(P27, "M"), sh27b.size_qty(P27, "M"), sh27b.size_qty(P27, "XL")) == (2, 4, 9, 2),
+      (sh27.size_qty(P27, "XL"), sh27.size_qty(P27, "M"), sh27b.size_qty(P27, "M"), sh27b.size_qty(P27, "XL")))
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

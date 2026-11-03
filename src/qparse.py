@@ -160,6 +160,7 @@ class Vocab:
         self.items = {dm.key(x): x for c in ("item_name",) for x in vals(L, c)}
         it = shop.C.get("items")
         if it is not None: self.items.update({dm.key(x): x for x in vals(it, "item_name") if dm.key(x) not in self.items})
+        self.items_reg = {dm.regional_key(x): x for x in self.items.values()}   # regional words ('cá tràu' = 'cá lóc')
         self.codes = {dm.key(x): x for x in vals(L, "item_code")}
         self.groups = {dm.key(x): x for x in vals(L, "item_group")}
         self.cgroups = {dm.key(x): x for x in vals(O, "customer_group")}
@@ -229,7 +230,7 @@ def parse(q, today, shop=None):
     V = Vocab(shop) if shop is not None else None
     f = {}; item = None
     if V is not None:
-        item = V.find(tk, V.items) or V.find(tk, V.codes)
+        item = V.find(tk, V.items) or V.find(tk, V.codes) or V.find(dm.regional_key(q), V.items_reg)
         if item is not None: f["item"] = item
         m = re.search(r"nhom (?:hang |mon |san pham )?(.+)", tk)
         if m and item is None:
@@ -439,8 +440,8 @@ def parse(q, today, shop=None):
         if nN and nN > 1: return "top_items", ans("list", f"top_items({P}, {nN}, by={J(by)}{fa(g)})")
         if nN is None and has(r"nhung (?:mon|mat hang|san pham|sp|hang)|cac (?:mon|mat hang|san pham)"): return None   # plural, no count
         return "top_item", ans("string", f"top_items({P}, 1, by={J(by)}{fa(g)})[0]")
-    if has(r"size (m|l)\b") and P and not rev:
-        sz = re.search(r"size (m|l)\b", t).group(1).upper(); return "size_qty", ans("number", f"size_qty({P}, {J(sz)})")
+    if has(r"size (nb|s|m|l|xl|xxl|xxxl)\b") and P and not rev and not has(r"%|phan tram|chiem|ti le|ty le"):
+        sz = re.search(r"size (nb|s|m|l|xl|xxl|xxxl)\b", t).group(1).upper(); return "size_qty", ans("number", f"size_qty({P}, {J(sz)})")
     if P and not rev and (item is not None or "group" in f) and (re.search(r"(bao nhieu|may|bnhiu|bn|so|tong cong|total) " + UNITS + r"\b", t) or has(r"ban ra bao nhieu|ban duoc bao nhieu|ban dc bao nhieu|so luong")) \
             and not has(r"giao|cho di|da cho|van chuyen|so voi|so vs|tang hay giam|chenh|nhap"):
         return "item_qty", ans("number", f"item_qty({P}{fa()})")

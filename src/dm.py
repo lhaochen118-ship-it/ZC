@@ -217,6 +217,26 @@ def key(s): return strip_accents(norm_text(s))
 HONORIFIC = re.compile(r"^(?:a|anh|c|chi|e|em|co|chu|bac|thay|tho)\s+(?=\S)")   # not 'ông' / 'bà' (also surnames)
 
 
+# Regional words for the same thing (North / Central -> one form): questions name items in another region's words
+# ('Canh chua cá tràu' = 'Canh chua cá lóc', 'Đậu phụ rán giòn' = 'Đậu hũ chiên giòn', 'Cốc sạc' = 'Củ sạc'). Used only when no
+# item matches the name itself; longer phrases first.
+REGIONAL = [("đậu phụ", "đậu hũ"), ("đậu hủ", "đậu hũ"), ("tàu hũ", "đậu hũ"), ("tàu hủ", "đậu hũ"), ("cá tràu", "cá lóc"), ("cá quả", "cá lóc"),
+            ("cá chuối", "cá lóc"), ("cốc sạc", "củ sạc"), ("hoa quả", "trái cây"), ("thịt lợn", "thịt heo"), ("găng tay", "bao tay"),
+            ("tất chân", "bao chân"), ("mì chính", "bột ngọt"), ("xì dầu", "nước tương"), ("bí ngô", "bí đỏ"), ("mướp đắng", "khổ qua"),
+            ("rau mùi", "ngò"), ("giò lụa", "chả lụa"), ("hột vịt", "trứng vịt"), ("hột gà", "trứng gà"), ("xà phòng", "xà bông"),
+            ("bánh mỳ", "bánh mì"), ("rán", "chiên"), ("ngao", "nghêu"), ("lợn", "heo"), ("ngô", "bắp"), ("lạc", "đậu phộng"),
+            ("vừng", "mè"), ("dứa", "thơm"), ("khóm", "thơm"), ("tất", "vớ"), ("bát", "chén"), ("thìa", "muỗng"), ("sắn", "khoai mì"),
+            ("cốc", "ly"), ("kệ", "giá đỡ"), ("quả", "trái")]
+_REGIONAL_RE = [(re.compile(r"(?<!\w)" + re.escape(a) + r"(?!\w)"), b) for a, b in REGIONAL]
+
+
+def regional_key(s):
+    """matching key with regional synonyms brought to one form (accents kept while replacing: 'lợn' is not 'lon')."""
+    t = re.sub(r"\s+", " ", unicodedata.normalize("NFC", str(s)).lower())
+    for rx, b in _REGIONAL_RE: t = rx.sub(b, t)
+    return _ckey(t)
+
+
 LINE_REST = re.compile(r"(?:\d+\s*/\s*)?\d+\s*(?:gb|tb)\b")      # rulebook (phones): dòng máy = the name before '…GB'
 
 
@@ -533,7 +553,7 @@ def check(C):
 
 CANON_DOC = """C["orders"]: order_id, order_time, order_date, customer_id, customer_name (None = walk-in), customer_group, staff, channel, payment_method, status (hoàn thành|huỷ|trả hàng|đang giao), valid (bool: counts for revenue), revenue (rulebook revenue of the order), order_discount, shipping_fee, vat, total_payable, paid_at_purchase
 C["lines"]: order_id, order_time, order_date, status, valid, item_code, item_name, item_group, unit, qty, factor, qty_base, base_unit, unit_price, line_discount, line_amount, unit_cost
-C["items"]: item_code, item_name, item_group, base_unit, unit_cost, price, ... ; C["purchases"]: receipt_id, receipt_date, supplier, item_code, item_name, unit, qty, factor, qty_base, unit_cost, amount, cancelled
+C["items"]: item_code, item_name, item_group, base_unit, unit_cost, price, size (the catalogue's size / number column: 'M', 'XL', 'Số 4'; when it has one), ... ; C["purchases"]: receipt_id, receipt_date, supplier, item_code, item_name, unit, qty, factor, qty_base, unit_cost, amount, cancelled
 C["payments"]: order_id, pay_time, pay_date, amount, method ; C["stock"]: item_code, item_name, qty_base (snapshot at stock_date) ; C["lots"]: lot_id, item_code, expiry, qty_in_base, unit_cost_base, ...
 C["prices"]: item_code / item_name, date, price ; C["expenses"]: date, amount, category
 C["lot_sales"]: which lot each sold quantity came from: order_id, lot_id, qty_base, returned_base ; C["ledger"]: stock movements (thẻ kho): item_code, time, kind, qty_base, stock_after (stock after the movement)
@@ -900,11 +920,21 @@ class Shop:
         return int(h.sort_index().idxmax()) if len(h) else None
 
     def size_qty(self, p, size, **f):
-        """quantity of items whose name ends with '(M)' / '(L)' (case-insensitive). A base unit given as the size
+        """quantity of items of a size. When the catalogue records sizes (column size of the lines or of C['items']), by that
+        column ('Size XL' = 'XL', 'Số 4' = '4'; an item with an empty size has none, whatever its name says: public rulebook);
+        otherwise items whose name ends with '(M)' / '(L)' (case-insensitive). A base unit given as the size
         (size_qty(p, "ly"): a frequent slip of the programs for 'bán được bao nhiêu ly') counts that unit:
         item_qty(p, base_unit=...)."""
-        l = self.lines(p, **f); m = l["item_name"].astype(str).str.strip().str.lower().str.endswith(f"({str(size).lower()})")
-        if not m.any() and str(size).strip().upper() not in ("S", "M", "L", "XL", "XXL"):
+        l = self.lines(p, **f)
+        sz = lambda v: re.sub(r"^(?:size|so|co)\s+", "", key(v)).strip() if v is not None and not (isinstance(v, float) and math.isnan(v)) else None
+        col = l["size"] if "size" in l.columns and l["size"].notna().any() else None
+        it = self.C.get("items")
+        if col is None and it is not None and {"item_name", "size"} <= set(it.columns) and it["size"].notna().any():
+            mp = dict(zip(it["item_name"].map(key), it["size"])); col = l["item_name"].map(lambda x: mp.get(key(x)))
+        if col is not None: return _num(l.loc[col.map(sz) == sz(size), "qty_base"].sum())
+        m = l["item_name"].astype(str).str.strip().str.lower().str.endswith(f"({str(size).lower()})") | \
+            l["item_name"].map(lambda n: bool(re.search(r"(?:^|\s)size " + re.escape(sz(size) or "#") + r"(?:\s|$)", key(n))))   # '… size M 76 miếng'
+        if not m.any() and str(size).strip().upper() not in ("S", "M", "L", "XL", "XXL", "NB", "XXXL"):
             bu = l["base_unit"] if "base_unit" in l.columns else l.get("unit")
             if bu is not None and (bu.map(key) == key(size)).any(): return self.item_qty(p, base_unit=size, **f)
         return _num(l.loc[m, "qty_base"].sum())
@@ -940,6 +970,15 @@ class Shop:
                 if df is None or "item_name" not in df.columns: continue
                 names = pd.Series(df["item_name"].dropna().astype(str).unique())
                 hit = names[names.map(lambda n: _ckey(n).startswith(k + " ") and bool(LINE_REST.match(_ckey(n)[len(k) + 1:])))]
+                ks |= set(hit)
+                if "item_code" in df.columns and len(hit): ks |= set(df.loc[df["item_name"].astype(str).isin(set(hit)), "item_code"].dropna().astype(str))
+                found |= bool(len(hit))
+        if not found and isinstance(item, str):                          # regional words ('cá tràu' = 'cá lóc')
+            rk = regional_key(item)
+            for df in (self.C.get("items"), self.L):
+                if df is None or "item_name" not in df.columns: continue
+                names = pd.Series(df["item_name"].dropna().astype(str).unique())
+                hit = names[names.map(regional_key) == rk]
                 ks |= set(hit)
                 if "item_code" in df.columns and len(hit): ks |= set(df.loc[df["item_name"].astype(str).isin(set(hit)), "item_code"].dropna().astype(str))
         return list(ks)

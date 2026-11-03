@@ -378,6 +378,14 @@ def secondary_checks(C, biz):
                         w.append(f"orders.staff holds given names / nicknames ({ex}) while {t}.{c} lists the full names: map staff to the full "
                                  "name of that list (one person = one name; answers name people as the data's list writes them)")
                         done = True; break
+    # 1a-size. the catalogue records sizes / number classes (public rulebook: the size of a diaper, the number of a milk come
+    #          from that column, not from the name) but no canonical table carries them
+    has_size = any(isinstance(C.get(t), pd.DataFrame) and "size" in C[t].columns for t in ("items", "lines"))
+    if not has_size and l is not None and len(l):
+        src = next((f"{t}.{c}" for t, df in biz.tables.items() if len(df) <= 5000 for c in df.columns
+                    if re.fullmatch(r"(?:so)?size|kichco|kichthuoc|cosize", _fold(c)) and df[c].notna().mean() > 0.2), None)
+        if src: w.append(f"the catalogue records sizes in {src} but neither C['items'] nor C['lines'] has a column size: map it (size_qty "
+                         "and the rulebook read the size / number from that column, not from the item name)")
     # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)

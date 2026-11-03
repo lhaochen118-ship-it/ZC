@@ -134,7 +134,7 @@ def namespace(biz, ref_cols=None):
     R = Tables(dict(biz.raw), ref_cols or {})
     g = {"T": T, "RAW": R, "README": biz.readme or "", "pd": pd, "np": np, "re": re, "parse_num": ingest.parse_num, "parse_date": ingest.parse_date}
     for k in ("finalize", "map_status", "canon_status", "canon_payment", "canon_channel", "key", "is_walkin", "money", "round_half_up",
-              "readme_conversions", "conversions_table", "frame"):
+              "readme_conversions", "conversions_table", "frame", "money_in_text"):
         g[k] = getattr(dm, k)
     g["tbl"] = lambda *c, **kw: dm.find_table(T, *c, **kw)
     for t in T:                                                        # `thong_tin_thuoc` used as a variable (NameError in
@@ -386,6 +386,17 @@ def secondary_checks(C, biz):
                     if re.fullmatch(r"(?:so)?size|kichco|kichthuoc|cosize", _fold(c)) and df[c].notna().mean() > 0.2), None)
         if src: w.append(f"the catalogue records sizes in {src} but neither C['items'] nor C['lines'] has a column size: map it (size_qty "
                          "and the rulebook read the size / number from that column, not from the item name)")
+    # 1a-credit. orders on credit (ghi nợ) that owe nothing at purchase: paid_at_purchase was set to the order total (public
+    #           dev_008: debts only in a free-text note -> every debt answer 0)
+    if {"payment_method", "total_payable", "paid_at_purchase"} <= set(o.columns):
+        cr = o[o["payment_method"].astype(str).map(lambda x: dm.key(x)) == dm.key("ghi nợ")]
+        tp, pp = pd.to_numeric(cr["total_payable"], errors="coerce"), pd.to_numeric(cr["paid_at_purchase"], errors="coerce")
+        ok = tp.notna() & pp.notna()
+        if ok.sum() >= 20 and float((pp[ok] >= tp[ok] - 1).mean()) > 0.9:
+            w.append(f"{int(ok.sum())} orders are on credit (payment_method 'ghi nợ') but {float((pp[ok] >= tp[ok] - 1).mean()):.0%} of them have "
+                     "paid_at_purchase = total_payable (nothing owed): paid_at_purchase is what the customer paid WHEN BUYING; read it from "
+                     "the data (a paid / owed column, or the order note: money_in_text(note) -> the amounts written in it, e.g. "
+                     "'đưa trước 50k, còn thiếu 30 nghìn'); later repayments go to C['payments'] (order_id, pay_date, amount)")
     # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)

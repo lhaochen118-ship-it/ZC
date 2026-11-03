@@ -349,5 +349,13 @@ check("size from the catalogue column (empty size = none), else 'size M' in the 
       (sh27.size_qty(P27, "XL"), sh27.size_qty(P27, "M"), sh27b.size_qty(P27, "M"), sh27b.size_qty(P27, "XL")) == (2, 4, 9, 2),
       (sh27.size_qty(P27, "XL"), sh27.size_qty(P27, "M"), sh27b.size_qty(P27, "M"), sh27b.size_qty(P27, "XL")))
 
+check("money in a free-text note", dm.money_in_text("khách đưa trước 50k, còn thiếu 30 nghìn") == [50000, 30000]
+      and dm.money_in_text("trả 100k, nợ 1tr2") == [100000, 1200000] and dm.money_in_text(None) == [])
+O28 = pd.DataFrame({"order_id": [f"K{i}" for i in range(30)], "order_date": pd.Timestamp("2026-03-04"), "status": "hoàn thành", "valid": True,
+                    "revenue": 100.0, "payment_method": "ghi nợ", "total_payable": 100.0, "paid_at_purchase": 100.0})
+check("credit orders that owe nothing at purchase", any("are on credit" in x for x in canon.secondary_checks({"orders": O28}, biz24)))
+O28["paid_at_purchase"] = 0.0
+check("credit orders owing: no warning", not any("are on credit" in x for x in canon.secondary_checks({"orders": O28}, biz24)))
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

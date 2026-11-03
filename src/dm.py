@@ -576,6 +576,21 @@ class Unanswerable(Exception):
     """the released data cannot answer (rulebook §7): raise it from a program to answer `unanswerable`."""
 
 
+_MONEY_TXT = re.compile(r"\d[\d.,]*\s*(?:tr(?:iệu)?\s*\d*|triệu|nghìn|ngàn|k(?!\w)|đồng|đ(?!\w)|vnd)?", re.I)
+
+
+def money_in_text(s):
+    """every money amount written in a free-text note, in order ('khách đưa trước 50k, còn thiếu 611 nghìn' -> [50000, 611000];
+    '1.200.000đ', '1tr2', '2 triệu'); [] for an empty note."""
+    if s is None or (isinstance(s, float) and math.isnan(s)): return []
+    import ingest
+    out = []
+    for m in _MONEY_TXT.finditer(str(s)):
+        v = ingest.parse_num(m.group(0).strip())
+        if v is not None and not (isinstance(v, float) and math.isnan(v)): out.append(float(v))
+    return out
+
+
 def require(cond, why="the data does not record this"):
     if not cond: raise Unanswerable(why)
 

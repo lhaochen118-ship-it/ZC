@@ -318,3 +318,24 @@ Re-voting the logged runs reproduces 3000 / 3000 answers and gains +0.0003 to +0
 | Wall | 3160 s | 3944 s |
 
 → Neither is worth it: the defaults stay plain (no MTP, model-dtype KV).
+
+**v16 / v18 / v19 (train) and v18 public**
+
+| Train run | Code | dev | holdout | all | Correct / wrong / abstain |
+|---|---|---|---|---|---|
+| v16-1 | 234e2f8 | 0.997 | 0.917 (biz_124 0.56) | 0.970 | 2947 / 38 / 15 |
+| v18-1 | 4b85565 (industry sections, summary rows) | 0.9985 | 0.944 | 0.980 | 2955 / **15** / 30 |
+| **v19-1** | a246b0b (+ unused raw tables in the prompt) | **0.999** | **0.961** | **0.986** | 2972 / 14 / 14 |
+
+v18 public vote: 69 abstains; 3-run agreement up on every shop that was unstable.
+
+| Shop | v13 | v18 |
+|---|---|---|
+| dev_009 | 57 % | 100 % |
+| dev_008 | 62 % | 91 % |
+| dev_012 | 12 % | 60 % |
+| dev_013 | 75 % | 84 % |
+| dev_014 | 25 % | 47 % |
+
+'Unanswerable' answers in the new-industry shops fell: dev_012 3 → 0, dev_013 4 → 0, dev_014 20 → 15.
+Submissions: `submissions/v15`, `submissions/v18` (pushed); v19 when its public runs end.

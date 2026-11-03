@@ -139,12 +139,13 @@ clm = [json.loads(l) for l in open(os.path.join(a_mv.out, "compile_logs.jsonl"),
 multi = [c for c in clm if "chosen" in c and len(c["candidates"]) >= 2]
 assert len(finals(a_mv.out)) == len(want) and n_alt > 0 and multi and all(len(x) == 5 for c in multi for x in c["candidates"]), (n_alt, multi[:1])
 print("map vote |", n_alt, "programs also ran on a second mapping;", len(multi), "businesses with >= 2 candidates")
-# a shop of an industry whose rulebook section is not in the training rulebook: the section is shown next to the README,
-# --industry-raw programs on the raw tables run for every question, the rule program weighs 1, no --confirm shortcut
+# a shop of an industry whose rulebook section is not in the training rulebook and that src/industry.py does not implement
+# ('Tiệm hoa'): the section is shown next to the README, --industry-raw programs on the raw tables run for every question,
+# the rule program weighs 1, no --confirm shortcut (an implemented industry, 'Sửa xe', is handled like any shop: below)
 ind = os.path.join(scratch, "mini_ind"); shutil.rmtree(ind, ignore_errors=True); shutil.copytree(mini, ind, symlinks=True)
 os.remove(os.path.join(ind, "data", "biz_101")); shutil.copytree(os.path.join(split, "data", "biz_101"), os.path.join(ind, "data", "biz_101"))
-open(os.path.join(ind, "data", "biz_101", "README.md"), "a", encoding="utf-8").write("\nĐây là sổ sách của tiệm sửa xe.\n")
-open(os.path.join(ind, "rulebook.md"), "a", encoding="utf-8").write("\n### Sửa xe\n| Luật | Mặc định |\n|---|---|\n| Lượt xe | mỗi dòng là một lượt xe |\n")
+open(os.path.join(ind, "data", "biz_101", "README.md"), "a", encoding="utf-8").write("\nĐây là sổ sách của tiệm hoa tươi.\n")
+open(os.path.join(ind, "rulebook.md"), "a", encoding="utf-8").write("\n### Tiệm hoa\n| Luật | Mặc định |\n|---|---|\n| Bó hoa | mỗi bó là một đơn |\n")
 seen_ind = []
 def responder_ind(conv):
     if "RULES OF THIS SHOP'S INDUSTRY" in conv[1]["content"]: seen_ind.append(conv[0]["content"][:30])
@@ -155,7 +156,21 @@ lin = [json.loads(l) for l in open(os.path.join(a_in.out, "logs.jsonl"), encodin
 b101 = [r for r in lin if r["business_id"] == "biz_101"]; other = [r for r in lin if r["business_id"] != "biz_101"]
 assert b101 and all("50E" in r["samples"] and "51E" in r["samples"] for r in b101) and not any("50E" in r["samples"] for r in other), [list(r["samples"]) for r in b101[:2]]
 assert seen_ind and len(finals(a_in.out)) == len(want)
-print("industry | biz_101 (sửa xe): raw-table samples on", len(b101), "questions; section in", len(seen_ind), "prompts")
+print("industry | biz_101 (tiệm hoa): raw-table samples on", len(b101), "questions; section in", len(seen_ind), "prompts")
+# an industry src/industry.py implements ('Sửa xe'): its section and toolkit are in the prompts, no raw-table samples
+ind2 = os.path.join(scratch, "mini_ind2"); shutil.rmtree(ind2, ignore_errors=True); shutil.copytree(mini, ind2, symlinks=True)
+os.remove(os.path.join(ind2, "data", "biz_101")); shutil.copytree(os.path.join(split, "data", "biz_101"), os.path.join(ind2, "data", "biz_101"))
+open(os.path.join(ind2, "data", "biz_101", "README.md"), "a", encoding="utf-8").write("\nĐây là sổ sách của tiệm sửa xe.\n")
+open(os.path.join(ind2, "rulebook.md"), "a", encoding="utf-8").write("\n### Sửa xe\n| Luật | Mặc định |\n|---|---|\n| Lượt xe | mỗi dòng là một lượt xe |\n")
+seen_kit = []
+def responder_kit(conv):
+    if "TOOLKIT FOR THIS INDUSTRY" in conv[1]["content"] or "CANONICAL TABLES OF THIS SHOP'S INDUSTRY" in conv[1]["content"]: seen_kit.append(1)
+    return responder(conv)
+a_k = args(os.path.join(scratch, "out_ind2"), True); a_k.split = ind2; a_k.industry_raw = 2; a_k.confirm = 1; a_k.cache = os.path.join(scratch, "cache_ind2")
+agent.run(a_k, engine=pipeline.FakeStepLLM(responder_kit))
+lk = [json.loads(l) for l in open(os.path.join(a_k.out, "logs.jsonl"), encoding="utf-8")]
+assert seen_kit and not any("50E" in r["samples"] for r in lk) and len(finals(a_k.out)) == len(want), (len(seen_kit), [list(r["samples"]) for r in lk[:2]])
+print("industry kit | biz_101 (sửa xe): industry tables / toolkit in", len(seen_kit), "prompts, no raw-table samples")
 # a transferred reference that misses a convention of this README: --ref-adapt rewrites run (logged as adapt_attempts)
 # and compete with it; every question is still answered once
 adp = os.path.join(scratch, "mini_adapt"); shutil.rmtree(adp, ignore_errors=True); shutil.copytree(mini, adp, symlinks=True)

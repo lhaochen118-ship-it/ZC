@@ -274,3 +274,34 @@ Re-voting the logged runs reproduces 3000 / 3000 answers and gains +0.0003 to +0
 - Runs:
   - v13 (69c0d8d: expiry / out-of-stock templates), train + public ×3, thnliu / linhmai24;
   - v14 (b628bc9: + agreement + fallback), train + public ×3.
+
+## Entry 12 — 2026-11-03 08:00: public score 0.637 (v13 vote), v14 / v15, industry sections
+
+- **Portal (user): v13 vote of 3 runs = 0.637** on public. Each of v10, v11 and v13 scored a little higher than the
+  one before.
+  - With 67 abstains, 0.637 means about 785 right and 148 wrong.
+  - The train LOO estimate (0.955–0.98) does not carry over: public needs things train never tested.
+- The public rulebook adds industry sections that train has none of: Mẹ và bé, Sửa xe, Cửa hàng điện thoại.
+  - The shops of those industries are the unstable ones: 3-run agreement dev_012 12 %, dev_014 25 %, dev_011 72 %,
+    dev_013 75 %; the other shops 93–100 %. dev_009 has 57 %, from 'Tổng ngày …' summary rows.
+  - Seen in dev_012: 'thợ nào hoa hồng cao nhất' was answered by revenue (the commission % is in DanhSachTho);
+    'thợ nhiệt tình nhất' was answered by order count ('nhiệt tình' is not defined; 'chăm chỉ' = most working days).
+- Changes:
+  - a0e5c08 industry sections: the section is shown next to the README; for a section absent from the training
+    rulebook, rule weight 1, 2 raw-table programs per question, no --confirm shortcut;
+  - 084407b summary rows (biz_110, dev_009, dev_010), now matched with accents;
+  - ce0c688 abstain on 'unanswerable' from LLM mappings that left tables unused;
+  - 234e2f8 a second mapping batch when only one candidate ran;
+  - 4b85565 --kv-dtype fp8 / MTP fallbacks.
+
+| Train run | Code | dev | holdout | all | Wall |
+|---|---|---|---|---|---|
+| v14-1 | b628bc9 (agreement + fallback) | 0.974 | **0.951** | 0.966 | 4252 s |
+| **v15-1** | 7c28f66 (+ rule reader coverage) | **0.999** | 0.949 | **0.982** (2967 / 21 / 12) | **3209 s** |
+
+- v14: fallback answered 20 questions (17 right, 3 wrong); biz_110 was −0.20 because of summary rows (fixed after it).
+- v14 public: 38–50 abstains per run; 3-run agreement 89.1 %.
+- Running:
+  - v15 public, v16 (ce0c688 + 234e2f8);
+  - v17 (speed: `--spec-mtp 2 --kv-dtype fp8` vs plain, public subset);
+  - v18 (a0e5c08 + 4b85565: industry sections, summary rows, all fixes), train + public ×3.

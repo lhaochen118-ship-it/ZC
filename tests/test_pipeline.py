@@ -156,6 +156,19 @@ b101 = [r for r in lin if r["business_id"] == "biz_101"]; other = [r for r in li
 assert b101 and all("50E" in r["samples"] and "51E" in r["samples"] for r in b101) and not any("50E" in r["samples"] for r in other), [list(r["samples"]) for r in b101[:2]]
 assert seen_ind and len(finals(a_in.out)) == len(want)
 print("industry | biz_101 (sửa xe): raw-table samples on", len(b101), "questions; section in", len(seen_ind), "prompts")
+# a transferred reference that misses a convention of this README: --ref-adapt rewrites run (logged as adapt_attempts)
+# and compete with it; every question is still answered once
+adp = os.path.join(scratch, "mini_adapt"); shutil.rmtree(adp, ignore_errors=True); shutil.copytree(mini, adp, symlinks=True)
+os.remove(os.path.join(adp, "data", "biz_102")); shutil.copytree(os.path.join(split, "data", "biz_102"), os.path.join(adp, "data", "biz_102"))
+rd = os.path.join(adp, "data", "biz_102", "README.md"); txt = open(rd, encoding="utf-8").read()
+open(rd, "w", encoding="utf-8").write(txt + "\n- **Topping**: topping có thể ghi chung ô với món ở cột tên hàng, nối bằng dấu cộng, tiền topping ghi trong ngoặc và đã cộng vào thành tiền của dòng.\n")
+a_ad = args(os.path.join(scratch, "out_adapt"), True); a_ad.split = adp; a_ad.ref_adapt = 2; a_ad.cache = os.path.join(scratch, "cache_adapt")
+agent.run(a_ad, engine=pipeline.FakeStepLLM(responder))
+cla = [json.loads(l) for l in open(os.path.join(a_ad.out, "compile_logs.jsonl"), encoding="utf-8")]
+ad = [c for c in cla if c.get("adapt_of")]
+assert ad and ad[0]["business_id"] == "biz_102" and len(ad[0]["adapt_attempts"]) == 2 and any("Topping" in g for g in ad[0]["gaps"]), cla[:2]
+assert len(finals(a_ad.out)) == len(want)
+print("ref adapt | biz_102:", ad[0]["adapt_of"], "rewritten twice for", len(ad[0]["gaps"]), "README convention(s)")
 # the real CLI: agent.py runs as __main__ and pipeline.py imports agent (Kaggle crash of 02/11: a second module copy
 # without CARDS / worker context); the fake responder is loaded from a file, no model
 import subprocess, inspect

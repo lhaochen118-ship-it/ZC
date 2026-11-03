@@ -156,6 +156,49 @@ def industry_of(rulebook, readme):
     return best
 
 
+REF_READMES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "readmes")
+_FILE_BULLET = re.compile(r"^`[^`]+\.(xlsx|xls|csv|sqlite|json|txt)`")
+
+
+def _readme_bullets(text):
+    """description bullets of a README (columns, conventions), without the per-item lists, file lists and data end."""
+    out = []
+    for l in str(text).split("\n"):
+        if re.match(r"^\s{2,}[-*] ", l): continue
+        m = re.match(r"^[-*] (.+)$", l.strip())
+        if m and "du lieu co den het" not in dm.key(l) and not _FILE_BULLET.match(m.group(1).strip()): out.append(m.group(1).strip())
+    return out
+
+
+def readme_gaps(target, ref):
+    """README lines of the target business that the reference business's README does not have (no close line, or a close
+    line without 5+ of its words): conventions a transferred reference program does not follow (public dev_002: toppings
+    written in the dish's cell; dev_005: unit factors relative to the next smaller unit)."""
+    import difflib
+    nrm = lambda x: re.sub(r"\d+", "#", dm.key(x)); toks = lambda x: {w for w in nrm(x).split() if len(w) > 1 and w != "#"}
+    rb = _readme_bullets(ref); out = []
+    for x in _readme_bullets(target):
+        if not rb: out.append(x); continue
+        best = max(rb, key=lambda r: difflib.SequenceMatcher(None, nrm(x), nrm(r)).ratio())
+        if difflib.SequenceMatcher(None, nrm(x), nrm(best)).ratio() < 0.8 or len(toks(x) - toks(best)) >= 5: out.append(x)
+    return out
+
+
+def ref_readme(rid):
+    p = os.path.join(REF_READMES, f"{rid}.md")
+    return open(p, encoding="utf-8").read() if os.path.isfile(p) else None
+
+
+def user_msg_adapt(rulebook, biz_readme, card, ref_code, gaps):
+    return "\n\n".join([f"# RULEBOOK (extract)\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}", f"# RAW TABLES (in T)\n{card}",
+                         "# REFERENCE PROGRAM\nIt maps a shop that exports the same files, and it runs on these tables, but that shop's README "
+                         f"does not have the conventions listed below.\n```python\n{ref_code.strip()}\n```",
+                         "# CONVENTIONS OF THIS README THE REFERENCE DOES NOT FOLLOW\n" + "\n".join(f"- {g}" for g in gaps),
+                         "# TASK\nOutput the complete reference program, changed so that it also follows these conventions of THIS README "
+                         "(for example: split cells that hold several items into one line per item, or turn unit factors into base-unit "
+                         "factors). Keep everything else as it is. If a convention needs no change in the mapping, leave that part alone."])
+
+
 def user_msg_lib(rulebook, biz_readme, canon_card, examples, q):
     return "\n\n".join([f"# RULEBOOK\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}",
                          f"# CANONICAL TABLES (in C; metrics use them)\n{canon_card}",
@@ -797,6 +840,8 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--ref-adapt", type=int, default=3, help="pipeline: when the best transferred reference mapping misses conventions "
+                    "of this README (agent.readme_gaps), this many LLM rewrites of it that follow them (0 = off)")
     ap.add_argument("--industry-raw", type=int, default=2, help="pipeline: for a shop of an industry whose rulebook section is not in "
                     "the training rulebook: this many extra programs on the raw tables per question, the rule program's weight 1 "
                     "and no --confirm shortcut (0 = treat it like any shop)")

@@ -285,9 +285,45 @@ class Pipeline:
         for t in tasks: self.cpu.submit(agent.run_mapping, t, 300, lambda r, rid=t[3]: on_ref(rid, r))
         if not tasks: self.after_transfer(b, bs)
 
+    REF_GAP_W = 5.0                                                     # ranking points a reference loses when it misses README rules
+
+    def adapt_target(self, b, bs):
+        """(src, result, rid, gaps) of the best transferred reference when it misses conventions of b's README, else None."""
+        refs = [(src, r) for src, r in bs["cands"] if src.startswith("ref:") and not src.startswith("ref:fmt:")]
+        if not refs or not int(getattr(self.a, "ref_adapt", 0) or 0): return None
+        src, r = max(refs, key=lambda x: canonmod.rank_score(x[1])); rid = src[4:]
+        ref = agent.ref_readme(rid)
+        if ref is None or rid not in self.progs: return None
+        gaps = agent.readme_gaps(self.bizs[b].readme, ref)
+        return (src, r, rid, gaps) if gaps else None
+
+    def adapt(self, b, bs, target):
+        """--ref-adapt LLM rewrites of the reference program that follow the README conventions it misses; they compete with it
+        in the choice (the unadapted reference loses REF_GAP_W points)."""
+        src, r, rid, gaps = target; r["gaps"] = len(gaps)
+        code = self.progs[rid]
+        for name, tgt in (r.get("tables_used") or {}).items():             # the reference's table names -> this shop's
+            code = code.replace(f'T["{name}"]', f'T["{tgt}"]').replace(f"T['{name}']", f"T['{tgt}']")
+        print(f"  {b}: {src} misses {len(gaps)} README convention(s); {self.a.ref_adapt} rewrites", flush=True)
+        msgs = [{"role": "system", "content": agent.SYSTEM_MAP},
+                {"role": "user", "content": agent.user_msg_adapt(self.rb_map, self.bizs[b].readme, agent.CARDS[b], code, gaps)}]
+        n = int(self.a.ref_adapt); bs["pending"] = n; atts_all = {}
+        def fin(s, atts):
+            atts_all[s] = atts; r2 = agent.last_ok(atts)
+            if r2: bs["cands"].append((f"adapt:{rid}:{s}", r2))
+            bs["pending"] -= 1
+            if bs["pending"] == 0:
+                self.clog.write(json.dumps({"business_id": b, "adapt_of": src, "gaps": gaps, "adapt_attempts": atts_all}, ensure_ascii=False, default=str) + "\n")
+                self.select(b, bs)
+        for s in range(n):
+            self.sample((b, 100 + s), msgs, s == 0, self.mt_map, agent.run_mapping,
+                        lambda k, code: (k, k[0], code, None, os.path.join(self.cdir, f"{k[0]}.adapt{k[1]}.pkl")),
+                        lambda atts, s=s: fin(s, atts), think=True if self.a.think_map else None, prio=bs["prio"])
+
     def after_transfer(self, b, bs):
         if not (self.a.map_llm or not bs["cands"]):
-            return self.select(b, bs)
+            t = self.adapt_target(b, bs)
+            return self.adapt(b, bs, t) if t else self.select(b, bs)
         msgs = [{"role": "system", "content": agent.SYSTEM_MAP},
                 {"role": "user", "content": agent.user_msg_map(self.rb_map, self.bizs[b].readme, agent.CARDS[b], agent.map_examples(self.bizs[b], b, self.exclude_own))}]
         bs["pending"] = self.a.kc
@@ -380,7 +416,8 @@ class Pipeline:
             _, scores = agent.agreement([r["sig"] for _, r in cs])
             ag = self.answer_agreement([r.get("rule_answers") or {} for _, r in cs]); W = float(getattr(self.a, "sel_agree", 0.0) or 0.0)
             for (_, r), x in zip(cs, ag): r["agree"] = x
-            order = sorted(range(len(cs)), key=lambda i: (-(canonmod.rank_score(cs[i][1]) - self.SEL_FAIL_W * cs[i][1].get("fail_share", 0.0) + W * ag[i]),
+            order = sorted(range(len(cs)), key=lambda i: (-(canonmod.rank_score(cs[i][1]) - self.SEL_FAIL_W * cs[i][1].get("fail_share", 0.0) + W * ag[i]
+                                                            - (self.REF_GAP_W if cs[i][1].get("gaps") else 0.0)),
                                                           -scores[i], i))   # coverage - warnings - rule failures + answer agreement
             src, r = cs[order[0]]; can = {"path": r["path"], "card": r["card"], "src": src, "unused": r.get("unused") or []}
             M = max(1, int(getattr(self.a, "map_vote", 1) or 1), int(getattr(self.a, "map_fallback", 1) or 1))   # next ranked candidates

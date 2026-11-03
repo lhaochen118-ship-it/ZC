@@ -204,7 +204,10 @@ except KeyError: pass
 lots2 = pd.DataFrame({"lot_id": ["L1", "L2", "L3"], "item_code": ["B", "A", "A"], "expiry": ["2025-04-01", "2025-04-01", "2025-03-20"],
                       "qty_in_base": [5, 5, 5], "receipt_date": pd.to_datetime(["2025-01-01"] * 3)})
 it2 = pd.DataFrame({"item_code": ["A", "B", "X"], "item_name": ["Thuốc A", "Thuốc B", "Thuốc X"]})
-sh2 = dm.Shop({"orders": orders, "lines": lines, "items": it2, "lots": lots2, "lot_sales": ls.iloc[:0]}, today="2025-03-10")
+ls2 = pd.DataFrame({"order_id": ["O1"], "lot_id": ["L3"], "qty_base": [1], "returned_base": [0]})
+sh2 = dm.Shop({"orders": orders, "lines": lines, "items": it2, "lots": lots2, "lot_sales": ls2}, today="2025-03-10")
+try: dm.Shop({"orders": orders, "lines": lines, "items": it2, "lots": lots2}, today="2025-03-10").lot_stock("2025-03-10"); check("lots without lot_sales raise", False)
+except RuntimeError: pass
 check("items_expiring", sh2.items_expiring("2025-03-10", "2025-04-30") == ["Thuốc A", "Thuốc B"] and sh2.items_expiring("2025-03-10", "2025-03-31") == ["Thuốc A"])
 for q, want in [("tính đến hết ngày 10/03/2025, có mấy mặt hàng còn lô tồn sắp hết hạn trong 30 ngày tới, tức hạn dùng từ 10/03/2025 đến hết 09/04/2025", "n_items_expiring"),
                 ("những sản phẩm nào đang còn hàng có hạn dùng từ 10/03/2025 đến hết 09/04/2025", "items_expiring"),
@@ -237,6 +240,13 @@ st3 = {"rule": {"ok": False, "error": "AttributeError", "alt": [N5]}, "att": {0:
 check("fallback: rule failed on the chosen mapping", pf.vote(st3)[0] == N5 and st3["fallback"] == 1, pf.vote(st3))
 st4 = {"rule": {"ok": False, "error": "AttributeError"}, "att": {0: [{"ok": False, "error": "x"}]}, "w": {}, "q": {"question": "q"}, "b": None}
 check("no alternate: abstain", pf.vote(st4)[0] == {"type": "abstain"}, pf.vote(st4))
+pf.vocabs = {"biz": {}}
+pf.mapping_of = lambda b: (True, {"src": "llm:3", "unused": ["thanh_toan"]})
+st5 = mk(U, None); st5["b"] = "biz"
+check("unanswerable on an LLM mapping with unused tables -> abstain", pf.vote(st5)[0] == {"type": "abstain"} and st5.get("unans_abstain"), pf.vote(st5))
+pf.mapping_of = lambda b: (True, {"src": "ref:biz_101", "unused": ["x"]})
+st6 = mk(U, None); st6["b"] = "biz"
+check("unanswerable on a reference mapping stays", pf.vote(st6)[0] == U, pf.vote(st6))
 check("answer agreement", pipeline.Pipeline.answer_agreement([{"a": "1", "b": "2"}, {"a": "1", "b": "2"}, {"a": "9", "b": "2"}]) == [1.0, 1.0, 0.5])
 
 print(f"{len(bad)} failures")

@@ -525,6 +525,10 @@ class Pipeline:
             for j in range(1, max(1, int(getattr(self.a, "map_fallback", 1) or 1))):
                 r2 = self.vote_on(st, j)
                 if r2[0].get("type") not in ("abstain", "unanswerable"): st["fallback"] = j; return r2
+        if res[0].get("type") == "unanswerable" and getattr(self.a, "unans_unused", 1) and st.get("b"):
+            known, can = self.mapping_of(st["b"])                        # 'not in the data' from an LLM mapping that left raw
+            if known and can and str(can.get("src", "")).startswith("llm") and can.get("unused"):   # tables unused: the data may
+                st["unans_abstain"] = True; return ({"type": "abstain"},) + tuple(res[1:])         # hold it (v6-v13: 16 right / 42 wrong)
         return res
 
     def vote_on(self, st, idx):
@@ -590,6 +594,7 @@ class Pipeline:
         if st.get("esc"): samples["escalated"] = st["esc"]
         if st.get("ungrounded"): samples["ungrounded"] = st["ungrounded"]
         if st.get("fallback"): samples["fallback"] = st["fallback"]          # answered on the j-th alternate mapping
+        if st.get("unans_abstain"): samples["unans_abstain"] = True
         rr = st["rule"]
         if rr: samples["rule"] = rr
         if q["id"] in self.written: return                              # already abstained at the hard time limit

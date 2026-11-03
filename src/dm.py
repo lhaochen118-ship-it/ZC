@@ -977,6 +977,9 @@ class Shop:
         """lots with remaining base quantity at the end of day d (received - sold by non-cancelled orders + returned)."""
         lots = self.C.get("lots"); require(lots is not None and len(lots), "no lot records")
         L = lots.copy(); ls = self.C.get("lot_sales")
+        if ls is None or not len(ls):                                    # every lot would count as full (v13: 377 lots 'in stock'
+            raise RuntimeError("C['lots'] has no C['lot_sales']: the quantity left in each lot is unknown; map the table that "
+                               "records which lot each sold quantity came from")   # for 5): an error, not an answer
         if ls is not None and len(ls):
             o = self.O.set_index("order_id"); x = ls.copy(); x["order_id"] = x["order_id"].astype(str)
             x["order_date"] = x["order_id"].map(o["order_date"]); x["status"] = x["order_id"].map(o["status"])

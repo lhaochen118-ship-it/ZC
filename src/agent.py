@@ -764,6 +764,8 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--unans-unused", type=int, default=1, help="pipeline: an 'unanswerable' answer on an LLM mapping that left raw "
+                    "tables unused becomes abstain (train v6-v13: 16 such answers right, 42 wrong; 0 = off)")
     ap.add_argument("--map-fallback", type=int, default=2, help="pipeline: when the vote on the chosen mapping abstains or says "
                     "unanswerable, the same programs' vote on the next ranked candidate mappings (up to M-1 of them; replay v11 "
                     "train: PA 0.967 -> 0.974; 1 = off)")

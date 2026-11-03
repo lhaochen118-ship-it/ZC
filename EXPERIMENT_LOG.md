@@ -215,3 +215,21 @@ Re-voting the logged runs reproduces 3000 / 3000 answers and gains +0.0003 to +0
   "Tiền hàng"), so the least bad one was chosen.
 - Vote over the 5 train runs v6–v10: **0.9817** (2966 / 21 / 13). Best triple: v8 + v9 + v10, 0.980.
 - The mapping phase still takes 1100–2950 s per LLM-mapped public business; v11 targets this with budget forcing.
+
+## Entry 10 — 2026-11-03: v11 (all fixes of entry 9 + sheet alias), v11s
+
+| Run | dev | holdout | all | Correct / wrong / abstain | Wall |
+|---|---|---|---|---|---|
+| v10-1 | 0.966 | 0.940 | 0.957 | 2927 / 55 / 18 | 5292 s |
+| **v11-1** | **0.990** | **0.946** | **0.975** | 2950 / 25 / 25 | **4172 s** |
+
+- v11 is the best single run so far (previous best: v6, 0.969) and 21 % faster than v10.
+- Weak businesses in v11: biz_123 0.63, biz_114 0.70 (mapping luck this time), biz_124 0.92.
+- Vote over the 6 train runs v6–v11: 0.982. Best triple: v8 + v10 + v11, 0.9823.
+- v11s (public `--subset 28`, GPU check of budget forcing and thinking sampling):
+  - ran cleanly, the mapping phase was 25 % shorter, and the mapping success rate was unchanged (52 %);
+  - whether forcing fired cannot be read from those logs. Attempts now carry `forced`, and the loop is cut before
+    forcing (9bb6191).
+- After v11 (not yet on GPU):
+  - 9bb6191: `--map-repairs` / `--map-repair-think 0`, under test in v12;
+  - 69c0d8d: rulebook templates for expiring items and out of stock (oracle 2798 / 1 / 201).

@@ -1,8 +1,8 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
 *Cập nhật: 2026-11-03 14:25 UTC. Branch `claude/datamate-v3-0dny90`, commit cuối 7fa70f2. User dừng khung chat này
-(mở khung mới để tiết kiệm token). Routine `trig_01U26KaZP68Dmg8JL2RGcbVS` **đã tắt**. Khung mới: đọc `CLAUDE.md` → file
-này → làm mục "Việc tiếp theo". Container cũ mất: token Kaggle phải xin lại user (lưu `~/.kaggle/tok_<user>`, chmod 600).*
+(mở khung mới để tiết kiệm token). Routine `trig_01U26KaZP68Dmg8JL2RGcbVS` **đã tắt**. Khung mới: đọc `READING_GUIDE.md` →
+`CLAUDE.md` → file này → làm mục "Việc tiếp theo" (ba PDF bàn giao: `handoff/0[1-3]_*.pdf`). Container cũ mất: token Kaggle phải xin lại user (lưu `~/.kaggle/tok_<user>`, chmod 600).*
 
 ## Điểm portal (user nộp) — EXPERIMENT_LOG entry 13
 

@@ -9,6 +9,13 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 - Phương án cũ còn nguyên ở branch `claude/peaceful-carson-0dny90` (v1: LLM tự viết chương trình pandas cho từng câu) và
   `claude/funny-euler-ceut3o` (v2: toolkit nghiệp vụ, chưa chạy với LLM).
 
+## Bàn giao mới nhất (03/11/2026)
+
+`READING_GUIDE.md` (cách đọc repo + việc tiếp theo) → `handoff/STATUS.md` → `handoff/03_HANDOFF.pdf`.
+Kết quả khoa học: `handoff/01_SCIENTIFIC_FINDINGS.pdf`; kinh nghiệm kỹ thuật / vận hành:
+`handoff/02_ENGINEERING_OPS_LESSONS.pdf`; môi trường: `handoff/environment_summary.pdf`; quy trình:
+`docs/RESEARCH_WORKFLOW.pdf` (nguồn `docs/03_WORKFLOW.md`). Điểm portal tốt nhất: v19 = 0.687.
+
 ## Đọc theo thứ tự
 
 | # | File | Nội dung |

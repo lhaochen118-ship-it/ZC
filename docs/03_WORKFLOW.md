@@ -1,6 +1,6 @@
 # 03 — Quy trình làm việc
 
-*Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW_original.pdf`, `git show de4360e:handoff/04_RESEARCH_WORKFLOW.md`), đổi đích từ "paper" sang "điểm PA
+*Cập nhật 03/11/2026 14:30 UTC (thêm §5–§7 từ khung chat 03/11). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW_original.pdf`, `git show de4360e:handoff/04_RESEARCH_WORKFLOW.md`), đổi đích từ "paper" sang "điểm PA
 tối đa trên private test, trong 6 giờ, tái lập được".*
 
 ## 1. Nguyên tắc chung
@@ -28,11 +28,12 @@ và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
 
 - Dùng **tất cả** acc được cấp. Token chỉ ở `~/.kaggle/tok_<username>` (quyền 600), không đưa vào code, prompt, GitHub
   hay báo cáo; kiểm tra kết nối bằng `kaggle competitions list`. Khung chat mới phải xin lại token.
-- Acc khung chat 3 (username Kaggle): `thnliu`, `linhmai24`, `lelynhan`, `mxuanquy`, `duylnng`, `caotienminh1`,
-  `nguyenmanh0404`, `hai1108`, `nguynduylm`, `phuongnehe`, `mucnokieu`, `huyenco`. Probe 02/11: **4×L4** ở `lelynhan`, `linhmai24`, `thnliu`, `duylnng`, `caotienminh1`, `nguynduylm`, `phuongnehe` (2 acc user gửi thêm 02/11), `hai1108` (user accept rules 02/11), `mucnokieu`, `huyenco` (thêm 02/11) → **10 acc L4 = 20 phiên**;
-  `mxuanquy` chỉ T4; `nguyenmanh0404` chưa accept rules `gemma-4-developer-agent` (chỉ T4 đến khi user accept
-  trên web). Các acc này **dùng chung với dự án khác** (kernel `e27*`, `e32*`, `nclt-*`…): không
-  đụng vào kernel không phải `zc-*`. Không có token `nhatlong1103` → dataset mới đăng public trên một acc ở trên.
+- Acc (username Kaggle, 03/11): L4 ở `lelynhan`, `linhmai24`, `thnliu`, `duylnng`, `caotienminh1`, `nguynduylm`,
+  `phuongnehe`, `hai1108`, `mucnokieu`, `huyenco`; `mxuanquy` chỉ T4; `nguyenmanh0404` chưa accept rules
+  `gemma-4-developer-agent`. **Quota 30 giờ GPU / tuần / acc** (caotienminh1 hết 03/11 14:02); một bản thử đầy đủ
+  (train + 3 public) ≈ 8 giờ GPU. Trạng thái acc mới nhất: `handoff/ENVIRONMENT_SUMMARY.md`. Các acc này **dùng chung
+  với dự án khác** (kernel `e27*`, `e32*`, `nclt-*`…): không đụng vào kernel không phải `zc-*`. Không có token
+  `nhatlong1103` cho kernel (chỉ đăng dataset).
 - **Dồn luồng lên một acc**: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU cùng lúc; hết slot mới sang acc khác.
   Mỗi phiên GPU = 4×L4 (24 GB/GPU, 96 GB phân tán, không phải một GPU 96 GB); không có L4 → 2×T4.
 - **Kẹt hàng đợi:** không có đầu ra sau ~8 phút (L4 / CPU) hoặc ~10 phút (T4) → kiểm trạng thái; L4 kẹt hàng đợi → ngắt,
@@ -73,3 +74,33 @@ và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
 - Commit kèm trailer theo hướng dẫn của phiên; không ghi model ID vào commit.
 - Kết quả mới để file mới (`results/<run>/…`), không ghi đè kết quả cũ.
 - Không commit token, dữ liệu sinh ra lớn, cache (`.gitignore`).
+
+## 5. Vòng lặp hiện tại (từ khi có điểm portal, 03/11)
+
+Train LOO (0.98–0.99) **không còn dự báo** điểm public (0.63–0.69). Vòng lặp đổi thành:
+
+1. **Tìm lỗi chung không cần nhãn** trên log public của bản gần nhất (công cụ: `automation/jobs/`):
+   luật vs LLM bất đồng hoàn toàn (`rule_vs_llm.py`); ánh xạ hạng 1 vs hạng 2 cho đáp án khác (`alt_diff.py`);
+   đồng thuận 3 lần chạy theo DN (`agree_biz.py`); đáp án 0 bất thường; đối chiếu bảng chuẩn với README / rulebook
+   (`two_maps.py`, `scan_maps.py`). Không gán nhãn tay đáp án public.
+2. **Sửa bằng quy tắc tổng quát** (luật đọc câu, kiểm tra nội dung ánh xạ, toolkit) + test; kiểm **oracle train
+   2967 / 1 / 32** và **0 flagged** trên ánh xạ tham chiếu (`tests/eval_lib.py`, `tests/test_plausibility.py`).
+3. **Gộp các sửa thành một đợt**, preflight một lần (mỗi lần sửa sau preflight phải chạy lại ~10–12 phút), chạy bản
+   mới (train + 3 public) trên 2 acc; khi chờ thì làm bước 1 cho lỗi tiếp theo.
+4. **Đánh giá bản mới bằng so sánh câu-theo-câu với bản đã có điểm portal** (giống / đổi / thêm abstain / bớt abstain
+   theo DN) — không chỉ bằng điểm train. Bản thêm nhiều abstain ở DN lớn thường tụt điểm (v20).
+5. File nộp: `automation/map_penalties.py` → `src/vote.py` (tie-break theo ánh xạ) → `automation/make_submission.py`
+   → `submissions/vNN/` + README → **push ngay** → gửi user; user nộp portal và báo điểm → ghi `EXPERIMENT_LOG.md`.
+
+## 6. Nhiễu của điểm public
+
+- Các lần chạy cùng cấu hình chỉ giống nhau 80–89 % câu (mẫu ánh xạ LLM không tái lập). Điểm public dao động **±0.03**
+  chỉ vì may rủi ánh xạ → một lần nộp không đủ để kết luận một sửa đổi tốt / xấu nếu chênh lệch < 0.03.
+- Ưu tiên các sửa giảm phương sai (ổn định ánh xạ, bỏ phiếu biết ánh xạ) trước các sửa tăng trung bình nhỏ.
+
+## 7. Chuyển khung chat
+
+- Trước khi đóng: commit + push mọi thứ; chép job / script khỏi scratch vào repo (`automation/jobs/`); cập nhật
+  `handoff/STATUS.md`, `EXPERIMENT_LOG.md`, ba PDF bàn giao (`handoff/0[1-3]_*.pdf`), `handoff/environment_summary.pdf`;
+  tắt routine tự chạy.
+- Khung mới: đọc `READING_GUIDE.md` → `CLAUDE.md` → `handoff/STATUS.md`; xin token; tải lại output kernel đang chạy.

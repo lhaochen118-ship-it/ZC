@@ -279,11 +279,14 @@ def secondary_checks(C, biz):
     if o is None or not len(o) or "order_id" not in o: return w
     ids = set(o["order_id"].astype(str).str.strip())
     v = o[o["valid"].astype(bool)] if "valid" in o else o
-    # 1. revenue against a column the data itself calls tiền hàng / tiền bán / doanh thu (one value per order)
+    # 1. revenue against a column the data itself calls tiền hàng / tiền bán / doanh thu (one value per order), by its name or
+    #    by the README's description of it ('**Giá trị hàng**: tiền hàng của đơn ...': public dev_009, 2 of 3 runs took TongTien)
+    rdesc = {_fold(m.group(1)) for m in re.finditer(r"(?m)^\s*[-*]\s*\*\*(.+?)\*\*\s*:\s*(.+)$", str(getattr(biz, "readme", "") or ""))
+             if re.match(r"(?:tienhang|tienban|doanhthu)", _fold(m.group(2)))}
     if "revenue" in o and len(v) > 50:
         rv = pd.to_numeric(v["revenue"], errors="coerce"); vid = v["order_id"].astype(str).str.strip()
         for t, df in biz.tables.items():
-            rcs = [c for c in df.columns if _fold(c) in REV_NAMES]
+            rcs = [c for c in df.columns if _fold(c) in REV_NAMES or _fold(c) in rdesc]
             if not rcs or len(df) < 50: continue
             for kc in df.columns:
                 if kc in rcs or df[kc].head(200).astype(str).str.strip().isin(ids).mean() < 0.9: continue   # cheap pre-check

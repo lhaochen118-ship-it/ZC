@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 01:15 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-03 02:15 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự. Khung 12 giờ
 của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26KaZP68Dmg8JL2RGcbVS` và báo kết quả.*
 
@@ -26,16 +26,16 @@ của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26
 - 327acf2: bỏ phiếu chỉ tính mẫu LLM "bám câu hỏi" (tên hàng trong chương trình phải có trong câu); cảnh báo cột bị
   `frame()` bỏ qua (chỉ ánh xạ LLM).
 
-## Đang chạy (01:15 UTC)
+## Đang chạy (02:15 UTC)
 
-- **v10** (`scratchpad/runs/v10`, launched 00:04, commit 277cfd6: kc 8 + map-retry + confirm): zc-v10-1 train,
-  zc-v10-2 public, zc-v10-3 public lặp lại (duylnng, caotienminh1).
-- **v11s** (`runs/v11s`, hai1108, launched 00:55, commit 76b676e): public `--subset 28` — kiểm tra trên GPU budget forcing /
-  tham số sampling thinking (cổng kiểm tra: phần GPU đổi → chạy nhỏ trước). Xem `compile_logs.jsonl`: tỉ lệ
-  "no python code block" và thời gian ánh xạ mỗi DN (v9-2: 1300–3900 s).
-- Preflight v11 chạy trước (scratchpad `prepreflight.py runs/../v11.jobs`, ghi dấu cache của fanout khi qua).
-- Watcher: `automation/watch_done.py <scratchpad>/runs --max 115` (run_in_background, timeout 7200000);
-  `runs/active_runs.txt` = v10, v11s.
+- **v11** (`scratchpad/runs/v11`, launched 02:02, commit e73a151 = mọi sửa tới sheet alias): zc-v11-1 train, -2 public
+  seed 0, -3 public seed 1, -4 public seed 2 (huyenco ×2, mucnokieu ×2). Dự kiến xong ~03:20–03:35.
+- **v12** (preflight đang chạy; commit 9bb6191): `--map-repairs 4 --map-repair-think 0` — v12-1 train, v12-2 public
+  `--subset 28` (so trực tiếp với v11s). Đẩy lên lelynhan.
+- Đã xong: v10 (train 0.957; public 47 / 40 abstain; 2 lần public trùng 87.4 %), v11s (public subset: không lỗi, pha
+  ánh xạ −25 %, tỉ lệ ánh xạ thành công không đổi 52 %).
+- File nộp tạm: `submissions/public_vote6_v7-v10.jsonl` (bỏ phiếu 6 lần chạy public, 60 abstain, đã kiểm định dạng).
+- Watcher: `automation/watch_done.py <scratchpad>/runs --max 115`; `runs/active_runs.txt` = v11 (+ v12 khi đẩy).
 
 ## Việc tiếp theo (thứ tự)
 

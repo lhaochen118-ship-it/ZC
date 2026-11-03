@@ -752,6 +752,7 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--seed-base", type=int, default=0, help="pipeline: shift every sampling seed (independent runs of a multi-run vote)")
     ap.add_argument("--map-retry", type=int, default=1, help="pipeline: when every LLM mapping sample of a business fails, one more "
                     "batch of --kc samples (fresh seeds) before falling back to raw-table programs")
     ap.add_argument("--select-rules", type=int, default=1, help="pipeline: rank candidate mappings also by how often the rule programs "

@@ -187,7 +187,8 @@ class Pipeline:
               "think": think}
         def launch():
             temp = 0.0 if greedy else self.a.temp
-            self.gen(st["conv"], temp, 1000 * st["rnd"] + 17 * key[1] + 1, max_tokens, on_text, st["think"], prio)
+            seed = 1000 * st["rnd"] + 17 * key[1] + 1 + 7919 * int(getattr(self.a, "seed_base", 0) or 0)   # --seed-base: another run
+            self.gen(st["conv"], temp, seed, max_tokens, on_text, st["think"], prio)
         def retry(msg):
             if st["rnd"] < self.a.repairs:
                 st["conv"].append({"role": "user", "content": msg}); st["rnd"] += 1; launch()

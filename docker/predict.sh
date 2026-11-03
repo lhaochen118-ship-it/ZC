@@ -14,8 +14,25 @@ mkdir -p "$RESULT/logs" /tmp/zc
 K=${K:-4}; KC=${KC:-6}; QW=${QW:-4}; ESC=${ESC:-4}; BUDGET=${BUDGET:-20400}; DP=${DP:-$NGPU}; QUANT=${QUANT:-fp8}; PIPE=${PIPE:-1}; EXTRA=${EXTRA:-}
 [ "$PIPE" = "1" ] && EXTRA="--pipeline $EXTRA"
 [ -n "$QUANT" ] && EXTRA="--quant $QUANT $EXTRA"
-echo "split: $SPLIT  model: $MODEL  gpus: $NGPU  start: $(date -u +%FT%TZ)"
-python3 /app/src/agent.py "$SPLIT" "$RESULT" --model "$MODEL" --dp "$DP" --k "$K" --kc "$KC" --repairs 2 --shots 4 --qw "$QW" \
-    --think-map --escalate "$ESC" --max-len 24576 --max-tokens 1024 --compile-tokens 6144 --budget "$BUDGET" --cache /tmp/zc/cache \
-    --log-dir "$RESULT/logs" $EXTRA 2>&1 | tee "$RESULT/logs/run.log"
+# Multi-run vote (src/vote.py): run 1 writes /result incrementally (a time-out still leaves its answers); while the budget
+# allows another run of the same length (+15 %), run i (seed base i) goes to /tmp/zc/run_i and the plurality over every
+# finished run replaces /result/submission.jsonl atomically (train, 4 runs: PA 0.980 vs <= 0.969 for one run).
+RUNS=${RUNS:-3}; T0=$(date +%s)
+echo "split: $SPLIT  model: $MODEL  gpus: $NGPU  runs: up to $RUNS  start: $(date -u +%FT%TZ)"
+run_agent() {   # run_agent <out_dir> <seed_base> <budget_s> <log_dir>
+    python3 /app/src/agent.py "$SPLIT" "$1" --model "$MODEL" --dp "$DP" --k "$K" --kc "$KC" --repairs 2 --shots 4 --qw "$QW" \
+        --think-map --escalate "$ESC" --confirm 1 --max-len 24576 --max-tokens 1024 --compile-tokens 6144 --budget "$3" \
+        --cache /tmp/zc/cache --seed-base "$2" --log-dir "$4" $EXTRA 2>&1 | tee -a "$RESULT/logs/run.log"
+}
+run_agent "$RESULT" 0 "$BUDGET" "$RESULT/logs"
+cp "$RESULT/submission.jsonl" "$RESULT/logs/submission_run1.jsonl" 2>/dev/null || true
+DIRS="$RESULT"; LAST=$(( $(date +%s) - T0 ))
+for i in $(seq 1 $(( RUNS - 1 ))); do
+    LEFT=$(( BUDGET - ($(date +%s) - T0) ))
+    if [ $(( LAST * 115 / 100 )) -ge "$LEFT" ]; then echo "run $((i + 1)) skipped: ${LEFT}s left, a run takes ${LAST}s"; break; fi
+    S0=$(date +%s); mkdir -p "/tmp/zc/run_$i/logs"
+    run_agent "/tmp/zc/run_$i" "$i" "$LEFT" "/tmp/zc/run_$i/logs"; LAST=$(( $(date +%s) - S0 ))
+    DIRS="$DIRS /tmp/zc/run_$i"
+    python3 /app/src/vote.py "$RESULT/submission.jsonl" $DIRS --log-dir "$RESULT/logs" 2>&1 | tee -a "$RESULT/logs/run.log"
+done
 echo "end: $(date -u +%FT%TZ)  answers: $(wc -l < "$RESULT/submission.jsonl")"

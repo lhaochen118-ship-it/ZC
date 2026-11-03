@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 08:35 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-03 10:15 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự. Khung 12 giờ
 của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26KaZP68Dmg8JL2RGcbVS` và báo kết quả.*
 
@@ -35,11 +35,11 @@ của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26
   chỉ 1 ứng viên, 084407b + a0e5c08 dòng tổng (có dấu), **a0e5c08 mục ngành mới** (luật ngành cạnh README, luật qw 1,
   2 mẫu bảng thô), 4b85565 `--kv-dtype`, **a246b0b bảng thô ánh xạ bỏ sót đưa vào prompt** (dev_014: góp / thu máy cũ /
   bảo hành từng bị trả unanswerable).
-- Đang chạy:
-  - v15 public (-2, -4), v16 public (-2);
-  - v17 (lelynhan: tốc độ MTP + KV fp8 so với thường, public subset);
-  - **v18** (thnliu, linhmai24: 4b85565, train + public ×3) → file nộp `submissions/v18/`;
-  - **v19** (a246b0b, preflight 08:30, phuongnehe + hai1108) → `submissions/v19/`.
+- Kết quả (10:15):
+  - train v18 0.980 (15 sai), **v19 0.986** (dev 0.999, holdout 0.961) — tốt nhất;
+  - v17 tốc độ: KV fp8 không chạy với Qwen3.5 / vLLM 0.32; MTP chỉ −6 % pha ánh xạ → giữ mặc định;
+  - file nộp đã push: `submissions/v15/` (50 abstain), `submissions/v18/` (69 abstain, các DN bất ổn ổn định hơn nhiều);
+    `submissions/v19/` khi 3 lần chạy public xong (~10:30).
 - Đĩa scratch từng đầy lúc 08:24 (replay cũ ~4 GB) → đã xoá; giữ `runs/`, `cache_*`.
 
 ## Kết quả cuối khung 12 giờ (04:45 UTC 03/11) — không còn kernel nào chạy

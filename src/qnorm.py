@@ -34,6 +34,7 @@ ABBR = {
     "trog": "trong", "jum": "giùm", "júp": "giúp", "zô": "vô", "zo": "vô", "tíh": "tính", "từg": "từng", "ngừi": "người",
     "tỉ nệ": "tỉ lệ", "nượt": "lượt", "lựơt": "lượt", "xửa": "sửa", "cũa": "của", "nheiu": "nhiêu", "ddown": "đơn",
     "ck": "chuyển khoản", "tm": "tiền mặt", "ncc": "nhà cung cấp", "kh lẻ": "khách lẻ",
+    "xi ô đi": "COD", "xi o đi": "COD", "xiôđi": "COD", "si ô đi": "COD",                  # COD said in Vietnamese
     "o đờ": "đơn", "ô đờ": "đơn", "o-đờ": "đơn", "ođờ": "đơn", "oder": "đơn",              # 'order' said in Vietnamese
 }
 ABBR = {k: v for k, v in ABBR.items() if v}

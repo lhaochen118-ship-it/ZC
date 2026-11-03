@@ -134,7 +134,7 @@ def namespace(biz, ref_cols=None):
     R = Tables(dict(biz.raw), ref_cols or {})
     g = {"T": T, "RAW": R, "README": biz.readme or "", "pd": pd, "np": np, "re": re, "parse_num": ingest.parse_num, "parse_date": ingest.parse_date}
     for k in ("finalize", "map_status", "canon_status", "canon_payment", "canon_channel", "key", "is_walkin", "money", "round_half_up",
-              "readme_conversions", "conversions_table", "frame", "money_in_text"):
+              "readme_conversions", "conversions_table", "frame", "money_in_text", "debt_from_note"):
         g[k] = getattr(dm, k)
     g["tbl"] = lambda *c, **kw: dm.find_table(T, *c, **kw)
     import industry                                                    # split_vehicle / model_line / brand_of / split_jobs
@@ -399,7 +399,17 @@ def secondary_checks(C, biz):
             w.append(f"{int(ok.sum())} orders are on credit (payment_method 'ghi nợ') but {float((pp[ok] >= tp[ok] - 1).mean()):.0%} of them have "
                      "paid_at_purchase = total_payable (nothing owed): paid_at_purchase is what the customer paid WHEN BUYING; read it from "
                      "the data (a paid / owed column, or the order note: money_in_text(note) -> the amounts written in it, e.g. "
-                     "'đưa trước 50k, còn thiếu 30 nghìn'); later repayments go to C['payments'] (order_id, pay_date, amount)")
+                     "'đưa trước 50k, còn thiếu 30 nghìn'); later repayments go to C['payments'] (order_id, pay_date, amount). When the note "
+                     "is the debt's state at the END of the data, set orders.debt_end = debt_from_note(note, total_payable) instead")
+    # 1a-notes. debts written only in free-text notes, and C has no debt information at all -> every debt question unanswerable
+    if "note" in o.columns and not any(c in o.columns and o[c].notna().any() for c in ("paid_at_purchase", "debt_end", "paid_total")) \
+            and not (isinstance(C.get("payments"), pd.DataFrame) and len(C["payments"])):
+        nk = o["note"].dropna().astype(str).map(dm.key)
+        hits = nk[nk.str.contains(r"\b(?:ghi so|ghi no|con thieu|thieu lai|no ca don|con no)\b|\bno \d", regex=True)]
+        if len(hits) >= 20:
+            w.append(f"{len(hits)} order notes record debts (e.g. {', '.join(repr(x) for x in o.loc[hits.index[:2], 'note'])}) but C has no debt "
+                     "information (no payments, paid_at_purchase or debt_end): set orders.debt_end = debt_from_note(note, total_payable) "
+                     "(money still owed by the note; the README says whether the note is the state at the end of the data)")
     # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)
@@ -456,6 +466,19 @@ def secondary_checks(C, biz):
     cv = C.get("conversions")
     if isinstance(cv, pd.DataFrame) and not len(cv):
         w.append("C['conversions'] is empty: map the table of unit conversions (item, unit, factor), or leave conversions out")
+    # 3b. the data records customer groups but C does not (public dev_008: one of three runs' mappings left them out, another
+    #     took each customer's last group instead of the order's): questions by customer group then answer 'unanswerable'
+    if "customer_group" not in o or not o["customer_group"].notna().any():
+        for t, df in biz.tables.items():
+            if len(df) < 50: continue
+            for c in df.columns:
+                if not re.fullmatch(r"(?:nhomkhach(?:hang)?|loaikhach(?:hang)?|phanloaikhach(?:hang)?|hangkhach(?:hang)?|hangthanhvien|nhomkh|customergroup)", _fold(c)):
+                    continue
+                vals = df[c].dropna().astype(str).str.strip(); vals = vals[vals.ne("")]
+                if 2 <= vals.nunique() <= 20 and len(vals) >= 20:
+                    w.append(f"orders.customer_group is empty although {t}.{c} records customer groups ({', '.join(vals.value_counts().index[:4])}): "
+                             "map it (the order's own group; rulebook: walk-in orders belong to no group)")
+                    break
     # 4. purchases and lots dated inside the data
     end = data_end(biz)
     if end is not None and isinstance(p, pd.DataFrame) and len(p) > 20 and "receipt_date" in p:

@@ -376,6 +376,20 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
     return None
 
 
+# qualities a shop's data never records (rulebook §7: unanswerable) unless the rulebook defines them; the rulebook's own ranking
+# terms (trung thành, sộp, hay đổi ý, ưa chuộng, chăm chỉ, đắt khách, chính, bán giỏi, bán chạy, lời ...) are never in this list
+SUBJECTIVE = r"\b(ngon|than thien|kho tinh|de tinh|uy tin|dang tin cay|tin cay|chat luong|trung thuc|dep|nhiet tinh|vui ve|lich su|de thuong|" \
+             r"hai long|tu te|chu dao|sach se|nhanh nhen|dang yeu|tan tam|chuyen nghiep|tot bung|de chiu|kho chiu|dep trai|xinh|thoai mai)\b"
+
+
+def subjective(t):
+    """a 'which ... most <quality>' question about a quality no data column records ('sản phẩm nào ngon nhất', 'nhà cung cấp uy
+    tín', 'khách thân thiện nhất', 'thợ nhiệt tình nhất'): True when it names such a quality and asks for the top one."""
+    if re.search(SUBJECTIVE + r"\s+(?:\w+\s+)?(?:nhat|nhut)\b", t): return True        # '<quality> (tốt) nhất' ('Siro ăn ngon ...
+    m = re.search(r"\b(uy tin|dang tin cay|tin cay)\b", t)                                  # gần hết hạn nhất' is a name)
+    return bool(m and re.search(r"\b(la ai|nao|ai)\b", t))
+
+
 def parse(q, today, shop=None):
     """(template, code) for the common templates; None when unsure."""
     t0 = K(q); t = untelex(t0); tk = dm.key(q)                                    # Telex typos undone first ('quys 3/2025')
@@ -383,6 +397,7 @@ def parse(q, today, shop=None):
     p, P = parse_period(t, today)
     if P is None: p, P = parse_period(q, today)
     def has(*pats): return any(re.search(x, t) or re.search(x, t0) for x in pats)
+    if subjective(t) or subjective(t0): return "subjective", ans("unanswerable", "None")
     if shop is not None:                                                # the public rulebook's industries (their own tables)
         kinds = _kinds_of(shop)
         if kinds:
@@ -563,7 +578,7 @@ def parse(q, today, shop=None):
         if has(r"ca chieu") and has(r"ca sang"): return "growth_shift", ans("percent", f"growth({meas}({P}, shift='chiều'), {meas}({P}, shift='sáng'))") if P else None
         if has(r"truoc tet") and P: return "growth_tet", ans("percent", f"growth({meas}({P}), {meas}(before_tet({P[4:-1] if P.startswith('tet(') else 'TODAY.year'})))") if P.startswith("tet") else None
         if has(r"tet nam (truoc|ngoai|roi)") and has(r"tet nam nay|tet nay") : return "growth_tet_yoy", ans("percent", f"growth({meas}(tet_of(TODAY)), {meas}(tet(TODAY.year - 1)))")
-        if has(r"cung ky thang (truoc|roi|trc|lien truoc)") or (has(r"dau thang|thang nay") and has(r"cung ky")):
+        if has(r"cung ky thang (truoc|roi|trc|lien truoc)") or (has(r"dau thang|thang nay|th nay") and has(r"cung ky|so (?:voi|vs) thang (?:truoc|trc|roi|lien truoc)")):
             return "growth_mtd", ans("percent", f"growth({meas}(this_month(TODAY){fa()}), {meas}(prev_month_same_days(TODAY){fa()}))")
         if len(ms) == 2 and len(mpos) == 2 and ms[0] != ms[1]:
             sv = re.search(r"\bso (?:voi|vs|cung)\b", K(q))

@@ -207,5 +207,21 @@ check("orders in >= 2 trips", S_v.n_orders_by_trips(dm.month(2026, 3)), 1)
 check("due in April", S_v.n_due_orders(dm.month(2026, 4)), 1)
 check("due after today", S_v.n_due_orders(d="2026-04-30", after=True), 1)
 
+# ---------------------------------------------------------------- debts written only as notes (state at the end of the data)
+for note, want in [("ck 913 nghìn, thiếu lại 456.500đ", 456500), ("ghi sổ 443 nghìn", 443000), ("đưa trước 236k, còn lại ghi sổ", 764000),
+                   ("trả 259k, nợ 449.500đ", 449500), ("nợ 1tr645, khách ck đủ rồi", 0), ("nợ cả đơn", 1000000), ("giao trước 10h", None)]:
+    check(f"debt_from_note {note!r}", dm.debt_from_note(note, 1000000), want)
+lines = pd.DataFrame([("1", "2026-07-01", "A", 1, 1000000), ("2", "2026-07-10", "B", 1, 500000), ("3", "2026-07-20", "C", 1, 300000)],
+                     columns=["order_id", "order_date", "item_name", "qty", "line_amount"])
+orders = pd.DataFrame({"order_id": ["1", "2", "3"], "order_date": ["2026-07-01", "2026-07-10", "2026-07-20"], "customer_name": ["An", "Bình", "An"],
+                       "note": ["ck 600k, thiếu lại 400 nghìn", "nợ, đã trả đủ", "nợ cả đơn"], "total_payable": [1000000, 500000, 300000]})
+O, L = dm.finalize(lines, orders); O["debt_end"] = [dm.debt_from_note(n, t_) for n, t_ in zip(O["note"], O["total_payable"])]
+S_n = dm.Shop({"orders": O, "lines": L}, "2026-07-22", {"data_end": "2026-07-22"})
+check("notes debt_total at the end of the data", S_n.debt_total("2026-07-22"), 700000)
+check("notes n_debtors", S_n.n_debtors("2026-07-22"), 1)
+check("notes debt_aging", S_n.debt_aging("2026-07-22"), [300000, 0, 400000])
+try: S_n.debt_total("2026-07-15"); check("notes debt before the end is unanswerable", False, True)
+except dm.Unanswerable: check("notes debt before the end is unanswerable", True, True)
+
 print("FAILED" if fails else "PASS", fails)
 sys.exit(1 if fails else 0)

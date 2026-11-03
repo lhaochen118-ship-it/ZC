@@ -91,7 +91,10 @@ def prev_month_same_days(today):
 
 
 def prev_month(p):
-    """the whole calendar month before the (month) period p."""
+    """the whole calendar month before the (month) period p; for 'tháng này' (this_month: day 1 .. today) the rulebook base is the
+    same number of days of last month (prev_month_same_days): the programs wrote prev_month(this_month(TODAY)) and compared
+    a partial month with a whole one (public dev_005: +15.6 % vs -51.69 %)."""
+    if p.label == "this month": return prev_month_same_days(p.end)
     s = (p.start.replace(day=1) - D).replace(day=1); return month(s.year, s.month)
 
 
@@ -309,7 +312,7 @@ def map_status(series, overrides=None):
 # ------------------------------------------------------------------ canonical tables
 ORDER_COLS = ["order_id", "order_time", "order_date", "customer_id", "customer_name", "customer_group", "staff", "channel",
               "payment_method", "status", "valid", "revenue", "order_discount", "shipping_fee", "vat", "total_payable",
-              "paid_at_purchase", "note", "due_date", "tradein", "points_discount", "plate", "vehicle", "work", "warranty"]   # last 6: industries (src/industry.py)
+              "paid_at_purchase", "note", "due_date", "debt_end", "tradein", "points_discount", "plate", "vehicle", "work", "warranty"]   # last 6: industries (src/industry.py)
 LINE_COLS = ["order_id", "line_no", "order_time", "order_date", "status", "valid", "item_code", "item_name", "item_group", "unit",
              "qty", "factor", "qty_base", "base_unit", "unit_price", "line_discount", "line_amount", "unit_cost", "returned_qty", "imei"]
 WALKIN = re.compile(r"^(khach le|khach vang lai|vang lai|le|khach|walk in|walkin|khach hang le|kh le|kl|k l|khl|kvl|guest|none|nan|0|-|khong ten|an danh)$")
@@ -551,7 +554,7 @@ def check(C):
     return errs
 
 
-CANON_DOC = """C["orders"]: order_id, order_time, order_date, customer_id, customer_name (None = walk-in), customer_group, staff, channel, payment_method, status (hoàn thành|huỷ|trả hàng|đang giao), valid (bool: counts for revenue), revenue (rulebook revenue of the order), order_discount, shipping_fee, vat, total_payable, paid_at_purchase, due_date (ngày phải trả of a credit order)
+CANON_DOC = """C["orders"]: order_id, order_time, order_date, customer_id, customer_name (None = walk-in), customer_group, staff, channel, payment_method, status (hoàn thành|huỷ|trả hàng|đang giao), valid (bool: counts for revenue), revenue (rulebook revenue of the order), order_discount, shipping_fee, vat, total_payable, paid_at_purchase, due_date (ngày phải trả of a credit order), debt_end (money still owed at the end of the data when debts are written only as notes: debt_from_note(note, total_payable))
 C["lines"]: order_id, order_time, order_date, status, valid, item_code, item_name, item_group, unit, qty, factor, qty_base, base_unit, unit_price, line_discount, line_amount, unit_cost
 C["items"]: item_code, item_name, item_group, base_unit, unit_cost, price, size (the catalogue's size / number column: 'M', 'XL', 'Số 4'; when it has one), ... ; C["purchases"]: receipt_id, receipt_date, supplier, item_code, item_name, unit, qty, factor, qty_base, unit_cost, amount, cancelled
 C["payments"]: order_id, pay_time, pay_date, amount, method ; C["stock"]: item_code, item_name, qty_base (snapshot at stock_date) ; C["lots"]: lot_id, item_code, expiry, qty_in_base, unit_cost_base, ...
@@ -591,6 +594,34 @@ def money_in_text(s):
     return out
 
 
+_SETTLED = re.compile(r"\b(da tra du|tra du|da tra het|tra het|tra xong|da thanh toan( du| het)?|tat toan|ck du|chuyen du|da du|xong no|het no|khong con no|da tra roi)\b")
+_OWED_KW = re.compile(r"(thieu lai|con thieu|thieu|con no|con lai|ghi so|ghi no|\bno\b)")
+_PAID_KW = re.compile(r"(dua truoc|tra truoc|da tra|\btra\b|\bck\b|chuyen khoan|dat coc|coc)")
+
+
+def debt_from_note(note, total=None):
+    """money still owed according to a free-text debt note written as the order's state at the end of the data (public dev_008:
+    'ck 913 nghìn, thiếu lại 456.500đ' -> 456500, 'ghi sổ 443 nghìn' -> 443000, 'đưa trước 236k, còn lại ghi sổ' -> total - 236000,
+    'nợ cả đơn' / 'chưa trả' -> total, 'nợ 1tr645, khách ck đủ rồi' -> 0). None when the note says nothing about a debt."""
+    if note is None or (isinstance(note, float) and math.isnan(note)): return None
+    k = key(note)
+    if not re.search(r"\b(no|ghi so|thieu|chua tra|con lai|tra truoc|dua truoc)\b", k): return None
+    if _SETTLED.search(k): return 0.0
+    if re.search(r"\b(ca don|toan bo|het don)\b", k) or re.fullmatch(r"(?:khach )?chua tra(?: tien)?(?: gi)?", k):
+        return float(total) if total is not None and not (isinstance(total, float) and math.isnan(total)) else None
+    parts = re.split(r"[,;]| va ", str(note)); owed = None; paid = 0.0
+    for part in parts:
+        pk = key(part); amt = money_in_text(part)
+        if _OWED_KW.search(pk) and amt: owed = (owed or 0.0) + amt[-1]
+        elif _PAID_KW.search(pk) and amt: paid += amt[-1]
+    if owed is not None: return owed
+    if re.search(r"\b(con lai|phan con lai|con lai ghi so|con lai ghi no|ghi so phan con lai)\b", k) and total is not None:
+        return max(float(total) - paid, 0.0)
+    if re.search(r"\b(ghi so|ghi no|no|chua tra)\b", k) and total is not None and not money_in_text(note):
+        return float(total)                                            # 'ghi nợ' with no amount: the whole order
+    return None
+
+
 def require(cond, why="the data does not record this"):
     if not cond: raise Unanswerable(why)
 
@@ -624,7 +655,9 @@ class Shop(industry.IndustryMetrics):
 
     # -- selection
     def orders(self, p=None, valid=True, **f):
-        """orders of period p (by order date). valid=True: not cancelled/returned (§1); None: every status."""
+        """orders of period p (by order date). valid=True: not cancelled/returned (§1); None: every status. A status filter
+        for cancelled / returned orders looks at every status (n_orders(p, status="huỷ") was always 0 with valid=True)."""
+        if valid is True and f.get("status") in ("huỷ", "trả hàng"): valid = None
         o = self.O; self.cover(p)
         if self.today is not None: o = o[o["order_date"] <= self.today]
         if p is not None: o = o[p.mask(o["order_date"])]
@@ -633,6 +666,7 @@ class Shop(industry.IndustryMetrics):
         return self._filter(o, **f)
 
     def lines(self, p=None, valid=True, **f):
+        if valid is True and f.get("status") in ("huỷ", "trả hàng"): valid = None   # as in orders()
         l = self.L; self.cover(p)
         if self.today is not None: l = l[l["order_date"] <= self.today]
         if p is not None: l = l[p.mask(l["order_date"])]
@@ -902,6 +936,14 @@ class Shop(industry.IndustryMetrics):
         P = self.C.get("payments")                                     # without any record of what was paid, every order would
         require((P is not None and len(P)) or any(c in self.O.columns and self.O[c].notna().any()     # count as unpaid
                                                   for c in ("paid_at_purchase", "paid_total", "debt_end")), "the data does not record payments (no debts)")
+        P = self.C.get("payments")
+        if "debt_end" in self.O.columns and self.O["debt_end"].notna().any() and not (P is not None and len(P)) \
+                and "paid_at_purchase" not in self.O.columns:
+            # the shop records only each order's debt at the END of the data (notes: debt_from_note): known from that day on
+            end = self.data_end()
+            require(end is None or _ts(d) >= end, f"the data records debts only as their state at the end of the data ({end.date() if end is not None else ''})")
+            o = self._debt_orders(d); s = pd.Series(pd.to_numeric(o["debt_end"], errors="coerce").fillna(0).values, index=o["order_id"].values)
+            return s[s > 0.5]
         o = self._debt_orders(d); paid = self.paid_until(d)
         owed = o["total_payable"].values - o["order_id"].map(paid).fillna(0).values
         s = pd.Series(owed, index=o["order_id"].values); return s[s > 0.5]
@@ -1395,4 +1437,5 @@ MAP_DOC = """Builder API for the mapping program (already imported):
   qty_base = qty x factor, an order with any returned line is 'trả hàng', valid, order revenue = sum of line amounts).
   Use dedupe=False for books that are not written by order (every row is one record: give each row its own order_id).
 - conversions_table(df, item_col, unit_col, factor_col, base_unit_col=None); readme_conversions(README) for '1 thùng = 24 lon' lines.
-- canon_status, canon_payment, canon_channel, key, parse_num, parse_date, pd, np, re, README (text), T, RAW (original strings)."""
+- canon_status, canon_payment, canon_channel, key, parse_num, parse_date, pd, np, re, README (text), T, RAW (original strings);
+  money_in_text(note) -> amounts in a note; debt_from_note(note, total) -> money still owed by a free-text debt note."""

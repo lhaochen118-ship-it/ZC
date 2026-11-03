@@ -630,6 +630,9 @@ class Pipeline:
                 st["unans_abstain"] = True; return ({"type": "abstain"},) + tuple(res[1:])         # hold it (v6-v13: 16 right / 42 wrong)
         return res
 
+    NEW_RULES = {"orders_by_trips", "delivered_qty", "due_in", "due_after"}   # (with every 'ind_*' template of qparse.parse_industry)
+    NEW_RULE_W = 2.0                                                    # their vote: more than one LLM sample, less than a checked rule
+
     def vote_on(self, st, idx):
         """weighted vote: rule program qw, every LLM sample its weight (1); conf = top / total weight of all voters. An LLM
         sample naming an item the question does not mention (grounded() False) neither votes nor counts. idx: the answers
@@ -642,6 +645,9 @@ class Pipeline:
                 if x is not None: c = agent.canon_of(x); votes[c] += w / len(ans); rep.setdefault(c, x)
         ralt = (rr.get("alt") or []) if rr else []
         qw = st.get("qw", a.qw)
+        tpl = str((rr or {}).get("tpl") or "")
+        if a.qw > 0 and (tpl.startswith("ind_") or tpl in self.NEW_RULES): qw = self.NEW_RULE_W   # templates no train label checked
+        if a.qw > 0 and tpl == "subjective": qw = a.qw                   # a quality no data records: in every shop (§7)
         if rr and (rr.get("ok") if idx in (0, None) else (idx - 1 < len(ralt) and ralt[idx - 1] is not None)):
             if not rr.get("ok"): rr = {"answer": None, "alt": ralt}      # failed on the chosen mapping, runs on alternate idx
             add(rr, qw); total += qw

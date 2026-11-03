@@ -752,6 +752,9 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--map-repairs", type=int, default=-1, help="pipeline: repair rounds of a mapping sample (-1 = --repairs)")
+    ap.add_argument("--map-repair-think", type=int, default=1, help="pipeline: 0 = mapping repair rounds without reasoning (a repair is "
+                    "a local fix; round 1 succeeded 25 %% of the time without reasoning vs 31 %% with, at a fraction of the tokens)")
     ap.add_argument("--think-budget", type=int, default=12288, help="pipeline: reasoning tokens of a thinking request before its "
                     "reasoning is ended and the rest of the budget goes to the program (budget forcing; 0 = off)")
     ap.add_argument("--seed-base", type=int, default=0, help="pipeline: shift every sampling seed (independent runs of a multi-run vote)")

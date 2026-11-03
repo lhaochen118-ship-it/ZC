@@ -52,6 +52,18 @@ class StepLLM:
         self.prio_ok = True
         print(f"[pipe] engine interface: {'add_request/step' if self.core is not None else 'batched generate (fallback)'}", flush=True)
 
+    @staticmethod
+    def cut_loop(text, min_len=12, reps=3):
+        """the reasoning up to where it starts repeating itself ('Wait, ... map_status handles it.' x 40): a line of at
+        least min_len characters seen `reps` times is cut at its second occurrence, with everything after it."""
+        lines, seen = text.split("\n"), {}
+        for i, l in enumerate(lines):
+            k = l.strip()
+            if len(k) < min_len: continue
+            seen.setdefault(k, []).append(i)
+            if len(seen[k]) >= reps: return "\n".join(lines[:seen[k][1]])
+        return text
+
     def _sp(self, temp, seed, max_tokens, think=False):
         kw = dict(temperature=temp, top_p=1.0 if temp == 0 else 0.95, max_tokens=max_tokens, seed=seed)
         if think:                                                       # Qwen3.5 thinking: no greedy decoding (it loops),
@@ -100,7 +112,7 @@ class StepLLM:
                 r = self.req.pop(rid, None)
                 if r is not None and getattr(out, "finish_reason", None) == "length" and r[3] - n >= 512:
                     prompt, temp, seed, mt, prio = r                    # cut at the cap: continue (inside the reasoning:
-                    head = text if self.THINK_END in text else text + self.FORCE   # end it first) with the rest of the budget
+                    head = text if self.THINK_END in text else self.cut_loop(text) + self.FORCE   # end it first) with the rest
                     self.cont[rid + "c"] = (rid, head, n)
                     self._add_core(rid + "c", prompt + head, self._sp(temp, seed + 1, mt - n, True), prio); continue
                 done.append((rid, text, n))
@@ -208,21 +220,25 @@ class Pipeline:
         complete(r) -> message or None: one extra round asking a mapping to cover the raw tables it left unused (the last
         ok attempt is kept, so this round can only add)."""
         st = {"conv": list(conv), "rnd": 0, "att": attempts if attempts is not None else [], "reflected": False, "completed": False,
-              "think": think}
+              "think": think, "mt": max_tokens}
+        is_map = runner is agent.run_mapping
+        reps = int(getattr(self.a, "map_repairs", -1)) if is_map and int(getattr(self.a, "map_repairs", -1)) >= 0 else self.a.repairs
         def launch():
             temp = 0.0 if greedy else self.a.temp
             seed = 1000 * st["rnd"] + 17 * key[1] + 1 + 7919 * int(getattr(self.a, "seed_base", 0) or 0)   # --seed-base: another run
-            self.gen(st["conv"], temp, seed, max_tokens, on_text, st["think"], prio)
+            self.gen(st["conv"], temp, seed, st["mt"], on_text, st["think"], prio)
         def retry(msg):
-            if st["rnd"] < self.a.repairs:
+            if st["rnd"] < reps:
+                if is_map and st["think"] and not getattr(self.a, "map_repair_think", 1):
+                    st["think"] = False; st["mt"] = self.a.compile_tokens   # --map-repair-think 0: a repair is a local fix
                 st["conv"].append({"role": "user", "content": msg}); st["rnd"] += 1; launch()
             else: finish(st["att"])
         def on_text(text, ntok):
             self.ntok += ntok
-            st["conv"].append({"role": "assistant", "content": text})
+            st["conv"].append({"role": "assistant", "content": text}); st["forced"] = StepLLM.FORCE in text
             code = agent.extract_code(text)
             if code is None:
-                st["att"].append({"round": st["rnd"], "ok": False, "error": "no python code block", "gen": text[-400:]})
+                st["att"].append({"round": st["rnd"], "ok": False, "error": "no python code block", "gen": text[-400:], **({"forced": True} if st["forced"] else {})})
                 if st["think"]:                                          # the reasoning ran out of tokens (23 of 203 mapping
                     st["think"] = False                                  # attempts of v4b): the retry writes the program
                     return retry("No ```python block was found: the reasoning used up the token budget. Do not reason further; "
@@ -238,14 +254,15 @@ class Pipeline:
         def on_exec(code, r, spliced=False):
             att = {"round": st["rnd"], "code": code, **{x: r[x] for x in r if x not in ("t", "card")}, "exec_s": round(r.get("t", 0.0), 2)}
             if spliced: att["spliced"] = True
+            if st.get("forced"): att["forced"] = True                    # the reasoning was ended by budget forcing
             if "card" in r: att["card"] = r["card"]
             st["att"].append(att)
             if not r.get("ok"):
                 return retry(f"The program failed:\n{r.get('error')}\nstdout:\n{r.get('stdout', '')[-600:]}\nFix it and output the full corrected program.")
-            if complete is not None and not st["completed"] and st["rnd"] < self.a.repairs:
+            if complete is not None and not st["completed"] and st["rnd"] < reps:
                 msg = complete(r)
                 if msg: st["completed"] = True; att["complete"] = True; return retry(msg)
-            if reflect and st["rnd"] < self.a.repairs and not st["reflected"] and agent.suspicious(r["answer"]):
+            if reflect and st["rnd"] < reps and not st["reflected"] and agent.suspicious(r["answer"]):
                 st["reflected"] = True; att["reflect"] = True
                 return retry(f"The program returned {json.dumps(r['answer'], ensure_ascii=False)}. A zero or empty result often means "
                              "a wrong filter (status labels, date range, name spelling: use match_names, unit). Re-check each filter "

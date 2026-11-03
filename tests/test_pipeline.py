@@ -105,6 +105,29 @@ att = [c for c in cl if c.get("business_id") == "biz_101" and "llm_attempts" in 
 assert len(att) == 4 and ch.get("biz_101", "").startswith("llm:"), (len(att), ch)   # samples 0-1 failed, 2-3 from the retry
 assert len(finals(a_mr.out)) == len(want)
 print("map retry | biz_101 mapped by", ch["biz_101"], "after a failed first batch")
+# --map-repairs 3 --map-repair-think 0: a mapping sample gets 3 repair rounds of its own, the repairs without reasoning
+# and with the plain program budget (round 0 keeps its reasoning); the first 3 generations of biz_101 fail
+class RecLLM(pipeline.FakeStepLLM):
+    def __init__(self, r): super().__init__(r); self.seen = []
+    def add(self, conv, temp, seed, max_tokens, think=None, priority=0):
+        if conv[0]["content"].startswith("You are DataMate's data engineer") and "biz_101" in conv[1]["content"]: self.seen.append((len(conv), think, max_tokens))
+        return super().add(conv, temp, seed, max_tokens, think, priority)
+calls["map"] = 0
+def responder_fail3(conv):
+    if conv[0]["content"].startswith("You are DataMate's data engineer") and "biz_101" in conv[1]["content"]:
+        calls["map"] += 1
+        if calls["map"] <= 3: return "```python\nraise ValueError('broken mapping')\n```"
+    return responder(conv)
+a_mp = args(os.path.join(scratch, "out_maprep"), True); a_mp.think_map = True; a_mp.map_repairs = 3; a_mp.map_repair_think = 0; a_mp.map_retry = 0
+rec = RecLLM(responder_fail3); agent.run(a_mp, engine=rec)
+cl = [json.loads(l) for l in open(os.path.join(a_mp.out, "compile_logs.jsonl"), encoding="utf-8")]
+att = [c for c in cl if c.get("business_id") == "biz_101" and "llm_attempts" in c][0]["llm_attempts"]
+rounds = max(len(v) for v in att.values())
+first = [x for x in rec.seen if x[0] == 2]; later = [x for x in rec.seen if x[0] > 2]
+assert len(att) == 2 and rounds >= 3, (len(att), {k: len(v) for k, v in att.items()})     # 3 failures within the first batch
+assert all(t is True for _, t, _ in first) and later and all(t is False and m == a_mp.compile_tokens for _, t, m in later), rec.seen
+assert len(finals(a_mp.out)) == len(want)
+print("map repairs | biz_101: up to", rounds, "rounds per sample, repairs without reasoning", len(later))
 # the real CLI: agent.py runs as __main__ and pipeline.py imports agent (Kaggle crash of 02/11: a second module copy
 # without CARDS / worker context); the fake responder is loaded from a file, no model
 import subprocess, inspect

@@ -96,4 +96,6 @@ assert calls[r1 + "c"][0] == "loop" + "Wait, " * 10 + st.FORCE and calls[r1 + "c
 assert calls[r2 + "c"][0].endswith("```python\nC =") and got[r2][0].count(st.THINK_END) == 1, (calls[r2 + "c"], got[r2])   # no second end
 assert r3 + "c" not in calls and got[r3][1] == 5 and r4 + "c" not in calls and calls[r4][1].max_tokens == 4000 and calls[r4][1].temperature == 0.0
 assert not st.req and not st.cont, (st.req, st.cont)
+loop = "plan\n" + "Wait, X.\n    *   map_status handles it.\n" * 5
+assert pipeline.StepLLM.cut_loop(loop) == "plan\nWait, X.\n    *   map_status handles it.\nWait, X.", repr(pipeline.StepLLM.cut_loop(loop))
 print("StepLLM budget forcing | PASS")

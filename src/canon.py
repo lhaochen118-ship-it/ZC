@@ -261,7 +261,8 @@ def warning_penalty(w):
     """coverage points a soft warning costs when candidate mappings are ranked: a wrong revenue column breaks most
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
-    return 100.0 if w.startswith("orders.revenue differs") else 10.0 if w.startswith("orders.order_time has no time") else 2.0
+    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith("lines.item_name holds the short names") \
+        else 10.0 if w.startswith("orders.order_time has no time") else 2.0
 
 
 def rank_score(r):
@@ -326,6 +327,32 @@ def secondary_checks(C, biz):
             if src:
                 w.append(f"orders.order_time has no time of day (every value is 00:00) but {src} records times: order_time is the moment the "
                          "order was created (giờ tạo đơn), used by shift (ca sáng / ca chiều) and peak-hour questions")
+    # 1a''. item names: the lines carry the SHORT names of a lookup table (ghi tắt -> tên hàng) whose other column holds the
+    #      full names the questions use (a public shop: every item filter missed, accessories ranked as phone lines)
+    if l is not None and "item_name" in l.columns and len(l) > 50:
+        ln = l["item_name"].dropna().astype(str).map(dm.key); lset = set(ln.unique())
+        for t, df in biz.tables.items():
+            if not 3 <= len(df) <= 3000: continue
+            txt = [c for c in df.columns if not str(c).startswith("_") and (df[c].dtype == object or pd.api.types.is_string_dtype(df[c]))
+                   and df[c].notna().mean() > 0.8]
+            hit = None
+            for a in txt:
+                ka = df[a].dropna().astype(str).map(dm.key)
+                if ka.nunique() < 3 or not lset & set(ka): continue
+                share = float(ln.isin(set(ka)).mean())
+                if share < 0.5: continue
+                for b in txt:
+                    if b == a: continue
+                    kb = df[b].dropna().astype(str).map(dm.key)
+                    longer = float((df[b].astype(str).str.len() > df[a].astype(str).str.len() + 2).mean())
+                    if kb.nunique() >= 0.8 * ka.nunique() and longer > 0.6 and float(ln.isin(set(kb)).mean()) < share / 2:
+                        hit = (a, b, share); break
+                if hit: break
+            if hit:
+                w.append(f"lines.item_name holds the short names of {t}.{hit[0]} ({hit[2]:.0%} of the lines) while {t}.{hit[1]} has the full item "
+                         f"names that questions use: map item_name to {t}.{hit[1]} through {hit[0]} (with the item group / type of that table)")
+                break
+    # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)
         if isinstance(df, pd.DataFrame) and len(df):

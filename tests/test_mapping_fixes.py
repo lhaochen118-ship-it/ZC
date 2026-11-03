@@ -306,5 +306,15 @@ try: dm.Shop({"orders": o22b, "lines": l22}, today="2026-03-31").revenue(dm.mont
 except RuntimeError as e: r22 = str(e)
 check("shift on dates without the time of day -> error, not 0", "time of day" in r22, r22)
 
+L23 = pd.DataFrame({"order_id": [f"O{i}" for i in range(60)], "order_date": pd.Timestamp("2026-03-04"), "status": "hoàn thành",
+                    "item_name": ["CL 9D", "Op IP", "Sac 20W"] * 20, "qty": 1, "line_amount": 10.0})
+o23, l23 = dm.finalize(L23, dedupe=False)
+biz23 = types.SimpleNamespace(tables={"GhiTat": pd.DataFrame({"Ghi tắt": ["CL 9D", "Op IP", "Sac 20W"],
+                                                              "Tên hàng": ["Cường lực 9D iPhone", "Ốp lưng silicon iPhone", "Củ sạc nhanh 20W Type-C"]})}, readme="", raw={})
+w23 = canon.secondary_checks({"orders": o23, "lines": l23}, biz23)
+check("short item names of a lookup table", any(x.startswith("lines.item_name holds the short names of GhiTat.Ghi tắt") for x in w23), w23)
+l23b = l23.copy(); l23b["item_name"] = l23b["item_name"].map(dict(zip(biz23.tables["GhiTat"]["Ghi tắt"], biz23.tables["GhiTat"]["Tên hàng"])))
+check("full item names: no warning", not any(x.startswith("lines.item_name holds") for x in canon.secondary_checks({"orders": o23, "lines": l23b}, biz23)))
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

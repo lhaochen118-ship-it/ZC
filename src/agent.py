@@ -331,8 +331,9 @@ def _timed(arg):
 
 
 def run_code(task):
-    """task = (key, bid, as_of, code, timeout, canon_path) -> (key, result)"""
-    key, bid, as_of, code, timeout, canon_path = task
+    """task = (key, bid, as_of, code, timeout, canon_path[, alt_paths]) -> (key, result). alt_paths (--map-vote): the same
+    program on other candidate mappings, answers in result["alt"] (None where it fails)."""
+    key, bid, as_of, code, timeout, canon_path = task[:6]
     t0 = time.time(); out = ""
     try:
         g = _namespace(bid, as_of, canon_path)
@@ -341,8 +342,19 @@ def run_code(task):
         else: r = {"ok": True, "answer": fmt_answer(g["ANSWER"]), "stdout": out[-1500:]}
     except dm.Unanswerable as e: r = {"ok": True, "answer": {"type": "unanswerable", "answer": None}, "reason": str(e)[:200], "stdout": out[-600:]}
     except BaseException as e: r = _err(e, out)
+    alts = task[6] if len(task) > 6 else ()
+    if alts and r.get("ok"): r["alt"] = [_alt_answer(code, bid, as_of, p, timeout) for p in alts]
     r["t"] = time.time() - t0
     return key, r
+
+
+def _alt_answer(code, bid, as_of, path, timeout):
+    """the answer of a program on another candidate mapping (cross-mapping vote), None when it fails."""
+    try:
+        g = _namespace(bid, as_of, path); _exec(code, g, timeout)
+        return fmt_answer(g["ANSWER"]) if "ANSWER" in g else None
+    except dm.Unanswerable: return {"type": "unanswerable", "answer": None}
+    except BaseException: return None
 
 
 CANON_STATUS = {"hoàn thành", "huỷ", "trả hàng", "đang giao"}
@@ -752,6 +764,14 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--map-fallback", type=int, default=2, help="pipeline: when the vote on the chosen mapping abstains or says "
+                    "unanswerable, the same programs' vote on the next ranked candidate mappings (up to M-1 of them; replay v11 "
+                    "train: PA 0.967 -> 0.974; 1 = off)")
+    ap.add_argument("--map-vote", type=int, default=1, help="pipeline: every program of a question also runs on the next M-1 ranked "
+                    "candidate mappings and each mapping gets an equal share of the program's vote (1 = chosen mapping only)")
+    ap.add_argument("--sel-agree", type=float, default=30.0, help="pipeline: ranking points for a candidate mapping whose rule answers "
+                    "agree with the majority of the other candidates (share of questions; offline v9-v12: rule PA of the chosen "
+                    "candidate 0.919 -> 0.930, never worse; 0 = off)")
     ap.add_argument("--map-repairs", type=int, default=-1, help="pipeline: repair rounds of a mapping sample (-1 = --repairs)")
     ap.add_argument("--map-repair-think", type=int, default=1, help="pipeline: 0 = mapping repair rounds without reasoning (a repair is "
                     "a local fix; round 1 succeeded 25 %% of the time without reasoning vs 31 %% with, at a fraction of the tokens)")
@@ -990,7 +1010,7 @@ def run_rule_eval(task):
     Ranking candidates by it (pipeline.select) picked a better mapping on train: mean rule PA of the chosen candidate
     0.890 -> 0.904 over 74 business-runs, never worse on any (scratchpad study of 02/11)."""
     key, bid, canon_path, qs, budget = task
-    t0 = time.time(); n = fail = 0
+    t0 = time.time(); n = fail = 0; answers = {}
     try:
         can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
         meta = {"data_end": can.get("data_end")}
@@ -1005,10 +1025,11 @@ def run_rule_eval(task):
                 arm(20)
                 try: a = fmt_answer(dm.run_program(pr[1], shop, as_of))
                 finally: disarm()
-                if a.get("type") == "unanswerable" or a.get("answer") in (0, 0.0, [], None): fail += 1
-            except dm.Unanswerable: fail += 1
-            except (Exception, _Timeout): fail += 1
-        r = {"ok": True, "parsed": n, "fail": fail, "fail_share": fail / max(n, 1)}
+                if a.get("type") == "unanswerable" or a.get("answer") in (0, 0.0, [], None): fail += 1; answers[qid] = None
+                else: answers[qid] = repr(canon_of(a))
+            except dm.Unanswerable: fail += 1; answers[qid] = None
+            except (Exception, _Timeout): fail += 1; answers[qid] = None
+        r = {"ok": True, "parsed": n, "fail": fail, "fail_share": fail / max(n, 1), "answers": answers}
     except BaseException as e: r = _err(e)
     r["t"] = time.time() - t0
     return key, r
@@ -1021,17 +1042,31 @@ def rule_text(q):
     return c.get("clean") or q["question"]
 
 
+def _rule_on(bid, as_of, question, path, timeout):
+    """(template, code, run_code result) of the rule program on one mapping, or None when no template matches."""
+    can = _lru(_CAN, path, lambda: pickle.load(open(path, "rb")))
+    pr = qparse.parse(question, as_of, dm.Shop(can["C"], as_of, {"data_end": can.get("data_end")}))
+    if not pr: return None
+    _, r = run_code((None, bid, as_of, pr[1], timeout, path)); return pr[0], pr[1], r
+
+
 def run_qparse(task):
-    """task = (key, bid, as_of, question, canon_path, timeout) -> (key, result): the rule-based template program."""
-    key, bid, as_of, question, canon_path, timeout = task
+    """task = (key, bid, as_of, question, canon_path, timeout[, alt_paths]) -> (key, result): the rule-based template
+    program (parsed with each mapping's own names); answers on the alt mappings in result["alt"]."""
+    key, bid, as_of, question, canon_path, timeout = task[:6]
     t0 = time.time(); r = {"ok": False, "error": "unparsed"}
     try:
-        can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
-        shop = dm.Shop(can["C"], as_of, {"data_end": can.get("data_end")})
-        pr = qparse.parse(question, as_of, shop)
-        if pr:
-            tpl, code = pr
-            _, r = run_code((key, bid, as_of, code, timeout, canon_path)); r.update(code=code, tpl=tpl)
+        x = _rule_on(bid, as_of, question, canon_path, timeout)
+        if x:
+            tpl, code, r = x; r.update(code=code, tpl=tpl); r.pop("t", None)
+            alts = task[6] if len(task) > 6 else ()
+            if alts:                                                     # also when it fails on the chosen mapping (a table
+                                                                         # that mapping lacks): the fallback may still use it
+                r["alt"] = []
+                for p in alts:
+                    try: y = _rule_on(bid, as_of, question, p, timeout)
+                    except BaseException: y = None
+                    r["alt"].append(y[2]["answer"] if y and y[2].get("ok") else None)
     except BaseException as e: r = _err(e)
     r["t"] = time.time() - t0
     return key, r

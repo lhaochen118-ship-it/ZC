@@ -249,7 +249,8 @@ class Pipeline:
                 prev = next((x["code"] for x in reversed(st["att"]) if x.get("code")), None)
                 sp = agent.splice(prev, code) if prev else None
                 if sp: code = sp
-            self.cpu.submit(runner, make_task(key, code), self.a.timeout if runner is agent.run_code else 300,
+            task = make_task(key, code)
+            self.cpu.submit(runner, task, (self.a.timeout * (1 + len(task[6]) if len(task) > 6 else self.a.timeout)) if runner is agent.run_code else 300,
                             lambda r, code=code, sp=bool(sp): on_exec(code, r, sp))
         def on_exec(code, r, spliced=False):
             att = {"round": st["rnd"], "code": code, **{x: r[x] for x in r if x not in ("t", "card")}, "exec_s": round(r.get("t", 0.0), 2)}
@@ -327,6 +328,21 @@ class Pipeline:
 
     SEL_FAIL_W = 30.0                                                   # ranking points per unit of rule failure share
 
+    @staticmethod
+    def answer_agreement(answers):
+        """[{qid: rule answer | None} per candidate] -> per candidate, the share of questions with a majority answer (given
+        by >= 2 candidates) where the candidate gives that answer: an outlier mapping disagrees with the others."""
+        ag, nq = [0.0] * len(answers), 0
+        for q in set().union(*[set(a) for a in answers]) if answers else ():
+            v = Counter(a[q] for a in answers if a.get(q) is not None)
+            if not v: continue
+            top, k = v.most_common(1)[0]
+            if k < 2: continue
+            nq += 1
+            for i, a in enumerate(answers):
+                if a.get(q) == top: ag[i] += 1
+        return [x / nq for x in ag] if nq else ag
+
     def rule_questions(self, b):
         """(qid, as_of, text the rule reader parses) for every question of b; the cleaned question is kept on q."""
         nz = self.normalizer(b) if getattr(self.a, "qclean", 1) else None
@@ -348,6 +364,7 @@ class Pipeline:
                 bs["evals"] = len(cs)
                 def on_eval(res, d):
                     d["fail_share"] = res.get("fail_share", 0.0) if res.get("ok") else 0.0
+                    d["rule_answers"] = res.get("answers") or {} if res.get("ok") else {}
                     bs["evals"] -= 1
                     if bs["evals"] == 0: self.choose(b, bs)
                 for src, r in cs:
@@ -360,11 +377,15 @@ class Pipeline:
         if cs:
             cs.sort(key=lambda x: (not x[0].startswith("ref:"), x[0]))  # deterministic; references before LLM samples (as in agent)
             _, scores = agent.agreement([r["sig"] for _, r in cs])
-            order = sorted(range(len(cs)), key=lambda i: (-(canonmod.rank_score(cs[i][1]) - self.SEL_FAIL_W * cs[i][1].get("fail_share", 0.0)),
-                                                          -scores[i], i))   # coverage - warnings - rule failures
+            ag = self.answer_agreement([r.get("rule_answers") or {} for _, r in cs]); W = float(getattr(self.a, "sel_agree", 0.0) or 0.0)
+            for (_, r), x in zip(cs, ag): r["agree"] = x
+            order = sorted(range(len(cs)), key=lambda i: (-(canonmod.rank_score(cs[i][1]) - self.SEL_FAIL_W * cs[i][1].get("fail_share", 0.0) + W * ag[i]),
+                                                          -scores[i], i))   # coverage - warnings - rule failures + answer agreement
             src, r = cs[order[0]]; can = {"path": r["path"], "card": r["card"], "src": src, "unused": r.get("unused") or []}
+            M = max(1, int(getattr(self.a, "map_vote", 1) or 1), int(getattr(self.a, "map_fallback", 1) or 1))   # next ranked candidates
+            if M > 1: can["alts"] = [cs[i][1]["path"] for i in order[1:M]]; can["alt_src"] = [cs[i][0] for i in order[1:M]]
             self.clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"], len(y.get("warnings") or []),
-                                                                                        round(y.get("fail_share", -1.0), 3)] for x, y in cs]},
+                                                                                        round(y.get("fail_share", -1.0), 3), round(y.get("agree", 0.0), 3)] for x, y in cs]},
                                        ensure_ascii=False) + "\n")
             print(f"  {b}: {len(cs)} candidates, chose {src} coverage {r['coverage']:.0f} ({time.time() - bs['t']:.0f}s)", flush=True)
         else: print(f"  {b}: no canonical tables ({time.time() - bs['t']:.0f}s)", flush=True)
@@ -421,11 +442,12 @@ class Pipeline:
             else:
                 msgs = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.bizs[b].readme, agent.CARDS[b], q)}]
             cpath = can["path"] if can else None
+            alts = tuple(can.get("alts") or ()) if can else ()
             def launch(lo, hi, q=q, st=st, msgs=msgs, cpath=cpath, settle=settle):
                 for s_ in range(lo, hi):
                     st["att"][s_] = []
                     self.sample((q["id"], s_), msgs, s_ == 0, a.max_tokens, agent.run_code,
-                                lambda kk, code, q=q, cpath=cpath: (kk, b, q["as_of_date"], code, a.timeout, cpath),
+                                lambda kk, code, q=q, cpath=cpath: (kk, b, q["as_of_date"], code, a.timeout, cpath, alts),
                                 lambda atts, settle=settle: settle(), reflect=not a.no_reflect, prio=prio, attempts=st["att"][s_])
             st["launch"] = launch
             launch(0, 1 if confirm else k)
@@ -435,7 +457,8 @@ class Pipeline:
                     if st["phase"] == 1 and not (r.get("ok") and r.get("answer")):   # no rule answer: the other samples now
                         st["phase"] = 2; st["pending"] += k - 1; st["launch"](1, k)
                     settle()
-                self.cpu.submit(agent.run_qparse, ((q["id"], "Q"), b, q["as_of_date"], agent.rule_text(q), cpath, a.timeout), a.timeout, on_rule)
+                self.cpu.submit(agent.run_qparse, ((q["id"], "Q"), b, q["as_of_date"], agent.rule_text(q), cpath, a.timeout, alts),
+                                a.timeout * (1 + len(alts)), on_rule)
         if not qs: self.chunk_done(b, ci)
 
     @staticmethod
@@ -492,17 +515,38 @@ class Pipeline:
         return all(any(self._mentioned(t, nk) for t in texts for nk in names) for names in used)
 
     def vote(self, st):
+        """the vote on the chosen mapping; --map-fallback M: when it abstains or says unanswerable, the vote of the same
+        programs on the next ranked mapping that answers (replay of v11 train: PA 0.967 -> 0.974; --map-vote, every mapping
+        voting at once, was worse: 0.942)."""
+        mv = max(1, int(getattr(self.a, "map_vote", 1) or 1))
+        res = self.vote_on(st, None if mv > 1 else 0)
+        st["fallback"] = None
+        if mv <= 1 and res[0].get("type") in ("abstain", "unanswerable"):
+            for j in range(1, max(1, int(getattr(self.a, "map_fallback", 1) or 1))):
+                r2 = self.vote_on(st, j)
+                if r2[0].get("type") not in ("abstain", "unanswerable"): st["fallback"] = j; return r2
+        return res
+
+    def vote_on(self, st, idx):
         """weighted vote: rule program qw, every LLM sample its weight (1); conf = top / total weight of all voters. An LLM
-        sample naming an item the question does not mention (grounded() False) neither votes nor counts."""
+        sample naming an item the question does not mention (grounded() False) neither votes nor counts. idx: the answers
+        on that mapping (0 = chosen, j = j-th alternate); None = every mapping an equal share (--map-vote)."""
         a = self.a; votes, rep = Counter(), {}; rr = st["rule"]; total = sum(st["w"].get(s, 1.0) for s in st["att"])
-        if rr and rr.get("ok"):
-            c = agent.canon_of(rr["answer"]); votes[c] += a.qw; rep[c] = rr["answer"]; total += a.qw
+        def add(r, w):
+            ans = [r.get("answer")] + list(r.get("alt") or [])
+            if idx is not None: ans = [ans[idx] if idx < len(ans) else None]
+            for x in ans:
+                if x is not None: c = agent.canon_of(x); votes[c] += w / len(ans); rep.setdefault(c, x)
+        ralt = (rr.get("alt") or []) if rr else []
+        if rr and (rr.get("ok") if idx in (0, None) else (idx - 1 < len(ralt) and ralt[idx - 1] is not None)):
+            if not rr.get("ok"): rr = {"answer": None, "alt": ralt}      # failed on the chosen mapping, runs on alternate idx
+            add(rr, a.qw); total += a.qw
         st["ungrounded"] = []
         for s in sorted(st["att"]):
             r = agent.last_ok(st["att"][s])
             if r and st.get("q") is not None and not self.grounded(st["q"], r.get("code"), st.get("b")):
                 total -= st["w"].get(s, 1.0); st["ungrounded"].append(s); continue
-            if r: c = agent.canon_of(r["answer"]); votes[c] += st["w"].get(s, 1.0); rep.setdefault(c, r["answer"])
+            if r: add(r, st["w"].get(s, 1.0))
         if votes and total:
             top, n = votes.most_common(1)[0]; conf = n / total
             final = rep[top] if conf >= a.tau else {"type": "abstain"}
@@ -530,11 +574,12 @@ class Pipeline:
                       {"role": "user", "content": agent.user_msg_lib(self.rulebook, self.bizs[b].readme, can["card"], fewshot.render_examples(exs), q)}]
         msgs_b = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.bizs[b].readme, agent.CARDS[b], q)}]
         cpath = can["path"] if can else None
+        alts = tuple(can.get("alts") or ()) if can else ()
         for e in range(a.escalate + raw):
             s = k + e; st["att"][s] = []; is_raw = e >= a.escalate or msgs_l is None
             st["w"][s] = 1.0
             self.sample((q["id"], s), msgs_b if is_raw else msgs_l, False, a.esc_tokens, agent.run_code,
-                        lambda kk, code, cp=(None if is_raw else cpath): (kk, b, q["as_of_date"], code, a.timeout, cp),
+                        lambda kk, code, cp=(None if is_raw else cpath), al=(() if is_raw else alts): (kk, b, q["as_of_date"], code, a.timeout, cp, al),
                         lambda atts: settle(), think=True, reflect=False, prio=prio, attempts=st["att"][s])
         return True
 
@@ -544,6 +589,7 @@ class Pipeline:
         samples = {(f"{s}{path}" if s < k else f"{s}E"): st["att"][s] for s in sorted(st["att"])}
         if st.get("esc"): samples["escalated"] = st["esc"]
         if st.get("ungrounded"): samples["ungrounded"] = st["ungrounded"]
+        if st.get("fallback"): samples["fallback"] = st["fallback"]          # answered on the j-th alternate mapping
         rr = st["rule"]
         if rr: samples["rule"] = rr
         if q["id"] in self.written: return                              # already abstained at the hard time limit

@@ -211,5 +211,20 @@ for q, want in [("tính đến hết ngày 10/03/2025, có mấy mặt hàng cò
                 ("Đến cuối ngày 12/06/2026, shop có mấy mặt hàng đang hết hàng?", "n_out_of_stock")]:
     check(f"qparse: {q[:40]}", tpl(q) == want, tpl(q))
 
+# 17. --map-fallback: the chosen mapping says unanswerable -> the same programs' vote on the next mapping; an answer on
+# the chosen mapping is kept even when the alternate disagrees; answer agreement singles out an outlier candidate
+import argparse
+pf = pipeline.Pipeline.__new__(pipeline.Pipeline); pf.a = argparse.Namespace(qw=4.0, tau=0.5, map_vote=1, map_fallback=2)
+U, N5, N7 = {"type": "unanswerable", "answer": None}, {"type": "number", "answer": 5}, {"type": "number", "answer": 7}
+mk = lambda prim, alt: {"rule": {"ok": True, "answer": prim, "alt": [alt]}, "att": {0: [{"ok": True, "answer": prim, "alt": [alt], "code": "x"}]},
+                        "w": {}, "q": {"question": "q"}, "b": None}
+st1 = mk(U, N5); st2 = mk(N7, N5)
+check("fallback to the next mapping", pf.vote(st1)[0] == N5 and st1["fallback"] == 1 and pf.vote(st2)[0] == N7 and not st2["fallback"], (pf.vote(st1), pf.vote(st2)))
+st3 = {"rule": {"ok": False, "error": "AttributeError", "alt": [N5]}, "att": {0: [{"ok": False, "error": "x"}]}, "w": {}, "q": {"question": "q"}, "b": None}
+check("fallback: rule failed on the chosen mapping", pf.vote(st3)[0] == N5 and st3["fallback"] == 1, pf.vote(st3))
+st4 = {"rule": {"ok": False, "error": "AttributeError"}, "att": {0: [{"ok": False, "error": "x"}]}, "w": {}, "q": {"question": "q"}, "b": None}
+check("no alternate: abstain", pf.vote(st4)[0] == {"type": "abstain"}, pf.vote(st4))
+check("answer agreement", pipeline.Pipeline.answer_agreement([{"a": "1", "b": "2"}, {"a": "1", "b": "2"}, {"a": "9", "b": "2"}]) == [1.0, 1.0, 0.5])
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

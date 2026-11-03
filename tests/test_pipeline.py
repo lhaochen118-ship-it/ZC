@@ -128,6 +128,17 @@ assert len(att) == 2 and rounds >= 3, (len(att), {k: len(v) for k, v in att.item
 assert all(t is True for _, t, _ in first) and later and all(t is False and m == a_mp.compile_tokens for _, t, m in later), rec.seen
 assert len(finals(a_mp.out)) == len(want)
 print("map repairs | biz_101: up to", rounds, "rounds per sample, repairs without reasoning", len(later))
+# --map-vote 2: the programs of a question also run on the second-ranked candidate mapping (answers in 'alt'); every
+# question is still answered once; the compile log records each candidate's answer agreement
+a_mv = args(os.path.join(scratch, "out_mapvote"), True); a_mv.map_vote = 2; a_mv.sel_agree = 30.0
+agent.run(a_mv, engine=pipeline.FakeStepLLM(responder))
+lmv = [json.loads(l) for l in open(os.path.join(a_mv.out, "logs.jsonl"), encoding="utf-8")]
+n_alt = sum(1 for r in lmv for k, v in r["samples"].items() if isinstance(v, list) and v and isinstance(v[-1], dict) and "alt" in v[-1])
+n_alt += sum(1 for r in lmv if isinstance(r["samples"].get("rule"), dict) and "alt" in r["samples"]["rule"])
+clm = [json.loads(l) for l in open(os.path.join(a_mv.out, "compile_logs.jsonl"), encoding="utf-8")]
+multi = [c for c in clm if "chosen" in c and len(c["candidates"]) >= 2]
+assert len(finals(a_mv.out)) == len(want) and n_alt > 0 and multi and all(len(x) == 5 for c in multi for x in c["candidates"]), (n_alt, multi[:1])
+print("map vote |", n_alt, "programs also ran on a second mapping;", len(multi), "businesses with >= 2 candidates")
 # the real CLI: agent.py runs as __main__ and pipeline.py imports agent (Kaggle crash of 02/11: a second module copy
 # without CARDS / worker context); the fake responder is loaded from a file, no model
 import subprocess, inspect

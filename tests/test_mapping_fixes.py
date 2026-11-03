@@ -239,6 +239,15 @@ rbx = "## 6. x\n### Cà phê\n| a | b |\n### Sửa xe\n| Lượt xe | một dòn
 check("industry section", agent.industry_of(rbx, "Sổ sửa xe chủ tiệm tự ghi")[0:3:2] == ("Sửa xe", True)
       and agent.industry_of(rbx, "quán cà phê nhỏ")[2] is False and agent.industry_of(rbx, "cột Điện thoại: số điện thoại") is None)
 
+# 21. public rulebook 'Trung bình mỗi ngày thứ X của kỳ': divided by the number of such days (within the data)
+for q, want in [("Th3/2026 trung bình mỗi thứ Tư tiệm sửa mấy lượt xe?", "weekday_avg"), ("tháng 5/2026 trung bình mỗi chủ nhật doanh thu bao nhiêu", "weekday_avg")]:
+    check(f"qparse: {q[:40]}", tpl(q) == want, tpl(q))
+Lw = pd.DataFrame({"order_id": ["A", "B", "C"], "order_date": pd.to_datetime(["2026-03-04", "2026-03-04", "2026-03-25"]), "status": "hoàn thành",
+                   "item_name": "x", "qty": 1, "line_amount": [10.0, 20.0, 30.0]})
+ow, lw = dm.finalize(Lw, dedupe=False); shw = dm.Shop({"orders": ow, "lines": lw}, today="2026-03-31")
+check("weekday average", shw.weekday_avg(dm.month(2026, 3), 2, by="orders") == 0.75 and shw.weekday_avg(dm.month(2026, 3), 2) == 15,
+      (shw.weekday_avg(dm.month(2026, 3), 2, by="orders"), shw.weekday_avg(dm.month(2026, 3), 2)))
+
 # 17. --map-fallback: the chosen mapping says unanswerable -> the same programs' vote on the next mapping; an answer on
 # the chosen mapping is kept even when the alternate disagrees; answer agreement singles out an outlier candidate
 import argparse

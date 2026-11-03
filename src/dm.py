@@ -676,6 +676,23 @@ class Shop:
         o = self.orders(p, **f); s = o.groupby("order_date")["revenue"].sum()
         return s.reindex(p.dates(), fill_value=0.0)
 
+    def weekday_avg(self, p, weekday, by="revenue", **f):
+        """average per weekday of p (0 = Monday ... 6 = Sunday): the total over those days divided by the NUMBER of such days
+        in p (within the data), days without orders included (public rulebook: 'Trung bình mỗi ngày thứ X của kỳ').
+        by: orders | revenue | qty (base units)."""
+        self.cover(p)
+        days = pd.date_range(p.start, p.end, freq="D"); end = self.data_end() if hasattr(self, "data_end") else None
+        if end is not None: days = days[days <= end]
+        if self.today is not None: days = days[days <= self.today]
+        days = days[days.weekday == int(weekday)]
+        require(len(days), "the period has no such weekday")
+        if by == "qty":
+            l = self.lines(p, **f); tot = float(l.loc[pd.to_datetime(l["order_date"]).dt.weekday == int(weekday), "qty_base"].sum())
+        else:
+            o = self.orders(p, **f); o = o[pd.to_datetime(o["order_date"]).dt.weekday == int(weekday)]
+            tot = float(o["revenue"].sum()) if by == "revenue" else float(len(o))
+        return _num(round(tot / len(days), 2)) if by != "revenue" else money(tot / len(days))
+
     def best_day(self, p, by="revenue", **f):
         """date (YYYY-MM-DD) with the highest revenue (by='revenue') or most orders (by='orders'); ties -> earliest."""
         o = self.orders(p, **f)
@@ -854,12 +871,6 @@ class Shop:
     def increasing(self, periods, strict=True, **f):
         """True when revenue rises from each period to the next."""
         v = self.monthly_revenue(periods, **f); return all((b > a) if strict else (b >= a) for a, b in zip(v, v[1:]))
-
-    def weekday_avg(self, p, weekday, **f):
-        """average revenue per weekday (0 = Monday) in p, dividing by every such weekday of the period (days without
-        orders included)."""
-        days = [d for d in p.dates() if d.weekday() == weekday]
-        s = self.daily_revenue(p, **f); return money(s.loc[days].sum() / len(days)) if days else None
 
     def peak_hour(self, p, **f):
         """starting hour of the one-hour window with the most orders (order creation time)."""
@@ -1196,6 +1207,7 @@ rankings descending with ties by code, money rounded half-up to whole VND, perce
   supplier_ranking(p, by), import_minus_sales(item, p), stock_at(item, d), stock_split(item, d, big_unit) -> [big, base],
   stock_value(d), lot_stock(d), lots_expiring(d, until) -> DataFrame (remaining, unit_cost_base, expiry), nearest_expiry(item, d),
   items_expiring(d, until) -> names of items with a lot in stock expiring in [d, until] (earliest expiry first, then code),
+  weekday_avg(p, weekday 0=Mon..6=Sun, by="revenue"|"orders"|"qty") -> per-weekday average, divided by the number of such days in p,
   out_of_stock(d) -> names of items bought to be sold whose stock is 0 at the end of d (by code),
   factor(item, unit).
 - Profit: gross_profit(p, **f), net_profit(p); deliveries: n_delivery_trips(p).

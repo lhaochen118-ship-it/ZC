@@ -390,6 +390,12 @@ def parse(q, today, shop=None):
         if x: return "n_orders_rev_ge", ans("number", f"n_orders_revenue_at_least({P}, {x:.0f}{fa()})")
     if has(r"trung binh|binh quan") and has(r"\bdon\b|\bbill\b|hoa don|\border\b") and (rev or has(r"gia tri (?:trung binh|binh quan)")) and P and not has(r"nhap|moi ngay"):
         return "aov", ans("number", f"aov({P}{fa()})")
+    mw = re.search(r"(?:trung binh|binh quan) (?:moi |mot |1 )?(?:ngay )?(thu (?:hai|ba|tu|nam|sau|bay|[2-7])|chu nhat|\bcn\b)", t)
+    if mw and P and not two_part:                                       # rulebook: divided by the number of such days of the period
+        w = mw.group(1); wd = {"thu hai": 0, "thu 2": 0, "thu ba": 1, "thu 3": 1, "thu tu": 2, "thu 4": 2, "thu nam": 3, "thu 5": 3, "thu sau": 4,
+                              "thu 6": 4, "thu bay": 5, "thu 7": 5, "chu nhat": 6, "cn": 6}.get(w)
+        by = "revenue" if rev else "orders" if has(r"\bdon\b|bill|hoa don|luot|phieu|order") else "qty" if re.search(r"(?:bao nhieu|may|bnhiu|bn) " + UNITS + r"\b", t) else None
+        if wd is not None and by: return "weekday_avg", ans("number", f"weekday_avg({P}, {wd}, by={J(by)}{fa()})")
     if has(r"ngay nao|ngay may|hom nao") and P and (rev or has(r"cao nhat|nhieu nhat")):
         by = "orders" if has(r"nhieu don|dat khach|don nhat") else "revenue"
         return "best_day", ans("date", f"best_day({P}, by={J(by)})")

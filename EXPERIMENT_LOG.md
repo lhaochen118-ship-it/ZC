@@ -233,3 +233,13 @@ Re-voting the logged runs reproduces 3000 / 3000 answers and gains +0.0003 to +0
 - After v11 (not yet on GPU):
   - 9bb6191: `--map-repairs` / `--map-repair-think 0`, under test in v12;
   - 69c0d8d: rulebook templates for expiring items and out of stock (oracle 2798 / 1 / 201).
+- v11 public (seeds 0 / 1 / 2): 42–45 abstains per run; any two runs give the same answer on 85 % of questions.
+  - Vote of the 3 runs: 103 abstain (`submissions/public_v11_vote3.jsonl`).
+  - Vote of 5 runs (v10-2, v10-3 + the 3 v11 runs): 34 abstain (`submissions/public_v10-v11_vote5.jsonl`).
+  - On train, 5-run votes beat 3-run votes (0.982 vs 0.976–0.982), so vote5 is the first candidate to submit.
+- **v12** (`--map-repairs 4 --map-repair-think 0`):
+  - public subset: mapping success 64 % (v11s: 52 %), mapping 900–1650 s per business; budget forcing fired on 18
+    samples;
+  - train: 0.941 (dev 0.991; holdout 0.844, because biz_123 got a wrong mapping, −0.21); mapping success on train
+    89 / 112, the same as v11 (87 / 112).
+  - Not proven better: the defaults stay as tested (repairs with reasoning, 2 rounds).

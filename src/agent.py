@@ -128,6 +128,34 @@ def clean_hint(q):
     return out
 
 
+TRAIN_RULEBOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "train_rulebook.md")
+
+
+def rulebook_sections(text):
+    """'### <industry>' sections of a rulebook -> {title: body}."""
+    out, cur = {}, None
+    for line in str(text).split("\n"):
+        m = re.match(r"^###\s+(.+?)\s*$", line)
+        if m: cur = m.group(1); out[cur] = []; continue
+        if re.match(r"^#{1,2}\s", line): cur = None; continue
+        if cur is not None: out[cur].append(line)
+    return {k: "\n".join(v).strip() for k, v in out.items()}
+
+
+def industry_of(rulebook, readme):
+    """(title, body, new) of the rulebook industry section whose full title the business README names ('Sổ sửa xe ...'
+    -> '### Sửa xe'); new = the section is not in the training rulebook, so the rule reader, the toolkit and the few-shot
+    examples (all built on train) do not know its definitions. None when no section matches."""
+    rk = " " + dm.key(readme or "") + " "
+    try: train = {dm.key(t) for t in rulebook_sections(open(TRAIN_RULEBOOK, encoding="utf-8").read())}
+    except OSError: train = set()
+    best = None
+    for title, body in rulebook_sections(rulebook).items():
+        tk = dm.key(title)
+        if len(tk) >= 4 and f" {tk} " in rk and (best is None or len(tk) > len(dm.key(best[0]))): best = (title, body, tk not in train)
+    return best
+
+
 def user_msg_lib(rulebook, biz_readme, canon_card, examples, q):
     return "\n\n".join([f"# RULEBOOK\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}",
                          f"# CANONICAL TABLES (in C; metrics use them)\n{canon_card}",
@@ -764,6 +792,9 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--industry-raw", type=int, default=2, help="pipeline: for a shop of an industry whose rulebook section is not in "
+                    "the training rulebook: this many extra programs on the raw tables per question, the rule program's weight 1 "
+                    "and no --confirm shortcut (0 = treat it like any shop)")
     ap.add_argument("--unans-unused", type=int, default=1, help="pipeline: an 'unanswerable' answer on an LLM mapping that left raw "
                     "tables unused becomes abstain (train v6-v13: 16 such answers right, 42 wrong; 0 = off)")
     ap.add_argument("--map-fallback", type=int, default=2, help="pipeline: when the vote on the chosen mapping abstains or says "

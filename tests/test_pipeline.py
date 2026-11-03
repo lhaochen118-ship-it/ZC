@@ -139,6 +139,23 @@ clm = [json.loads(l) for l in open(os.path.join(a_mv.out, "compile_logs.jsonl"),
 multi = [c for c in clm if "chosen" in c and len(c["candidates"]) >= 2]
 assert len(finals(a_mv.out)) == len(want) and n_alt > 0 and multi and all(len(x) == 5 for c in multi for x in c["candidates"]), (n_alt, multi[:1])
 print("map vote |", n_alt, "programs also ran on a second mapping;", len(multi), "businesses with >= 2 candidates")
+# a shop of an industry whose rulebook section is not in the training rulebook: the section is shown next to the README,
+# --industry-raw programs on the raw tables run for every question, the rule program weighs 1, no --confirm shortcut
+ind = os.path.join(scratch, "mini_ind"); shutil.rmtree(ind, ignore_errors=True); shutil.copytree(mini, ind, symlinks=True)
+os.remove(os.path.join(ind, "data", "biz_101")); shutil.copytree(os.path.join(split, "data", "biz_101"), os.path.join(ind, "data", "biz_101"))
+open(os.path.join(ind, "data", "biz_101", "README.md"), "a", encoding="utf-8").write("\nĐây là sổ sách của tiệm sửa xe.\n")
+open(os.path.join(ind, "rulebook.md"), "a", encoding="utf-8").write("\n### Sửa xe\n| Luật | Mặc định |\n|---|---|\n| Lượt xe | mỗi dòng là một lượt xe |\n")
+seen_ind = []
+def responder_ind(conv):
+    if "RULES OF THIS SHOP'S INDUSTRY" in conv[1]["content"]: seen_ind.append(conv[0]["content"][:30])
+    return responder(conv)
+a_in = args(os.path.join(scratch, "out_ind"), True); a_in.split = ind; a_in.industry_raw = 2; a_in.confirm = 1; a_in.cache = os.path.join(scratch, "cache_ind")
+agent.run(a_in, engine=pipeline.FakeStepLLM(responder_ind))
+lin = [json.loads(l) for l in open(os.path.join(a_in.out, "logs.jsonl"), encoding="utf-8")]
+b101 = [r for r in lin if r["business_id"] == "biz_101"]; other = [r for r in lin if r["business_id"] != "biz_101"]
+assert b101 and all("50E" in r["samples"] and "51E" in r["samples"] for r in b101) and not any("50E" in r["samples"] for r in other), [list(r["samples"]) for r in b101[:2]]
+assert seen_ind and len(finals(a_in.out)) == len(want)
+print("industry | biz_101 (sửa xe): raw-table samples on", len(b101), "questions; section in", len(seen_ind), "prompts")
 # the real CLI: agent.py runs as __main__ and pipeline.py imports agent (Kaggle crash of 02/11: a second module copy
 # without CARDS / worker context); the fake responder is loaded from a file, no model
 import subprocess, inspect

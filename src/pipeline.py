@@ -405,6 +405,15 @@ class Pipeline:
         m = json.load(open(f, encoding="utf-8")); self.maps[b] = None if m.get("none") else m
         return True, self.maps[b]
 
+    def industry(self, b):
+        """(title, body, new) of b's rulebook industry section, or None (agent.industry_of; cached)."""
+        if not hasattr(self, "_ind"): self._ind = {}
+        if b not in self._ind:
+            try: self._ind[b] = agent.industry_of(self.rulebook, self.bizs[b].readme)
+            except Exception: self._ind[b] = None
+            if self._ind[b]: print(f"[pipe] {b}: industry section '{self._ind[b][0]}'" + (" (not in the training rulebook)" if self._ind[b][2] else ""), flush=True)
+        return self._ind[b]
+
     def normalizer(self, b):
         """question cleaning for business b (vocabulary: rulebook + training questions of OTHER businesses + b's names)."""
         if b not in self.norms:
@@ -421,11 +430,17 @@ class Pipeline:
             if nz is not None and "_clean" not in q:
                 try: q["_clean"] = nz.clean(q["question"], q["as_of_date"])
                 except Exception: q["_clean"] = None
+        ind = self.industry(b); new_ind = bool(ind and ind[2] and getattr(a, "industry_raw", 0))
+        readme = self.bizs[b].readme + (f"\n\n# RULES OF THIS SHOP'S INDUSTRY (rulebook section '{ind[0]}': they define the terms of its "
+                                         f"questions and take precedence)\n{ind[1]}" if ind else "")
+        n_raw = int(getattr(a, "industry_raw", 0) or 0) if new_ind and can else 0
         for q in qs:
-            confirm = bool(getattr(a, "confirm", 0)) and a.qw > 0 and bool(can) and k > 1
-            # --confirm: phase 1 = rule program + greedy sample; phase 2 = the other k-1 samples, only when phase 1 disagrees
-            st = {"att": {}, "rule": None, "pending": (1 if confirm else k) + (1 if (a.qw > 0 and can) else 0), "t": time.time(), "w": {},
+            confirm = bool(getattr(a, "confirm", 0)) and a.qw > 0 and bool(can) and k > 1 and not new_ind
+            # --confirm: phase 1 = rule program + greedy sample; phase 2 = the other k-1 samples, only when phase 1 disagrees.
+            # A shop of a new industry: the rule reader does not know its definitions -> weight 1, every sample, raw-table samples
+            st = {"att": {}, "rule": None, "pending": (1 if confirm else k) + (1 if (a.qw > 0 and can) else 0) + n_raw, "t": time.time(), "w": {},
                   "phase": 1 if confirm else 2, "q": q, "b": b if can else None}
+            if new_ind: st["qw"] = min(1.0, a.qw)
             path = "L" if can else "B"
             def settle(q=q, st=st, path=path):
                 st["pending"] -= 1                                       # st["settle"]: THIS question's settle (a bare name
@@ -439,9 +454,16 @@ class Pipeline:
             if can:
                 exs = self.ex.pick(q["question"], k=a.shots, exclude_business=b if self.exclude_own else None)
                 msgs = [{"role": "system", "content": agent.SYSTEM_LIB},
-                        {"role": "user", "content": agent.user_msg_lib(self.rulebook, self.bizs[b].readme, can["card"], fewshot.render_examples(exs), q)}]
+                        {"role": "user", "content": agent.user_msg_lib(self.rulebook, readme, can["card"], fewshot.render_examples(exs), q)}]
             else:
-                msgs = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.bizs[b].readme, agent.CARDS[b], q)}]
+                msgs = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, readme, agent.CARDS[b], q)}]
+            if n_raw:
+                msgs_raw = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, readme, agent.CARDS[b], q)}]
+                for j in range(n_raw):
+                    s_ = 50 + j; st["att"][s_] = []; st["w"][s_] = 1.0
+                    self.sample((q["id"], s_), msgs_raw, False, max(a.max_tokens, 2048), agent.run_code,
+                                lambda kk, code, q=q: (kk, b, q["as_of_date"], code, a.timeout, None),
+                                lambda atts, settle=settle: settle(), reflect=False, prio=prio, attempts=st["att"][s_])
             cpath = can["path"] if can else None
             alts = tuple(can.get("alts") or ()) if can else ()
             def launch(lo, hi, q=q, st=st, msgs=msgs, cpath=cpath, settle=settle):
@@ -543,9 +565,10 @@ class Pipeline:
             for x in ans:
                 if x is not None: c = agent.canon_of(x); votes[c] += w / len(ans); rep.setdefault(c, x)
         ralt = (rr.get("alt") or []) if rr else []
+        qw = st.get("qw", a.qw)
         if rr and (rr.get("ok") if idx in (0, None) else (idx - 1 < len(ralt) and ralt[idx - 1] is not None)):
             if not rr.get("ok"): rr = {"answer": None, "alt": ralt}      # failed on the chosen mapping, runs on alternate idx
-            add(rr, a.qw); total += a.qw
+            add(rr, qw); total += qw
         st["ungrounded"] = []
         for s in sorted(st["att"]):
             r = agent.last_ok(st["att"][s])

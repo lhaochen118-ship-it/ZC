@@ -303,7 +303,8 @@ def _first_nonnull(g):
     v = g.dropna(); return v.iloc[0] if len(v) else None
 
 
-_SUMMARY_ID = re.compile(r"^(?:(?:tong|cong)(?:\s+(?:cong|ngay|thang|tuan|nam|quy|tien|so|\d+)|\s*$)|total|sum|subtotal|grand total)\b")
+_SUMMARY_ID = re.compile(r"^(?:(?:tổng|cộng)(?:\s+(?:cộng|ngày|tháng|tuần|năm|quý|tiền|số|\d+)|\s*$)|(?:tong|cong)(?:\s+(?:cong|ngay|thang|tuan|quy|tien|\d+)|\s*$)"
+                         r"|total|sum|subtotal|grand total)\b")             # with accents: 'Tống Nam Hương' is a customer
 _SUMMARY_COLS = ("order_id", "customer_name", "customer_id", "note", "staff")
 
 
@@ -315,7 +316,7 @@ def _summary_rows(df):
     if not len(df): return pd.Series(False, index=df.index)
     m = pd.Series(False, index=df.index)
     for c in _SUMMARY_COLS:
-        if c in df.columns: m |= df[c].map(lambda x: isinstance(x, str) and bool(_SUMMARY_ID.match(key(x))))
+        if c in df.columns: m |= df[c].map(lambda x: isinstance(x, str) and bool(_SUMMARY_ID.match(norm_text(x))))
     if "order_date" in df.columns: m &= pd.to_datetime(df["order_date"], errors="coerce").isna()
     elif "order_time" in df.columns: m &= pd.to_datetime(df["order_time"], errors="coerce").isna()
     if m.any():

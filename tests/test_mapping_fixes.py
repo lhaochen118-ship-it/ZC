@@ -234,6 +234,11 @@ os_, ls_ = dm.finalize(Ls, dedupe=False)
 check("summary rows dropped", os_["order_id"].tolist() == ["A1"] and len(ls_) == 2, os_["order_id"].tolist())
 check("return status words", dm.canon_status("khách mang trả", None) == "trả hàng" and dm.canon_status("Đã trả tiền", None) is None)
 
+# 20. industry sections: a rulebook section named in full by the README; 'new' when the training rulebook lacks it
+rbx = "## 6. x\n### Cà phê\n| a | b |\n### Sửa xe\n| Lượt xe | một dòng |\n## 7. y\n"
+check("industry section", agent.industry_of(rbx, "Sổ sửa xe chủ tiệm tự ghi")[0:3:2] == ("Sửa xe", True)
+      and agent.industry_of(rbx, "quán cà phê nhỏ")[2] is False and agent.industry_of(rbx, "cột Điện thoại: số điện thoại") is None)
+
 # 17. --map-fallback: the chosen mapping says unanswerable -> the same programs' vote on the next mapping; an answer on
 # the chosen mapping is kept even when the alternate disagrees; answer agreement singles out an outlier candidate
 import argparse

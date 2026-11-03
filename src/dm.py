@@ -309,9 +309,9 @@ def map_status(series, overrides=None):
 # ------------------------------------------------------------------ canonical tables
 ORDER_COLS = ["order_id", "order_time", "order_date", "customer_id", "customer_name", "customer_group", "staff", "channel",
               "payment_method", "status", "valid", "revenue", "order_discount", "shipping_fee", "vat", "total_payable",
-              "paid_at_purchase", "note"]
+              "paid_at_purchase", "note", "tradein", "points_discount", "plate", "vehicle", "work", "warranty"]   # last 6: industries (src/industry.py)
 LINE_COLS = ["order_id", "line_no", "order_time", "order_date", "status", "valid", "item_code", "item_name", "item_group", "unit",
-             "qty", "factor", "qty_base", "base_unit", "unit_price", "line_discount", "line_amount", "unit_cost", "returned_qty"]
+             "qty", "factor", "qty_base", "base_unit", "unit_price", "line_discount", "line_amount", "unit_cost", "returned_qty", "imei"]
 WALKIN = re.compile(r"^(khach le|khach vang lai|vang lai|le|khach|walk in|walkin|khach hang le|kh le|kl|k l|khl|kvl|guest|none|nan|0|-|khong ten|an danh)$")
 
 
@@ -603,7 +603,10 @@ def _timed(s):
         raise RuntimeError("order_time holds dates without the time of day: map order_time to the order creation time")
 
 
-class Shop:
+import industry                                                        # public-rulebook industries (phone, repair, mother & baby)
+
+
+class Shop(industry.IndustryMetrics):
     """Metrics of one business. Every method follows the rulebook defaults; arguments name the variations questions ask
     for. `today` = as-of date (records after it have not happened yet). A period lying completely outside the dates of
     the data raises Unanswerable (§7: no data is not zero); a partly covered period is computed on the covered part."""
@@ -844,7 +847,10 @@ class Shop:
         s = self.customer_sales(p, by="n_orders", **f); return int((s >= min_orders).sum())
 
     def staff_sales(self, p, by="revenue", **f):
+        """{staff: revenue | orders | n_days} over valid orders of p (n_days: working days = days with at least one order of
+        that person, public rulebook 'chăm chỉ nhất')."""
         o = self.orders(p, **f); o = o[o["staff"].notna()]
+        if by == "n_days": return o.groupby("staff")["order_date"].nunique()
         return o.groupby("staff")["revenue"].sum() if by == "revenue" else o.groupby("staff").size()
 
     # -- debt (§4)
@@ -866,7 +872,32 @@ class Shop:
         o = self.O; return pd.Series(o["paid_at_purchase"].values, index=o["order_id"]) if "paid_at_purchase" in o.columns else pd.Series(dtype=float)
 
     def debts(self, d):
-        """Series order_id -> amount still owed at the end of day d (> 0 only)."""
+        """Series order_id -> amount still owed at the end of day d (> 0 only): the debt book, plus the unpaid part of
+        instalment contracts (C['instalments'], public rulebook 'Cửa hàng điện thoại': an instalment order is a credit order)."""
+        return self._debt_frame(d).set_index("order_id")["owed"]
+
+    def _debt_frame(self, d):
+        """DataFrame [order_id, owed, customer, order_date] of every order with money owed at the end of day d."""
+        inst = self._inst_debts(d) if self.C.get("instalments") is not None else None
+        try: s = self._book_debts(d)
+        except Unanswerable:
+            if inst is None or not len(inst): raise
+            s = pd.Series(dtype=float)
+        o = self.O.set_index("order_id")
+        try: k = self.customer_key()                                    # debt totals need no customers; per-customer views do
+        except Unanswerable: k = None
+        base = pd.DataFrame({"order_id": s.index, "owed": s.values,
+                             "customer": o.loc[s.index, k].values if k else None, "order_date": o.loc[s.index, "order_date"].values})
+        if inst is None or not len(inst): return base
+        base = base[~base["order_id"].astype(str).isin(set(inst["order_id"].astype(str)))]          # the instalment book is
+        oc = o[k] if k else None                                                                    # what is owed for those
+        if oc is not None:
+            oc = oc[~oc.index.duplicated()]
+            inst = inst.assign(customer=[oc[i] if i in oc.index and isinstance(oc[i], str) and oc[i].strip() else c
+                                         for i, c in zip(inst["order_id"], inst["customer"])])
+        return pd.concat([base, inst], ignore_index=True)
+
+    def _book_debts(self, d):
         require("total_payable" in self.O.columns and self.O["total_payable"].notna().any(), "the data does not record order totals (no debts)")
         P = self.C.get("payments")                                     # without any record of what was paid, every order would
         require((P is not None and len(P)) or any(c in self.O.columns and self.O[c].notna().any()     # count as unpaid
@@ -878,8 +909,12 @@ class Shop:
     def debt_total(self, d): return money(self.debts(d).sum())
 
     def debt_by_customer(self, d):
-        s = self.debts(d); o = self.O.set_index("order_id"); k = self.customer_key()
-        c = o.loc[s.index, k]; s = s[c.notna().values]; return s.groupby(c[c.notna()].values).sum()
+        f = self._debt_frame(d); f = f[f["customer"].notna()]
+        if self.C.get("instalments") is not None and len(f):                # two books spell one customer differently
+            pk = f["customer"].map(lambda x: person_key(re.sub(r"[\d\s.\-()+]{8,}$", "", str(x))) if isinstance(x, str) else x)
+            lab = f.groupby(pk)["customer"].agg(lambda v: v.value_counts().index[0])
+            return f.groupby(pk)["owed"].sum().rename(index=lab)
+        return f.groupby("customer")["owed"].sum()
 
     def n_debtors(self, d): return int((self.debt_by_customer(d) > 0.5).sum())
 
@@ -889,7 +924,7 @@ class Shop:
         return {"columns": ["khach_hang", "so_tien_no"], "rows": [[n, money(s[c])] for n, c in zip(names, r)]}
 
     def debt_aging(self, d, bins=((0, 7), (8, 15), (16, None))):
-        s = self.debts(d); age = (_ts(d) - self.O.set_index("order_id").loc[s.index, "order_date"]).dt.days.values
+        f = self._debt_frame(d); s = f["owed"]; age = (_ts(d) - pd.to_datetime(f["order_date"])).dt.days.values
         out = []
         for lo, hi in bins:
             m = (age >= lo) & ((age <= hi) if hi is not None else True); out.append(money(s.values[m].sum()))
@@ -897,12 +932,26 @@ class Shop:
 
     def debt_older_than(self, d, n):
         """debt of orders placed more than n days before d ('đơn đặt đã hơn n ngày')."""
-        s = self.debts(d); age = (_ts(d) - self.O.set_index("order_id").loc[s.index, "order_date"]).dt.days.values
-        return money(s.values[age > n].sum())
+        f = self._debt_frame(d); age = (_ts(d) - pd.to_datetime(f["order_date"])).dt.days.values
+        return money(f["owed"].values[age > n].sum())
 
     def debt_flow(self, p, customer=None):
         """[new debt, repaid] of credit orders in p: new = unpaid part on the purchase day of orders placed in p,
-        repaid = payments dated in p made after the purchase day (any credit order)."""
+        repaid = payments dated in p made after the purchase day (any credit order). Instalment contracts (phone shops): new =
+        the instalment total of contracts bought in p, repaid = instalments paid in p."""
+        if self.C.get("instalments") is None: return self._book_flow(p, customer)
+        try: new, rep = self._book_flow(p, customer)
+        except Unanswerable: new, rep = 0, 0
+        I = self._inst(p.end)
+        if customer is not None: I = self._inst_who(I, customer)
+        new += float(I.loc[p.mask(I["buy_date"]), "total"].sum())
+        P = self.C.get("instalment_payments")
+        if P is not None and len(P):
+            P = P[P["order_id"].astype(str).str.strip().isin(set(I["order_id"]))]
+            rep += float(pd.to_numeric(P.loc[p.mask(pd.to_datetime(P["pay_date"]).dt.normalize()), "amount"], errors="coerce").sum())
+        return [money(new), money(rep)]
+
+    def _book_flow(self, p, customer=None):
         o = self._debt_orders(p.end)
         if "payment_method" in o.columns: o = o[o["payment_method"].isin(["ghi nợ", "trả góp"])]
         if customer is not None: o = o[self._match(o, ("customer_id", "customer_name"), customer)]
@@ -1212,7 +1261,7 @@ def shop_api(shop):
              "debt_aging", "debt_older_than", "debt_flow", "share", "increasing", "weekday_avg", "peak_hour", "size_qty", "unsold_items",
              "purchase_total", "avg_purchase_price", "supplier_ranking", "top_supplier", "import_minus_sales", "stock_at", "stock_split",
              "stock_value", "lot_stock", "lots_expiring", "items_expiring", "out_of_stock", "nearest_expiry", "price_on", "price_change_date", "price_effect",
-             "gross_profit", "net_profit", "n_delivery_trips", "pct_customers", "factor"]
+             "gross_profit", "net_profit", "n_delivery_trips", "pct_customers", "factor"] + industry.INDUSTRY_NAMES
     return {n: getattr(shop, n) for n in names}
 
 
@@ -1224,7 +1273,7 @@ NUM_API = {f.__name__: f for f in (round_half_up, money, pct, growth, rank, cano
 
 def api(shop, today):
     """names available to answer programs: periods, number helpers and the shop's metrics."""
-    g = dict(PERIOD_API); g.update(NUM_API); g.update(shop_api(shop))
+    g = dict(PERIOD_API); g.update(NUM_API); g.update(industry.HELPERS); g.update(shop_api(shop))
     g.update({"TODAY": _ts(today), "D": D, "Period": Period, "Unanswerable": Unanswerable, "C": shop.C, "pd": pd, "np": np, "math": math, "re": re})
     return g
 

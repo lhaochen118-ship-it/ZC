@@ -206,9 +206,12 @@ def user_msg_lib(rulebook, biz_readme, canon_card, examples, q):
                          f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}{clean_hint(q)}\n\nWrite the program."])
 
 
-def user_msg_map(rulebook, biz_readme, card, examples):
+def user_msg_map(rulebook, biz_readme, card, examples, industry_doc=""):
     return "\n\n".join([f"# RULEBOOK (extract)\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}",
-                         f"# RAW TABLES (in T)\n{card}", f"# EXAMPLES (mapping programs of other shops)\n{examples}",
+                         f"# RAW TABLES (in T)\n{card}"] +
+                        ([f"# CANONICAL TABLES OF THIS SHOP'S INDUSTRY (besides orders / lines; the toolkit computes the rulebook "
+                          f"definitions from them; helpers split_vehicle, model_line, brand_of, split_jobs are imported)\n{industry_doc}"] if industry_doc else []) +
+                        [f"# EXAMPLES (mapping programs of other shops)\n{examples}",
                          "# TASK\nWrite the mapping program for this business (the RAW TABLES above, not the examples' tables)."])
 
 
@@ -842,6 +845,8 @@ def build_parser():
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
     ap.add_argument("--ref-adapt", type=int, default=3, help="pipeline: when the best transferred reference mapping misses conventions "
                     "of this README (agent.readme_gaps), this many LLM rewrites of it that follow them (0 = off)")
+    ap.add_argument("--industry-kit", type=int, default=1, help="pipeline: canonical tables + toolkit of the public rulebook's industries "
+                    "(src/industry.py: phone shops, repair shops, mother & baby) in the mapping / answer prompts of such shops (0 = off)")
     ap.add_argument("--industry-raw", type=int, default=2, help="pipeline: for a shop of an industry whose rulebook section is not in "
                     "the training rulebook: this many extra programs on the raw tables per question, the rule program's weight 1 "
                     "and no --confirm shortcut (0 = treat it like any shop)")

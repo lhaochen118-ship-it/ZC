@@ -17,7 +17,7 @@ and a static business split leaves GPUs idle at the end. Here:
 Prompts, seeds, temperatures, repair messages and voting are those of the round-based path, so runs stay comparable."""
 import os, re, time, json, pickle
 from collections import Counter, defaultdict, deque
-import agent, fewshot, dm, ingest, canon as canonmod
+import agent, industry, fewshot, dm, ingest, canon as canonmod
 
 
 def bind(mod):
@@ -325,7 +325,8 @@ class Pipeline:
             t = self.adapt_target(b, bs)
             return self.adapt(b, bs, t) if t else self.select(b, bs)
         msgs = [{"role": "system", "content": agent.SYSTEM_MAP},
-                {"role": "user", "content": agent.user_msg_map(self.rb_map, self.bizs[b].readme, agent.CARDS[b], agent.map_examples(self.bizs[b], b, self.exclude_own))}]
+                {"role": "user", "content": agent.user_msg_map(self.rb_map, self.bizs[b].readme, agent.CARDS[b], agent.map_examples(self.bizs[b], b, self.exclude_own),
+                                                               industry_doc=self.industry_doc(b, "canon"))}]
         bs["pending"] = self.a.kc
         def fin(s, atts):
             bs["llm"][s] = atts; r = agent.last_ok(atts)
@@ -461,8 +462,34 @@ class Pipeline:
         if b not in self._ind:
             try: self._ind[b] = agent.industry_of(self.rulebook, self.bizs[b].readme)
             except Exception: self._ind[b] = None
+            if self._ind[b] is None and getattr(self.a, "industry_kit", 1):   # the README does not name it: the data shows it
+                try:
+                    t = industry.detect(self.bizs[b]); secs = agent.rulebook_sections(self.rulebook)
+                    t = next((x for x in secs if t and dm.key(x) == dm.key(t)), None)
+                    if t:
+                        try: train = {dm.key(x) for x in agent.rulebook_sections(open(agent.TRAIN_RULEBOOK, encoding="utf-8").read())}
+                        except OSError: train = set()
+                        self._ind[b] = (t, secs[t], dm.key(t) not in train)
+                except Exception as e: print(f"[pipe] {b}: industry detection failed ({type(e).__name__}: {e})", flush=True)
             if self._ind[b]: print(f"[pipe] {b}: industry section '{self._ind[b][0]}'" + (" (not in the training rulebook)" if self._ind[b][2] else ""), flush=True)
         return self._ind[b]
+
+    def industry_doc(self, b, kind):
+        """the canonical tables ('canon') / toolkit ('api') of b's rulebook industry when src/industry.py implements it, else ''."""
+        if not getattr(self.a, "industry_kit", 1): return ""
+        ind = self.industry(b); k = industry.industry_key(ind[0]) if ind else None
+        return (industry.INDUSTRY_CANON if kind == "canon" else industry.INDUSTRY_API).get(k, "") if k else ""
+
+    def readme_for(self, b, toolkit=True):
+        """README of b + its rulebook industry section (+ the industry toolkit for programs over C; raw-table programs have no
+        toolkit). Cached."""
+        if not hasattr(self, "_rdm"): self._rdm = {}
+        if (b, toolkit) not in self._rdm:
+            ind = self.industry(b); api = self.industry_doc(b, "api") if toolkit else ""
+            self._rdm[(b, toolkit)] = self.bizs[b].readme + (f"\n\n# RULES OF THIS SHOP'S INDUSTRY (rulebook section '{ind[0]}': they define the "
+                                                             f"terms of its questions and take precedence)\n{ind[1]}" if ind else "") + \
+                                      (f"\n\n# TOOLKIT FOR THIS INDUSTRY (implements these rules; prefer it to raw-table code)\n{api}" if api else "")
+        return self._rdm[(b, toolkit)]
 
     def normalizer(self, b):
         """question cleaning for business b (vocabulary: rulebook + training questions of OTHER businesses + b's names)."""
@@ -481,8 +508,7 @@ class Pipeline:
                 try: q["_clean"] = nz.clean(q["question"], q["as_of_date"])
                 except Exception: q["_clean"] = None
         ind = self.industry(b); new_ind = bool(ind and ind[2] and getattr(a, "industry_raw", 0))
-        readme = self.bizs[b].readme + (f"\n\n# RULES OF THIS SHOP'S INDUSTRY (rulebook section '{ind[0]}': they define the terms of its "
-                                         f"questions and take precedence)\n{ind[1]}" if ind else "")
+        readme = self.readme_for(b)
         n_raw = int(getattr(a, "industry_raw", 0) or 0) if new_ind and can else 0
         for q in qs:
             confirm = bool(getattr(a, "confirm", 0)) and a.qw > 0 and bool(can) and k > 1 and not new_ind
@@ -506,9 +532,9 @@ class Pipeline:
                 msgs = [{"role": "system", "content": agent.SYSTEM_LIB},
                         {"role": "user", "content": agent.user_msg_lib(self.rulebook, readme, can["card"] + self.unused_card(b, can), fewshot.render_examples(exs), q)}]
             else:
-                msgs = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, readme, agent.CARDS[b], q)}]
+                msgs = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.readme_for(b, False), agent.CARDS[b], q)}]
             if n_raw:
-                msgs_raw = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, readme, agent.CARDS[b], q)}]
+                msgs_raw = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.readme_for(b, False), agent.CARDS[b], q)}]
                 for j in range(n_raw):
                     s_ = 50 + j; st["att"][s_] = []; st["w"][s_] = 1.0
                     self.sample((q["id"], s_), msgs_raw, False, max(a.max_tokens, 2048), agent.run_code,
@@ -648,9 +674,10 @@ class Pipeline:
         msgs_l = None
         if can:
             exs = self.ex.pick(q["question"], k=a.shots, exclude_business=b if self.exclude_own else None)
-            msgs_l = [{"role": "system", "content": agent.SYSTEM_LIB},
-                      {"role": "user", "content": agent.user_msg_lib(self.rulebook, self.bizs[b].readme, can["card"], fewshot.render_examples(exs), q)}]
-        msgs_b = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.bizs[b].readme, agent.CARDS[b], q)}]
+            msgs_l = [{"role": "system", "content": agent.SYSTEM_LIB},           # same context as the first samples (industry
+                      {"role": "user", "content": agent.user_msg_lib(self.rulebook, self.readme_for(b), can["card"] + self.unused_card(b, can),   # rules,
+                                                                     fewshot.render_examples(exs), q)}]                                      # raw tables)
+        msgs_b = [{"role": "system", "content": agent.SYSTEM_RAW}, {"role": "user", "content": agent.user_msg(self.rulebook, self.readme_for(b, False), agent.CARDS[b], q)}]
         cpath = can["path"] if can else None
         alts = tuple(can.get("alts") or ()) if can else ()
         for e in range(a.escalate + raw):

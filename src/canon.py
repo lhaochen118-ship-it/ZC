@@ -137,6 +137,8 @@ def namespace(biz, ref_cols=None):
               "readme_conversions", "conversions_table", "frame", "money_in_text"):
         g[k] = getattr(dm, k)
     g["tbl"] = lambda *c, **kw: dm.find_table(T, *c, **kw)
+    import industry                                                    # split_vehicle / model_line / brand_of / split_jobs
+    g.update(industry.HELPERS)
     for t in T:                                                        # `thong_tin_thuoc` used as a variable (NameError in
         if t.isidentifier() and not keyword.iskeyword(t) and t not in g and t not in TABLE_NAMES and not hasattr(builtins, t):   # v6-v9)
             g[t] = dict.__getitem__(T, t)                              # (not T[t]: that would count every table as used)
@@ -144,7 +146,8 @@ def namespace(biz, ref_cols=None):
 
 
 TABLE_NAMES = {"orders", "lines", "items", "payments", "purchases", "stock", "lots", "lot_sales", "ledger", "prices", "conversions",
-               "returns", "deliveries", "expenses", "staff", "customers", "C", "NOTES"}
+               "returns", "deliveries", "expenses", "staff", "customers", "C", "NOTES", "tradeins", "instalments", "instalment_payments",
+               "warranty"}
 
 CORE = {"orders": ["order_id", "order_date", "order_time", "customer_id", "customer_name", "customer_group", "staff", "channel",
                    "payment_method", "status", "total_payable"],

@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 12:05 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-03 13:45 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự. Routine
 `trig_01U26KaZP68Dmg8JL2RGcbVS` chạy mỗi giờ đến **17:00 UTC 03/11**; sau mốc đó tắt routine và báo kết quả.*
 
@@ -18,20 +18,20 @@
   lần chạy không gỡ được; phải sửa nguyên nhân (luật đọc câu, ánh xạ, quy ước README).
 - Train (LOO) không còn dự báo được public: v19 train 0.986.
 
-## Đang chạy
+## Đang chạy (13:45 UTC)
 
-- **v20** (code 5dba631 = ref-adapt de097f9 + weekday_avg): train + public ×3 trên caotienminh1 / duylnng, khởi chạy
-  11:35. Watcher nền theo dõi `runs/active_runs.txt`.
-- **v21** (code d0007a9 + tài liệu): sửa luật đọc câu tổng quát (tiếng lóng '10 củ', '3tr7', 'o đờ', 'bq', 'đh',
-  'cất hàng'; top N; tăng trưởng 'so với A thì B'; nhiều tháng; so sánh; mặt hàng / tên không liên kết được; nợ theo
-  hạn trả, tuổi nợ quá N ngày) + kiểm tra ánh xạ (doanh thu đơn ≠ tổng thành tiền dòng; order_time không có giờ).
-  Preflight rồi chạy trên huyenco / mucnokieu.
+- **v20** xong: train **0.991** (holdout 0.977); public → `submissions/v20/` (117 abstain; dự đoán ≈ v19 trên portal: 52 câu
+  thêm abstain ở dev_003 / dev_009 do các lần chạy chọn ánh xạ khác nhau). Đã push + gửi user.
+- **v21** (8dca4a2: luật đọc câu + kiểm tra ánh xạ doanh thu / giờ / tên viết tắt / tên thợ / cột doanh thu theo README +
+  dòng máy …GB): huyenco / mucnokieu, khởi chạy 12:52, xong ~15:00.
+- **v22** (a6f5800 = v21 + từ địa phương cho tên hàng 'cá tràu' = 'cá lóc', 'đậu phụ rán' = 'đậu hũ chiên', 'cốc sạc' =
+  'củ sạc'… + size theo cột danh mục): preflight 13:41, chạy trên caotienminh1 / duylnng, xong ~16:00.
+- Đĩa: đã xoá 22 GB thư mục tạm cũ (user cho phép); run_all.sh / preflight.py nay tự dọn.
 
 ## Việc tiếp theo (thứ tự)
 
-1. v20 xong → chấm train, tạo `submissions/v20/submission.jsonl` (bỏ phiếu 3 lần chạy public) + README, **push ngay**,
-   gửi user.
-2. v21 xong → như trên (`submissions/v21/`); so sánh với v19 / v20 (đồng thuận, abstain, câu đổi đáp án).
-3. Tiếp tục tìm lỗi chung không cần nhãn: luật vs LLM bất đồng, ánh xạ ứng viên bất đồng, README của DN dùng ánh xạ
-   tham chiếu (dev_001 / 002 / 005 / 006), DN ngành mới (dev_011–014).
-4. 17:00 UTC: tắt routine, báo user.
+1. v21 / v22 xong → chấm train, `submissions/v21|v22/submission.jsonl` (bỏ phiếu 3 lần chạy public) + README, **push ngay**,
+   gửi user; so với v19 (portal 0.687).
+2. Lỗi chung còn biết mà chưa sửa: nợ chỉ ghi trong ghi chú tự do (dev_008: 'còn thiếu …', 'còn lại ghi sổ' → mọi lần chạy
+   trả 0); định nghĩa ngành điện thoại (dòng máy không gồm phụ kiện); câu trả lời bằng 0 là tín hiệu tốt để tìm lỗi lọc.
+3. 17:00 UTC: tắt routine `trig_01U26KaZP68Dmg8JL2RGcbVS`, báo user.

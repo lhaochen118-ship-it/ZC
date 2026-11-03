@@ -228,7 +228,8 @@ def canon_status(label, default="hoàn thành"):
     k = key(label)
     if not k or k in ("nan", "none"): return default
     if re.search(r"\b(huy|cancel|canceled|cancelled|bo don|khach bom|bom hang|khong giao duoc|giao that bai|giao khong thanh cong|that bai|failed)\b", k): return "huỷ"
-    if re.search(r"\b(tra hang|tra lai|tra ve|hoan tra|hoan hang|return|returned|refund|doi tra|doi hang|tra 1 phan|tra mot phan|khach tra)\b", k): return "trả hàng"
+    if re.search(r"\b(tra hang|tra lai|tra ve|hoan tra|hoan hang|return|returned|refund|doi tra|doi hang|tra 1 phan|tra mot phan|khach tra|"
+                 r"mang tra|dem tra|gui tra|bi tra|tra do|tra sp|tra san pham)\b", k): return "trả hàng"
     if re.search(r"\b(xong|hoan thanh|hoan tat|ok|done|complete|completed|thanh cong|da giao|da nhan|da lay|da thanh toan|success|paid|delivered)\b", k): return "hoàn thành"
     if re.search(r"\b(dang giao|giao hang|cho giao|dang gui|dang ship|shipping|chua giao|dang van chuyen|van chuyen|dang giao dich|dang xu ly|cho xu ly|pending|processing|in transit)\b", k): return "đang giao"
     return None
@@ -302,6 +303,19 @@ def _first_nonnull(g):
     v = g.dropna(); return v.iloc[0] if len(v) else None
 
 
+_SUMMARY_ID = re.compile(r"^(tong|cong|total|sum|subtotal|grand total)\b")
+
+
+def _summary_rows(df):
+    """summary rows of an export ('tổng 01/05', 'Cộng', 'Total' in the order-code column, no date: dev_010 had one per day,
+    2 % of the rows, and every mapping failed 'orders without a date'): they are not orders and would count twice."""
+    if "order_id" not in df.columns or not len(df): return pd.Series(False, index=df.index)
+    m = df["order_id"].astype(str).map(key).str.match(_SUMMARY_ID)
+    if "order_date" in df.columns: m &= pd.to_datetime(df["order_date"], errors="coerce").isna()
+    if m.any(): print(f"finalize: {int(m.sum())} summary rows dropped (order code like {df.loc[m, 'order_id'].iloc[0]!r}, no date)")
+    return m
+
+
 def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, dedupe=True, keep_service_lines=True):
     """Rulebook §1 + §8 normalisation. Returns (orders, lines) canonical frames.
 
@@ -336,6 +350,7 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
         L = L[~L.duplicated(subset=cols, keep="first")].reset_index(drop=True)
     if "order_time" in L.columns and "order_date" not in L.columns: L["order_date"] = pd.to_datetime(L["order_time"]).dt.normalize()
     if "order_date" in L.columns: L["order_date"] = pd.to_datetime(L["order_date"]).dt.normalize()
+    L = L[~_summary_rows(L)].reset_index(drop=True)
     for c in ("qty", "unit_price", "line_discount", "line_amount", "unit_cost", "factor", "qty_base", "returned_qty"):
         if c in L.columns: L[c] = pd.to_numeric(L[c], errors="coerce")
     # catalogue info
@@ -376,6 +391,8 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
     O = orders.copy() if orders is not None else None
     if O is not None:
         O["order_id"] = O["order_id"].astype(str).str.strip()
+        if "order_date" in O.columns: O["order_date"] = pd.to_datetime(O["order_date"]).dt.normalize()
+        O = O[~_summary_rows(O)]
         O = O.drop_duplicates("order_id", keep="first")
         for c in [c for c in O.columns if c in L.columns and c != "order_id"]:
             L = L.drop(columns=c)                                      # header table wins for order-level fields
@@ -484,7 +501,9 @@ def check(C):
     bad = sorted(set(o["status"].dropna()) - set(CANON_STATUS))
     if bad: errs.append(f"non-canonical statuses {bad[:6]}")
     if o["order_id"].duplicated().any(): errs.append("order_id not unique in orders")
-    if o["order_date"].isna().mean() > 0.01: errs.append(f"{int(o['order_date'].isna().sum())} orders without a date")
+    if o["order_date"].isna().all(): errs.append("every order_date is empty: give frame() the NAME of the raw date column (order_date='Ngày'); "
+                                                 "the raw date columns are already parsed, do not call parse_date on a column name")
+    elif o["order_date"].isna().mean() > 0.01: errs.append(f"{int(o['order_date'].isna().sum())} orders without a date")
     if l is not None and "order_id" in l.columns:
         miss = ~l["order_id"].isin(set(o["order_id"]))
         if miss.mean() > 0.01: errs.append(f"{int(miss.sum())} lines with an order_id not in orders")

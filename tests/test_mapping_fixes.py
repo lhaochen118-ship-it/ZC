@@ -227,6 +227,13 @@ for q, want in [("Giá trị trung bình một đơn tháng 6/2026 là bao nhiê
     check(f"qparse: {q[:40]}", tpl(q) == want, tpl(q))
 check("month range", qparse.parse_period(qparse.untelex(qparse.K("Th9/2025 đến hết th11/2025 có bao nhiêu xe")), "2026-06-30")[1] == 'between("2025-09-01", "2025-11-30")')
 
+# 19. dirty exports: summary rows ('tổng 01/05', no date) are not orders; 'khách mang trả' is a return
+Ls = pd.DataFrame({"order_id": ["A1", "A1", "tổng 01/05", "Tổng cộng"], "order_date": ["2025-05-01", "2025-05-01", None, None],
+                   "item_name": ["x", "y", None, None], "qty": [1, 2, 3, 3], "line_amount": [10, 20, 30, 30], "status": "hoàn thành"})
+os_, ls_ = dm.finalize(Ls, dedupe=False)
+check("summary rows dropped", os_["order_id"].tolist() == ["A1"] and len(ls_) == 2, os_["order_id"].tolist())
+check("return status words", dm.canon_status("khách mang trả", None) == "trả hàng" and dm.canon_status("Đã trả tiền", None) is None)
+
 # 17. --map-fallback: the chosen mapping says unanswerable -> the same programs' vote on the next mapping; an answer on
 # the chosen mapping is kept even when the alternate disagrees; answer agreement singles out an outlier candidate
 import argparse

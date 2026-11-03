@@ -1,6 +1,6 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 06:15 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
+*Cập nhật: 2026-11-03 08:35 UTC. Branch `claude/datamate-v3-0dny90`. User cho phép tự chạy tiếp không cần hỏi
 (kể cả sau khi hết / reset token): đọc `CLAUDE.md` → file này → làm mục "Việc tiếp theo" theo thứ tự. Khung 12 giờ
 của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26KaZP68Dmg8JL2RGcbVS` và báo kết quả.*
 
@@ -26,23 +26,21 @@ của user kết thúc 03:30 UTC 03/11; sau mốc đó tắt routine `trig_01U26
 - 327acf2: bỏ phiếu chỉ tính mẫu LLM "bám câu hỏi" (tên hàng trong chương trình phải có trong câu); cảnh báo cột bị
   `frame()` bỏ qua (chỉ ánh xạ LLM).
 
-## Khung 6 giờ thứ hai (04:55 → 11:00 UTC 03/11) — routine `trig_01U26KaZP68Dmg8JL2RGcbVS` bật lại, tắt sau 11:00
+## Khung 6 giờ thứ hai (04:55 → 11:00 UTC 03/11) — routine `trig_01U26KaZP68Dmg8JL2RGcbVS` bật, tắt sau 11:00
 
-- Làm sạch câu hỏi: đã xong (`question_cleaning/`).
-- File nộp v11 cho user: `submissions/v11/submission.jsonl` (bỏ phiếu 3 lần chạy) + `submission_single_run.jsonl`.
-- Code mới (chưa có kết quả GPU):
-  - b628bc9: `--sel-agree 30` (chọn ánh xạ theo đồng thuận đáp án), `--map-fallback 2` (ánh xạ kế tiếp khi ánh xạ chọn
-    không trả lời được; replay v11: 0.967 → 0.974);
-  - 7c28f66: bộ đọc luật phủ thêm (oracle train 2967 / 1 / 32; public phủ 662 → 693).
+- **Điểm portal (user): v13 vote = 0.637** (train ước lượng ~0.97). Lỗi chủ yếu ở DN ngành MỚI của rulebook public
+  (sửa xe dev_012, điện thoại dev_011 / dev_014, mẹ và bé dev_013: các lần chạy chỉ trùng 12–75 %) + dòng tổng (dev_009).
+- Train: v14 0.966 (holdout 0.951), **v15 0.982 (dev 0.999)**, v16 0.970 (biz_124 xui ánh xạ).
+- Code sau v15 (chưa có điểm public): ce0c688 unanswerable → abstain (ánh xạ LLM bỏ sót bảng), 234e2f8 đợt ánh xạ 2 khi
+  chỉ 1 ứng viên, 084407b + a0e5c08 dòng tổng (có dấu), **a0e5c08 mục ngành mới** (luật ngành cạnh README, luật qw 1,
+  2 mẫu bảng thô), 4b85565 `--kv-dtype`, **a246b0b bảng thô ánh xạ bỏ sót đưa vào prompt** (dev_014: góp / thu máy cũ /
+  bảo hành từng bị trả unanswerable).
 - Đang chạy:
-  - **v13** (69c0d8d) — thnliu ×2, linhmai24 ×2, launched 05:12;
-  - **v14** (b628bc9) — nguynduylm, phuongnehe ×2, hai1108 (v14-2 đẩy tay), launched 05:44;
-  - **v15** (7c28f66) — preflight 06:12, sẽ chạy trên caotienminh1 ×2 + duylnng ×2.
-- Mỗi run: `runs/vNN/zc-vNN-1` train, `-2` public seed 0, `-3` seed 1, `-4` seed 2.
-- Việc tiếp:
-  1. chấm train v13 / v14 / v15, so v11 (0.975);
-  2. tạo file nộp từ bỏ phiếu 3 lần chạy public của bản tốt nhất → `submissions/vNN/submission.jsonl`;
-  3. log, STATUS; 11:00 tắt routine và báo user.
+  - v15 public (-2, -4), v16 public (-2);
+  - v17 (lelynhan: tốc độ MTP + KV fp8 so với thường, public subset);
+  - **v18** (thnliu, linhmai24: 4b85565, train + public ×3) → file nộp `submissions/v18/`;
+  - **v19** (a246b0b, preflight 08:30, phuongnehe + hai1108) → `submissions/v19/`.
+- Đĩa scratch từng đầy lúc 08:24 (replay cũ ~4 GB) → đã xoá; giữ `runs/`, `cache_*`.
 
 ## Kết quả cuối khung 12 giờ (04:45 UTC 03/11) — không còn kernel nào chạy
 

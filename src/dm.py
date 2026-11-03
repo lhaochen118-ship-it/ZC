@@ -360,6 +360,35 @@ def _summary_rows(df):
     return m
 
 
+_ADJ = [("order_discount", re.compile(r"^(?:voucher|ma giam gia|ma giam|giam gia(?: hoa don| don| ca don)?|khuyen mai(?: hoa don| don)?|coupon|"
+                                      r"chiet khau(?: hoa don| don| ca don)?)\b")),
+        ("points_discount", re.compile(r"^(?:(?:dung|tru|doi|su dung) \d* ?diem|diem (?:thanh vien|tich luy))\b")),
+        ("shipping_fee", re.compile(r"^(?:phi ship|phi giao hang|phi giao|phi van chuyen|tien ship|ship hang|ship)\b"))]
+
+
+def _order_adjustments(L):
+    """rows of a sales book that are not items but an adjustment of the whole invoice: 'Voucher' / 'Giảm giá hoá đơn' (order
+    discount), 'Dùng 200 điểm' (paid with loyalty points), 'Phí ship' (delivery fee), written with the invoice number, a name and
+    an amount but no quantity / unit price (public dev_013). Rulebook §1: an order's revenue is the sum of its ITEM lines, without
+    order discounts or delivery fees -> such rows leave the lines and become the order columns order_discount / points_discount /
+    shipping_fee (positive). Returns (lines, {column: Series order_id -> amount})."""
+    if "item_name" not in L.columns or "line_amount" not in L.columns or "order_id" not in L.columns or not len(L): return L, {}
+    noq = L["qty"].isna() if "qty" in L.columns else pd.Series(True, index=L.index)
+    if "unit_price" in L.columns: noq = noq | L["unit_price"].isna()
+    if "item_code" in L.columns: noq = noq & (L["item_code"].isna() | L["item_code"].astype(str).str.strip().isin(["", "nan", "None"]))
+    k = L["item_name"].map(lambda x: key(x) if isinstance(x, str) else "")
+    adj, drop = {}, pd.Series(False, index=L.index)
+    for col, rx in _ADJ:
+        m = noq & k.map(lambda x: bool(rx.match(x)))
+        if m.sum() < 5: continue
+        amt = L.loc[m, "line_amount"].abs()
+        adj[col] = amt.groupby(L.loc[m, "order_id"].astype(str).str.strip()).sum(); drop |= m
+    if drop.any():
+        print(f"finalize: {int(drop.sum())} invoice adjustment rows (voucher / points / shipping) moved from the lines to the order columns", flush=True)
+        L = L[~drop].reset_index(drop=True)
+    return L, adj
+
+
 def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, dedupe=True, keep_service_lines=True):
     """Rulebook §1 + §8 normalisation. Returns (orders, lines) canonical frames.
 
@@ -398,6 +427,7 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
     L = L[~_summary_rows(L)].reset_index(drop=True)
     for c in ("qty", "unit_price", "line_discount", "line_amount", "unit_cost", "factor", "qty_base", "returned_qty"):
         if c in L.columns: L[c] = pd.to_numeric(L[c], errors="coerce")
+    L, adj = _order_adjustments(L)                                     # voucher / points / shipping rows are not item lines
     # catalogue info
     if items is not None:                                              # catalogue columns joined by code, else by name
         it = items.copy()                                              # (names compared accent / case / spacing-insensitive)
@@ -467,6 +497,9 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
         sale = L["qty"].fillna(1) > 0 if "qty" in L.columns else pd.Series(True, index=L.index)
         rev = L.loc[sale].groupby("order_id")["line_amount"].sum()
         O["revenue"] = O["order_id"].map(rev).fillna(0.0) if "revenue" not in O.columns or O["revenue"].isna().all() else O["revenue"]
+    for col, ser in adj.items():                                       # the order columns the toolkit reads (positive amounts)
+        if col not in O.columns or pd.to_numeric(O[col], errors="coerce").fillna(0).eq(0).all():
+            O[col] = O["order_id"].astype(str).map(ser).fillna(0.0)
     L = L.drop(columns=[c for c in ("status", "valid") if c in L.columns]).merge(O[["order_id", "status", "valid"]], on="order_id", how="left")
     if "order_time" not in L.columns and "order_time" in O.columns: L = L.merge(O[["order_id", "order_time"]], on="order_id", how="left")
     for c in ("customer_id", "customer_name"):

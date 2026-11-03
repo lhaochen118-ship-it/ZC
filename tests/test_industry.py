@@ -223,5 +223,19 @@ check("notes debt_aging", S_n.debt_aging("2026-07-22"), [300000, 0, 400000])
 try: S_n.debt_total("2026-07-15"); check("notes debt before the end is unanswerable", False, True)
 except dm.Unanswerable: check("notes debt before the end is unanswerable", True, True)
 
+# ---------------------------------------------------------------- invoice adjustment rows written as lines (public dev_013)
+rows = []
+for i in range(6):
+    o = f"H{i}"
+    rows += [(o, "2026-06-01", "Tã quần Bobby size M", 1, 300000, 300000), (o, "2026-06-01", "Voucher", None, None, -10000),
+             (o, "2026-06-01", "Dùng 200 điểm", None, None, -20000), (o, "2026-06-01", "Phí ship", None, None, 15000)]
+L0 = pd.DataFrame(rows, columns=["order_id", "order_date", "item_name", "qty", "unit_price", "line_amount"])
+O, L = dm.finalize(L0)
+S_a = dm.Shop({"orders": O, "lines": L}, "2026-06-30")
+jun = dm.month(2026, 6)
+check("adjustments: revenue = item lines only (no voucher / points / shipping)", S_a.revenue(jun), 1800000)
+check("adjustments: voucher / points / shipping as order columns", [S_a.voucher_total(jun), S_a.points_total(jun), S_a.shipping_total(jun)], [60000, 120000, 90000])
+check("adjustments: not items", sorted(S_a.item_sales(jun).index), ["Tã quần Bobby size M"])
+
 print("FAILED" if fails else "PASS", fails)
 sys.exit(1 if fails else 0)

@@ -277,7 +277,7 @@ PAYMENTS = [("cod", r"\b(cod|thu ho|ship cod)\b"), ("ghi nợ", r"\b(debt|ghi no
 CHANNELS = [("sàn TMĐT", r"\b(shopee|lazada|tiki|tiktok|san|tmdt|marketplace|san tmdt)\b"), ("zalo", r"\b(zalo|zalo oa|zalooa)\b"),
             ("điện thoại", r"\b(phone|dien thoai|goi dien|hotline|call)\b"), ("facebook", r"\b(facebook|fb|messenger)\b"),
             ("website", r"\b(web|website|online)\b"), ("grab", r"\b(grab|grabfood|shopeefood|baemin|gojek|be)\b"),
-            ("tại quầy", r"\b(store|tai quay|tai cua hang|offline|truc tiep|tai quan|pos|quay)\b")]
+            ("tại quầy", r"\b(store|tai quay|tai cua hang|offline|truc tiep|tai quan|tai tiem|tai shop|tai sap|pos|quay|in store|walk in)\b")]
 
 
 def _canon_label(x, table):

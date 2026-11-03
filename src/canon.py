@@ -401,15 +401,42 @@ def secondary_checks(C, biz):
                      "the data (a paid / owed column, or the order note: money_in_text(note) -> the amounts written in it, e.g. "
                      "'đưa trước 50k, còn thiếu 30 nghìn'); later repayments go to C['payments'] (order_id, pay_date, amount). When the note "
                      "is the debt's state at the END of the data, set orders.debt_end = debt_from_note(note, total_payable) instead")
-    # 1a-notes. debts written only in free-text notes, and C has no debt information at all -> every debt question unanswerable
-    if "note" in o.columns and not any(c in o.columns and o[c].notna().any() for c in ("paid_at_purchase", "debt_end", "paid_total")) \
-            and not (isinstance(C.get("payments"), pd.DataFrame) and len(C["payments"])):
-        nk = o["note"].dropna().astype(str).map(dm.key)
-        hits = nk[nk.str.contains(r"\b(?:ghi so|ghi no|con thieu|thieu lai|no ca don|con no)\b|\bno \d", regex=True)]
-        if len(hits) >= 20:
-            w.append(f"{len(hits)} order notes record debts (e.g. {', '.join(repr(x) for x in o.loc[hits.index[:2], 'note'])}) but C has no debt "
-                     "information (no payments, paid_at_purchase or debt_end): set orders.debt_end = debt_from_note(note, total_payable) "
-                     "(money still owed by the note; the README says whether the note is the state at the end of the data)")
+    # 1a-notes. debts written in free-text notes of the raw data (README: the note is the order's state at the end of the data)
+    #           while C records those orders as paid or records no debt at all (public dev_008: v22 runs had no debt information,
+    #           a v23 mapping made payments = the order total -> every debt answer 0 / unanswerable)
+    try:
+        owed_note = None
+        for t, df in biz.tables.items():
+            ncols = [c for c in df.columns if re.fullmatch(r"(?:note|notes|ghichu|ghichudon|luuy|chuthich|ghichuno)", _fold(c))]
+            if not ncols or len(df) < 50: continue
+            kcol = next((kc for kc in df.columns if kc not in ncols and df[kc].head(300).astype(str).str.strip().isin(ids).mean() > 0.9), None)
+            if kcol is None: continue
+            nn = df[[kcol, ncols[0]]].dropna(); nn = nn[nn[ncols[0]].astype(str).map(dm.key).str.contains(r"\b(?:no|ghi so|thieu|chua tra)\b", regex=True)]
+            if len(nn) < 20: continue
+            tot = pd.to_numeric(o.set_index(o["order_id"].astype(str).str.strip())["total_payable"], errors="coerce") if "total_payable" in o else None
+            tot = tot[~tot.index.duplicated()] if tot is not None else None
+            first = nn.groupby(nn[kcol].astype(str).str.strip())[ncols[0]].first()
+            owed_note = pd.Series({k: dm.debt_from_note(v, tot.get(k) if tot is not None else None) for k, v in first.items()}).dropna()
+            src = f"{t}.{ncols[0]}"; break
+        if owed_note is not None and (owed_note > 0.5).sum() >= 10:
+            pos = owed_note[owed_note > 0.5]
+            if "debt_end" in o and o["debt_end"].notna().any():
+                c_owed = pd.to_numeric(o.set_index(o["order_id"].astype(str).str.strip())["debt_end"], errors="coerce")
+            elif "total_payable" in o and ("paid_at_purchase" in o or isinstance(C.get("payments"), pd.DataFrame)):
+                ot = o.set_index(o["order_id"].astype(str).str.strip())
+                tp = pd.to_numeric(ot["total_payable"], errors="coerce")
+                if isinstance(C.get("payments"), pd.DataFrame) and len(C["payments"]) and "amount" in C["payments"]:
+                    P = C["payments"]; paid = pd.to_numeric(P["amount"], errors="coerce").groupby(P["order_id"].astype(str).str.strip()).sum()
+                else: paid = pd.to_numeric(ot["paid_at_purchase"], errors="coerce")
+                c_owed = tp - paid.reindex(tp.index).fillna(0)
+            else: c_owed = None
+            c_owed = c_owed[~c_owed.index.duplicated()] if c_owed is not None else None
+            zero = 1.0 if c_owed is None else float((c_owed.reindex(pos.index).fillna(0) <= 0.5).mean())
+            if zero > 0.8:
+                w.append(f"the notes {src} say {len(pos)} orders still owe money (e.g. owed {int(pos.iloc[0])} by '{first.get(pos.index[0])}') but "
+                         f"C records {zero:.0%} of them as owing nothing: set orders.debt_end = debt_from_note(note, total_payable) (the note "
+                         "is the debt at the end of the data) and do not make payments equal the order total")
+    except Exception as e: print(f"[canon] note-debt check failed: {type(e).__name__}: {e}", flush=True)
     # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)

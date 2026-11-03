@@ -507,7 +507,11 @@ class Pipeline:
             if nz is not None and "_clean" not in q:
                 try: q["_clean"] = nz.clean(q["question"], q["as_of_date"])
                 except Exception: q["_clean"] = None
-        ind = self.industry(b); new_ind = bool(ind and ind[2] and getattr(a, "industry_raw", 0))
+        ind = self.industry(b)
+        # a rulebook industry the training rules do not know: rule weight 1, raw-table samples, no --confirm. Not for the industries
+        # src/industry.py implements (their tables, toolkit and rule templates know the definitions; v23 public dev_010: mean
+        # confidence 0.98 -> 0.84 once it was detected as 'Mẹ và bé' and every standard rule lost its weight)
+        new_ind = bool(ind and ind[2] and getattr(a, "industry_raw", 0)) and not self.industry_doc(b, "api")
         readme = self.readme_for(b)
         n_raw = int(getattr(a, "industry_raw", 0) or 0) if new_ind and can else 0
         for q in qs:

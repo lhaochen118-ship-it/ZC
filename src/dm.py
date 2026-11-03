@@ -217,6 +217,9 @@ def key(s): return strip_accents(norm_text(s))
 HONORIFIC = re.compile(r"^(?:a|anh|c|chi|e|em|co|chu|bac|thay|tho)\s+(?=\S)")   # not 'ông' / 'bà' (also surnames)
 
 
+LINE_REST = re.compile(r"(?:\d+\s*/\s*)?\d+\s*(?:gb|tb)\b")      # rulebook (phones): dòng máy = the name before '…GB'
+
+
 def person_key(s):
     """key of a person's name without the honorific a book puts in front ('A.Phúc', 'a Phúc', 'anh Phúc' -> 'phuc')."""
     return HONORIFIC.sub("", key(s))
@@ -925,10 +928,20 @@ class Shop:
     def _item_keys(self, item):
         """an item given by name or code (or a list of them) -> every name / code of that item (catalogue + lines)."""
         ks = set(map(str, item)) if isinstance(item, (list, tuple, set)) else {item}
+        found = False
         for df in (self.C.get("items"), self.L):
             if df is not None and {"item_code", "item_name"} <= set(df.columns):
                 m = self._match(df, ("item_code", "item_name"), item)
+                found |= bool(m.any())
                 ks |= set(df.loc[m, "item_code"].astype(str)) | set(df.loc[m, "item_name"].astype(str))
+        if not found and isinstance(item, str):                          # a model line: the name before the storage size
+            k = _ckey(item)                                              # ('Xiaomi Redmi Note 14' = every '… Note 14 128GB Đen')
+            for df in (self.C.get("items"), self.L):
+                if df is None or "item_name" not in df.columns: continue
+                names = pd.Series(df["item_name"].dropna().astype(str).unique())
+                hit = names[names.map(lambda n: _ckey(n).startswith(k + " ") and bool(LINE_REST.match(_ckey(n)[len(k) + 1:])))]
+                ks |= set(hit)
+                if "item_code" in df.columns and len(hit): ks |= set(df.loc[df["item_name"].astype(str).isin(set(hit)), "item_code"].dropna().astype(str))
         return list(ks)
 
     def purchase_total(self, p):

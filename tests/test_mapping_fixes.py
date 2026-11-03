@@ -325,5 +325,12 @@ sh24 = dm.Shop({"orders": O24}, today="2026-03-31")
 check("a full name matches every spelling of the nickname", int(sh24._match_person(sh24.O, ("staff",), "Đoàn Bảo Phúc").sum()) == 30
       and int(sh24._match_person(sh24.O, ("staff",), "Hà Loan Đạt").sum()) == 10)
 
+L25 = pd.DataFrame({"order_id": ["A", "B", "C", "D"], "order_date": pd.to_datetime(["2026-01-04"] * 4), "status": "hoàn thành",
+                    "item_name": ["Xiaomi Redmi Note 14 128GB Đen", "Xiaomi Redmi Note 14 256GB Xanh", "Xiaomi Redmi Note 14 Pro 256GB", "Ốp Redmi Note 14"],
+                    "qty": 1, "line_amount": 10.0})
+o25, l25 = dm.finalize(L25, dedupe=False); sh25 = dm.Shop({"orders": o25, "lines": l25}, today="2026-01-31")
+check("model line = the name before the storage size", sh25.item_qty(dm.month(2026, 1), item="Xiaomi Redmi Note 14") == 2
+      and sh25.item_qty(dm.month(2026, 1), item="Xiaomi Redmi Note 14 128GB Đen") == 1 and sh25.item_qty(dm.month(2026, 1), item="Xiaomi Redmi Note 14 Pro") == 1)
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

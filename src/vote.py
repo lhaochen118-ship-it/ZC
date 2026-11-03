@@ -8,7 +8,7 @@ accurate and more stable than any single run (train, 4 runs: PA 0.980 vs 0.928-0
 Train, every subset of the 4 runs: 2 runs 0.956-0.972 (about the mean of the two), 3 runs 0.976-0.981, 4 runs 0.980.
 The submission is written atomically.
 Usage: vote.py <out_submission.jsonl> <run_dir> ... [--min-share 0.4] [--log-dir DIR]"""
-import os, sys, json, collections
+import os, sys, json, glob, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import agent
 
@@ -18,8 +18,30 @@ def load(run):
     return {r["id"]: r for r in map(json.loads, open(p, encoding="utf-8"))} if os.path.isfile(p) else {}
 
 
-def vote(runs, min_share=0.4):
-    """[logs of each run] -> {qid: (final answer, {canon answer: votes})} for every question of any run."""
+def penalties(run):
+    """{business_id: penalty of the mapping the run chose} (canon.warning_penalty summed): map_penalties.json when present
+    (recomputed offline), else the compile log's chosen_penalty; {} when unknown."""
+    p = os.path.join(run, "map_penalties.json")
+    if os.path.isfile(p): return {k: float(v) for k, v in json.load(open(p, encoding="utf-8")).items()}
+    out = {}
+    for f in [os.path.join(run, "compile_logs.jsonl")] + sorted(glob.glob(os.path.join(run, "shard*", "compile_logs.jsonl"))):
+        if not os.path.isfile(f): continue
+        for l in open(f, encoding="utf-8"):
+            try: r = json.loads(l)
+            except Exception: continue
+            if "chosen_penalty" in r: out[r["business_id"]] = float(r["chosen_penalty"])
+        if out: break
+    return out
+
+
+TIE_GAP = 10.0   # a split is broken only by a run whose mapping is clearly cleaner (a revenue / short-name / staff warning less)
+
+
+def vote(runs, min_share=0.4, pens=None):
+    """[logs of each run] -> {qid: (final answer, {canon answer: votes})} for every question of any run. pens: [{business:
+    penalty of the run's chosen mapping}] per run; a question no answer wins (split) takes the answer of the ONE run whose
+    mapping penalty for that business is lower than every other answering run's by >= TIE_GAP (the runs disagree because
+    their mappings differ, and the checks say which mapping is wrong); otherwise it abstains as before."""
     ids = list(dict.fromkeys(q for L in runs for q in L))
     out = {}
     for q in ids:
@@ -31,7 +53,17 @@ def vote(runs, min_share=0.4):
             c = agent.canon_of(r["final"]); v[c] += 1; conf[c] += float(r.get("conf") or 0); rep.setdefault(c, r["final"]); first.setdefault(c, i)
         if not v: out[q] = ({"type": "abstain"}, {}); continue
         top = max(v, key=lambda c: (v[c], conf[c], -first[c]))
-        out[q] = (rep[top] if v[top] >= min_share * n else {"type": "abstain"}, {str(k): m for k, m in v.items()})
+        if v[top] >= min_share * n: out[q] = (rep[top], {str(k): m for k, m in v.items()}); continue
+        final = {"type": "abstain"}
+        if pens:
+            b = next((L[q].get("business_id") for L in runs if q in L), None)
+            ans = [(pens[i].get(b), agent.canon_of(L[q]["final"]), L[q]["final"]) for i, L in enumerate(runs)
+                   if i < len(pens) and q in L and L[q]["final"].get("type") != "abstain"]
+            if ans and all(p is not None for p, _, _ in ans):
+                best = min(p for p, _, _ in ans); win = {c for p, c, _ in ans if p == best}
+                rest = [p for p, c, _ in ans if p != best]
+                if len(win) == 1 and rest and min(rest) - best >= TIE_GAP: final = next(f for p, c, f in ans if p == best)
+        out[q] = (final, {str(k): m for k, m in v.items()})
     return out
 
 
@@ -41,8 +73,9 @@ def main():
     if "--min-share" in args: i = args.index("--min-share"); ms = float(args[i + 1]); del args[i:i + 2]
     if "--log-dir" in args: i = args.index("--log-dir"); log_dir = args[i + 1]; del args[i:i + 2]
     out, run_dirs = args[0], args[1:]
-    runs = [L for L in (load(r) for r in run_dirs) if L]
-    res = vote(runs, ms)
+    pairs = [(load(r), r) for r in run_dirs]; pairs = [(L, r) for L, r in pairs if L]
+    runs = [L for L, _ in pairs]; pens = [penalties(r) for _, r in pairs]
+    res = vote(runs, ms, pens if all(pens) else None)
     tmp = out + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         for q, (final, _) in res.items(): f.write(json.dumps({"id": q, **final}, ensure_ascii=False) + "\n")

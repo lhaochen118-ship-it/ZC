@@ -423,7 +423,9 @@ class Pipeline:
             M = max(1, int(getattr(self.a, "map_vote", 1) or 1), int(getattr(self.a, "map_fallback", 1) or 1))   # next ranked candidates
             if M > 1: can["alts"] = [cs[i][1]["path"] for i in order[1:M]]; can["alt_src"] = [cs[i][0] for i in order[1:M]]
             self.clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"], len(y.get("warnings") or []),
-                                                                                        round(y.get("fail_share", -1.0), 3), round(y.get("agree", 0.0), 3)] for x, y in cs]},
+                                                                                        round(y.get("fail_share", -1.0), 3), round(y.get("agree", 0.0), 3)] for x, y in cs],
+                                        "chosen_penalty": round(sum(canonmod.warning_penalty(w) for w in r.get("warnings") or []), 1),   # vote.py: a split
+                                        "chosen_warnings": [str(w)[:120] for w in r.get("warnings") or []]},                             # goes to the cleanest run
                                        ensure_ascii=False) + "\n")
             print(f"  {b}: {len(cs)} candidates, chose {src} coverage {r['coverage']:.0f} ({time.time() - bs['t']:.0f}s)", flush=True)
         else: print(f"  {b}: no canonical tables ({time.time() - bs['t']:.0f}s)", flush=True)

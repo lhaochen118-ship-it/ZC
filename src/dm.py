@@ -549,6 +549,14 @@ def require(cond, why="the data does not record this"):
     if not cond: raise Unanswerable(why)
 
 
+def _timed(s):
+    """order_time must carry the time of day for shift / hour questions: a column of dates only (every value 00:00) would
+    put every order before 06:00 and answer 0 (a mapping error, not 'no orders')."""
+    t = pd.to_datetime(s, errors="coerce").dropna()
+    if len(t) > 20 and ((t.dt.hour == 0) & (t.dt.minute == 0)).mean() > 0.98:
+        raise RuntimeError("order_time holds dates without the time of day: map order_time to the order creation time")
+
+
 class Shop:
     """Metrics of one business. Every method follows the rulebook defaults; arguments name the variations questions ask
     for. `today` = as-of date (records after it have not happened yet). A period lying completely outside the dates of
@@ -600,7 +608,7 @@ class Shop:
         if payment is not None: df = df[self._match(df, ("payment_method",), canon_payment(payment) if isinstance(payment, str) else payment)]
         if status is not None: df = df[df["status"].eq(status)]
         if shift is not None:
-            h = pd.to_datetime(df["order_time"]).dt.hour
+            _timed(df["order_time"]); h = pd.to_datetime(df["order_time"]).dt.hour
             df = df[(h >= 6) & (h <= 13)] if key(shift).startswith("sang") else df[(h >= 14) & (h <= 21)]
         if where is not None: df = df[where(df)]
         for c, v in extra.items():                                      # prescription=True, base_unit="hộp": a column of the frame
@@ -875,7 +883,7 @@ class Shop:
     def peak_hour(self, p, **f):
         """starting hour of the one-hour window with the most orders (order creation time)."""
         self._need(self.O, ("order_time",), "the time of day")
-        o = self.orders(p, valid=None, **f); h = pd.to_datetime(o["order_time"]).dt.hour.value_counts()
+        _timed(self.O["order_time"]); o = self.orders(p, valid=None, **f); h = pd.to_datetime(o["order_time"]).dt.hour.value_counts()
         return int(h.sort_index().idxmax()) if len(h) else None
 
     def size_qty(self, p, size, **f):

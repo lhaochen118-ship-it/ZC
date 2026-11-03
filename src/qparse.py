@@ -52,7 +52,17 @@ def dialect(t):
     t = re.sub(r"\b(thang|tuan|nam|bua|hom|ngay|quy|luc|dot)\s+ni\b", r"\1 nay", t)
     t = re.sub(r"\b(tho|ngay|thang|xe|dong xe|hang|mat hang|mon|khach|nhan vien|loai|nhom|sp|san pham|nha cung cap|ncc)\s+mo\b", r"\1 nao", t)
     t = re.sub(r"\b(toi|den|tu dau nam toi|tu dau thang toi)\s+chu\b", r"\1 nay", t)
-    return re.sub(r"\brua\b", "vay", t)
+    return slang(re.sub(r"\brua\b", "vay", t))
+
+
+def slang(t):
+    """shop slang and frequent typos in accent-free text, only where unambiguous: 'bq' / 'bìn quân' -> 'binh quan', 'trở lne' ->
+    'tro len', 'cất hàng' / 'đánh hàng (về)' (buying stock) -> 'nhap hang', '<từ / đạt / trên> 10 củ' -> '10 trieu', '3tr7' -> '3.7 trieu'."""
+    t = re.sub(r"\bbq\b", "binh quan", t); t = re.sub(r"\bbin quan\b", "binh quan", t); t = re.sub(r"\btrung bin\b", "trung binh", t)
+    t = re.sub(r"\blne\b", "len", t); t = re.sub(r"\bdh\b", "don hang", t)                # 'đh' = đơn hàng
+    t = re.sub(r"\b(?:cat|danh) hang(?: ve)?\b", "nhap hang", t)
+    t = re.sub(r"\b(tu|dat|tren|hon|duoi|it nhat|qua|vuot|khoang|toi|den|tro len) (\d+(?:[.,]\d+)?) ?cu\b", r"\1 \2 trieu", t)
+    return re.sub(r"\b(\d+) ?tr ?(\d)\b", r"\1.\2 trieu", t)
 
 
 Y = r"(20\d\d|\d\d)"
@@ -116,6 +126,18 @@ def all_months(text):
     return out
 
 
+def months_pos(text):
+    """[(start, year, month)] of every explicit month 'M/YYYY' / 'tháng M năm YYYY' of the key text, in order."""
+    out = []
+    for m in re.finditer(r"(?<![\d/])(\d{1,2})\s*[/-]\s*(20\d\d)\b|thang (\d{1,2}) nam (20\d\d)\b", text):
+        mo, y = (m.group(1), m.group(2)) if m.group(1) else (m.group(3), m.group(4))
+        out.append((m.start(), int(y), int(mo)))
+    return out
+
+
+NUMW = {"hai": 2, "ba": 3, "bon": 4, "nam": 5, "sau": 6, "bay": 7, "tam": 8, "chin": 9, "muoi": 10}   # spelled counts ('top năm món')
+
+
 def until_day(text, today):
     """'đến hết ngày X' / 'cuối ngày hôm nay' -> code of the day."""
     t = K(text); m = re.search(r"(\d{1,2})/(\d{1,2})/(20\d\d)", t)
@@ -171,9 +193,37 @@ def fargs(f):
 def ans(t, expr): return f'ANSWER = {{"type": "{t}", "answer": {expr}}}'
 
 
+SALE_FILLER = set("""hang ra het tong cong tat ca cac le si duoc dc cho khach cua tiem quan shop minh em anh chi nha nhe ha vay
+    roi ay nay do""".split())
+SALE_STOP = set("duoc dc duco dduoc dk duowc bao bnhiu bn may la thang tuan quy nam hom ngay bua tu trong vao het tong luc gio".split())
+CAP_STOP = set("""thang thg th quy tuan nam tet hom ngay bua doanh thu dthu top tong cho shop quan tiem cua hang ad chi anh em minh toi
+    ban tu den trong vao dau cuoi bao nhieu binh quan trung so voi va hay la co mot moi cac nhung nay qua truoc sau ca sang chieu""".split()) - {"chi", "anh", "em", "minh", "toi"}
+# (pronouns stay out of the stop list: 'Lương Chí Đức' is a name)
+
+
+def unlinked_entity(q, t):
+    """a sold thing / a name the shop vocabulary did not link: 'bán <X> được bao nhiêu', 'tiền bán <X>' with X not filler, or a
+    run of capitalised words inside the question ('Canh chua cá tràu', 'Đoàn Bảo Phúc'). A shop-wide template would then answer
+    for the whole shop instead of X."""
+    for m in re.finditer(r"\b(?:tien ban|ban)\s+((?:\S+\s*){0,8})", t):
+        words = []
+        for w in m.group(1).split():
+            if w in SALE_STOP or re.search(r"\d", w): break
+            words.append(w)
+        if [w for w in words if w not in SALE_FILLER]: return True
+    toks = re.findall(r"[^\W\d_][\w\-]*", str(q)); run = []
+    for i, w in enumerate(toks + ["."]):
+        if w[:1].isupper() and not w.isupper() and dm.key(w) not in CAP_STOP and i < len(toks): run.append(i); continue
+        if len(run) >= 2 and (run[0] > 0 or len(run) >= 3): return True
+        run = []
+    return False
+
+
 def parse(q, today, shop=None):
     """(template, code) for the common templates; None when unsure."""
-    t0 = K(q); t = untelex(t0); tk = dm.key(q); p, P = parse_period(t, today)   # Telex typos undone first ('quys 3/2025')
+    t0 = K(q); t = untelex(t0); tk = dm.key(q)                                    # Telex typos undone first ('quys 3/2025')
+    if re.search(r"(?i)(?<!\w)[oô]\s?-?\s?đờ(?!\w)", str(q)): t = re.sub(r"\bo ?do\b", "order", t)   # 'o đờ' = order ('ở đó' keeps its accents)
+    p, P = parse_period(t, today)
     if P is None: p, P = parse_period(q, today)
     def has(*pats): return any(re.search(x, t) or re.search(x, t0) for x in pats)
     V = Vocab(shop) if shop is not None else None
@@ -188,7 +238,7 @@ def parse(q, today, shop=None):
             else:
                 g = V.find(m.group(1), V.groups)
                 if g is not None: f["group"] = g
-        m = re.search(r"(?:nhan vien|nguoi ban|nv)(?: ma)? (nv\s*\d+)", tk)
+        m = re.search(r"(?:nhan vien|nguoi ban|nv)(?: ma)? (nv\s*\d+)", tk) or re.search(r"(?<!\w)(nv\s?\d{2,})(?!\w)", tk)
         if m: f["staff"] = V.find(m.group(1).replace(" ", ""), V.staff) or m.group(1).upper().replace(" ", "")
         m = re.search(r"hoat chat (.+)", tk)
         if m and V.ingredients:
@@ -205,10 +255,13 @@ def parse(q, today, shop=None):
     rev = has(r"doanh thu|dthu|revenue|ban duoc .*tien|ban dc .*tien|thu ve|tien hang|tien ban|bao nhieu tien|bnhiu tien|bn tien|nhiu tien|nhieu tien|mang ve|thu duoc")
     two_part = len(re.findall(r"bao nhieu|bnhiu|\bbn\b|\bla nhieu\b", t)) >= 2 or len(re.findall(r"doanh thu|dthu", t)) >= 2 or has(r"moi loai")
     # ^ two quantities asked ('X là bao nhiêu, Y là bao nhiêu', 'mỗi loại'): no single-number template answers it
-    debt = has(r"\bno\b|cong no|tra no|mua chiu|chua tra|thu no|ghi no|con thieu|thieu tien")
+    debt = has(r"\bno\b|cong no|tra no|mua chiu|ban chiu|chua tra|thu no|ghi no|con thieu|thieu tien")
     # ---------------- debt (§4)
     if debt and not has(r"nhap"):
         d = until_day(q, today)
+        if has(r"ngay phai tra|han (?:phai )?tra|den han|qua han|ky han"): return None    # due dates: no shop-wide template
+        m = re.search(r"tuoi no (?:la |da )?(?:qua|hon|tren) (\d+) ngay", t)
+        if m: return "debt_older", ans("number", f"debt_older_than({d}, {int(m.group(1))})")   # 'tuổi nợ quá N ngày' -> one amount
         if has(r"tuoi no"): return "debt_aging", ans("list", f"debt_aging({d})")
         m = re.search(r"(?:hon|qua|tren) (\d+) ngay", t)
         if m and has(r"don dat|dat (da )?(hon|qua)|tuoi"): return "debt_older", ans("number", f"debt_older_than({d}, {int(m.group(1))})")
@@ -225,7 +278,7 @@ def parse(q, today, shop=None):
         if has(r"con no|chua tra|tong no|cong no|con thieu|thieu tien|no chua thu|khach no"): return "debt_total", ans("number", f"debt_total({d})")
         return None
     # ---------------- price effect
-    if has(r"tang gia|len gia|doi gia|tang len") and item is not None:
+    if has(r"tang gia|len gia|doi gia|tang len|\blen \d") and item is not None:
         m = re.search(r"(\d+) ngay (?:dau|ke tu|tu)", t) or re.search(r"(\d+) ngay", t)
         n = int(m.group(1)) if m else None
         dd = re.search(r"(\d{1,2})/(\d{1,2})/(20\d\d)", t)
@@ -235,7 +288,8 @@ def parse(q, today, shop=None):
         if pr: return "price_effect", ans("percent", f"price_effect({J(item)}, {n}, new_price={float(pr[-1])})")
         return None
     # ---------------- purchases
-    if has(r"nhap") and not has(r"nhap tru ban|tru so ban|chenh lech nhap"):
+    ims = has(r"nhap tru ban|tru so ban|chenh lech nhap|nhap\b.{0,30}\btru\b.{0,30}\bban\b")
+    if has(r"nhap") and not ims:
         if has(r"binh quan|trung binh") and item is not None and P:
             u = re.search(r"(?:mot|1|moi) " + UNITS + r"\b", t)
             return "avg_purchase", ans("number", f"avg_purchase_price({J(item)}, {P}" + (f", unit={J(u.group(1))}" if u else "") + ")")
@@ -244,7 +298,7 @@ def parse(q, today, shop=None):
             return "top_supplier", ans("string", f"top_supplier({P}, by={J(by)})")
         if P and has(r"tong|bao nhieu tien|het bao nhieu|gia tri|tien hang|bnhiu|bn\b|nhieu tien|tien nhap"): return "purchase_total", ans("number", f"purchase_total({P})")
         return None
-    if has(r"nhap tru ban|tru so ban|chenh lech nhap") and item is not None and P: return "import_minus_sales", ans("number", f"import_minus_sales({J(item)}, {P})")
+    if ims and item is not None and P: return "import_minus_sales", ans("number", f"import_minus_sales({J(item)}, {P})")
     # ---------------- lots / expiry
     if has(r"han dung|het han\b|\blo (?:hang|nao|ton|con)|(?:may|bao nhieu|so|cac) lo (?:con|ton|hang|sap)") or re.search(r"(?i)\blô\b", q):   # 'lọ' = bottle
         d = "TODAY"
@@ -302,11 +356,18 @@ def parse(q, today, shop=None):
         if has(r"khach") and has(r"nhieu|nhat") and P: return "top_canceller", ans("string", f"top_customers({P}, 1, by='n_cancelled')[0]")
         return None
     # ---------------- monthly lists / trends / best month
-    ms = all_months(q)
-    if has(r"tang lien tuc|luon cao hon|thang sau .*cao hon|tang dan|co phai .*cao hon") and rev:
+    ms = all_months(q); mpos = months_pos(K(q))
+    # 'T7 cao hơn T6, rồi T8 lại cao hơn T7, đúng không': every stated pair, in the stated direction
+    MR = r"(?:thang |thg |th |t)?(\d{1,2})\s*[/-]\s*(20\d\d)"
+    prs = re.findall(MR + r"\s+(?:(?:lai|deu|van|co|da)\s+)?(cao hon|thap hon|nhieu hon|it hon|lon hon|nho hon)\s+(?:so voi\s+)?" + MR, K(q))
+    if prs and rev and has(r"dung (?:vay |the )?(?:khong|ko|hong|ha)|phai (?:khong|ko|hong)|co dung|co phai|dung chua|\?\s*$") and len(prs) * 2 >= len(ms):
+        cmp_ = lambda c: ">" if c in ("cao hon", "nhieu hon", "lon hon") else "<"
+        return "rev_cmp", ans("boolean", "all([" + ", ".join(f"revenue(month({int(y1)}, {int(m1)})) {cmp_(c)} revenue(month({int(y2)}, {int(m2)}))"
+                                                     for m1, y1, c, m2, y2 in prs) + "])")
+    if has(r"tang lien tuc|luon cao hon|thang sau .*cao hon|thang sau .*hon thang (?:truoc|trc)|luon hon|tang dan|co phai .*cao hon") and rev:
         if len(ms) >= 2 and has(r"\b(tu|giua) "):
             if len(ms) == 2: return "increasing", ans("boolean", f"increasing(month_seq({ms[0][6:-1]}, {ms[1][6:-1]}))")
-        if len(ms) >= 2: return "increasing", ans("boolean", f"increasing([{', '.join(dict.fromkeys(ms))}])")
+        if len(ms) >= 2: return "increasing", ans("boolean", f"increasing([{', '.join(sorted(dict.fromkeys(ms), key=lambda c: tuple(map(int, re.findall(r'\d+', c)))))}])")
         return None
     if has(r"lan luot|moi thang|tung thang|theo thu tu|tu thang cu|3 thang lien") and rev and not pays and not chans:
         if len(ms) == 2 and has(r"(tu|ket thuc|den) "):
@@ -316,6 +377,9 @@ def parse(q, today, shop=None):
         m = re.search(r"(\d) thang (?:lien nhau |lien tiep )?ket thuc", t)
         if m and ms: return "months_list", ans("list", f"monthly_revenue(months_back({ms[0]}, {int(m.group(1))}))")
         return None
+    if rev and len(dict.fromkeys(ms)) >= 3 and not two_part and not has(r"\b(?:tu|giua)\b.*\b(?:den|toi)\b|cong lai|tong|gop|ca (?:ba|3|bon|4)|trung binh|binh quan|"
+                                                                         r"tang|giam|nhat|so voi|so vs|hon|thang nao|%|phan tram|chiem"):
+        return "months_list", ans("list", f"monthly_revenue([{', '.join(dict.fromkeys(ms))}])")
     if has(r"thang nao") and rev and len(ms) >= 2:
         seq = f"month_seq({ms[0][6:-1]}, {ms[-1][6:-1]})" if len(ms) == 2 and has(r"\b(tu|den|toi)\b") else f"[{', '.join(ms)}]"
         return "best_month", ans("date", f"best_month({seq})")
@@ -328,7 +392,12 @@ def parse(q, today, shop=None):
         if has(r"tet nam (truoc|ngoai|roi)") and has(r"tet nam nay|tet nay") : return "growth_tet_yoy", ans("percent", f"growth({meas}(tet_of(TODAY)), {meas}(tet(TODAY.year - 1)))")
         if has(r"cung ky thang (truoc|roi|trc|lien truoc)") or (has(r"dau thang|thang nay") and has(r"cung ky")):
             return "growth_mtd", ans("percent", f"growth({meas}(this_month(TODAY){fa()}), {meas}(prev_month_same_days(TODAY){fa()}))")
-        if len(ms) == 2: return "growth2", ans("percent", f"growth({meas}({ms[0]}{fa()}), {meas}({ms[1]}{fa()}))")
+        if len(ms) == 2 and len(mpos) == 2 and ms[0] != ms[1]:
+            sv = re.search(r"\bso (?:voi|vs|cung)\b", K(q))
+            after = [i for i, (st, _, _) in enumerate(mpos) if sv and st >= sv.end()]
+            bi = after[0] if after else min((0, 1), key=lambda i: mpos[i][1:])   # 'so với A' -> base A; else the earlier month
+            new, base = ms[1 - bi], ms[bi]
+            return "growth2", ans("percent", f"growth({meas}({new}{fa()}), {meas}({base}{fa()}))")
         if P and P.startswith("month") and has(r"thang (truoc|lien truoc|lien trc|trc|ngay truoc|truoc do|lien ke)"): return "growth_prev", ans("percent", f"growth({meas}({P}{fa()}), {meas}(prev_month({P}){fa()}))")
         if P and P.startswith("month") and has(r"cung (ky|thang) nam (ngoai|truoc|roi)|nam ngoai|nam truoc"): return "growth_yoy", ans("percent", f"growth({meas}({P}{fa()}), {meas}(same_month_last_year({P}){fa()}))")
         return None
@@ -360,16 +429,20 @@ def parse(q, today, shop=None):
         if has(r"nhat|gioi nhat|cao nhat"): return "top_staff", ans("string", "rank(staff_sales(" + P + "), 1)[0]")
         return None
     # ---------------- items: top / qty / size
-    m = re.search(r"(?:top |liet ke |^|cho minh |cho toi )(\d+) (?:mat hang|hang|san pham|mon|sp|best)", t) or re.search(r"top (\d+)", t) or re.search(r"(\d+) (?:mat hang|mon|san pham|hang|sp) (?:ban )?(?:chay|nhieu|hot|best)", t)
+    m = re.search(r"(?:top |liet ke |^|cho minh |cho toi )(\d+) (?:mat hang|hang|san pham|mon|sp|best)", t) or re.search(r"top (\d+)", t) or re.search(r"(\d+) (?:mat hang|mon|san pham|hang|sp) (?:ban )?(?:chay|nhieu|hot|best)", t) \
+        or re.search(r"(?<![\d/.,])(\d{1,2}|hai|ba|bon|nam|sau|bay|tam|chin|muoi) (?:mat hang|san pham|mon|sp)\b", t) or re.search(r"\btop (hai|ba|bon|nam|sau|bay|tam|chin|muoi)\b", t)
+    nN = (int(m.group(1)) if m.group(1).isdigit() else NUMW[m.group(1)]) if m else None
     best = has(r"ban chay|chay nhat|ban nhieu nhat|ban dc nhieu nhat|ban duoc nhieu nhat|hot nhat|best seller|ban nhiu nhat|ban dc nhiu nhat|nhieu nhat|nhiu nhat")
     if best and P and (has(r"mat hang|hang nao|san pham|mon nao|\bsp\b|mon |hang gi|la gi|la chi|hang chi|best seller|top|nhung") or m):
         by = "revenue" if has(r"nhieu tien|nhiu tien|doanh thu") else "n_orders" if has(r"nhieu don|ua chuong") else "qty"
         g = {k: v for k, v in f.items() if k in ("group",)}
-        if m: return "top_items", ans("list", f"top_items({P}, {int(m.group(1))}, by={J(by)}{fa(g)})")
+        if nN and nN > 1: return "top_items", ans("list", f"top_items({P}, {nN}, by={J(by)}{fa(g)})")
+        if nN is None and has(r"nhung (?:mon|mat hang|san pham|sp|hang)|cac (?:mon|mat hang|san pham)"): return None   # plural, no count
         return "top_item", ans("string", f"top_items({P}, 1, by={J(by)}{fa(g)})[0]")
     if has(r"size (m|l)\b") and P and not rev:
         sz = re.search(r"size (m|l)\b", t).group(1).upper(); return "size_qty", ans("number", f"size_qty({P}, {J(sz)})")
-    if P and not rev and (item is not None or "group" in f) and (re.search(r"(bao nhieu|may|bnhiu|bn|so|tong cong|total) " + UNITS + r"\b", t) or has(r"ban ra bao nhieu|ban duoc bao nhieu|ban dc bao nhieu|so luong")):
+    if P and not rev and (item is not None or "group" in f) and (re.search(r"(bao nhieu|may|bnhiu|bn|so|tong cong|total) " + UNITS + r"\b", t) or has(r"ban ra bao nhieu|ban duoc bao nhieu|ban dc bao nhieu|so luong")) \
+            and not has(r"giao|cho di|da cho|van chuyen|so voi|so vs|tang hay giam|chenh|nhap"):
         return "item_qty", ans("number", f"item_qty({P}{fa()})")
     if P and not rev and item is None and not f and not pays and not chans and not two_part:
         # 'bán được bao nhiêu <đơn vị>' over the whole shop (rulebook: only items whose base unit is that unit)
@@ -382,13 +455,13 @@ def parse(q, today, shop=None):
             if not [w for w in t.split() if not re.search(r"\d", w) and w not in UNIT_QTY_WORDS and w != u]:   # (an unlinked
                 return "unit_qty", ans("number", f"item_qty({P}, base_unit={J(u)})")                          # item: no rule)
     # ---------------- revenue variants
-    if has(r"co may ngay|bao nhieu ngay|bnhiu ngay|bn ngay|may bua|co may hom|so ngay|dem so ngay|bao nhieu bua|nhieu ngay dat|nhiu ngay|co nhieu ngay") and P:
+    if has(r"co may ngay|bao nhieu ngay|bnhiu ngay|bn ngay|\bmay ngay|may bua|co may hom|so ngay|dem so ngay|bao nhieu bua|nhieu ngay dat|nhiu ngay|co nhieu ngay") and P:
         x = money_in(t, r"(?:tu|dat|tren|it nhat|tro len)\s*")
         if x and has(r"tro len"): return "n_days_rev_ge", ans("number", f"n_days_revenue_at_least({P}, {x:.0f})")
     if has(r"\bdon\b|\bbill\b|hoa don|\border\b") and has(r"tro len") and P and (rev or has(r"gia tri")):
         x = money_in(t, r"(?:tu|dat|tren|it nhat|tri gia|gia tri|tro len)\s*")
         if x: return "n_orders_rev_ge", ans("number", f"n_orders_revenue_at_least({P}, {x:.0f}{fa()})")
-    if has(r"trung binh|binh quan") and has(r"\bdon\b|\bbill\b|hoa don|\border\b") and (rev or has(r"gia tri (?:trung binh|binh quan)")) and P and not has(r"nhap|moi ngay"):
+    if has(r"trung binh|binh quan") and has(r"\bdon\b|\bbill\b|hoa don|\border\b") and (rev or has(r"gia tri")) and P and not has(r"nhap|moi ngay"):
         return "aov", ans("number", f"aov({P}{fa()})")
     mw = re.search(r"(?:trung binh|binh quan) (?:moi |mot |1 )?(?:ngay )?(thu (?:hai|ba|tu|nam|sau|bay|[2-7])|chu nhat|\bcn\b)", t)
     if mw and P and not two_part:                                       # rulebook: divided by the number of such days of the period
@@ -406,15 +479,20 @@ def parse(q, today, shop=None):
         pos = {lab: min((t.find(w) for w, l2 in words if l2 == lab and t.find(w) >= 0), default=999) for lab in vals}
         order = sorted(vals, key=lambda v: pos[v])
         return "rev_pair", ans("list", f"[revenue({P}, {key_}={J(order[0])}), revenue({P}, {key_}={J(order[1])})]")
-    if rev and P and not two_part and not has(r"tang|giam|so voi|so vs|top|(?<!gan )(?<!moi )nhat|%|phan tram|ti trong|chiem|lan luot|\bva\b|moi loai|tung|trung binh|binh quan"):
+    multi = len(dict.fromkeys(ms)) >= 2 and not P.startswith("between") if P else False   # several months, the template reads one
+    count_q = bool(re.search(r"(?i)đếm", str(q))) or has(r"\bdem (?:so|gium|giup|xem|coi|thu)\b|\bco may\b|(?:bao nhieu|bnhiu|\bbn\b|\bmay|\bso) (?:ngay|bua|hom|don|lan|khach|nguoi|phieu|luot|mat hang|mon|san pham|loai)\b")
+    yes_no = has(r"\bhon\b|dung (?:vay |the )?(?:khong|ko|hong)|phai (?:khong|ko|hong)|co dung|co phai|\bluon (?:cao |thap |nhieu |it )?hon\b")
+    if rev and P and not two_part and not multi and not count_q and not yes_no and not has(r"tang|giam|so voi|so vs|top|(?<!gan )(?<!moi )nhat|%|phan tram|ti trong|chiem|lan luot|\bva\b|moi loai|tung|trung binh|binh quan"):
         g = dict(f)
+        if not f and not pays and not chans and (unlinked_entity(q, t) or has(r"\btho\b|\bphieu\b")): return None   # a mechanic / a ticket
         if len(pays) == 1 and has(r"tra bang|thanh toan|tra qua|bang"): g["payment"] = pays[0]
         if len(chans) == 1: g["channel"] = chans[0]
         if not g and has(r"mat hang|san pham|\bsp\b|nhom|kenh|tra bang|thanh toan"): return None
         return "revenue", ans("number", f"revenue({P}{fa(g)})")
     if has(r"so don|may don|bao nhieu don|bnhiu don|bn don|so bill|bao nhieu bill|may bill|bao nhieu hoa don|nhieu don|tong don|ddown|don hang|\bdh\b|\bo do\b|dem so don|bao nhieu don hang|chot duoc|bao nhieu order|may order|so order") and P \
-            and not two_part and not has(r"tra hang|khach|tro len|giao|%|ti le|phan tram|trung binh|co mua|co ban"):
+            and not two_part and not multi and not yes_no and not has(r"tra hang|khach|tro len|giao|%|ti le|phan tram|trung binh|binh quan|co mua|co ban|\bchiu\b|\bno\b"):
         g = dict(f)
+        if not g and has(r"mat hang|san pham|\bsp\b|nhom|kenh"): return None
         if len(chans) == 1: g["channel"] = chans[0]
         if len(pays) == 1 and has(r"tra bang|thanh toan"): g["payment"] = pays[0]
         return "n_orders", ans("number", f"n_orders({P}{fa(g)})")

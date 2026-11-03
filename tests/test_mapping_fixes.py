@@ -270,5 +270,41 @@ st6 = mk(U, None); st6["b"] = "biz"
 check("unanswerable on a reference mapping stays", pf.vote(st6)[0] == U, pf.vote(st6))
 check("answer agreement", pipeline.Pipeline.answer_agreement([{"a": "1", "b": "2"}, {"a": "1", "b": "2"}, {"a": "9", "b": "2"}]) == [1.0, 1.0, 0.5])
 
+# 22. rule parser on public-test phrasings (general fixes; tests/README): slang, spelled counts, 'so với A thì B', month lists,
+# stated comparisons, unlinked things sold, due dates, debt age; mapping checks: revenue vs lines, order_time without the time
+P22 = lambda q: (qparse.parse(q, "2026-06-30", None) or (None, ""))
+check("slang: 10 củ / 3tr7", "n_days_revenue_at_least(month(2025, 8), 10000000)" in P22("Tháng 8/2025 có mấy bữa tiệm bán được từ 10 củ trở lên?")[1]
+      and "3700000" in P22("th5/2026 bn don dthu dat tu 3tr7 tro len")[1], (P22("Tháng 8/2025 có mấy bữa tiệm bán được từ 10 củ trở lên?"),))
+check("slang: bq / bìn quân / o đờ / đh -> aov", all(P22(q)[0] == "aov" for q in ("Dthu bq mỗi đơn tuần trc là bnhiu?", "Bìn quân 1 đơn th3/2026 bao nhiêu tiền?",
+      "Tuần trước bình quân mỗi o đờ mang về bao nhiêu doanh thu?", "Tuan truoc dthu binh quan tren 1 dh la bnhiu z?")))
+check("cất hàng / đánh hàng về = purchases", P22("Tháng 6/2025 quán đánh hàng về hết bao nhiêu tiền?")[0] == "purchase_total")
+check("top N after the period / spelled", "top_items(month(2026, 6), 3," in P22("T6/2026 3 mặt hàng nào bán chạy nhất?")[1]
+      and "top_items(this_week(TODAY), 5," in P22("Top năm món bán chạy nhất tuần này là những món nào?")[1])
+check("growth: base after 'so với', else the earlier month",
+      "growth(revenue(month(2026, 4)), revenue(month(2025, 4)))" in P22("So voi T4/2025 thi T4/2026 doanh thu tang truong bao nhieu %?")[1]
+      and "growth(revenue(month(2026, 5)), revenue(month(2026, 4)))" in P22("Doanh thu tháng 5/2026 so với tháng 4/2026 tăng bao nhiêu %?")[1]
+      and "growth(revenue(month(2026, 5)), revenue(month(2026, 4)))" in P22("Tháng 4/2026 và tháng 5/2026 doanh thu tăng giảm bao nhiêu %?")[1])
+check("month list / stated comparisons", P22("cho xin dthu th7/2025, th8/2025, th9/2025 nhé")[0] == "months_list"
+      and P22("Dthu T7/2025 cao hơn T6/2025, rồi T8/2025 lại cao hơn T7/2025, đúng vậy không?")[0] == "rev_cmp"
+      and P22("Từ th5/2025 đến th7/2025 dthu tháng sau có luôn hơn tháng trước hông?")[0] == "increasing")
+check("unlinked item / name -> no shop-wide revenue", P22("Tháng 10/2025 bán Canh chua cá tràu được bao nhiêu tiền?")[0] is None
+      and P22("Luong Chi Duc thang 4/26 ban tong cong bnhiu tien?")[0] is None and P22("Hôm nay quán bán được bao nhiêu tiền?")[0] == "revenue"
+      and P22("Tháng 3/2026 bán hàng được bao nhiêu tiền?")[0] == "revenue" and P22("6/2025 các đơn trả bằng chuyển khoản đem về bao nhiêu doanh thu?")[0] == "revenue")
+check("due dates / debt age", P22("Tính tới hôm nay, có bao nhiêu đơn bán chịu có ngày phải trả rơi vào tháng 11/2025?")[0] is None
+      and "debt_older_than(\"2025-10-10\", 7)" in P22("Tính đến hết 10/10/2025, các khoản nợ có tuổi nợ quá 7 ngày còn bnhiu tiền?")[1])
+check("'tính luôn hôm nay' is not a comparison", P22("Tính luôn hnay thì 7 ngày gần nhất quán có bnhiu đơn z?")[0] == "n_orders")
+L22 = pd.DataFrame({"order_id": [f"O{i}" for i in range(80) for _ in (0, 1)], "order_date": pd.Timestamp("2026-03-04"), "status": "hoàn thành",
+                    "item_name": "x", "qty": 1, "line_amount": 10.0})
+o22, l22 = dm.finalize(L22, dedupe=False); o22["revenue"] = 20.0; o22.loc[3, "revenue"] = 10.0     # one order voucher subtracted
+biz22 = types.SimpleNamespace(tables={}, readme="", raw={})
+w22 = canon.secondary_checks({"orders": o22, "lines": l22}, biz22)
+check("revenue vs the order's lines", any(x.startswith("orders.revenue differs from the sum") for x in w22) and canon.warning_penalty(w22[0]) == 100, w22)
+o22b = o22.copy(); o22b["revenue"] = 20.0
+check("revenue = lines: no warning", not any(x.startswith("orders.revenue differs") for x in canon.secondary_checks({"orders": o22b, "lines": l22}, biz22)))
+o22b["order_time"] = pd.Timestamp("2026-03-04")
+try: dm.Shop({"orders": o22b, "lines": l22}, today="2026-03-31").revenue(dm.month(2026, 3), shift="sáng"); r22 = "no error"
+except RuntimeError as e: r22 = str(e)
+check("shift on dates without the time of day -> error, not 0", "time of day" in r22, r22)
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

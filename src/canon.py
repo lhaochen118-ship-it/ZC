@@ -260,7 +260,8 @@ def _num(s): return pd.to_numeric(s.map(lambda v: ingest.parse_num(v) if isinsta
 def warning_penalty(w):
     """coverage points a soft warning costs when candidate mappings are ranked: a wrong revenue column breaks most
     answers (always ranked below), a missing secondary table only its own questions."""
-    return 100.0 if str(w).startswith("orders.revenue differs") else 2.0
+    w = str(w)
+    return 100.0 if w.startswith("orders.revenue differs") else 10.0 if w.startswith("orders.order_time has no time") else 2.0
 
 
 def rank_score(r):
@@ -298,7 +299,33 @@ def secondary_checks(C, biz):
                                  f"tiền hàng / tiền bán of an order IS its revenue (line amounts after line discounts, before order "
                                  f"discounts, without VAT or shipping): map revenue (and the line amounts of order-only data) to '{rc}'")
                 break
-    # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
+    # 1a. revenue against the order's own lines (rulebook §1: revenue of an order = sum of its line amounts after line
+    #     discounts; order-level discounts are NOT subtracted, shipping / VAT NOT added). Exact: one order off by 10 000 VND
+    #     changes every revenue answer of its month (a public shop's LLM mapping subtracted the order voucher on 34 orders).
+    itm = next((c for c in ("item_code", "item_name") if l is not None and c in l.columns), None)   # item lines only (order-only
+    if "revenue" in o and itm and len(v) > 50 and {"order_id", "line_amount"} <= set(l.columns):        # data has no lines to add)
+        la = pd.to_numeric(l["line_amount"], errors="coerce")
+        if la.notna().mean() > 0.9 and l[itm].notna().mean() > 0.9:
+            s = la.groupby(l["order_id"].astype(str).str.strip()).sum(min_count=1)
+            x = v["order_id"].astype(str).str.strip().map(s); rv = pd.to_numeric(v["revenue"], errors="coerce"); ok = rv.notna() & x.notna()
+            if ok.sum() > 50 and ok.mean() > 0.5:
+                bad = (rv[ok] - x[ok]).abs() > 1.0
+                if bad.any() and not any(str(z).startswith("orders.revenue differs") for z in w):
+                    d = (rv[ok] - x[ok])[bad]
+                    w.append(f"orders.revenue differs from the sum of the order's line_amount on {int(bad.sum())} valid orders (e.g. order "
+                             f"{v.loc[d.index[0], 'order_id']}: revenue {rv[d.index[0]]:.0f}, lines {x[d.index[0]]:.0f}). Rulebook §1: the revenue "
+                             "of an order is the sum of its line amounts after line discounts; order-level discounts (voucher, promotion "
+                             "on the order total) are NOT subtracted, shipping and VAT are NOT added. Set revenue from the lines")
+    # 1a'. order_time without the time of day although the data records one (shift / peak-hour questions answer 0)
+    if "order_time" in o and o["order_time"].notna().mean() > 0.5:
+        ot = pd.to_datetime(o["order_time"], errors="coerce").dropna()
+        if len(ot) > 50 and ((ot.dt.hour == 0) & (ot.dt.minute == 0)).mean() > 0.98:
+            src = next((f"{t}.{c}" for t, df in biz.tables.items() for c in df.columns
+                        if pd.api.types.is_datetime64_any_dtype(df[c]) and len(df) > 50
+                        and (lambda h: len(h) > 50 and ((h.dt.hour != 0) | (h.dt.minute != 0)).mean() > 0.5)(df[c].dropna().head(5000))), None)
+            if src:
+                w.append(f"orders.order_time has no time of day (every value is 00:00) but {src} records times: order_time is the moment the "
+                         "order was created (giờ tạo đơn), used by shift (ca sáng / ca chiều) and peak-hour questions")
     for t, cols in REQUIRED.items():
         df = C.get(t)
         if isinstance(df, pd.DataFrame) and len(df):

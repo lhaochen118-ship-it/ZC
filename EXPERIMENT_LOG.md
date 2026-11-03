@@ -394,3 +394,12 @@ README-gap adaptation of reference mappings is what moved. Wall 3844 s; GPU busy
 exactly these), 20 newly answered, 10 changed. The README adaptation changed no answer of the reference-mapped
 public shops (dev_005 identical, dev_002 one change): its train holdout gain does not show on public. Expected portal
 score ≈ v19's; v21 is the candidate.
+
+**Portal: v20 = 0.650** (user, 14:10) → ~767 right / ~117 wrong / 117 abstain (v19: 801 / 114 / 85). The loss is the 52
+questions v20 abstained on where v19 answered (mostly right in v19): LLM-mapped shops whose 3 runs chose 3 different
+mappings, so the vote split. dev_009: the 3 v20 runs read revenue 3 ways (run 1 = v19's majority; runs 2 / 3 +1.5 % / −0.9 %);
+v21's README-revenue check flags exactly runs 2 / 3's mappings (penalty 100) and not run 1's. Lessons:
+- the public score now moves ±0.03 with mapping luck alone, as much as a real fix → mapping choice must not depend on which
+  samples a run drew (checks that reject wrong readings; pool candidates across runs);
+- the vote should not count a run whose mapping is detectably wrong as much as one whose mapping is clean.
+- caotienminh1 reached the weekly GPU quota (30 h); v22-1 / v22-2 moved to thnliu.

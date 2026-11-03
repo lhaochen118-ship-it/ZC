@@ -79,8 +79,11 @@ def mark_quota(acc):
     try: q = json.load(open(QF))
     except Exception: q = {}
     q[acc] = WEEK; os.makedirs(os.path.dirname(QF), exist_ok=True); json.dump(q, open(QF, "w"))
+try: NO_L4 = set(json.load(open(os.path.join(ROOT, "automation", "accounts.json"))).get("no_l4", [])) if L4 else set()
+except Exception: NO_L4 = set()
 ALL_ACC = [a for a in ACCOUNTS] + [a for a in sorted(os.path.basename(f)[4:] for f in glob.glob(os.path.expanduser("~/.kaggle/tok_*")))
                                    if a not in ACCOUNTS and a != "nhatlong1103"]
+ALL_ACC = [a for a in ALL_ACC if a not in NO_L4]               # v24: kernels moved to T4-only / rules-not-accepted accounts
 tried = {k: {slots[k % len(slots)][0]} for k in range(nk)}
 busy = {}                                                                   # account -> kernels this fanout moved there
 while procs:
@@ -89,6 +92,11 @@ while procs:
         del procs[k]; slug = f"{prefix}-{k + 1}"; log = open(os.path.join(work, slug + ".log")).read()
         gpu = k < len(slots) and "--cpu" not in sys.argv
         if "weekly GPU quota" in log: mark_quota(json.load(open(os.path.join(work, slug, "kernel-metadata.json")))["id"].split("/")[0])   # the account it was pushed to
+        for k2 in range(nk):                                            # every quota failure seen so far, not only this kernel's
+            l2 = os.path.join(work, f"{prefix}-{k2 + 1}.log")
+            if k2 != k and os.path.isfile(l2) and "weekly GPU quota" in open(l2).read():
+                try: mark_quota(json.load(open(os.path.join(work, f"{prefix}-{k2 + 1}", "kernel-metadata.json")))["id"].split("/")[0])
+                except Exception: pass
         cand = [a for a in ALL_ACC if a not in tried[k] and a not in quota_out() and busy.get(a, 0) < 2]
         if "STATUS=PUSH_FAILED" in log and cand:
             acc = cand[0]; tried[k].add(acc); busy[acc] = busy.get(acc, 0) + 1

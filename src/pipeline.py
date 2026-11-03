@@ -33,9 +33,16 @@ class StepLLM:
     Uses LLMEngine.add_request / step when the installed vLLM exposes them; otherwise each step() runs every pending
     request in one blocking generate() call (same results, no overlap)."""
 
-    def __init__(self, engine):
+    THINK_END = "</think>"
+    FORCE = "\n\nThe reasoning budget is used up, so I stop here and write the complete program now.\n" + THINK_END + "\n\n"
+
+    def __init__(self, engine, think_cap=0):
         from vllm import SamplingParams
         self.e, self.SP, self.n, self.pending, self.unfinished = engine, SamplingParams, 0, {}, 0
+        # budget forcing (s1, Muennighoff et al. 2025): a thinking request stops at think_cap tokens; when it is still
+        # reasoning then (21 % of the first mapping attempts looped 'Wait, ...' to the token limit without code), the end
+        # of the reasoning is appended and the same request continues with the rest of its budget for the program
+        self.think_cap, self.req, self.cont = int(think_cap or 0), {}, {}
         core = getattr(engine.llm, "llm_engine", None)
         self.core = core if core is not None and hasattr(core, "add_request") and hasattr(core, "step") else None
         try:
@@ -45,25 +52,32 @@ class StepLLM:
         self.prio_ok = True
         print(f"[pipe] engine interface: {'add_request/step' if self.core is not None else 'batched generate (fallback)'}", flush=True)
 
-    def _sp(self, temp, seed, max_tokens):
+    def _sp(self, temp, seed, max_tokens, think=False):
         kw = dict(temperature=temp, top_p=1.0 if temp == 0 else 0.95, max_tokens=max_tokens, seed=seed)
+        if think:                                                       # Qwen3.5 thinking: no greedy decoding (it loops),
+            kw.update(temperature=temp if temp > 0 else 0.6, top_p=0.95, top_k=20)   # top-k 20 (model card); seeded
         if self.final_only is not None and self.core is not None: kw["output_kind"] = self.final_only
         return self.SP(**kw)
 
-    def add(self, conv, temp, seed, max_tokens, think=None, priority=0):
-        prompt, mt = self.e.fit(conv, max_tokens, think)
-        self.n += 1; rid = f"r{self.n}"
-        if prompt is None: self.pending[rid] = None; return rid        # too long: finishes empty at the next step
-        sp = self._sp(temp, seed, mt)
-        if self.core is None: self.pending[rid] = (prompt, sp); return rid
+    def _add_core(self, rid, prompt, sp, priority):
         kw = {"lora_request": self.e.lora} if self.e.lora is not None else {}
         if self.prio_ok:
-            try: self.core.add_request(rid, prompt, sp, priority=priority, **kw); self.unfinished += 1; return rid
+            try: self.core.add_request(rid, prompt, sp, priority=priority, **kw); self.unfinished += 1; return
             except TypeError: self.prio_ok = False
             except ValueError as ex:                                    # FCFS scheduler refuses priorities
                 if "priority" not in str(ex).lower(): raise
                 self.prio_ok = False
         self.core.add_request(rid, prompt, sp, **kw); self.unfinished += 1
+
+    def add(self, conv, temp, seed, max_tokens, think=None, priority=0):
+        prompt, mt = self.e.fit(conv, max_tokens, think)
+        self.n += 1; rid = f"r{self.n}"
+        if prompt is None: self.pending[rid] = None; return rid        # too long: finishes empty at the next step
+        cap = self.think_cap if think and self.think_cap and self.core is not None and mt >= self.think_cap + 1024 else 0
+        sp = self._sp(temp, seed, cap or mt, bool(think))
+        if self.core is None: self.pending[rid] = (prompt, sp); return rid
+        if cap: self.req[rid] = (prompt, temp, seed, mt, priority)
+        self._add_core(rid, prompt, sp, priority)
         return rid
 
     def busy(self): return self.unfinished + len(self.pending)
@@ -79,8 +93,17 @@ class StepLLM:
             return done
         if self.unfinished:
             for o in self.core.step():
-                if getattr(o, "finished", False):
-                    self.unfinished -= 1; done.append((o.request_id, o.outputs[0].text, len(o.outputs[0].token_ids)))
+                if not getattr(o, "finished", False): continue
+                self.unfinished -= 1; rid, out = o.request_id, o.outputs[0]; text, n = out.text, len(out.token_ids)
+                if rid in self.cont:                                    # the continuation of a capped request: both parts
+                    rid0, head, n0 = self.cont.pop(rid); done.append((rid0, head + text, n0 + n)); continue
+                r = self.req.pop(rid, None)
+                if r is not None and getattr(out, "finish_reason", None) == "length" and r[3] - n >= 512:
+                    prompt, temp, seed, mt, prio = r                    # cut at the cap: continue (inside the reasoning:
+                    head = text if self.THINK_END in text else text + self.FORCE   # end it first) with the rest of the budget
+                    self.cont[rid + "c"] = (rid, head, n)
+                    self._add_core(rid + "c", prompt + head, self._sp(temp, seed + 1, mt - n, True), prio); continue
+                done.append((rid, text, n))
         return done
 
 

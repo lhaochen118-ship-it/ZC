@@ -23,6 +23,10 @@ def K(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
+UNIT_QTY_WORDS = set("""hom nay qua hqua bua tuan thang nam quy ngay truoc trc roi vua cuoi dau tu den het toi ke gan day nua hien tai
+    trong vao cho minh em anh chi hoi xem giup gium check coi voi nhe nha ha vay a nhi the ta oi biet muon cua hang shop quan tiem
+    la bao nhieu nhiu bnhiu bn may so tong cong tat ca duoc dc ra luong moi mat mon tinh theo cac san pham sp loai deu ban""".split())
+QTY_WORDS = {"so", "may", "nhieu", "nhiu", "bnhiu", "bn", "mot", "moi", "tong", "theo"}   # '<word> kg' = kilogram ('hơn k' stays 'không')
 NEG = {"k": "khong", "ko": "khong", "hok": "khong", "hong": "khong", "kh": "khong", "kg": "khong", "khg": "khong", "hem": "khong", "hk": "khong"}
 
 
@@ -31,6 +35,8 @@ def untelex(t):
     colloquial negations as 'khong'. Vietnamese syllables never end in f / s / r / x / j, so those are tone keys."""
     out = []
     for w in t.split():
+        if out and (re.search(r"\d$", out[-1]) and w in ("kg", "k") or w == "kg" and out[-1] in QTY_WORDS):
+            out.append(w); continue                                    # 'số kg', '5 kg', '50 k': a unit, not 'không'
         if re.fullmatch(r"[a-z]+", w) and len(w) > 1:
             v = w.replace("dd", "d").replace("aa", "a").replace("ee", "e").replace("oo", "o")
             v = re.sub(r"(?<=[aou])w", "", v).replace("uow", "uo")
@@ -348,6 +354,16 @@ def parse(q, today, shop=None):
         sz = re.search(r"size (m|l)\b", t).group(1).upper(); return "size_qty", ans("number", f"size_qty({P}, {J(sz)})")
     if P and not rev and (item is not None or "group" in f) and (re.search(r"(bao nhieu|may|bnhiu|bn|so|tong cong|total) " + UNITS + r"\b", t) or has(r"ban ra bao nhieu|ban duoc bao nhieu|ban dc bao nhieu|so luong")):
         return "item_qty", ans("number", f"item_qty({P}{fa()})")
+    if P and not rev and item is None and not f and not pays and not chans and not two_part:
+        # 'bán được bao nhiêu <đơn vị>' over the whole shop (rulebook: only items whose base unit is that unit)
+        mu = re.search(r"\bban (?:ra |duoc |dc )*(?:tong cong |tat ca |het )?(?:duoc |dc )?(?:la )?(?:bao nhieu|bnhiu|bn|may) " + UNITS + r"\b", t) or \
+             re.search(r"(?:^|\s)(?:tong )?so " + UNITS + r" (?:da )?ban (?:ra|duoc|dc)\b", t)
+        if mu and not has(r"(?:mat hang|san pham|\bmon|\bsp|loai|hang) (?:nao|gi)|(?:bao nhieu|may|so|bnhiu|bn) (?:mat hang|san pham|mon|sp|loai)\b",
+                          r"\bkhach|nhan vien|\bnv\b|\bdon\b|hoa don|\bbill|nhap|\bton\b|con lai|tra hang|tra lai|\bhuy|trung binh|binh quan|moi ngay|"
+                          r"nhat\b|ngay nao|thang nao|gio nao|hom nao|tang|giam|so voi|so vs|%|phan tram|size|nhom"):
+            u = mu.group(1)                                                # every other word: period, filler, 'cộng mọi mặt hàng'
+            if not [w for w in t.split() if not re.search(r"\d", w) and w not in UNIT_QTY_WORDS and w != u]:   # (an unlinked
+                return "unit_qty", ans("number", f"item_qty({P}, base_unit={J(u)})")                          # item: no rule)
     # ---------------- revenue variants
     if has(r"co may ngay|bao nhieu ngay|bnhiu ngay|bn ngay|may bua|co may hom|so ngay|dem so ngay|bao nhieu bua|nhieu ngay dat|nhiu ngay|co nhieu ngay") and P:
         x = money_in(t, r"(?:tu|dat|tren|it nhat|tro len)\s*")

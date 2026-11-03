@@ -10,7 +10,7 @@ Two sources of candidate mapping programs, all executed, checked (dm.check) and 
      similar reference programs (by table / column overlap) as examples.
 
 Usage (offline check of the transfer step): canon.py <split_dir> <cache_dir> [bid ...]"""
-import os, re, sys, json, glob, pickle, difflib, traceback, unicodedata
+import os, re, sys, json, glob, keyword, builtins, pickle, difflib, traceback, unicodedata
 import numpy as np
 import pandas as pd
 
@@ -121,8 +121,14 @@ def namespace(biz, ref_cols=None):
               "readme_conversions", "conversions_table", "frame"):
         g[k] = getattr(dm, k)
     g["tbl"] = lambda *c, **kw: dm.find_table(T, *c, **kw)
+    for t in T:                                                        # `thong_tin_thuoc` used as a variable (NameError in
+        if t.isidentifier() and not keyword.iskeyword(t) and t not in g and t not in TABLE_NAMES and not hasattr(builtins, t):   # v6-v9)
+            g[t] = dict.__getitem__(T, t)                              # (not T[t]: that would count every table as used)
     return g
 
+
+TABLE_NAMES = {"orders", "lines", "items", "payments", "purchases", "stock", "lots", "lot_sales", "ledger", "prices", "conversions",
+               "returns", "deliveries", "expenses", "staff", "customers", "C", "NOTES"}
 
 CORE = {"orders": ["order_id", "order_date", "order_time", "customer_id", "customer_name", "customer_group", "staff", "channel",
                    "payment_method", "status", "total_payable"],
@@ -214,6 +220,19 @@ def key_hint(e, biz):
     close = difflib.get_close_matches(_fold(k), list(names), n=5, cutoff=0.6)
     if not close: return ""
     return " | closest names in the data: " + ", ".join(f"{names[c][0]!r} ({'table' if names[c][1] is None else 'column of ' + names[c][1]})" for c in close)
+
+
+def skip_hint(e, biz):
+    """a KeyError on a canonical column that frame() skipped because its raw column does not exist (payments['pay_time']
+    after frame(q, pay_time='NgayThu')): name the skipped raw column and the closest real ones."""
+    if not isinstance(e, KeyError) or not e.args: return ""
+    k = str(e.args[0]); sk = [raw for c, raw in dm.frame.skipped if c == k]
+    if not sk: return ""
+    cols = sorted({str(c) for df in biz.tables.values() for c in df.columns})
+    close = difflib.get_close_matches(_fold(sk[-1]), {_fold(c): c for c in cols}, n=3, cutoff=0.5)
+    real = {_fold(c): c for c in cols}
+    return (f" | frame() skipped {k}={sk[-1]!r}: the table has no column {sk[-1]!r}, so {k} was never created"
+            + (f" (closest columns: {', '.join(repr(real[c]) for c in close)})" if close else ""))
 
 
 REV_NAMES = {"tienhang", "tienban", "thanhtienhang", "doanhthu"}       # rulebook §1: "tiền hàng, tiền bán ... cùng nghĩa với doanh thu"
@@ -373,10 +392,11 @@ def run_mapping(code, biz, ref_cols=None):
     """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used, unused, warnings)."""
     g = namespace(biz, ref_cols)
     dm._TOOLKIT_NS.clear(); dm._TOOLKIT_NS.update(g)                  # `from builder import frame` -> this namespace
+    dm.frame.skipped = []
     try: exec(compile(code, "<mapping>", "exec"), g)
     except Exception as e:
         tb = [l for l in traceback.format_exc().splitlines() if '"<mapping>"' in l][-1:]
-        return {"ok": False, "error": f"{type(e).__name__}: {str(e)[:300]}" + (f" ({tb[0].strip()})" if tb else "") + key_hint(e, biz)}
+        return {"ok": False, "error": f"{type(e).__name__}: {str(e)[:300]}" + (f" ({tb[0].strip()})" if tb else "") + key_hint(e, biz) + skip_hint(e, biz)}
     C = g.get("C")
     if not isinstance(C, dict) or "orders" not in C: return {"ok": False, "error": "the program did not build C with C['orders']"}
     normalize_aliases(C)

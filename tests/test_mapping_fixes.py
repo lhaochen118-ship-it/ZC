@@ -143,5 +143,39 @@ shd = dm.Shop({"orders": orders.assign(total_payable=[10.0, 20.0]), "lines": lin
 try: shd.debts("2025-03-10"); check("debts without payment records are unanswerable", False)
 except dm.Unanswerable: pass
 
+# 12. 'kg' is a unit after a number / quantity word, not 'không'; 'bán được bao nhiêu <đơn vị>' over the whole shop counts
+# only items of that base unit; size_qty given a unit counts that unit; one item code under several spellings is one item
+check("kg unit", qparse.untelex(qparse.K("số kg nếp bán được")) == "so kg nep ban duoc" and qparse.untelex(qparse.K("hom nay k ban")) == "hom nay khong ban")
+for q, want in [("Hôm qua bán được bao nhiêu ly?", "unit_qty"), ("hqua tổng cộng bán được bao nhiêu cái", "unit_qty"),
+                ("số ly bán được bữa qua là bao nhiêu, cộng mọi mặt hàng tính theo ly ta", "unit_qty"),
+                ("ngày nào tháng 6/2026 bán được nhiều ly nhất", None), ("tháng 6/2026 bánh croissant bán được bao nhiêu cái", None), ("trung bình mỗi ngày tháng 6/2026 bán được bao nhiêu ly", None),
+                ("tháng 6/2026 khách Lan mua bao nhiêu ly", None), ("tháng 6/2026 nhập bao nhiêu kg", None)]:
+    check(f"qparse: {q[:40]}", tpl(q) != "unit_qty" if want is None else tpl(q) == want, tpl(q))
+lu = pd.DataFrame({"order_id": ["O1", "O1", "O2", "O2"], "order_date": pd.to_datetime(["2025-03-01"] * 2 + ["2025-03-05"] * 2), "status": "hoàn thành",
+                   "valid": True, "item_code": ["S1", "B1", "S1", "S1"], "item_name": ["Siro chai 30ml", "Bánh", "Siro chai 30 ml", "Siro chai 30ml"],
+                   "base_unit": ["chai", "cái", "chai", "chai"], "qty": [2, 5, 3, 1], "qty_base": [2, 5, 3, 1], "line_amount": [1.0] * 4})
+shu = dm.Shop({"orders": orders, "lines": lu}, today="2025-03-10")
+check("one code, two spellings", shu.item_qty(dm.month(2025, 3), item="Siro chai 30ml") == 6 and shu.item_qty(dm.month(2025, 3), item="siro chai 30 ml") == 6,
+      shu.item_qty(dm.month(2025, 3), item="Siro chai 30ml"))
+check("size_qty given a unit", shu.size_qty(dm.month(2025, 3), "chai") == 6 and shu.size_qty(dm.month(2025, 3), "L") == 0)
+
+# 13. mapping conveniences: frame() takes a function of the table / row (a lambda column could not be pickled); a sales
+# book without order codes gets one record per row; a KeyError on a column frame() skipped names the missing raw column;
+# a table name used as a variable is that table
+raw = pd.DataFrame({"Ngày": ["2025-03-01", "2025-03-02"], "Hàng": ["A", "B"], "SL": [2, 3], "Giá": [5.0, 7.0]})
+fr = dm.frame(raw, qty="SL", line_amount=lambda r: r["SL"] * r["Giá"], item_name=lambda t: t["Hàng"].str.lower())
+check("frame: functions", fr["line_amount"].tolist() == [10.0, 21.0] and fr["item_name"].tolist() == ["a", "b"], fr.to_dict())
+try: dm.frame(raw, item_name=lambda x: x.strip()); check("frame: a value function raises a clear error", False)
+except TypeError as e: check("frame: error text", "function of the row" in str(e), str(e))
+lb = dm.frame(raw, order_date="Ngày", item_name="Hàng", qty="SL", line_amount="Giá")
+o_, l_ = dm.finalize(lb, dedupe=False)
+check("finalize: rows without order ids", len(o_) == 2 and l_["order_id"].nunique() == 2)
+try: dm.finalize(lb, orders=o_); check("finalize: orders given, lines without order_id still raise", False)
+except ValueError: pass
+bz = types.SimpleNamespace(tables={"ban_hang": raw, "thong_tin": raw}, raw={}, readme="")
+code = "t = ban_hang\nlines = frame(t, order_date='Ngày', item_name='Hàng', qty='SL', unit_price='Gia', line_amount='Giá')\nx = lines['unit_price']"
+r = canon.run_mapping(code, bz)
+check("skip hint + table variable", not r["ok"] and "frame() skipped unit_price='Gia'" in r["error"] and "NameError" not in r["error"], r.get("error"))
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

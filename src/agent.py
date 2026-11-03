@@ -752,6 +752,8 @@ def build_parser():
     ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
     ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--think-budget", type=int, default=12288, help="pipeline: reasoning tokens of a thinking request before its "
+                    "reasoning is ended and the rest of the budget goes to the program (budget forcing; 0 = off)")
     ap.add_argument("--seed-base", type=int, default=0, help="pipeline: shift every sampling seed (independent runs of a multi-run vote)")
     ap.add_argument("--map-retry", type=int, default=1, help="pipeline: when every LLM mapping sample of a business fails, one more "
                     "batch of --kc samples (fresh seeds) before falling back to raw-table programs")
@@ -827,7 +829,7 @@ def run(a, engine=None):
     if pipe:                                                           # pipelined scheduler (src/pipeline.py)
         import pipeline
         pipeline.bind(sys.modules[__name__])                           # the module that holds CARDS / worker context
-        llm = engine if hasattr(engine, "add") and hasattr(engine, "step") else pipeline.StepLLM(engine)
+        llm = engine if hasattr(engine, "add") and hasattr(engine, "step") else pipeline.StepLLM(engine, getattr(a, "think_budget", 0))
         pipeline.Pipeline(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, a.claim_dir).run()
         pool.close(); sub.close(); logf.close(); clog.close()
         print(f"DONE {len(qs)} questions in {time.time() - t_start:.0f}s", flush=True)

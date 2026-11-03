@@ -214,6 +214,11 @@ def strip_accents(s):
 def key(s): return strip_accents(norm_text(s))
 
 
+def _ckey(s):
+    """key for matching names: a number glued to its unit or not is the same name ('chai 30 ml' = 'chai 30ml')."""
+    return re.sub(r"(?<=\d) (?=[a-z])", "", key(s))
+
+
 CANON_STATUS = ("hoàn thành", "huỷ", "trả hàng", "đang giao")
 
 
@@ -309,6 +314,11 @@ def finalize(lines, orders=None, conversions=None, items=None, ffill_cols=None, 
     dropped; qty_base = qty * factor; an order with any returned line or returned status is 'trả hàng'; valid = not
     cancelled and not returned; order revenue = sum of line amounts (after line discounts)."""
     L = lines.copy().reset_index(drop=True)
+    if "order_id" not in L.columns and (orders is None or not len(orders)):
+        # a sales book without order codes (README: 'không ghi mã đơn'): every row is one record, as the reference
+        # mappings of such books do (58 failed mapping attempts in v6-v9 stopped here)
+        L["order_id"] = "row" + pd.Series(range(len(L)), index=L.index).astype(str)
+        print("finalize: the lines have no order_id: every row is one record (a sales book without order codes)")
     if "order_id" not in L.columns:
         raise ValueError("lines need an order_id column (the code shared by the lines of one order). When the file has one row per "
                          "order (no item lines), build lines from the same rows: frame(t, order_id=<order code column>, "
@@ -422,15 +432,28 @@ def find_table(T, *cols, optional=()):
 
 
 def frame(df, **cols):
-    """new DataFrame from a raw table: canonical_name=<raw column name | Series | scalar>. Raw names that do not exist
-    are skipped (listed in frame.missing) so one mapping works for similar exports with fewer columns."""
+    """new DataFrame from a raw table: canonical_name=<raw column name | Series | scalar | function of the table or of a
+    row>. Raw names that do not exist are skipped (listed in frame.missing; every skip of a mapping run in
+    frame.skipped) so one mapping works for similar exports with fewer columns."""
     out, frame.missing = {}, []
     for k, v in cols.items():
         if isinstance(v, str):
             if v in df.columns: out[k] = df[v]
-            else: frame.missing.append(v)
+            else: frame.missing.append(v); frame.skipped.append((k, v))
+        elif callable(v) and not isinstance(v, (pd.Series, pd.DataFrame)):
+            try: r = v(df)                                               # a function of the table (vectorised) ...
+            except Exception: r = None
+            if not (isinstance(r, pd.Series) and len(r) == len(df)):
+                try: r = df.apply(v, axis=1)                             # ... or of one row
+                except Exception as e:
+                    raise TypeError(f"frame(): the function given for {k}= fails on the table and on its rows ({type(e).__name__}: {e}). "
+                                    f"Give a raw column name, a Series such as t['col'].map(f), or a function of the row (lambda r: ...)") from None
+            out[k] = r
         elif v is not None: out[k] = v
     return pd.DataFrame(out, index=df.index)
+
+
+frame.missing, frame.skipped = [], []
 
 
 def readme_conversions(text):
@@ -539,7 +562,7 @@ class Shop:
                               (staff, ("staff",), "staff"), (channel, ("channel",), "sales channels"), (payment, ("payment_method",), "payment methods"),
                               (shift, ("order_time",), "the time of day")):
             if v is not None: self._need(df, cols, what)
-        if item is not None: df = df[self._match(df, ("item_code", "item_name"), item)]
+        if item is not None: df = df[self._match(df, ("item_code", "item_name"), self._item_keys(item))]   # every code / spelling
         if group is not None: df = df[self._match(df, ("item_group",), group)]
         if customer is not None: df = df[self._match_person(df, ("customer_id", "customer_name"), customer)]
         if customer_group is not None: df = df[self._match(df, ("customer_group",), customer_group)]
@@ -585,10 +608,10 @@ class Shop:
         """rows whose value in any of cols equals val (accent / case / punctuation-insensitive); contains=True also
         accepts values that contain val as whole words (payment 'cod' ~ 'Thu hộ (COD)')."""
         vals = val if isinstance(val, (list, tuple, set)) else [val]
-        ks = {key(v) for v in vals}
+        ks = {_ckey(v) for v in vals}
         def ok(x):
             if x is None or (isinstance(x, float) and math.isnan(x)): return False
-            kx = key(x)
+            kx = _ckey(x)
             return kx in ks or (contains and any(re.search(r"(^|\s)" + re.escape(k) + r"(\s|$)", kx) for k in ks))
         m = pd.Series(False, index=df.index)
         for c in cols:
@@ -816,8 +839,13 @@ class Shop:
         return int(h.sort_index().idxmax()) if len(h) else None
 
     def size_qty(self, p, size, **f):
-        """quantity of items whose name ends with '(M)' / '(L)' (case-insensitive)."""
-        l = self.lines(p, **f); m = l["item_name"].astype(str).str.strip().str.lower().str.endswith(f"({size.lower()})")
+        """quantity of items whose name ends with '(M)' / '(L)' (case-insensitive). A base unit given as the size
+        (size_qty(p, "ly"): a frequent slip of the programs for 'bán được bao nhiêu ly') counts that unit:
+        item_qty(p, base_unit=...)."""
+        l = self.lines(p, **f); m = l["item_name"].astype(str).str.strip().str.lower().str.endswith(f"({str(size).lower()})")
+        if not m.any() and str(size).strip().upper() not in ("S", "M", "L", "XL", "XXL"):
+            bu = l["base_unit"] if "base_unit" in l.columns else l.get("unit")
+            if bu is not None and (bu.map(key) == key(size)).any(): return self.item_qty(p, base_unit=size, **f)
         return _num(l.loc[m, "qty_base"].sum())
 
     def unsold_items(self, p):
@@ -837,8 +865,8 @@ class Shop:
         return P
 
     def _item_keys(self, item):
-        """an item given by name or code -> every name / code of that item (catalogue + lines)."""
-        ks = {item}
+        """an item given by name or code (or a list of them) -> every name / code of that item (catalogue + lines)."""
+        ks = set(map(str, item)) if isinstance(item, (list, tuple, set)) else {item}
         for df in (self.C.get("items"), self.L):
             if df is not None and {"item_code", "item_name"} <= set(df.columns):
                 m = self._match(df, ("item_code", "item_name"), item)

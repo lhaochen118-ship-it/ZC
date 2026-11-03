@@ -63,3 +63,37 @@ while st.busy(): got += st.step()
 assert [g[0] for g in got] == rids and got[0][1] == "T000" and not st.prio_ok, (got, st.prio_ok)
 assert all(sp.output_kind == "final" and sp.max_tokens == 64 and sp.temperature == 0.0 for _, sp in eng.llm.llm_engine.calls)
 print("StepLLM | PASS")
+
+# ---- budget forcing: a thinking request is cut at think_cap; still reasoning -> the end of the reasoning is appended and
+# the request continues with the rest of its budget; the caller gets one answer (both parts, both token counts)
+class Core2(Core):
+    def add_request(self, rid, prompt, sp, **kw): self.q.append((rid, prompt, sp)); self.calls.append((rid, prompt, sp))
+    def step(self):
+        out, self.q = self.q[:3], self.q[3:]
+        res = []
+        for r, p, sp in out:
+            if r.endswith("c"): text, fr = "```python\nC = 1\n```", "stop"
+            elif "loop" in p: text, fr = "Wait, " * 10, "length"                     # reasons to the cap
+            elif "late" in p: text, fr = "ok\n</think>\n\n```python\nC =", "length"   # cut inside the program
+            else: text, fr = "short\n</think>\n\n```python\nC = 2\n```", "stop"
+            res.append(types.SimpleNamespace(request_id=r, finished=True, outputs=[types.SimpleNamespace(text=text, token_ids=[1] * (sp.max_tokens if fr == "length" else 5), finish_reason=fr)]))
+        return res
+
+
+eng.llm.llm_engine = Core2(); eng.a.think = False
+st = pipeline.StepLLM(eng, think_cap=2000)
+r1 = st.add([{"role": "user", "content": "loop"}], 0.0, 7, 4000, think=True)
+r2 = st.add([{"role": "user", "content": "late"}], 0.7, 8, 4000, think=True)
+r3 = st.add([{"role": "user", "content": "plain"}], 0.7, 9, 4000, think=True)
+r4 = st.add([{"role": "user", "content": "loop"}], 0.0, 1, 4000)               # not thinking: never capped
+got = {}
+while st.busy():
+    for rid, text, n in st.step(): got[rid] = (text, n)
+calls = {rid: (p, sp) for rid, p, sp in eng.llm.llm_engine.calls}
+assert calls[r1][1].max_tokens == 2000 and calls[r1][1].temperature == 0.6 and calls[r1][1].top_k == 20, vars(calls[r1][1])
+assert got[r1][0].startswith("Wait, ") and st.THINK_END in got[r1][0] and got[r1][0].endswith("```python\nC = 1\n```") and got[r1][1] == 2000 + 5, got[r1]
+assert calls[r1 + "c"][0] == "loop" + "Wait, " * 10 + st.FORCE and calls[r1 + "c"][1].max_tokens == 2000, calls[r1 + "c"]
+assert calls[r2 + "c"][0].endswith("```python\nC =") and got[r2][0].count(st.THINK_END) == 1, (calls[r2 + "c"], got[r2])   # no second end
+assert r3 + "c" not in calls and got[r3][1] == 5 and r4 + "c" not in calls and calls[r4][1].max_tokens == 4000 and calls[r4][1].temperature == 0.0
+assert not st.req and not st.cont, (st.req, st.cont)
+print("StepLLM budget forcing | PASS")

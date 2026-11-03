@@ -454,3 +454,23 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   raw staff lists; raw-table samples of implemented industries removed and their standard rules keep weight 4 (dev_010
   confidence 0.98 → 0.84 in v23); rule templates for the industry functions (weight 2), deliveries by order date, due dates;
   customer-group check (dev_008); second mapping batch when every candidate has a heavy warning (dev_014 run 3).
+
+## Entry 16 — 2026-11-03 22:40: v24 (3 public runs, thnliu) → submissions/v24; invoice adjustment rows
+
+- v24 code f3d21c9 (entry 15 fixes). Most accounts were out of weekly GPU quota (caotienminh1, phuongnehe, nguynduylm,
+  lelynhan, linhmai24, duylnng, hai1108, huyenco, mucnokieu; mxuanquy T4 only, nguyenmanh0404 rules not accepted): the 3 public
+  runs ran on thnliu, no train run. **A public run now takes 65–70 min** on 4×L4 (v23 ~2 h): no raw-table samples and the
+  confirm shortcut for the implemented industries.
+- 3-run agreement **903 unanimous / 71 majority / 26 split** (v22 856 / 68 / 76, v23 834 / 101 / 65); per-run abstains 14 (v23 36).
+- Found on the v24 logs, fixed generally: (1) dev_014 seed 1 chose a mapping without the instalment book (all instalment
+  answers 0) → check for industry books present in T but missing from C (penalty 20); (2) dev_013 seed 1 assigned the WHOLE
+  table's voucher / shipping total to every order and the first order's channel to all → check for order columns holding one
+  value for every order (penalty 20); (3) **dev_013 revenue wrong in every version since v19**: the rows 'Voucher', 'Dùng N điểm',
+  'Phí ship' (README: not items) stayed in the lines, so revenue subtracted vouchers / points and added shipping (§1: neither)
+  and every voucher / ship / points question was 'unanswerable' → `finalize` moves such rows to orders.order_discount /
+  points_discount / shipping_fee (only dev_013 has them among the 44 shops; oracle 2967 / 1 / 32).
+- `submissions/v24`: vote of the 3 runs with dev_013 replayed offline (`automation/jobs/replay_biz.py`: the logged programs
+  on the rebuilt mapping, vote redone; unaffected questions keep their logged answers) and map penalties of the latest
+  checks: 14 abstain, 33 unanswerable, 0 zero answers. Vs v22: 855 identical, 66 newly answered (dev_014 35), 4 newly
+  abstained, 75 changed (dev_013 32). Vs v23: 879 identical.
+- **Stopped here (user): waiting for the portal scores of v23 / v24.**

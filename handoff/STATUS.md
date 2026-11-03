@@ -1,7 +1,7 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 16:00 UTC (khung chat mới). **Đang dừng theo yêu cầu user: chờ user chấm v21 / v22 trên portal
-và gửi điểm rồi mới chạy tiếp.** Token: 11 acc ở `~/.kaggle/tok_<user>` (gồm huyenco, mucnokieu; Duylan = duylnng,
+*Cập nhật: 2026-11-03 22:45 UTC. **Đang dừng theo yêu cầu user: chờ điểm portal của v23 / v24 rồi mới chạy tiếp.**
+Trước đó: v21 / v22 (v22 = 0.71). Token: 11 acc ở `~/.kaggle/tok_<user>` (gồm huyenco, mucnokieu; Duylan = duylnng,
 HaiDinh = hai1108, NguyenManh = nguyenmanh0404).*
 
 ## Mới (khung 03/11 tối) — portal v22 = 0.71
@@ -9,11 +9,15 @@ HaiDinh = hai1108, NguyenManh = nguyenmanh0404).*
 | File nộp | Train | Public 3 lần chạy (nhất trí / đa số / tách) | Abstain | So với v22 (giống / thêm trả lời / thêm abstain / đổi) |
 |---|---|---|---|---|
 | `submissions/v23/submission.jsonl` | 0.978 (biz_123 0.48, may rủi ánh xạ) | 834 / 101 / 65 | 49 | 903 / 48 / 21 / 28 |
-| v24 (đang chạy) | | | | |
+| `submissions/v24/submission.jsonl` | (không chạy train: hết quota) | 903 / 71 / 26 | 14 | 855 / 66 / 4 / 75 |
 
 - v23 = toolkit ngành mới (`src/industry.py`); v24 = các sửa ở EXPERIMENT_LOG entry 15. User: chạy 2 bản (v23, v24) rồi
   **dừng chờ điểm**.
-- Acc hết quota GPU tuần (W45): caotienminh1, phuongnehe, nguynduylm (`~/.cache/zc_quota.json`, fanout tự bỏ qua).
+- Acc hết quota GPU tuần (W45, 03/11 tối): caotienminh1, phuongnehe, nguynduylm, lelynhan, linhmai24, duylnng, hai1108,
+  huyenco, mucnokieu; còn thnliu (đã chạy 3 kernel v24). mxuanquy chỉ T4, nguyenmanh0404 chưa accept rules
+  (`automation/accounts.json`: fanout --l4 bỏ qua). Một lần chạy public v24 mất 65–70 phút.
+- Việc tiếp theo khi có điểm: so v23 / v24 với v22; bản sau chạy lại toàn bộ với code mới nhất (42b154c: kiểm tra sổ ngành
+  bị bỏ sót, cột đơn một giá trị, dòng điều chỉnh hoá đơn) + train; Docker đo trên 2×RTX 5090.
 
 ## Mới (khung 03/11 chiều)
 

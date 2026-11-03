@@ -780,6 +780,8 @@ def build_parser():
     ap.add_argument("--think-budget", type=int, default=12288, help="pipeline: reasoning tokens of a thinking request before its "
                     "reasoning is ended and the rest of the budget goes to the program (budget forcing; 0 = off)")
     ap.add_argument("--seed-base", type=int, default=0, help="pipeline: shift every sampling seed (independent runs of a multi-run vote)")
+    ap.add_argument("--map-min-cands", type=int, default=2, help="pipeline: --map-retry runs when fewer candidate mappings than this "
+                    "ran (2: a single candidate leaves no choice and no fallback)")
     ap.add_argument("--map-retry", type=int, default=1, help="pipeline: when every LLM mapping sample of a business fails, one more "
                     "batch of --kc samples (fresh seeds) before falling back to raw-table programs")
     ap.add_argument("--select-rules", type=int, default=1, help="pipeline: rank candidate mappings also by how often the rule programs "

@@ -296,10 +296,11 @@ class Pipeline:
             if r: bs["cands"].append((f"llm:{s}", r))
             bs["pending"] -= 1
             if bs["pending"] == 0:
-                if not bs["cands"] and getattr(self.a, "map_retry", 1) and not bs.get("retried"):
-                    # every sample failed (biz_123 in v9, dev_014 in 3 of 4 public runs: luck of the sampling): one more batch
+                if len(bs["cands"]) < max(1, int(getattr(self.a, "map_min_cands", 1) or 1)) and getattr(self.a, "map_retry", 1) and not bs.get("retried"):
+                    # every sample failed (biz_123 in v9, dev_014 in 3 of 4 public runs: luck of the sampling), or only one ran
+                    # (biz_123 / biz_124 in v13: nothing to choose from, no fallback): one more batch
                     bs["retried"] = True; bs["pending"] = self.a.kc
-                    print(f"  {b}: no mapping sample ran; a second batch of {self.a.kc}", flush=True)
+                    print(f"  {b}: {len(bs['cands'])} mapping candidate(s); a second batch of {self.a.kc}", flush=True)
                     for s2 in range(self.a.kc, 2 * self.a.kc): launch(s2)
                     return
                 self.clog.write(json.dumps({"business_id": b, "llm_attempts": {x: bs["llm"][x] for x in sorted(bs["llm"])}}, ensure_ascii=False, default=str) + "\n")

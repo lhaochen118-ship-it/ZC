@@ -264,7 +264,7 @@ def warning_penalty(w):
     """coverage points a soft warning costs when candidate mappings are ranked: a wrong revenue column breaks most
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
-    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith("lines.item_name holds the short names") \
+    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "the data has an instalment book")) \
         else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) else 2.0
 
 
@@ -478,6 +478,27 @@ def secondary_checks(C, biz):
                     raise StopIteration
     except StopIteration: pass
     except Exception as e: print(f"[canon] staff-name check failed: {type(e).__name__}: {e}", flush=True)
+    # 1d. books of the public rulebook's industries present in the raw data but missing from C (v24 public dev_014 run 2: the chosen
+    #     mapping had no instalment book, every instalment answer 0): the toolkit can only use what C holds
+    have = {t for t, v in C.items() if isinstance(v, pd.DataFrame) and len(v)}
+    for t, df in biz.tables.items():
+        if len(df) < 10: continue
+        cf = {_fold(c) for c in df.columns}
+        def anyc(*pats): return sum(1 for c in cf for p_ in pats if re.fullmatch(p_, c))
+        if anyc(r"soky|sokygop|kygop|sothang", r"gopthang|gop1thang|tienmoiky|tiengop|gopmoithang", r"tratruoc", r"hangop|hangopngay|ngaygop") >= 2 \
+                and "instalments" not in have:
+            w.append(f"the data has an instalment book ({t}: {', '.join(c for c in df.columns if not str(c).startswith('_'))[:120]}) but C has no "
+                     "C['instalments'] / C['instalment_payments']: map it (the toolkit counts unpaid instalments as debts)")
+        if anyc(r"ngaynhan|ngaybaohanh|ngaymangtoi", r"imei|loi|tinhtrangloi|xuly") >= 2 and anyc(r"imei|loi") >= 1 and "warranty" not in have \
+                and not ("warranty" in o.columns and o["warranty"].notna().any()):
+            w.append(f"the data has a warranty book ({t}) but C has no C['warranty'] (date received, item_name, imei): map it")
+        if anyc(r"giathu|giathumay|tienthumay|thumaycu|trudonstt|truvao.*") >= 1 and "tradeins" not in have \
+                and not ("tradein" in o.columns and pd.to_numeric(o["tradein"], errors="coerce").fillna(0).gt(0).any()):
+            w.append(f"the data records trade-ins ({t}) but C has neither C['tradeins'] nor orders.tradein: map them")
+        if anyc(r"hoahong.*|tilehoahong") >= 1 and not (isinstance(C.get("staff"), pd.DataFrame) and "commission_pct" in C["staff"].columns):
+            w.append(f"the data has commission rates ({t}) but C['staff'] has no commission_pct: map the staff list (staff, commission_pct)")
+        if anyc(r"ngaydangky|ngaydk|ngaythamgia|ngaylamthe") >= 1 and not (isinstance(C.get("customers"), pd.DataFrame) and "registered" in C["customers"].columns):
+            w.append(f"the data has registration dates ({t}) but C['customers'] has no registered column: map the member list")
     # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)

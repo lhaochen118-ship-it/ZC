@@ -333,11 +333,14 @@ class Pipeline:
             if r: bs["cands"].append((f"llm:{s}", r))
             bs["pending"] -= 1
             if bs["pending"] == 0:
-                if len(bs["cands"]) < max(1, int(getattr(self.a, "map_min_cands", 1) or 1)) and getattr(self.a, "map_retry", 1) and not bs.get("retried"):
+                pen = [sum(canonmod.warning_penalty(w) for w in (r.get("warnings") or [])) for src, r in bs["cands"] if src.startswith("llm")]
+                heavy = bool(pen) and min(pen) >= self.HEAVY_PEN and not any(src.startswith("ref:") for src, _ in bs["cands"])
+                if (len(bs["cands"]) < max(1, int(getattr(self.a, "map_min_cands", 1) or 1)) or heavy) and getattr(self.a, "map_retry", 1) and not bs.get("retried"):
                     # every sample failed (biz_123 in v9, dev_014 in 3 of 4 public runs: luck of the sampling), or only one ran
-                    # (biz_123 / biz_124 in v13: nothing to choose from, no fallback): one more batch
+                    # (biz_123 / biz_124 in v13: nothing to choose from, no fallback), or every candidate carries a heavy warning
+                    # (v23 public dev_014 run 3: 2 candidates, penalties 54 and more): one more batch
                     bs["retried"] = True; bs["pending"] = self.a.kc
-                    print(f"  {b}: {len(bs['cands'])} mapping candidate(s); a second batch of {self.a.kc}", flush=True)
+                    print(f"  {b}: {len(bs['cands'])} mapping candidate(s)" + (f", best penalty {min(pen):.0f}" if heavy else "") + f"; a second batch of {self.a.kc}", flush=True)
                     for s2 in range(self.a.kc, 2 * self.a.kc): launch(s2)
                     return
                 self.clog.write(json.dumps({"business_id": b, "llm_attempts": {x: bs["llm"][x] for x in sorted(bs["llm"])}}, ensure_ascii=False, default=str) + "\n")
@@ -365,6 +368,7 @@ class Pipeline:
         for s in range(self.a.kc): launch(s)
 
     SEL_FAIL_W = 30.0                                                   # ranking points per unit of rule failure share
+    HEAVY_PEN = 20.0                                                    # every LLM candidate this bad (a revenue / short-name warning): a second batch
 
     @staticmethod
     def answer_agreement(answers):
@@ -629,7 +633,8 @@ class Pipeline:
             for j in range(1, max(1, int(getattr(self.a, "map_fallback", 1) or 1))):
                 r2 = self.vote_on(st, j)
                 if r2[0].get("type") not in ("abstain", "unanswerable"): st["fallback"] = j; return r2
-        if res[0].get("type") == "unanswerable" and getattr(self.a, "unans_unused", 1) and st.get("b"):
+        if res[0].get("type") == "unanswerable" and getattr(self.a, "unans_unused", 1) and st.get("b") \
+                and str((st.get("rule") or {}).get("tpl") or "") != "subjective":   # no raw table records a quality
             known, can = self.mapping_of(st["b"])                        # 'not in the data' from an LLM mapping that left raw
             if known and can and str(can.get("src", "")).startswith("llm") and can.get("unused"):   # tables unused: the data may
                 st["unans_abstain"] = True; return ({"type": "abstain"},) + tuple(res[1:])         # hold it (v6-v13: 16 right / 42 wrong)

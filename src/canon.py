@@ -265,7 +265,7 @@ def warning_penalty(w):
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
     return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith("lines.item_name holds the short names") \
-        else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names")) else 2.0
+        else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) else 2.0
 
 
 def rank_score(r):
@@ -437,6 +437,47 @@ def secondary_checks(C, biz):
                          f"C records {zero:.0%} of them as owing nothing: set orders.debt_end = debt_from_note(note, total_payable) (the note "
                          "is the debt at the end of the data) and do not make payments equal the order total")
     except Exception as e: print(f"[canon] note-debt check failed: {type(e).__name__}: {e}", flush=True)
+    # 1c. staff written by given names in the book + a staff list of full names: orders.staff must give each ticket to the person
+    #     whose name it writes (public dev_012, v23: a mapping hand-wrote {'An': 'Hà Loan Đạt', 'Đạt': 'Lương Chi Đức', ...})
+    try:
+        St = C.get("staff")
+        if isinstance(St, pd.DataFrame) and "staff" in St.columns and "staff" in o.columns and St["staff"].notna().sum() >= 2:
+            import industry
+            full = [x for x in St["staff"].dropna().astype(str)]
+            mine = o["staff"].dropna().astype(str).map(industry._person_groups(o["staff"].dropna().astype(str), full)).value_counts()
+            for t, df in biz.tables.items():
+                if len(df) < 50 or abs(len(df) - len(o)) > 0.05 * len(o): continue
+                for c in df.columns:
+                    if str(c).startswith("_"): continue
+                    v = df[c].dropna().astype(str)
+                    if len(v) < 0.5 * len(df) or v.nunique() > 60: continue
+                    g = industry._person_groups(v, full); lab = v.map(g)
+                    if lab.isin(full).mean() < 0.8: continue
+                    # compare (day, person) counts: a swapped name mapping keeps every person's total when the staff work alike
+                    od = pd.to_datetime(o["order_date"], errors="coerce").dt.normalize(); days = set(od.dropna())
+                    def _isday(x):
+                        import warnings
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore"); return pd.to_datetime(x, errors="coerce").dt.normalize().isin(days).mean() > 0.9
+                    dcol = next((dc for dc in df.columns if dc != c and not str(dc).startswith("_") and not pd.api.types.is_numeric_dtype(df[dc])
+                                 and df[dc].nunique() >= 20 and _isday(df[dc])), None)   # ('_sheet' 'T7-2025' parses as a day)
+                    if dcol is None: raise StopIteration
+                    import collections, warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore"); rd = pd.to_datetime(df[dcol], errors="coerce").dt.normalize()
+                    rawc = collections.Counter(zip(rd[v.index], lab))
+                    sm = o["staff"].notna(); ol = o.loc[sm, "staff"].astype(str).map(industry._person_groups(o.loc[sm, "staff"].astype(str), full))
+                    myc = collections.Counter(zip(od[sm], ol))
+                    n = max(1, len(v)); diff = sum(abs(rawc[k] - myc[k]) for k in set(rawc) | set(myc)) / (2 * n)
+                    if diff > 0.03:
+                        f0 = next((f for f in full if abs(int(lab.eq(f).sum()) - int(mine.get(f, 0))) > 0), full[0])
+                        w.append(f"orders.staff does not follow the names written in {t}.{c}: {diff:.0%} of the tickets go to another person than the "
+                                 f"name written ({f0}: {int(mine.get(f0, 0))} orders in C, {int(lab.eq(f0).sum())} rows of the book name that person); keep "
+                                 "orders.staff as written (the toolkit groups 'Đạt' / 'a Đạt' / 'A.Đạt' with the full name of the staff list) or map each "
+                                 "spelling to the full name ENDING with it")
+                    raise StopIteration
+    except StopIteration: pass
+    except Exception as e: print(f"[canon] staff-name check failed: {type(e).__name__}: {e}", flush=True)
     # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)
@@ -533,10 +574,22 @@ ALIASES = {   # canonical column <- names an LLM mapping uses for it (renamed on
     "ledger": {"stock_after": ["balance", "stock_balance", "balance_after", "qty_after"], "time": ["datetime", "timestamp"]},
     "prices": {"price": ["new_price", "unit_price"], "date": ["effective_date", "valid_from", "apply_date"]},
     "expenses": {"date": ["expense_date"], "amount": ["expense_amount", "cost"]},
+    # industry tables (src/industry.py); a staff list copied raw keeps its Vietnamese headers (public dev_012, v23)
+    "staff": {"staff": ["full_name", "name", "staff_name", "Họ tên", "Họ và tên", "Tên thợ", "Tên nhân viên", "Họ tên thợ", "Tên"],
+              "commission_pct": ["commission", "commission_rate", "commission_percent", "Hoa hồng (%)", "Hoa hồng", "% hoa hồng", "Tỉ lệ hoa hồng"],
+              "start_date": ["Ngày vào làm", "join_date", "hire_date"]},
+    "customers": {"registered": ["registration_date", "register_date", "reg_date", "joined", "Ngày đăng ký"],
+                  "customer_name": ["name", "Tên KH", "Tên khách hàng"]},
+    "warranty": {"date": ["received", "received_date", "date_received", "Ngày nhận"], "imei": ["IMEI"]},
+    "instalments": {"buy_date": ["date", "purchase_date", "order_date"], "n_terms": ["terms", "n_periods"], "per_term": ["monthly", "per_month", "installment"]},
+    "instalment_payments": {"pay_date": ["date", "payment_date", "paid_date"], "amount": ["paid", "paid_amount"]},
+    "tradeins": {"amount": ["price", "value", "tradein_value", "Giá thu"], "date": ["tradein_date"]},
 }
 REQUIRED = {"deliveries": ["order_id", "delivery_date", "trip_no"], "payments": ["order_id", "pay_date", "amount"],
             "lots": ["lot_id", "item_code", "expiry", "qty_in_base"], "lot_sales": ["order_id", "lot_id", "qty_base"],
-            "ledger": ["item_code", "time", "stock_after"], "conversions": ["item", "unit", "factor"], "prices": ["date", "price"]}
+            "ledger": ["item_code", "time", "stock_after"], "conversions": ["item", "unit", "factor"], "prices": ["date", "price"],
+            "staff": ["staff"], "instalments": ["order_id", "buy_date", "n_terms"], "instalment_payments": ["order_id", "pay_date", "amount"],
+            "warranty": ["date", "item_name"], "tradeins": ["order_id", "amount"], "customers": ["registered"]}
 
 
 def normalize_aliases(C):

@@ -193,5 +193,12 @@ check("grounding", not gq("so so chai siro tiffy chai 30 ml ban ra", 'price_effe
       and gq("so so chai siro tiffy chai 30 ml ban ra", 'price_effect("Siro Tiffy chai 30ml", 14)')
       and gq("nuoc suoi aquafina ban duoc bao nhieu", 'item_qty(p, item="Nước suối Aquafina 500ml")') and gq("doanh thu thang 5", "revenue(month(2025, 5))"))
 
+# 15. a table named after its sheet as the README writes it resolves to the ingested table (unique sheet names only)
+Tt = canon.Tables({"BH": pd.DataFrame({"_source": ["BH_2025.xlsx[BanHang_KhachHang]"], "a": [1]}),
+                   "BH_1": pd.DataFrame({"_source": ["BH_2025.xlsx[Sheet1]"], "b": [1]}), "X": pd.DataFrame({"_source": ["X.xlsx[Sheet1]"], "c": [1]})}, {})
+check("sheet alias", list(Tt["BanHang_KhachHang"].columns) == ["_source", "a"] and "BH" in Tt.accessed)
+try: Tt["Sheet1"]; check("ambiguous sheet name raises", False)
+except KeyError: pass
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

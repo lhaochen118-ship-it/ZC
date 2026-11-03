@@ -96,9 +96,25 @@ class Tables(dict):
         try: return self[name]
         except KeyError: return default
 
+    def sheet_alias(self, name):
+        """a table named after its sheet as the README writes it ('BanHang_KhachHang', a sheet of BanHang_TongHop_2025.xlsx
+        that ingest calls BanHang_TongHop_2: the KeyError of most dev_003 mapping attempts) -> that table, when exactly one
+        table comes from a sheet of that name (also 'file_sheet' / 'file[sheet]')."""
+        k, hits = _fold(str(name)), set()
+        for t in self:
+            df = dict.__getitem__(self, t)
+            if not isinstance(df, pd.DataFrame) or "_source" not in df.columns: continue
+            for src in pd.unique(df["_source"].astype(str))[:20]:
+                m = re.match(r"(.+?)(?:\.\w+)?\[(.+)\]$", src)
+                if m and k in (_fold(m.group(2)), _fold(f"{m.group(1)}_{m.group(2)}"), _fold(f"{m.group(1)}[{m.group(2)}]")): hits.add(t)
+        return hits.pop() if len(hits) == 1 else None
+
     def __missing__(self, name):
         cols = set(self.ref_cols.get(name, []))
-        if not cols: raise KeyError(name)
+        if not cols:
+            alias = self.sheet_alias(name)
+            if alias is None: raise KeyError(name)
+            self.used[name] = alias; self.accessed.add(alias); return dict.__getitem__(self, alias)
         best, score = None, 0.0
         for t, df in self.items():
             s = len(cols & set(df.columns)) / len(cols)

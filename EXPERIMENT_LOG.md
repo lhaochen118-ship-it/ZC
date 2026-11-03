@@ -408,3 +408,16 @@ v21's README-revenue check flags exactly runs 2 / 3's mappings (penalty 100) and
 (penalty gap ≥ 10); on v20 offline 15 splits resolved, 10 to v19's answer. v21 (8dca4a2) and v22 (20cfec7) still running
 on Kaggle at the end of this chat; their outputs must be downloaded in the next one (handoff/STATUS.md lists the kernels
 and the submission recipe). Routine disabled.
+
+## Entry 14 — 2026-11-03 16:00: v21 / v22 results (new chat)
+
+- **v21** (8dca4a2): train 0.984 (2965 / 13 / 22; dev 0.991, holdout 0.971). Public 3 runs: 856 unanimous / 72 majority /
+  72 split (v19: 820 / 95 / 85). Vote with mapping-aware tie-break → `submissions/v21` (70 abstain, 42 unanswerable, 11
+  zero answers). Vs v19: 927 identical, 37 newly answered (dev_014 19), 22 newly abstained (dev_012 7), 14 changed.
+- **v22** (20cfec7): train 0.988 (2969 / 5 / 26; dev 0.998, holdout 0.969; wall 4136 s). Public: 856 / 68 / 76 → `submissions/v22`
+  (76 abstain, 33 unanswerable, 3 zero answers: the regional-word fixes removed most 0 answers). Vs v19: 929 identical,
+  27 newly answered, 18 newly abstained, 26 changed (dev_012 9, dev_008 5, dev_013 5). Vs v21: 937 identical.
+- Pooled mapping choice (`automation/jobs/pool_study.py`, v19 public, current checks): in 7 of 10 LLM-mapped shops the 3
+  runs' choices fall in the same rule-answer cluster; the pooled ranking sometimes picks a singleton cluster (dev_008,
+  dev_014), so pooling with the present ranking is not obviously more stable. Train (labelled) study running.
+- Waiting for the user's portal scores of v21 / v22 before any new run (user instruction).

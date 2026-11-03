@@ -1,8 +1,24 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 14:25 UTC. Branch `claude/datamate-v3-0dny90`, commit cuối 7fa70f2. User dừng khung chat này
-(mở khung mới để tiết kiệm token). Routine `trig_01U26KaZP68Dmg8JL2RGcbVS` **đã tắt**. Khung mới: đọc `READING_GUIDE.md` →
-`CLAUDE.md` → file này → làm mục "Việc tiếp theo" (ba PDF bàn giao: `handoff/0[1-3]_*.pdf`). Container cũ mất: token Kaggle phải xin lại user (lưu `~/.kaggle/tok_<user>`, chmod 600).*
+*Cập nhật: 2026-11-03 16:00 UTC (khung chat mới). **Đang dừng theo yêu cầu user: chờ user chấm v21 / v22 trên portal
+và gửi điểm rồi mới chạy tiếp.** Token: 11 acc ở `~/.kaggle/tok_<user>` (gồm huyenco, mucnokieu; Duylan = duylnng,
+HaiDinh = hai1108, NguyenManh = nguyenmanh0404).*
+
+## Mới (khung 03/11 chiều)
+
+| File nộp | Train (1 lần) | Public 3 lần chạy (nhất trí / đa số / tách) | Abstain | Đáp án 0 | So với v19 (giống / thêm trả lời / thêm abstain / đổi) |
+|---|---|---|---|---|---|
+| `submissions/v21/submission.jsonl` | 0.984 (holdout 0.971) | 856 / 72 / 72 | 70 | 11 | 927 / 37 / 22 / 14 |
+| `submissions/v22/submission.jsonl` | 0.988 (holdout 0.969) | 856 / 68 / 76 | 76 | 3 | 929 / 27 / 18 / 26 |
+
+- Cả hai: bỏ phiếu biết ánh xạ (map_penalties + vote.py); dev_003 / dev_009 giống hệt v19.
+- Sẵn sàng nhưng **chưa chạy** (chờ user): `automation/jobs/v22b.jobs` (public seed 3/4/5, preflight đã OK).
+- `automation/jobs/pool_study.py`: nghiên cứu chọn ánh xạ trên ứng viên gộp của nhiều lần chạy. Trên v19 public (code
+  hiện tại chọn lại): 7/10 DN ánh xạ LLM cả 3 lần chạy cùng cụm đáp án; lựa chọn gộp theo xếp hạng hiện tại có lúc rơi
+  vào cụm 1 ứng viên (dev_008, dev_014) → gộp thẳng chưa chắc ổn định hơn; cần xếp hạng theo kích thước cụm. Đang chạy
+  bản train có nhãn (v13/v14/v18/v19/v22, `scratchpad/pool_train.log`).
+
+---
 
 ## Điểm portal (user nộp) — EXPERIMENT_LOG entry 13
 

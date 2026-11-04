@@ -178,6 +178,9 @@ def main():
         built[k]["fail_share"] = res.get("fail_share", 0.0) if res.get("ok") else 0.0
         built[k]["rule_answers"] = res.get("answers") or {} if res.get("ok") else {}
     qtext = {q["id"]: q["question"] for q in qs_all}
+    first_rec = {}
+    for L in logs:
+        for qid, rec in L.items(): first_rec.setdefault(qid, rec)
     topic_q = collections.defaultdict(set)                          # questions of a topic, from the logged programs
     for L in logs:
         for qid, rec in L.items():
@@ -202,10 +205,18 @@ def main():
     # 3. every program of every run on the mappings the question uses: the pooled best and runner-up, or for a debt / vehicle /
     #    staff question the best two candidates without a heavy warning on that topic (none -> abstain)
     def slots(b, rec):
+        """the mappings a question is answered on: the pooled best and runner-up; for a topic question the clean candidates
+        ordered by how many of the business's questions OF THAT TOPIC their rule programs answer (public dev_004, v27: the
+        best clean candidate had no due dates -> every due-date question unanswerable), up to 4 (fallback walks them)."""
         T = question_topics(rec, qtext.get(rec["id"]))
         if not T: return best[b][:2], T
         clean = [m for m in best[b] if not topic_bad(m[1], T)]
-        return clean[:2], T
+        tq = [q for q in topic_q.get(b, ()) if question_topics(first_rec[q], qtext.get(q)) & T] or list(topic_q.get(b, ()))
+        def tfail(m):
+            ra = m[1].get("rule_answers") or {}; xs = [ra.get(q) for q in tq if q in ra]
+            return round(sum(1 for x in xs if x is None) / len(xs), 1) if xs else 1.0
+        clean = sorted(clean, key=tfail)                                  # stable: the general order among equals
+        return clean[:4], T
     qslots, qtop = {}, {}
     for L in logs:
         for qid, rec in L.items():
@@ -275,8 +286,9 @@ def main():
                         final, conf, tpl = {"type": "abstain"}, 0.0, ""; rec["topic_abstain"] = sorted(qtop.get(qid) or [])
                     else:
                         final, conf, tpl = vote_q(i, qid, rec, sl[0][0])
-                        if final.get("type") in ("abstain", "unanswerable") and len(sl) > 1:
-                            f2, c2, _ = vote_q(i, qid, rec, sl[1][0])
+                        for alt in sl[1:]:                               # map fallback down the question's slots
+                            if final.get("type") not in ("abstain", "unanswerable"): break
+                            f2, c2, _ = vote_q(i, qid, rec, alt[0])
                             if f2.get("type") not in ("abstain", "unanswerable"): final, conf = f2, c2
                         if final.get("type") == "unanswerable" and tpl != "subjective" and "llm:" in sl[0][0] and sl[0][1].get("unused"):
                             final = {"type": "abstain"}                 # (pipeline --unans-unused)

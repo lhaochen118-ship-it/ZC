@@ -1,8 +1,20 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-03 22:45 UTC. **Đang dừng theo yêu cầu user: chờ điểm portal của v23 / v24 rồi mới chạy tiếp.**
-Trước đó: v21 / v22 (v22 = 0.71). Token: 11 acc ở `~/.kaggle/tok_<user>` (gồm huyenco, mucnokieu; Duylan = duylnng,
-HaiDinh = hai1108, NguyenManh = nguyenmanh0404).*
+*Cập nhật: 2026-11-04 05:50 UTC. **Đang dừng theo yêu cầu user: chờ điểm portal của v26 (và chẩn đoán X1–X3).**
+Điểm portal: v22 0.71, **v23 0.87**, v24 0.747, v25 0.825. Token: 14 acc ở `~/.kaggle/tok_<user>` (mới: loinguyentran,
+anderson1202, phatle1578 — còn quota tuần W45; các acc cũ hết quota).*
+
+## Mới (khung 04/11) — EXPERIMENT_LOG entry 17
+
+| File nộp | Cách làm | Abstain | Portal |
+|---|---|---|---|
+| `submissions/v25/submission.jsonl` | bỏ phiếu 5 lần chạy v25 (train 0.9893) | 5 | 0.825 |
+| `submissions/v26/submission.jsonl` | `src/consensus.py` trên 5 lần chạy v25 (ánh xạ chung + slot theo chủ đề) | 8 | chờ |
+| `submissions/diag/X1..X3` | v23 + đáp án v26 của một nhóm luật (chẩn đoán, không dự thi) | — | chờ |
+
+- Mâu thuẫn chưa gỡ: điểm portal nói các thay đổi chung của v24 / v25 so với v23 (62 câu) lỗ ít nhất 27 điểm, nhưng mọi
+  nhóm kiểm được bằng dữ liệu thô đều nghiêng về v25 → X1–X3 cho biết nhóm nào sai. Bước tiếp: sửa nhóm sai (chung), chạy
+  lại; `docker/predict.sh` có `CONSENSUS=1` (mặc định tắt cho tới khi portal xác nhận v26 ≥ v25).
 
 ## Mới (khung 03/11 tối) — portal v22 = 0.71
 

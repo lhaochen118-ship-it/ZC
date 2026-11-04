@@ -474,3 +474,26 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   checks: 14 abstain, 33 unanswerable, 0 zero answers. Vs v22: 855 identical, 66 newly answered (dev_014 35), 4 newly
   abstained, 75 changed (dev_013 32). Vs v23: 879 identical.
 - **Stopped here (user): waiting for the portal scores of v23 / v24.**
+
+## Entry 17 — 2026-11-04 05:50: portal v23 = 0.87, v24 = 0.747, v25 = 0.825; v25 / v26; consensus re-answer
+
+- **v25** (commits 98d601f + f4be0c0; 6 kernels on loinguyentran / anderson1202 / phatle1578, 55–75 min each): train seed 0
+  **PA 0.9893** (2973 / 5 / 22 — best train run); 5 public runs, 881 questions unanimous over the 5. `submissions/v25` =
+  5-run vote (5 abstain). **Portal 0.825** (v23 0.87).
+- **Consensus re-answer** (`src/consensus.py`): candidates of every run pooled, one mapping per business, every logged
+  program re-executed on it. First try on the v23 runs: 945 same as v23, but wrong debt mappings chosen (dev_014: payments =
+  debt-book repayments only -> 6334 orders owing 22.9 bn; dev_008: 233 M for 4.55 M in the notes). Fixed generally:
+  checks 1a-owing (> 25% of orders owing; train refs <= 0.4%), settled notes still owed, unreadable debt book, returns /
+  cancels in notes kept valid (1a-status, with an order-id column that must have many distinct values), plates dropped,
+  empty item names; toolkit paid_until = paid_at_purchase + repayments; cleaning layer `resolve_short_names` (short names
+  differing only in case / accents -> the lookup's full name); **topic slots**: debt / instalment / vehicle / staff
+  questions use the best candidate without a heavy warning of that topic (none -> abstain), the general ranking leaves topic
+  penalties out; identical logged programs executed once (-38% time). Oracle 2967 / 1 / 32, plausibility 0 / 36, ALL PASS.
+- **v26** = topic-aware consensus over the 5 v25 runs (33 min CPU): vs v25 967 same, 28 changed (dev_014 19, dev_011 7),
+  4 newly abstained; 8 abstain. Hand checks on the raw books (8 questions where versions differ): v23 0/8, v25 6/8, v26 7/8.
+- **Open contradiction**: the 3 portal scores imply that the 62 questions where v24 = v25 != v23 lose >= 27 points for
+  v25, yet every group I could recompute from the raw data and the rulebook favours v25 (dev_008 note debts, dev_013
+  voucher / ship / points with §8 de-duplication, dev_004 credit due dates by §2 'tính đến hôm nay'). Either part of these
+  readings differs from the organisers' or the portal scores a subset. `submissions/diag/X1–X3` (v23 + v26 answers of one
+  rule group each) settle it with three portal scores.
+- **Stopped (user): waiting for the portal scores of v26 (and X1–X3 if the user submits them).**

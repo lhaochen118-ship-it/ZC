@@ -11,7 +11,7 @@ executed again on that mapping, then voted as the pipeline does:
     candidate list) are rebuilt with the current src/ (coverage, warnings, signature) -> pooled list per business;
  2. the rule programs of the business's questions (current qparse, cleaned text) run on every candidate: fail share and
     answers; the ranking is Pipeline.choose's (coverage - warning penalties - 30 x rule failures + 30 x answer agreement,
-    signature tie-break) over the pooled list, the penalties of topic warnings (debt / vehicle / staff) left out -> best and
+    signature tie-break) over the pooled list, the penalties of topic warnings (debt / instalment / vehicle / staff) left out -> best and
     runner-up; a question of a topic (half of its programs call that topic's toolkit functions) uses instead the best two
     candidates with no heavy warning (>= 10) on the topic, and abstains when every candidate has one;
  3. per run and question: the rule program (re-parsed on the question's mapping) + every logged LLM sample (escalations and
@@ -76,7 +76,7 @@ def rule_texts(split, b, qs):
 
 
 def general_score(r):
-    """canon.rank_score without the warnings of a topic (debt / vehicle / staff): the questions of a topic choose their own
+    """canon.rank_score without the warnings of a topic (debt / instalment / vehicle / staff): the questions of a topic choose their own
     candidate (slots in main), so a debt-only fault must not move every revenue question to another mapping (public dev_014)."""
     return float(r.get("coverage") or 0) - sum(canonmod.warning_penalty(w) for w in r.get("warnings") or []
                                                if not any(rx.search(str(w)) for rx in TOPIC_WARN.values()))
@@ -97,13 +97,15 @@ def rank(pool_b):
 # nothing). Public v23 runs: every dev_008 candidate ignored the debt notes (debts 0 or 233M for 4.5M), every dev_014 one
 # had unpaid orders / no debt book (22.9 bn) while its revenue was right.
 TOPIC_FN = {
-    "debt": re.compile(r"\b(?:debts?|debt_\w+|n_debtors|top_debtors|instalment_\w+|terms_due|n_overdue_customers|paid_until|n_due_orders)\s*\("),
+    "debt": re.compile(r"\b(?:debts?|debt_\w+|n_debtors|top_debtors|paid_until|n_due_orders)\s*\("),      # book + instalments
+    "instalment": re.compile(r"\b(?:instalment_\w+|terms_due|n_overdue_customers)\s*\("),                # the instalment book only
     "vehicle": re.compile(r"\b(?:n_vehicles|top_plates|vehicle_sales|top_vehicles)\s*\("),
     "staff": re.compile(r"\b(?:staff_sales|staff_stats|top_staff|commission)\s*\("),
 }
 TOPIC_WARN = {
     "debt": re.compile(r"C counts \d+ of \d+ orders .* as still owing|the notes \S+ say \d+ orders|the data has a debt book|"
                        r"the data has an instalment book|C\['instalments'\] lacks|C\['instalment_payments'\] lacks"),
+    "instalment": re.compile(r"the data has an instalment book|C\['instalments'\] lacks|C\['instalment_payments'\] lacks"),
     "vehicle": re.compile(r"the data records number plates|the data writes the vehicle model"),
     "staff": re.compile(r"orders\.staff (?:holds given names|does not follow)"),
 }
@@ -201,7 +203,7 @@ def main():
         for src, r in qslots[qid]: rule_jobs.append(((qid, src), b, as_of, rtext.get(qid, ""), r["path"], a.timeout))
     n_top = collections.Counter((next(L[q]["business_id"] for L in logs if q in L), "clean" if qslots[q] else "abstain")
                                 for q in qslots if qtop[q])
-    print(f"[consensus] topic questions (debt / vehicle / staff) per business: {dict(sorted(n_top.items()))}", flush=True)
+    print(f"[consensus] topic questions (debt / instalment / vehicle / staff) per business: {dict(sorted(n_top.items()))}", flush=True)
     res = dict(agent.pmap(pool, agent.run_code, jobs, per_task=a.timeout))
     rres = dict(agent.pmap(pool, agent.run_qparse, rule_jobs, per_task=a.timeout))
     pool.close()

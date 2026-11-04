@@ -42,6 +42,18 @@ d4 = os.path.join(scratch, "r_pen"); os.makedirs(d4); json.dump({"B": 3.5}, open
 open(os.path.join(d4, "compile_logs.jsonl"), "w").write(json.dumps({"business_id": "C", "chosen": "llm:1", "chosen_penalty": 7}) + "\n")
 d5 = os.path.join(scratch, "r_pen2"); os.makedirs(d5); open(os.path.join(d5, "compile_logs.jsonl"), "w").write(json.dumps({"business_id": "C", "chosen": "llm:1", "chosen_penalty": 7}) + "\n")
 if vote.penalties(d4) != {"B": 3.5} or vote.penalties(d5) != {"C": 7.0}: bad.append(("penalties()", vote.penalties(d4), vote.penalties(d5)))
+# consensus topics: a question is a debt / instalment / vehicle / staff question when half of its programs call those
+# functions; a candidate is unusable for it only with a heavy warning (>= 10) of that topic
+import consensus
+rec = {"samples": {"rule": {"code": "ANSWER = debt_total(today)", "tpl": "debt_total"},
+                   "0": [{"ok": True, "code": "x = debt_by_customer(d)"}], "1": [{"ok": True, "code": "revenue(p)"}]}}
+if consensus.question_topics(rec) != {"debt"}: bad.append(("topics debt", consensus.question_topics(rec)))
+rec2 = {"samples": {"0": [{"ok": True, "code": "instalment_remaining(d)"}], "1": [{"ok": True, "code": "terms_due(d, customer='A')"}]}}
+if consensus.question_topics(rec2) != {"instalment"}: bad.append(("topics instalment", consensus.question_topics(rec2)))
+if consensus.question_topics({"samples": {"0": [{"ok": True, "code": "revenue(p)"}]}}): bad.append("no topic")
+owing = {"warnings": ["C counts 6334 of 6334 orders (100%) as still owing money at the end of the data"]}
+if not consensus.topic_bad(owing, {"debt"}) or consensus.topic_bad(owing, {"instalment"}): bad.append("topic_bad owing")
+if consensus.general_score({"coverage": 50, "warnings": owing["warnings"]}) != 50: bad.append("general score leaves topic penalties out")
 for b in bad: print("FAIL", b)
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

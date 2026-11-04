@@ -82,13 +82,22 @@ def general_score(r):
                                                if not any(rx.search(str(w)) for rx in TOPIC_WARN.values()))
 
 
-def rank(pool_b):
-    """Pipeline.choose's order over [(src, rec)]: rec has coverage, warnings, sig, fail_share, rule_answers, gaps."""
+def rank(pool_b, topic_q=frozenset()):
+    """Pipeline.choose's order over [(src, rec)] (rec: coverage, warnings, sig, fail_share, rule_answers, gaps), with two
+    corrections for a pool of several runs: rule failures count on the questions without a topic only (a debt / instalment /
+    vehicle / staff question is answered on its own clean candidate, so failing it must not sink a mapping that is right on
+    everything else), and answer agreement is counted among plausible candidates only (no heavy general warning): copies of
+    one buggy mapping from several runs agreed with each other and outvoted the clean one (public dev_014, v27 first try:
+    3 copies with 2751 nameless lines beat the mapping without that fault)."""
     if not pool_b: return []
     _, sc = agent.agreement([r["sig"] for _, r in pool_b])
-    ag = pipeline.Pipeline.answer_agreement([r.get("rule_answers") or {} for _, r in pool_b])
+    def gpen(r): return float(r.get("coverage") or 0) - general_score(r)
+    plaus = [gpen(r) < 20 for _, r in pool_b]
+    ra = [{q: v for q, v in (r.get("rule_answers") or {}).items() if q not in topic_q} for _, r in pool_b]
+    ag = pipeline.Pipeline.answer_agreement([x if ok else {} for x, ok in zip(ra, plaus)])
+    fail = [(sum(1 for v in x.values() if v is None) / len(x)) if x else r.get("fail_share", 0.0) for x, (_, r) in zip(ra, pool_b)]
     W, F = 30.0, pipeline.Pipeline.SEL_FAIL_W
-    return sorted(range(len(pool_b)), key=lambda i: (-(general_score(pool_b[i][1]) - F * pool_b[i][1].get("fail_share", 0.0) + W * ag[i]
+    return sorted(range(len(pool_b)), key=lambda i: (-(general_score(pool_b[i][1]) - F * fail[i] + W * ag[i]
                                                      - (pipeline.Pipeline.REF_GAP_W if pool_b[i][1].get("gaps") else 0.0)), -sc[i], i))
 
 
@@ -161,11 +170,15 @@ def main():
     for (k, _), res in agent.pmap(pool, agent.run_rule_eval, evs):
         built[k]["fail_share"] = res.get("fail_share", 0.0) if res.get("ok") else 0.0
         built[k]["rule_answers"] = res.get("answers") or {} if res.get("ok") else {}
+    topic_q = collections.defaultdict(set)                          # questions of a topic, from the logged programs
+    for L in logs:
+        for qid, rec in L.items():
+            if question_topics(rec): topic_q[rec["business_id"]].add(qid)
     best, pool_dump = {}, {}
     for b in bids:
         pb = sorted([(k[1], r) for k, r in built.items() if k[0] == b], key=lambda x: (not x[0].startswith("ref:"), x[0]))
         for src, r in pb: r["gaps"] = any(meta[i][2].get(b) == src for i in range(len(meta)))   # a reference an adapt round rewrote
-        order = rank(pb)
+        order = rank(pb, topic_q.get(b, frozenset()))
         if not order: continue
         best[b] = [pb[j] for j in order]                                  # full pooled ranking
         sig = lambda r: json.dumps(sorted((r.get("rule_answers") or {}).items()))

@@ -35,4 +35,18 @@ for i in $(seq 1 $(( RUNS - 1 ))); do
     DIRS="$DIRS /tmp/zc/run_$i"
     python3 /app/src/vote.py "$RESULT/submission.jsonl" $DIRS --log-dir "$RESULT/logs" 2>&1 | tee -a "$RESULT/logs/run.log"
 done
+# Consensus re-answer (src/consensus.py, CPU): the mapping of each business chosen once among the candidates of ALL runs, every
+# logged program of every run executed again on it, votes redone, then the multi-run vote. CONSENSUS=1 to use it; it replaces
+# the submission only when it finishes in the time left (the plain vote stays otherwise).
+if [ "${CONSENSUS:-0}" = "1" ] && [ "$(echo $DIRS | wc -w)" -ge 2 ]; then
+    LEFT=$(( BUDGET - ($(date +%s) - T0) ))
+    if [ "$LEFT" -gt 900 ]; then
+        mkdir -p /tmp/zc/consensus
+        if timeout $(( LEFT - 300 )) python3 /app/src/consensus.py "$SPLIT" /tmp/zc/cache /tmp/zc/consensus /tmp/zc/consensus/submission.jsonl $DIRS \
+                2>&1 | tee -a "$RESULT/logs/run.log" && [ -s /tmp/zc/consensus/submission.jsonl ]; then
+            cp "$RESULT/submission.jsonl" "$RESULT/logs/submission_vote.jsonl"
+            cp /tmp/zc/consensus/submission.jsonl "$RESULT/submission.jsonl.tmp" && mv "$RESULT/submission.jsonl.tmp" "$RESULT/submission.jsonl"
+        fi
+    else echo "consensus skipped: ${LEFT}s left"; fi
+fi
 echo "end: $(date -u +%FT%TZ)  answers: $(wc -l < "$RESULT/submission.jsonl")"

@@ -72,7 +72,7 @@
 {"id": "q_1040545087b6", "type": "number", "answer": 55500000}
 {"id": "q_105bc863feea", "type": "number", "answer": 267653200}
 {"id": "q_107e86e608dc", "type": "number", "answer": 264831100}
-{"id": "q_10831a6f3a2b", "type": "unanswerable", "answer": null}
+{"id": "q_10831a6f3a2b", "type": "number", "answer": 152}
 {"id": "q_10a0c4fec3d2", "type": "boolean", "answer": false}
 {"id": "q_113d86c3eb6a", "type": "percent", "answer": -2.27}
 {"id": "q_11c915f78c7e", "type": "number", "answer": 312}
@@ -106,7 +106,7 @@
 {"id": "q_1a312c2f71ac", "type": "percent", "answer": 33.33}
 {"id": "q_1a35be96a5bd", "type": "number", "answer": 1581}
 {"id": "q_1a5c000274ee", "type": "number", "answer": 806}
-{"id": "q_1adddf599009", "type": "unanswerable", "answer": null}
+{"id": "q_1adddf599009", "type": "number", "answer": 145}
 {"id": "q_1af400957d96", "type": "number", "answer": 203}
 {"id": "q_1bd68f25b288", "type": "unanswerable", "answer": null}
 {"id": "q_1c0046277ff9", "type": "abstain"}
@@ -469,7 +469,7 @@
 {"id": "q_71ead7c337f8", "type": "number", "answer": 3631}
 {"id": "q_7260611e1637", "type": "number", "answer": 192663000}
 {"id": "q_72e220b80878", "type": "string", "answer": "Đoàn Bảo Thu"}
-{"id": "q_7305db18bf51", "type": "abstain"}
+{"id": "q_7305db18bf51", "type": "number", "answer": 19}
 {"id": "q_733500e5c7a7", "type": "percent", "answer": -26.32}
 {"id": "q_735ea0888aab", "type": "string", "answer": "Giang Phương Hùng"}
 {"id": "q_73aa64c2c7cf", "type": "number", "answer": 15}
@@ -622,7 +622,7 @@
 {"id": "q_9e6f314a5bd8", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Lý Cường Hạnh", 1723000], ["Từ Phong Ngân", 1658000], ["Lưu Anh Trung", 1328000], ["Dương Giang Hà - 0701 466 949", 1242000], ["Triệu Bảo Đức", 964668]]}}
 {"id": "q_9e82414141dd", "type": "string", "answer": "Tô Giang Hồng"}
 {"id": "q_9ed7874d83b8", "type": "number", "answer": 719572600}
-{"id": "q_9eddae22a244", "type": "unanswerable", "answer": null}
+{"id": "q_9eddae22a244", "type": "number", "answer": 164}
 {"id": "q_9ee4a6de0ca1", "type": "number", "answer": 300000}
 {"id": "q_9f2824253517", "type": "number", "answer": 116}
 {"id": "q_9f4af1e4fecd", "type": "number", "answer": 150700000}
@@ -635,7 +635,7 @@
 {"id": "q_a1195f9fe04c", "type": "percent", "answer": 2.43}
 {"id": "q_a119f396d2af", "type": "percent", "answer": 1.81}
 {"id": "q_a13017cca903", "type": "number", "answer": 2007153000}
-{"id": "q_a18fefbb07ad", "type": "unanswerable", "answer": null}
+{"id": "q_a18fefbb07ad", "type": "number", "answer": 21}
 {"id": "q_a1deeb0f213d", "type": "number", "answer": 631}
 {"id": "q_a225dc12182c", "type": "string", "answer": "Hà Loan Đạt"}
 {"id": "q_a29355405c06", "type": "number", "answer": 82}

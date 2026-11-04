@@ -814,6 +814,9 @@ class Shop(industry.IndustryMetrics):
         """average per weekday of p (0 = Monday ... 6 = Sunday): the total over those days divided by the NUMBER of such days
         in p (within the data), days without orders included (public rulebook: 'Trung bình mỗi ngày thứ X của kỳ').
         by: orders | revenue | qty (base units)."""
+        if isinstance(weekday, str):                                    # 'thứ 3' = Tuesday = 1 (Vietnamese counts from thứ 2)
+            import qparse
+            wd = qparse.named_weekdays(weekday); require(len(wd) == 1, f"not a weekday: {weekday!r}"); weekday = next(iter(wd))
         self.cover(p)
         days = pd.date_range(p.start, p.end, freq="D"); end = self.data_end() if hasattr(self, "data_end") else None
         if end is not None: days = days[days <= end]
@@ -1464,7 +1467,7 @@ rankings descending with ties by code, money rounded half-up to whole VND, perce
 - Orders / revenue: revenue(p, **f), n_orders(p, **f), aov(p, **f), cancel_rate(p), orders(p, valid=True|None|False, **f) and
   lines(p, **f) -> DataFrames, daily_revenue(p), best_day(p, by="revenue"|"orders"), n_days_revenue_at_least(p, x),
   n_orders_revenue_at_least(p, x), monthly_revenue(periods), best_month(periods), increasing(periods), share(p, **f) (percent of
-  the whole shop's revenue), weekday_avg(p, weekday 0=Monday), peak_hour(p), size_qty(p, "M"|"L").
+  the whole shop's revenue), weekday_avg(p, weekday: 0 = Monday = thứ 2, 1 = thứ 3 (Tuesday), 2 = thứ 4, 3 = thứ 5, 4 = thứ 6, 5 = thứ 7, 6 = chủ nhật; or the Vietnamese name 'thứ 3'), peak_hour(p), size_qty(p, "M"|"L").
 - Items: item_qty(p, item=|group=, base_unit=None) (base units), item_sales(p, by="qty"|"revenue"|"n_orders"|"profit") -> Series,
   top_items(p, k, by="qty", **f) -> list, unsold_items(p), price_on(item, d), price_change_date(item, new_price),
   price_effect(item, n, date=None, new_price=None) (% change of quantity, n days from the rise vs n days before).

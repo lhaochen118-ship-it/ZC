@@ -135,6 +135,12 @@ def question_topics(rec, text=None):
     return out
 
 
+def code_of(rec, name):
+    v = (rec.get("samples") or {}).get(name)
+    ok = agent.last_ok(v) if isinstance(v, list) else None
+    return (ok or {}).get("code") or ""
+
+
 def topic_bad(r, topics):
     return any(TOPIC_WARN[t].search(str(w)) and canonmod.warning_penalty(w) >= 10 for t in topics for w in r.get("warnings") or [])
 
@@ -248,6 +254,7 @@ def main():
             if sid.isdigit() and int(sid) in ung: continue
             r = res.get((i, qid, src, name))
             if r is None: continue
+            if not qparse.weekday_consistent(qtext.get(qid, ""), r.get("code") or code_of(rec, name)): continue   # 'thứ 3' read as weekday 2
             total += 1.0
             if r.get("ok") and r.get("answer") is not None:
                 c = agent.canon_of(r["answer"]); votes[c] += 1.0; rep.setdefault(c, r["answer"])

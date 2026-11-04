@@ -246,6 +246,27 @@ def _kinds_of(shop):
 JOB_WORDS = r"(?:thay|va|sua|lam|rua|ve sinh|bao duong|chinh|can|tang)\s+\S+(?:\s+\S+)?|nhot\S*|lap\b|ruot\b|bugi|bu gi|curoa|sen\b"
 
 
+_WD = {"hai": 0, "2": 0, "ba": 1, "3": 1, "tu": 2, "4": 2, "nam": 3, "5": 3, "sau": 4, "6": 4, "bay": 5, "7": 5}
+
+
+def named_weekdays(q):
+    """weekday indices (0 = Monday = thứ 2 ... 6 = Sunday = chủ nhật) a question names: Vietnamese numbers the days from
+    thứ 2 (Monday), so 'thứ 3' is Tuesday = 1 (public dev_012, v25: every LLM sample took 'thứ 3' for weekday 2)."""
+    k = dm.key(str(q)); out = {_WD[m] for m in re.findall(r"\bthu (hai|ba|tu|nam|sau|bay|[2-7])\b", k)}
+    if re.search(r"\bchu nhat\b|\bcn\b", k): out.add(6)
+    return out
+
+
+def weekday_consistent(q, code):
+    """False when a program filters / averages by a weekday index the question does not name (weekday_avg(p, 2) for
+    'thứ 3'); True when the question names no weekday or the program uses none."""
+    wd = named_weekdays(q)
+    if not wd or not code: return True
+    used = {int(x) for x in re.findall(r"weekday_avg\([^()]*?(?:\([^()]*\)[^()]*?)*?,\s*(?:weekday\s*=\s*)?(\d)", code)}
+    used |= {int(x) for x in re.findall(r"(?:weekday|dayofweek)\s*(?:==|in\s*[\[(])\s*(\d)", code)}
+    return not used or used <= wd
+
+
 def named_vehicle(q):
     """the vehicle model a repair-shop question names after 'xe' / 'chiếc' in capitals ('bao nhiêu xe Air Blade khác nhau',
     'bn chiec SH Mode khac nhau', 'chiếc xe Wave Alpha'), else None."""

@@ -17,7 +17,7 @@ and a static business split leaves GPUs idle at the end. Here:
 Prompts, seeds, temperatures, repair messages and voting are those of the round-based path, so runs stay comparable."""
 import os, re, time, json, pickle
 from collections import Counter, defaultdict, deque
-import agent, industry, fewshot, dm, ingest, canon as canonmod
+import agent, industry, fewshot, dm, ingest, qparse, canon as canonmod
 
 
 def bind(mod):
@@ -613,6 +613,7 @@ class Pipeline:
         answered with 'Tiffy Dey hộp 25 vỉ'): such samples were wrong 85 % of the time on train (99 of 116, v6-v9), the
         others 7 %. Such a sample gets no vote and is left out of the total."""
         if b is None or not code: return True
+        if not qparse.weekday_consistent(q.get("question", ""), code): return False     # 'thứ 3' = Tuesday = weekday 1
         V = self.vocab(b)
         if not V: return True
         used = [V[u] for u in (self._ck(x or y) for x, y in re.findall(r'"([^"\n]{3,80})"|\'([^\'\n]{3,80})\'', code)) if u in V]

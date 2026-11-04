@@ -270,7 +270,7 @@ def warning_penalty(w):
     return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "the data has an instalment book",
                                                                                       "C['instalments'] lacks", "C['instalment_payments'] lacks", "the data records number plates",
                                                                                       "the data has an instalment book")) \
-        or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)|C counts \d+ of \d+ orders .* as still owing", w) \
+        or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)|C counts \d+ of \d+ orders .* as still owing|.+? marks \d+ orders as (?:returned|cancelled) \(", w) \
         else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) \
         or re.match(r"the notes \S+ say \d+ orders (?:on credit are settled|still owe money)|the data writes the vehicle model with its plate|the data has a debt book", w) else 2.0
 
@@ -278,6 +278,23 @@ def warning_penalty(w):
 def rank_score(r):
     """ranking of a candidate mapping that runs: coverage minus its warnings (pipeline.select, replay)."""
     return float(r.get("coverage") or 0) - sum(warning_penalty(w) for w in r.get("warnings") or [])
+
+
+def _idn(s, norm=True):
+    """order ids as text ('1', 1, 1.0 -> '1' when norm)."""
+    s = s.astype(str).str.strip()
+    return s.str.replace(r"\.0$", "", regex=True) if norm else s
+
+
+def _order_key_col(df, ids, exclude=(), norm=True):
+    """the column of raw table df that holds the order ids of C (ids: _idn of orders.order_id): >= 90% of its values are
+    order ids AND it has many distinct values (a quantity column 1, 2, 3 also 'matches' ids 1, 2, 3: public dev_014)."""
+    for kc in df.columns:
+        if kc in exclude or str(kc).startswith("_"): continue
+        h = _idn(df[kc].dropna().head(500), norm)
+        if len(h) < 20 or h.nunique() < max(10, 0.2 * len(h)): continue
+        if h.isin(ids).mean() > 0.9: return kc
+    return None
 
 
 def secondary_checks(C, biz):
@@ -416,7 +433,7 @@ def secondary_checks(C, biz):
         for t, df in biz.tables.items():
             ncols = [c for c in df.columns if re.fullmatch(r"(?:note|notes|ghichu|ghichudon|luuy|chuthich|ghichuno)", _fold(c))]
             if not ncols or len(df) < 50: continue
-            kcol = next((kc for kc in df.columns if kc not in ncols and df[kc].head(300).astype(str).str.strip().isin(ids).mean() > 0.9), None)
+            kcol = _order_key_col(df, ids, exclude=ncols, norm=False)
             if kcol is None: continue
             nn = df[[kcol, ncols[0]]].dropna(); nn = nn[nn[ncols[0]].astype(str).map(dm.key).str.contains(r"\b(?:no|ghi so|thieu|chua tra)\b", regex=True)]
             if len(nn) < 20: continue
@@ -464,6 +481,38 @@ def secondary_checks(C, biz):
                          "repayments in C['payments'] (order_id must match orders.order_id)")
     except dm.Unanswerable: pass
     except Exception as e: print(f"[canon] owing check failed: {type(e).__name__}: {e}", flush=True)
+    # 1a-status. returns / cancellations written in a text column of the raw data (a note 'khách trả lại', a status 'khách huỷ')
+    #           while C keeps those orders with another status (public dev_014, v23: a mapping without the returns -> every
+    #           revenue answer counted the returned orders; §1 leaves them out)
+    try:
+        ids_n = set(_idn(o["order_id"]))
+        ost = o.set_index(_idn(o["order_id"]))["status"].astype(str) if "status" in o else None
+        ost = ost[~ost.index.duplicated()] if ost is not None else None
+        done_kind = set()
+        for t, df in (biz.tables.items() if ost is not None else []):
+            if len(df) < 50: continue
+            kcol = _order_key_col(df, ids_n)
+            if kcol is None: continue
+            for c in df.columns:
+                if c == kcol or str(c).startswith("_") or not (df[c].dtype == object or pd.api.types.is_string_dtype(df[c])): continue
+                if not re.search(r"ghichu|note|trangthai|status|tinhtrang|^tt|lydo|xuly", _fold(c)) or re.search(r"khach|ten|name|customer", _fold(c)):
+                    continue                                       # note / status columns only (a customer named 'Trần Huy Linh')
+                vals = df[c].dropna().astype(str)
+                u = pd.unique(vals)
+                if not len(u) or len(u) > 20000: continue
+                uk = {x: dm.key(x) for x in u}
+                for kind, pat, st in (("returned", r"\b(?:tra lai|tra hang|mang tra|hoan tra|hoan hang)\b", "trả hàng"),
+                                      ("cancelled", r"\b(?:huy|da huy|khach huy|cancel|cancelled|canceled)\b", "huỷ")):
+                    if kind in done_kind: continue
+                    hit_vals = {x for x, kx in uk.items() if re.search(pat, kx)}
+                    if not hit_vals: continue
+                    oids = set(_idn(df.loc[vals.index[vals.isin(hit_vals)], kcol]))
+                    m = ost[ost.index.isin(oids)]
+                    if len(m) >= 3 and float((m != st).mean()) > 0.8:
+                        done_kind.add(kind)
+                        w.append(f"{t}.{c} marks {len(m)} orders as {kind} (e.g. '{next(iter(hit_vals))}') but C gives {float((m != st).mean()):.0%} "
+                                 f"of them another status: set orders.status = '{st}' for those orders (§1: {kind} orders are not revenue)")
+    except Exception as e: print(f"[canon] status-note check failed: {type(e).__name__}: {e}", flush=True)
     # 1a-book. a debt book in the raw data (an owed column + repayment columns) that the toolkit cannot read from C (public
     #          dev_014, v23: a mapping without orders.total_payable -> only the instalments counted as debts, the debt book lost)
     try:

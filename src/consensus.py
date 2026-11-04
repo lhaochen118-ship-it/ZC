@@ -11,9 +11,11 @@ executed again on that mapping, then voted as the pipeline does:
     candidate list) are rebuilt with the current src/ (coverage, warnings, signature) -> pooled list per business;
  2. the rule programs of the business's questions (current qparse, cleaned text) run on every candidate: fail share and
     answers; the ranking is Pipeline.choose's (coverage - warning penalties - 30 x rule failures + 30 x answer agreement,
-    signature tie-break) over the pooled list -> best and runner-up;
- 3. per run and question: the rule program (re-parsed on the best mapping) + every logged LLM sample (escalations and raw
-    samples included; samples the run logged as ungrounded stay out) are executed on the best mapping; the weighted vote
+    signature tie-break) over the pooled list, the penalties of topic warnings (debt / vehicle / staff) left out -> best and
+    runner-up; a question of a topic (half of its programs call that topic's toolkit functions) uses instead the best two
+    candidates with no heavy warning (>= 10) on the topic, and abstains when every candidate has one;
+ 3. per run and question: the rule program (re-parsed on the question's mapping) + every logged LLM sample (escalations and
+    raw samples included; samples the run logged as ungrounded stay out) are executed on that mapping; the weighted vote
     (rule 4, industry / new templates 2, subjective 4, samples 1; tau 0.5); unanswerable / abstain -> the same programs on
     the runner-up (map fallback); unanswerable on an LLM mapping that left raw tables unused -> abstain (not for the
     subjective rule);
@@ -73,14 +75,54 @@ def rule_texts(split, b, qs):
     return out
 
 
+def general_score(r):
+    """canon.rank_score without the warnings of a topic (debt / vehicle / staff): the questions of a topic choose their own
+    candidate (slots in main), so a debt-only fault must not move every revenue question to another mapping (public dev_014)."""
+    return float(r.get("coverage") or 0) - sum(canonmod.warning_penalty(w) for w in r.get("warnings") or []
+                                               if not any(rx.search(str(w)) for rx in TOPIC_WARN.values()))
+
+
 def rank(pool_b):
     """Pipeline.choose's order over [(src, rec)]: rec has coverage, warnings, sig, fail_share, rule_answers, gaps."""
     if not pool_b: return []
     _, sc = agent.agreement([r["sig"] for _, r in pool_b])
     ag = pipeline.Pipeline.answer_agreement([r.get("rule_answers") or {} for _, r in pool_b])
     W, F = 30.0, pipeline.Pipeline.SEL_FAIL_W
-    return sorted(range(len(pool_b)), key=lambda i: (-(canonmod.rank_score(pool_b[i][1]) - F * pool_b[i][1].get("fail_share", 0.0) + W * ag[i]
+    return sorted(range(len(pool_b)), key=lambda i: (-(general_score(pool_b[i][1]) - F * pool_b[i][1].get("fail_share", 0.0) + W * ag[i]
                                                      - (pipeline.Pipeline.REF_GAP_W if pool_b[i][1].get("gaps") else 0.0)), -sc[i], i))
+
+
+# question topics whose answers depend on one part of the mapping: such a question is answered on the best candidate WITHOUT a
+# heavy warning (penalty >= 10) on that part; no clean candidate -> abstain (a likely wrong answer costs a point, an abstain
+# nothing). Public v23 runs: every dev_008 candidate ignored the debt notes (debts 0 or 233M for 4.5M), every dev_014 one
+# had unpaid orders / no debt book (22.9 bn) while its revenue was right.
+TOPIC_FN = {
+    "debt": re.compile(r"\b(?:debts?|debt_\w+|n_debtors|top_debtors|instalment_\w+|terms_due|n_overdue_customers|paid_until|n_due_orders)\s*\("),
+    "vehicle": re.compile(r"\b(?:n_vehicles|top_plates|vehicle_sales|top_vehicles)\s*\("),
+    "staff": re.compile(r"\b(?:staff_sales|staff_stats|top_staff|commission)\s*\("),
+}
+TOPIC_WARN = {
+    "debt": re.compile(r"C counts \d+ of \d+ orders .* as still owing|the notes \S+ say \d+ orders|the data has a debt book|"
+                       r"the data has an instalment book|C\['instalments'\] lacks|C\['instalment_payments'\] lacks"),
+    "vehicle": re.compile(r"the data records number plates|the data writes the vehicle model"),
+    "staff": re.compile(r"orders\.staff (?:holds given names|does not follow)"),
+}
+
+
+def question_topics(rec):
+    """topics of a logged question: those whose toolkit functions at least half of its programs (rule + samples) call."""
+    codes = []
+    for name, v in (rec.get("samples") or {}).items():
+        if name == "rule" and isinstance(v, dict) and v.get("code"): codes.append(str(v["code"]))
+        elif name not in SKIP and isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
+            ok = agent.last_ok(v)
+            if ok and ok.get("code"): codes.append(str(ok["code"]))
+    if not codes: return set()
+    return {t for t, rx in TOPIC_FN.items() if sum(1 for c in codes if rx.search(c)) >= 0.5 * len(codes)}
+
+
+def topic_bad(r, topics):
+    return any(TOPIC_WARN[t].search(str(w)) and canonmod.warning_penalty(w) >= 10 for t in topics for w in r.get("warnings") or [])
 
 
 def main():
@@ -121,7 +163,7 @@ def main():
         for src, r in pb: r["gaps"] = any(meta[i][2].get(b) == src for i in range(len(meta)))   # a reference an adapt round rewrote
         order = rank(pb)
         if not order: continue
-        best[b] = [pb[j] for j in order[:2]]
+        best[b] = [pb[j] for j in order]                                  # full pooled ranking
         sig = lambda r: json.dumps(sorted((r.get("rule_answers") or {}).items()))
         top = sig(best[b][0][1])
         agree_runs = sum(1 for i, (c, ch, g) in enumerate(meta) if b in ch and
@@ -129,33 +171,46 @@ def main():
                          sig(built[(b, ch[b] if ch[b].startswith("ref:") else f"r{i}:{ch[b]}")]) == top)
         pen = sum(canonmod.warning_penalty(w) for w in best[b][0][1].get("warnings") or [])
         print(f"  {b}: {len(pb)} pooled candidates -> {best[b][0][0]} (penalty {pen:.0f}); {agree_runs}/{len(runs)} runs had chosen that cluster", flush=True)
-    # 3. every program of every run on the pooled best (and runner-up) mapping
+    # 3. every program of every run on the mappings the question uses: the pooled best and runner-up, or for a debt / vehicle /
+    #    staff question the best two candidates without a heavy warning on that topic (none -> abstain)
+    def slots(b, rec):
+        T = question_topics(rec)
+        if not T: return best[b][:2], T
+        clean = [m for m in best[b] if not topic_bad(m[1], T)]
+        return clean[:2], T
+    qslots, qtop = {}, {}
+    for L in logs:
+        for qid, rec in L.items():
+            b = rec["business_id"]
+            if b in best and qid not in qslots: qslots[qid], qtop[qid] = slots(b, rec)
     jobs = []
     for i, L in enumerate(logs):
         for qid, rec in L.items():
             b = rec["business_id"]
             if b not in best: continue
-            for j, (src, r) in enumerate(best[b]):
+            for src, r in qslots[qid]:
                 for name, v in rec["samples"].items():
                     if name in SKIP or not isinstance(v, list) or not all(isinstance(x, dict) for x in v): continue
                     ok = agent.last_ok(v)
-                    if ok and ok.get("code"): jobs.append(((i, qid, j, name), b, rec["as_of_date"], ok["code"], a.timeout, r["path"]))
+                    if ok and ok.get("code"): jobs.append(((i, qid, src, name), b, rec["as_of_date"], ok["code"], a.timeout, r["path"]))
     rule_jobs = []
     rtext = {qid: t for b in rq for qid, _, t in rq[b]}
-    for qid in {q for L in logs for q in L}:
+    for qid in qslots:
         b = next(L[qid]["business_id"] for L in logs if qid in L)
-        if b not in best: continue
         as_of = next(L[qid]["as_of_date"] for L in logs if qid in L)
-        for j, (src, r) in enumerate(best[b]): rule_jobs.append(((qid, j), b, as_of, rtext.get(qid, ""), r["path"], a.timeout))
+        for src, r in qslots[qid]: rule_jobs.append(((qid, src), b, as_of, rtext.get(qid, ""), r["path"], a.timeout))
+    n_top = collections.Counter((next(L[q]["business_id"] for L in logs if q in L), "clean" if qslots[q] else "abstain")
+                                for q in qslots if qtop[q])
+    print(f"[consensus] topic questions (debt / vehicle / staff) per business: {dict(sorted(n_top.items()))}", flush=True)
     res = dict(agent.pmap(pool, agent.run_code, jobs, per_task=a.timeout))
     rres = dict(agent.pmap(pool, agent.run_qparse, rule_jobs, per_task=a.timeout))
     pool.close()
     print(f"[consensus] {len(jobs)} sample programs + {len(rule_jobs)} rule programs executed ({time.time() - t0:.0f}s)", flush=True)
     NEW, WN = pipeline.Pipeline.NEW_RULES, pipeline.Pipeline.NEW_RULE_W
 
-    def vote_q(i, qid, rec, j):
+    def vote_q(i, qid, rec, src):
         votes, rep, total = collections.Counter(), {}, 0.0
-        rr = rres.get((qid, j)) or {}
+        rr = rres.get((qid, src)) or {}
         if rr.get("ok") and rr.get("answer") is not None:
             tpl = str(rr.get("tpl") or ""); w = WN if (tpl.startswith("ind_") or tpl in NEW) else 4.0
             c = agent.canon_of(rr["answer"]); votes[c] += w; rep.setdefault(c, rr["answer"]); total += w
@@ -164,7 +219,7 @@ def main():
             if name in SKIP or not isinstance(v, list): continue
             sid = name.rstrip("LBE")
             if sid.isdigit() and int(sid) in ung: continue
-            r = res.get((i, qid, j, name))
+            r = res.get((i, qid, src, name))
             if r is None: continue
             total += 1.0
             if r.get("ok") and r.get("answer") is not None:
@@ -181,13 +236,18 @@ def main():
             for qid, rec in L.items():
                 b = rec["business_id"]; rec = dict(rec)
                 if b in best:
-                    final, conf, tpl = vote_q(i, qid, rec, 0)
-                    if final.get("type") in ("abstain", "unanswerable") and len(best[b]) > 1:
-                        f2, c2, _ = vote_q(i, qid, rec, 1)
-                        if f2.get("type") not in ("abstain", "unanswerable"): final, conf = f2, c2
-                    if final.get("type") == "unanswerable" and tpl != "subjective" and "llm:" in best[b][0][0] and best[b][0][1].get("unused"):
-                        final = {"type": "abstain"}                     # (pipeline --unans-unused)
-                    rec["final_run"] = rec["final"]; rec["final"] = final; rec["conf"] = conf; rec["consensus_map"] = best[b][0][0]
+                    sl = qslots.get(qid) or []
+                    if not sl:                                          # every candidate is flagged on the question's topic
+                        final, conf, tpl = {"type": "abstain"}, 0.0, ""; rec["topic_abstain"] = sorted(qtop.get(qid) or [])
+                    else:
+                        final, conf, tpl = vote_q(i, qid, rec, sl[0][0])
+                        if final.get("type") in ("abstain", "unanswerable") and len(sl) > 1:
+                            f2, c2, _ = vote_q(i, qid, rec, sl[1][0])
+                            if f2.get("type") not in ("abstain", "unanswerable"): final, conf = f2, c2
+                        if final.get("type") == "unanswerable" and tpl != "subjective" and "llm:" in sl[0][0] and sl[0][1].get("unused"):
+                            final = {"type": "abstain"}                 # (pipeline --unans-unused)
+                    rec["final_run"] = rec["final"]; rec["final"] = final; rec["conf"] = conf
+                    rec["consensus_map"] = sl[0][0] if sl else None; rec["topics"] = sorted(qtop.get(qid) or [])
                 f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
     out = votemod.vote([votemod.load(d) for d in new_dirs], 0.4, None)
     tmp = a.out + ".tmp"

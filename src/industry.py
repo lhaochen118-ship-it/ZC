@@ -312,6 +312,8 @@ class IndustryMetrics:
         I["order_id"] = I["order_id"].astype(str).str.strip() if "order_id" in I.columns else I.index.astype(str)
         num = lambda c: pd.to_numeric(I[c], errors="coerce") if c in I.columns else pd.Series(np.nan, index=I.index)
         n, per, price, pre = num("n_terms"), num("per_term"), num("price"), num("prepaid").fillna(0)
+        dm.require(n.notna().any() and (per.notna().any() or price.notna().any()),
+                   "the instalment contracts lack their number of terms / amount per term")   # (v24 dev_014: raw headers -> 906M overdue)
         I["total"] = (n * per).where(n.notna() & per.notna(), price - pre)
         if per.isna().all(): I["per_term"] = I["total"] / n
         P = self.C.get("instalment_payments"); paid = pd.Series(dtype=float)

@@ -264,7 +264,9 @@ def warning_penalty(w):
     """coverage points a soft warning costs when candidate mappings are ranked: a wrong revenue column breaks most
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
-    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "the data has an instalment book")) \
+    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "the data has an instalment book",
+                                                                                      "C['instalments'] lacks", "C['instalment_payments'] lacks",
+                                                                                      "the data has an instalment book")) \
         or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)", w) \
         else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) else 2.0
 
@@ -508,6 +510,10 @@ def secondary_checks(C, biz):
                 and "instalments" not in have:
             w.append(f"the data has an instalment book ({t}: {', '.join(c for c in df.columns if not str(c).startswith('_'))[:120]}) but C has no "
                      "C['instalments'] / C['instalment_payments']: map it (the toolkit counts unpaid instalments as debts)")
+        elif anyc(r"soky|sokygop|kygop|sothang", r"gopthang|gop1thang|tienmoiky|tiengop|gopmoithang", r"tratruoc", r"hangop|hangopngay|ngaygop") >= 2 \
+                and anyc(r"dagop|tiendagop|ngaygop|sotiengop|datra") >= 1 and "instalment_payments" not in have:
+            w.append(f"the data has an instalment book ({t}) that records the instalments paid, but C has no C['instalment_payments'] "
+                     "(order_id, pay_date, amount): without it every instalment counts as unpaid")
         if anyc(r"ngaynhan|ngaybaohanh|ngaymangtoi", r"imei|loi|tinhtrangloi|xuly") >= 2 and anyc(r"imei|loi") >= 1 and "warranty" not in have \
                 and not ("warranty" in o.columns and o["warranty"].notna().any()):
             w.append(f"the data has a warranty book ({t}) but C has no C['warranty'] (date received, item_name, imei): map it")
@@ -621,9 +627,14 @@ ALIASES = {   # canonical column <- names an LLM mapping uses for it (renamed on
     "customers": {"registered": ["registration_date", "register_date", "reg_date", "joined", "Ngày đăng ký"],
                   "customer_name": ["name", "Tên KH", "Tên khách hàng"]},
     "warranty": {"date": ["received", "received_date", "date_received", "Ngày nhận"], "imei": ["IMEI"]},
-    "instalments": {"buy_date": ["date", "purchase_date", "order_date"], "n_terms": ["terms", "n_periods"], "per_term": ["monthly", "per_month", "installment"]},
-    "instalment_payments": {"pay_date": ["date", "payment_date", "paid_date"], "amount": ["paid", "paid_amount"]},
-    "tradeins": {"amount": ["price", "value", "tradein_value", "Giá thu"], "date": ["tradein_date"]},
+    "instalments": {"buy_date": ["date", "purchase_date", "order_date", "Ngày", "Ngày mua"], "n_terms": ["terms", "n_periods", "num_terms", "Số kỳ", "So ky"],
+                    "per_term": ["monthly", "per_month", "installment", "monthly_payment", "Góp/tháng", "Góp tháng", "Tiền góp"],
+                    "due_day": ["Hạn góp (ngày)", "Hạn góp", "due", "pay_day"], "price": ["Giá", "total_price", "Tổng tiền"],
+                    "prepaid": ["Trả trước", "down_payment", "deposit"], "customer_name": ["Khách", "customer", "Tên khách"],
+                    "item_name": ["Máy", "device", "product"], "order_id": ["STT", "order", "sales_order_id"]},
+    "instalment_payments": {"pay_date": ["date", "payment_date", "paid_date", "Ngày góp"], "amount": ["paid", "paid_amount", "Đã góp"],
+                            "order_id": ["STT", "order", "contract_id"]},
+    "tradeins": {"amount": ["price", "value", "tradein_value", "Giá thu"], "date": ["tradein_date", "Ngày"], "order_id": ["Trừ vào (STT sổ bán)", "STT"]},
 }
 REQUIRED = {"deliveries": ["order_id", "delivery_date", "trip_no"], "payments": ["order_id", "pay_date", "amount"],
             "lots": ["lot_id", "item_code", "expiry", "qty_in_base"], "lot_sales": ["order_id", "lot_id", "qty_base"],
@@ -642,6 +653,8 @@ def normalize_aliases(C):
         for canon_col, names in al.items():
             if canon_col in df.columns: continue
             src = next((n for n in names if n in df.columns), None)
+            if src is None:                                            # a raw table kept with its Vietnamese headers ('Số kỳ')
+                fn = {_fold(n) for n in names}; src = next((c for c in df.columns if _fold(c) in fn), None)
             if src is not None: df.rename(columns={src: canon_col}, inplace=True); done.append(f"{t}.{src}->{canon_col}")
     P = C.get("payments")
     if isinstance(P, pd.DataFrame) and "pay_date" not in P.columns and "pay_time" in P.columns:

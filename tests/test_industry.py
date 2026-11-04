@@ -230,10 +230,18 @@ for i in range(6):
     rows += [(o, "2026-06-01", "Tã quần Bobby size M", 1, 300000, 300000), (o, "2026-06-01", "Voucher", None, None, -10000),
              (o, "2026-06-01", "Dùng 200 điểm", None, None, -20000), (o, "2026-06-01", "Phí ship", None, None, 15000)]
 L0 = pd.DataFrame(rows, columns=["order_id", "order_date", "item_name", "qty", "unit_price", "line_amount"])
+import os as _os
+_os.environ["ZC_ADJ_ROWS"] = "move"
 O, L = dm.finalize(L0)
 S_a = dm.Shop({"orders": O, "lines": L}, "2026-06-30")
 jun = dm.month(2026, 6)
-check("adjustments: revenue = item lines only (no voucher / points / shipping)", S_a.revenue(jun), 1800000)
+check("adjustments (move): revenue = item lines only (no voucher / points / shipping)", S_a.revenue(jun), 1800000)
+_os.environ["ZC_ADJ_ROWS"] = "keep"
+O2, L2 = dm.finalize(L0); S_k = dm.Shop({"orders": O2, "lines": L2}, "2026-06-30")
+check("adjustments (keep, default): revenue = the invoice total of the book", S_k.revenue(jun), 1800000 - 60000 - 120000 + 90000)
+check("adjustments (keep): voucher / points / shipping columns", [S_k.voucher_total(jun), S_k.points_total(jun), S_k.shipping_total(jun)], [60000, 120000, 90000])
+check("adjustments (keep): not items", sorted(S_k.item_sales(jun).index), ["Tã quần Bobby size M"])
+del _os.environ["ZC_ADJ_ROWS"]
 check("adjustments: voucher / points / shipping as order columns", [S_a.voucher_total(jun), S_a.points_total(jun), S_a.shipping_total(jun)], [60000, 120000, 90000])
 check("adjustments: not items", sorted(S_a.item_sales(jun).index), ["Tã quần Bobby size M"])
 

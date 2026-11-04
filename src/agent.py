@@ -845,6 +845,9 @@ def build_parser():
     ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
     ap.add_argument("--ref-adapt", type=int, default=3, help="pipeline: when the best transferred reference mapping misses conventions "
                     "of this README (agent.readme_gaps), this many LLM rewrites of it that follow them (0 = off)")
+    ap.add_argument("--adj-rows", default="keep", choices=["keep", "move"], help="invoice adjustment rows written as lines ('Voucher', "
+                    "'Dùng N điểm', 'Phí ship'): keep = in the revenue as the book totals them (v23 public 0.87), move = out of the lines "
+                    "(rulebook §1 literally; v24 0.747); both fill orders.order_discount / points_discount / shipping_fee")
     ap.add_argument("--industry-kit", type=int, default=1, help="pipeline: canonical tables + toolkit of the public rulebook's industries "
                     "(src/industry.py: phone shops, repair shops, mother & baby) in the mapping / answer prompts of such shops (0 = off)")
     ap.add_argument("--industry-raw", type=int, default=2, help="pipeline: for a shop of an industry whose rulebook section is not in "
@@ -901,6 +904,7 @@ def main():
 
 def run(a, engine=None):
     t_start = time.time(); os.makedirs(a.out, exist_ok=True)
+    os.environ["ZC_ADJ_ROWS"] = getattr(a, "adj_rows", "keep") or "keep"   # read by dm.finalize in every worker (inherited)
     cache = a.cache or os.path.join(a.out, "cache")
     qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
     if a.subset: qs = select_subset(qs, a.subset)

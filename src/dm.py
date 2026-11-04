@@ -384,8 +384,14 @@ def _order_adjustments(L):
         amt = L.loc[m, "line_amount"].abs()
         adj[col] = amt.groupby(L.loc[m, "order_id"].astype(str).str.strip()).sum(); drop |= m
     if drop.any():
-        print(f"finalize: {int(drop.sum())} invoice adjustment rows (voucher / points / shipping) moved from the lines to the order columns", flush=True)
-        L = L[~drop].reset_index(drop=True)
+        import os
+        if os.environ.get("ZC_ADJ_ROWS", "keep") == "move":           # rulebook §1 read literally: not in the revenue
+            print(f"finalize: {int(drop.sum())} invoice adjustment rows (voucher / points / shipping) moved from the lines to the order columns", flush=True)
+            L = L[~drop].reset_index(drop=True)
+        else:                                                          # default: the invoice total of the book (v23 public 0.87 vs
+            L = L.copy(); L["is_adjustment"] = drop.values             # v24 0.747 with 'move'); never items in rankings / counts
+            print(f"finalize: {int(drop.sum())} invoice adjustment rows (voucher / points / shipping) kept in the revenue, marked is_adjustment, "
+                  "copied to the order columns", flush=True)
     return L, adj
 
 
@@ -606,6 +612,7 @@ def fee_lines(l):
         if c in l.columns:
             k = l[c].map(lambda x: key(x) if isinstance(x, str) else "")
             m |= k.str.match(r"(phi|phu phi)\b")
+    if "is_adjustment" in l.columns: m |= l["is_adjustment"].fillna(False).astype(bool)   # voucher / points / shipping rows
     return m
 
 
@@ -852,6 +859,7 @@ class Shop(industry.IndustryMetrics):
         l = self.lines(p, **f)
         if "is_service" in l.columns: l = l[~l["is_service"].fillna(False).astype(bool)]   # service fee lines are not items
         else: l = l[~fee_lines(l)]
+        if "is_adjustment" in l.columns: l = l[~l["is_adjustment"].fillna(False).astype(bool)]
         name = "item_code" if "item_code" in l.columns and l["item_code"].notna().all() else "item_name"
         if by == "qty": s = l.groupby(name)["qty_base"].sum()
         elif by == "revenue": s = l.groupby(name)["line_amount"].sum()
@@ -1081,7 +1089,7 @@ class Shop(industry.IndustryMetrics):
 
     def unsold_items(self, p):
         """items sold (valid orders) before p but not in p -> list of names."""
-        l = self.lines(None); before = set(l.loc[l["order_date"] < p.start, "item_name"])
+        l = self.lines(None); l = l[~fee_lines(l)]; before = set(l.loc[l["order_date"] < p.start, "item_name"])
         during = set(l.loc[p.mask(l["order_date"]), "item_name"])
         return sorted(before - during)
 

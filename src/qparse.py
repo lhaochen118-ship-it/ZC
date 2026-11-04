@@ -246,6 +246,14 @@ def _kinds_of(shop):
 JOB_WORDS = r"(?:thay|va|sua|lam|rua|ve sinh|bao duong|chinh|can|tang)\s+\S+(?:\s+\S+)?|nhot\S*|lap\b|ruot\b|bugi|bu gi|curoa|sen\b"
 
 
+def named_vehicle(q):
+    """the vehicle model a repair-shop question names after 'xe' / 'chiếc' in capitals ('bao nhiêu xe Air Blade khác nhau',
+    'bn chiec SH Mode khac nhau', 'chiếc xe Wave Alpha'), else None."""
+    mv = re.search(r"\b(?:xe|chi[eế]c)\s+((?:[A-Z][\w\-]*|\d{2,3}\b)(?:\s+(?:[A-Z][\w\-]*|\d{2,3}\b))*)", str(q))
+    if mv and not re.match(r"(?:Th|T|Q)\d", mv.group(1)): return mv.group(1).strip()
+    return None
+
+
 def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
     """templates of the public rulebook's industries (src/industry.py toolkit); None = not one of them."""
     import industry
@@ -264,9 +272,7 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
         if "vehicle" in O.columns:
             lab = industry.vehicle_lines(O["vehicle"]); veh = name_in(list(lab), 2)
         if veh is None:      # the question names a model ('bao nhiêu xe Air Blade khác nhau') that this mapping cannot see (no
-            mv = re.search(r"\bxe\s+((?:[A-Z][\w\-]*|\d{2,3}\b)(?:\s+(?:[A-Z][\w\-]*|\d{2,3}\b))*)", str(q))   # orders.vehicle): keep
-            if mv and not re.match(r"(?:Th|T)\d", mv.group(1)): veh = mv.group(1).strip()      # the filter (public dev_012, v25: 368
-                                                                                               # Air Blades = every vehicle)
+            veh = named_vehicle(q)                     # orders.vehicle): keep the filter (public dev_012, v25: 368 Air Blades = every vehicle)
         sf = f", staff={J(staff)}" if staff else ""
         if has(r"hoa hong|hue hong") and P and S_ is not None and "commission_pct" in S_.columns:
             if staff: return "ind_commission", ans("number", f"commission({P}, staff={J(staff)})")
@@ -277,7 +283,8 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
             m = re.search(r"(?:tu |it nhat )?(\d+) lan", t); n = int(m.group(1)) if m else 2
             return "ind_regular_vehicles", ans("number", f"n_vehicles({P}, min_paid={n})")
         if has(r"xe .*khac nhau|chiec .*khac nhau|chiec xe|bao nhieu xe|may xe|bnhiu xe|bn xe|moi xe tinh|(?:bao nhieu|may|bnhiu|bn) chiec") and P and not has(r"luot|phieu") \
-                and "plate" in O.columns and (veh is None or "vehicle" in O.columns):
+                and "plate" in O.columns:                                   # a named model on a mapping without orders.vehicle:
+                                                                                # unanswerable there -> the vehicle topic moves it
             return "ind_vehicles", ans("number", f"n_vehicles({P}" + (f", vehicle={J(veh)}" if veh else "") + ")")
         if has(r"dong xe") and has(r"nhieu tien|doanh thu|dthu") and has(r"nhat") and P:
             return "ind_top_vehicle", ans("string", f"top_vehicles({P}, 1, by='revenue')[0]")

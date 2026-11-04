@@ -25,7 +25,7 @@ and how many runs had chosen a mapping of the same rule-answer cluster.
 Usage: consensus.py <split> <ingest_cache> <work_dir> <out_submission> <run_dir>... [--biz REGEX] [--workers N]"""
 import os, re, sys, json, glob, time, argparse, collections, multiprocessing as mp
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import agent, canon as canonmod, qnorm, pipeline, vote as votemod
+import agent, canon as canonmod, qnorm, qparse, pipeline, vote as votemod
 
 REF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "compile")
 FMT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "formats")
@@ -120,7 +120,7 @@ TOPIC_WARN = {
 }
 
 
-def question_topics(rec):
+def question_topics(rec, text=None):
     """topics of a logged question: those whose toolkit functions / columns at least a third of its programs (rule + samples)
     use (raw-table samples read T, not C: public dev_012 'bao nhiêu chiếc xe Wave Alpha' had 2 of 12 programs on n_vehicles and 3
     with vehicle=)."""
@@ -130,8 +130,9 @@ def question_topics(rec):
         elif name not in SKIP and isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
             ok = agent.last_ok(v)
             if ok and ok.get("code"): codes.append(str(ok["code"]))
-    if not codes: return set()
-    return {t for t, rx in TOPIC_FN.items() if sum(1 for c in codes if rx.search(c)) >= len(codes) / 3}
+    out = {t for t, rx in TOPIC_FN.items() if codes and sum(1 for c in codes if rx.search(c)) >= len(codes) / 3}
+    if text and qparse.named_vehicle(text): out.add("vehicle")       # the question names a model (the logged programs may not)
+    return out
 
 
 def topic_bad(r, topics):
@@ -170,10 +171,11 @@ def main():
     for (k, _), res in agent.pmap(pool, agent.run_rule_eval, evs):
         built[k]["fail_share"] = res.get("fail_share", 0.0) if res.get("ok") else 0.0
         built[k]["rule_answers"] = res.get("answers") or {} if res.get("ok") else {}
+    qtext = {q["id"]: q["question"] for q in qs_all}
     topic_q = collections.defaultdict(set)                          # questions of a topic, from the logged programs
     for L in logs:
         for qid, rec in L.items():
-            if question_topics(rec): topic_q[rec["business_id"]].add(qid)
+            if question_topics(rec, qtext.get(qid)): topic_q[rec["business_id"]].add(qid)
     best, pool_dump = {}, {}
     for b in bids:
         pb = sorted([(k[1], r) for k, r in built.items() if k[0] == b], key=lambda x: (not x[0].startswith("ref:"), x[0]))
@@ -194,7 +196,7 @@ def main():
     # 3. every program of every run on the mappings the question uses: the pooled best and runner-up, or for a debt / vehicle /
     #    staff question the best two candidates without a heavy warning on that topic (none -> abstain)
     def slots(b, rec):
-        T = question_topics(rec)
+        T = question_topics(rec, qtext.get(rec["id"]))
         if not T: return best[b][:2], T
         clean = [m for m in best[b] if not topic_bad(m[1], T)]
         return clean[:2], T

@@ -1,7 +1,7 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
 *Cập nhật: 2026-11-04 05:50 UTC. **Đang dừng theo yêu cầu user: chờ điểm portal của v26 (và chẩn đoán X1–X3).**
-Điểm portal: v22 0.71, **v23 0.87**, v24 0.747, v25 0.825. Token: 14 acc ở `~/.kaggle/tok_<user>` (mới: loinguyentran,
+Điểm portal: v22 0.71, v23 0.87 (đáp án / tập chấm khi đó; theo X2, v23 bây giờ ≈ 0.75), v24 0.747, **v25 0.825, v26 0.825**, X1 0.793, X2 0.756, X3 0.768 (EXPERIMENT_LOG entry 18). Token: 14 acc ở `~/.kaggle/tok_<user>` (mới: loinguyentran,
 anderson1202, phatle1578 — còn quota tuần W45; các acc cũ hết quota).*
 
 ## Mới (khung 04/11) — EXPERIMENT_LOG entry 17

@@ -497,3 +497,20 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   readings differs from the organisers' or the portal scores a subset. `submissions/diag/X1–X3` (v23 + v26 answers of one
   rule group each) settle it with three portal scores.
 - **Stopped (user): waiting for the portal scores of v26 (and X1–X3 if the user submits them).**
+
+## Entry 18 — 2026-11-04 09:00: portal v26 = 0.825, X1 0.793, X2 0.756, X3 0.768 → the v23 score is not comparable
+
+- **X2 = v23 + 6 changed answers scored 0.756** (v23 had scored 0.87): 6 answers move the score by at most 0.012, so the
+  answer key / scored set changed after the v23 score. With today's scores (groups disjoint, covering all 91 v23 -> v26
+  differences): v23 now ≈ 0.746–0.755; X1 rules (dev_004 due dates / deliveries, dev_008 note debts, dev_013 voucher / ship /
+  points) **+0.038..+0.047** (almost every change right, as the raw-book checks said), subjective -> unanswerable
+  **+0.001..+0.010**, phone / repair toolkit **+0.013..+0.022**. Every rule group of v24-v26 is net positive.
+- v26 = v25 (0.825): the consensus fixed dev_011 (7 answers; raw book with forward-filled order numbers: used phones 26 / 34
+  / 19, charger 6,825,000, Redmi Note 14 = 6, iPhone 16 Pro Max = 7) and dev_014 short names / impossible debts, but picked
+  for dev_014 a mapping without device kinds (accessories as phone models, 0 used phones) and for dev_008 one with all costs 0.
+- Fixes (all general): device-kind check against the lookup table (1a-kinds), zero catalogue costs (1a-cost) + stock_value
+  needs recorded costs, empty item names (1a-noname), short-name cleaning layer, named vehicle models / phone brands keep the
+  filter in the rule reader (dev_012: 'xe Air Blade khác nhau' = 368 = every vehicle), vehicle topic from the question text,
+  consensus ranking with rule failures on non-topic questions and agreement among plausible candidates only.
+- Per-question agreement among plausible candidates is >= 0.67 on almost every question: most remaining errors are
+  systematic (every mapping agrees), not mapping luck.

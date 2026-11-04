@@ -12,7 +12,7 @@ executed again on that mapping, then voted as the pipeline does:
  2. the rule programs of the business's questions (current qparse, cleaned text) run on every candidate: fail share and
     answers; the ranking is Pipeline.choose's (coverage - warning penalties - 30 x rule failures + 30 x answer agreement,
     signature tie-break) over the pooled list, the penalties of topic warnings (debt / instalment / vehicle / staff) left out -> best and
-    runner-up; a question of a topic (half of its programs call that topic's toolkit functions) uses instead the best two
+    runner-up; a question of a topic (a third of its programs use that topic's toolkit functions / columns) uses instead the best two
     candidates with no heavy warning (>= 10) on the topic, and abstains when every candidate has one;
  3. per run and question: the rule program (re-parsed on the question's mapping) + every logged LLM sample (escalations and
     raw samples included; samples the run logged as ungrounded stay out) are executed on that mapping; the weighted vote
@@ -99,8 +99,8 @@ def rank(pool_b):
 TOPIC_FN = {
     "debt": re.compile(r"\b(?:debts?|debt_\w+|n_debtors|top_debtors|paid_until|n_due_orders)\s*\("),      # book + instalments
     "instalment": re.compile(r"\b(?:instalment_\w+|terms_due|n_overdue_customers)\s*\("),                # the instalment book only
-    "vehicle": re.compile(r"\b(?:n_vehicles|top_plates|vehicle_sales|top_vehicles)\s*\("),
-    "staff": re.compile(r"\b(?:staff_sales|staff_stats|top_staff|commission)\s*\("),
+    "vehicle": re.compile(r"\b(?:n_vehicles|top_plates|vehicle_sales|top_vehicles)\s*\(|\bvehicle\s*=|\[\s*[\"'](?:plate|vehicle)[\"']\s*\]"),
+    "staff": re.compile(r"\b(?:staff_sales|staff_stats|top_staff|commission)\s*\(|\bstaff\s*=|\[\s*[\"']staff[\"']\s*\]"),
 }
 TOPIC_WARN = {
     "debt": re.compile(r"C counts \d+ of \d+ orders .* as still owing|the notes \S+ say \d+ orders|the data has a debt book|"
@@ -112,7 +112,9 @@ TOPIC_WARN = {
 
 
 def question_topics(rec):
-    """topics of a logged question: those whose toolkit functions at least half of its programs (rule + samples) call."""
+    """topics of a logged question: those whose toolkit functions / columns at least a third of its programs (rule + samples)
+    use (raw-table samples read T, not C: public dev_012 'bao nhiêu chiếc xe Wave Alpha' had 2 of 12 programs on n_vehicles and 3
+    with vehicle=)."""
     codes = []
     for name, v in (rec.get("samples") or {}).items():
         if name == "rule" and isinstance(v, dict) and v.get("code"): codes.append(str(v["code"]))
@@ -120,7 +122,7 @@ def question_topics(rec):
             ok = agent.last_ok(v)
             if ok and ok.get("code"): codes.append(str(ok["code"]))
     if not codes: return set()
-    return {t for t, rx in TOPIC_FN.items() if sum(1 for c in codes if rx.search(c)) >= 0.5 * len(codes)}
+    return {t for t, rx in TOPIC_FN.items() if sum(1 for c in codes if rx.search(c)) >= len(codes) / 3}
 
 
 def topic_bad(r, topics):

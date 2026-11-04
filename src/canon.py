@@ -267,7 +267,7 @@ def warning_penalty(w):
     """coverage points a soft warning costs when candidate mappings are ranked: a wrong revenue column breaks most
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
-    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "the data has an instalment book",
+    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "lines.item_name is empty on", "the data has an instalment book",
                                                                                       "C['instalments'] lacks", "C['instalment_payments'] lacks", "the data records number plates",
                                                                                       "the data has an instalment book")) \
         or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)|C counts \d+ of \d+ orders .* as still owing|.+? marks \d+ orders as (?:returned|cancelled) \(", w) \
@@ -382,6 +382,14 @@ def secondary_checks(C, biz):
                 w.append(f"lines.item_name holds the short names of {t}.{hit[0]} ({hit[2]:.0%} of the lines) while {t}.{hit[1]} has the full item "
                          f"names that questions use: map item_name to {t}.{hit[1]} through {hit[0]} (with the item group / type of that table)")
                 break
+            if hit: break
+    # 1a-noname. lines without an item name (a name lookup that returned None for the spellings it did not know: public dev_014,
+    #           v25: 3 of 12 candidates left 2751 of 10107 lines nameless -> Jan 2026 silicon cases 47 instead of 86)
+    if l is not None and "item_name" in l.columns and len(l) > 50:
+        nn_ = int(l["item_name"].isna().sum() + l["item_name"].dropna().astype(str).str.strip().isin(["", "None", "nan"]).sum())
+        if nn_ >= 20 and nn_ > 0.02 * len(l):
+            w.append(f"lines.item_name is empty on {nn_} of {len(l)} lines: every sold line names its item (a lookup of short / "
+                     "abbreviated names must fall back to the name as written, matched by dm.key, never to None)")
     # 1a'''. staff written as given names / nicknames ('Đạt', 'a Phúc', 'A.Phúc') while a table lists the full names: answers
     #       must give the name as the data's list writes it, and filters by full name miss the other spellings
     if "staff" in o and o["staff"].notna().mean() > 0.3:

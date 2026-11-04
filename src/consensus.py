@@ -209,7 +209,13 @@ def main():
         ordered by how many of the business's questions OF THAT TOPIC their rule programs answer (public dev_004, v27: the
         best clean candidate had no due dates -> every due-date question unanswerable), up to 4 (fallback walks them)."""
         T = question_topics(rec, qtext.get(rec["id"]))
-        if not T: return best[b][:2], T
+        if not T:
+            sl = best[b][:2]                                    # + the best plausible candidate whose rule program answers it
+            if all((m[1].get("rule_answers") or {}).get(rec["id"]) is None for m in sl):   # when these do not (public dev_004,
+                alt = next((m for m in best[b][2:] if (m[1].get("rule_answers") or {}).get(rec["id"]) is not None     # 'đơn bán
+                            and float(m[1].get("coverage") or 0) - general_score(m[1]) < 20), None)   # chịu ghi ngày phải trả
+                if alt is not None: sl = sl + [alt]                                                   # trong th2/2026')
+            return sl, T
         clean = [m for m in best[b] if not topic_bad(m[1], T)]
         tq = [q for q in topic_q.get(b, ()) if question_topics(first_rec[q], qtext.get(q)) & T] or list(topic_q.get(b, ()))
         def tfail(m):

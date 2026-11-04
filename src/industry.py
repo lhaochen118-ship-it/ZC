@@ -373,7 +373,8 @@ class IndustryMetrics:
         return W[p.mask(W["date"])] if p is not None else W
 
     def _is_warranty_ticket(self, o):
-        if "warranty" in o.columns and o["warranty"].notna().any(): return o["warranty"].fillna(False).astype(bool)
+        if "warranty" in o.columns and self.O["warranty"].fillna(False).astype(bool).any():   # an all-False column (a mapping
+            return o["warranty"].fillna(False).astype(bool)                                  # that never set it) is no column
         note = o["note"].map(lambda x: _dm().key(x) if isinstance(x, str) else "") if "note" in o.columns else pd.Series("", index=o.index)
         return note.str.contains(r"\bbao hanh\b|\bbh\b") & (pd.to_numeric(o["revenue"], errors="coerce").fillna(0) == 0)
 

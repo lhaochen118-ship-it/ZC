@@ -115,7 +115,7 @@ TOPIC_WARN = {
     "debt": re.compile(r"C counts \d+ of \d+ orders .* as still owing|the notes \S+ say \d+ orders|the data has a debt book|"
                        r"the data has an instalment book|C\['instalments'\] lacks|C\['instalment_payments'\] lacks"),
     "instalment": re.compile(r"the data has an instalment book|C\['instalments'\] lacks|C\['instalment_payments'\] lacks"),
-    "vehicle": re.compile(r"the data records number plates|the data writes the vehicle model"),
+    "vehicle": re.compile(r"the data records number plates|the data writes the vehicle model|orders\.plate matches the plates"),
     "staff": re.compile(r"orders\.staff (?:holds given names|does not follow)"),
 }
 

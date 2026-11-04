@@ -268,7 +268,7 @@ def warning_penalty(w):
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
     return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "lines.item_name is empty on", "the device kinds of C disagree", "the data has an instalment book",
-                                                                                      "C['instalments'] lacks", "C['instalment_payments'] lacks", "the data records number plates",
+                                                                                      "C['instalments'] lacks", "C['instalment_payments'] lacks", "the data records number plates", "orders.plate matches the plates",
                                                                                       "the data has an instalment book")) \
         or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)|C counts \d+ of \d+ orders .* as still owing|.+? marks \d+ orders as (?:returned|cancelled) \(", w) \
         else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) \
@@ -653,18 +653,26 @@ def secondary_checks(C, biz):
             w.append(f"the data has registration dates ({t}) but C['customers'] has no registered column: map the member list")
         # number plates (public rulebook 'Sửa xe': vehicles are counted by plate; public dev_012, v23: the pooled best mapping had
         # no orders.plate / orders.vehicle -> every 'bao nhiêu chiếc xe' answer unanswerable)
-        if len(df) >= 50 and not ("plate" in o.columns and o["plate"].notna().mean() > 0.3) or \
-                len(df) >= 50 and not ("vehicle" in o.columns and o["vehicle"].notna().mean() > 0.3):
+        if len(df) >= 50:
             for c in df.columns:
                 if str(c).startswith("_"): continue
                 s = df[c].dropna().astype(str).str.strip().head(400)
                 if len(s) < 30: continue
                 sp = [industry.split_vehicle(x) for x in s]
                 if sum(1 for _, pl in sp if pl) < 0.6 * len(s): continue
+                if "plate" in o.columns and o["plate"].notna().mean() > 0.3:   # plates mapped: they must be the book's plates
+                    import collections as _co                                    # (public dev_012, v27: candidates with plates
+                    raw_ = _co.Counter(industry.plate_key(pl) for _, pl in            # gave 2 / 8 / 25 / 33 / 70 repeat vehicles)
+                                       (industry.split_vehicle(x) for x in df[c].dropna().astype(str)) if pl)
+                    got_ = _co.Counter(industry.plate_key(x) for x in o["plate"].dropna().astype(str))
+                    ov = sum((raw_ & got_).values()) / max(1, sum(raw_.values()))
+                    if ov < 0.9:
+                        w.append(f"orders.plate matches the plates of {t}.{c} on only {ov:.0%} of the tickets: set orders.vehicle, orders.plate = "
+                                 "split_vehicle(cell) for every row (one ticket per row)")
                 if not ("plate" in o.columns and o["plate"].notna().mean() > 0.3):
                     w.append(f"the data records number plates in {t}.{c} (e.g. '{s.iloc[0]}') but orders.plate is empty: set orders.vehicle, "
                              "orders.plate = split_vehicle(cell) (vehicles are counted by plate)")
-                elif sum(1 for ln, _ in sp if ln) >= 0.6 * len(s):
+                elif sum(1 for ln, _ in sp if ln) >= 0.6 * len(s) and not ("vehicle" in o.columns and o["vehicle"].notna().mean() > 0.3):
                     w.append(f"the data writes the vehicle model with its plate in {t}.{c} (e.g. '{s.iloc[0]}') but orders.vehicle is empty: "
                              "set orders.vehicle, orders.plate = split_vehicle(cell)")
                 break

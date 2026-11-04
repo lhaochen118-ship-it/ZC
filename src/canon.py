@@ -563,10 +563,20 @@ def secondary_checks(C, biz):
                      and any(re.fullmatch(r"datra|ngaytra|tientra|sotientra|ngaytrano|tientrano", _fold(c)) for c in df.columns)), None)
         if book is not None:
             sh = dm.Shop(C)
-            try: sh._book_debts(sh.last if sh.last is not None else pd.Timestamp("2100-01-01"))
+            try: bd = sh._book_debts(sh.last if sh.last is not None else pd.Timestamp("2100-01-01"))
             except dm.Unanswerable as e:
+                bd = None
                 w.append(f"the data has a debt book ({book}) but the toolkit cannot read debts from C ({e}): set orders.total_payable, "
                          "orders.paid_at_purchase (what was paid when buying) and the later repayments in C['payments']")
+            if bd is not None:                                  # the book still owes money at the end but C owes nothing
+                bk = biz.tables[book]                           # (public dev_014, v28: paid_at_purchase = the whole order + the
+                oc = next(c for c in bk.columns if re.fullmatch(r"no|conno|sono|tienno|notien|sotienno|nocon", _fold(c)))   # repayments)
+                pc = next(c for c in bk.columns if re.fullmatch(r"datra|tientra|sotientra|tientrano", _fold(c)) or _fold(c) == "datra")
+                owed0, paid_ = float(_num(bk[oc]).fillna(0).sum()), float(_num(bk[pc]).fillna(0).sum())
+                if owed0 > 0 and owed0 - paid_ > 0.01 * owed0 and float(bd.sum()) <= 0.5:
+                    w.append(f"the data has a debt book ({book}) that still owes {owed0 - paid_:,.0f} at the end of the data but C records no debt: "
+                             "orders.paid_at_purchase = total - the debt left after paying at purchase (the book's owed column), "
+                             "C['payments'] = the later repayments")
     except Exception as e: print(f"[canon] debt-book check failed: {type(e).__name__}: {e}", flush=True)
     # 1c. staff written by given names in the book + a staff list of full names: orders.staff must give each ticket to the person
     #     whose name it writes (public dev_012, v23: a mapping hand-wrote {'An': 'Hà Loan Đạt', 'Đạt': 'Lương Chi Đức', ...})

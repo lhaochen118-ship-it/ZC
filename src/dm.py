@@ -949,7 +949,7 @@ class Shop(industry.IndustryMetrics):
         amount is that purchase payment itself (not counted twice). No training reference sets both."""
         P = self.C.get("payments")
         if P is not None and len(P):
-            P = P[pd.to_datetime(P["pay_date"]).dt.normalize() <= _ts(d)]
+            P = P[pd.to_datetime(P["pay_date"], errors="coerce").dt.normalize() <= _ts(d)]
             paid = P.groupby(P["order_id"].astype(str))["amount"].sum()
             o = self.O
             if "paid_at_purchase" in o.columns and pd.to_numeric(o["paid_at_purchase"], errors="coerce").notna().any():
@@ -958,7 +958,7 @@ class Shop(industry.IndustryMetrics):
                 od = pd.Series(pd.to_datetime(o["order_date"]).dt.normalize().values, index=o["order_id"].astype(str).values)
                 od = od[~od.index.duplicated()]
                 pk = P["order_id"].astype(str)
-                same = (pd.to_datetime(P["pay_date"]).dt.normalize().values == pk.map(od).values) & \
+                same = (pd.to_datetime(P["pay_date"], errors="coerce").dt.normalize().values == pk.map(od).values) & \
                        ((pd.to_numeric(P["amount"], errors="coerce").values - pk.map(pap).fillna(-1e18).values).__abs__() < 1)
                 dup = set(pk[same])
                 pap = pap[[i not in dup for i in pap.index]]
@@ -1051,7 +1051,7 @@ class Shop(industry.IndustryMetrics):
         P = self.C.get("instalment_payments")
         if P is not None and len(P):
             P = P[P["order_id"].astype(str).str.strip().isin(set(I["order_id"]))]
-            rep += float(pd.to_numeric(P.loc[p.mask(pd.to_datetime(P["pay_date"]).dt.normalize()), "amount"], errors="coerce").sum())
+            rep += float(pd.to_numeric(P.loc[p.mask(pd.to_datetime(P["pay_date"], errors="coerce").dt.normalize()), "amount"], errors="coerce").sum())
         return [money(new), money(rep)]
 
     def _book_flow(self, p, customer=None):
@@ -1061,7 +1061,7 @@ class Shop(industry.IndustryMetrics):
         P = self.C.get("payments"); require(P is not None and len(P), "the data does not record payments of credit orders")
         require("total_payable" in o.columns, "the data does not record order totals (no debts)")
         P = P[P["order_id"].astype(str).isin(set(o["order_id"]))].copy()
-        P["pay_date"] = pd.to_datetime(P["pay_date"]).dt.normalize()
+        P["pay_date"] = pd.to_datetime(P["pay_date"], errors="coerce").dt.normalize()
         od = o.set_index("order_id")["order_date"]; P["od"] = P["order_id"].astype(str).map(od)
         same = P[P["pay_date"] == P["od"]].groupby("order_id")["amount"].sum()
         op = o[p.mask(o["order_date"])]

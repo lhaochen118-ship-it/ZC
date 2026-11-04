@@ -357,5 +357,18 @@ check("credit orders that owe nothing at purchase", any("are on credit" in x for
 O28["paid_at_purchase"] = 0.0
 check("credit orders owing: no warning", not any("are on credit" in x for x in canon.secondary_checks({"orders": O28}, biz24)))
 
+# cleaning layer: lines left with a case / accent variant of a short name get the full name of the lookup table
+gt = pd.DataFrame({"Ghi tắt": ["Ốp silicon IP", "Cáp C", "Sạc 20W", "CL 9D"],
+                   "Tên hàng": ["Ốp lưng silicon iPhone", "Cáp Type-C 1m", "Củ sạc nhanh 20W Type-C", "Kính cường lực 9D"]})
+bz29 = types.SimpleNamespace(tables={"GhiTat": gt}, readme="", raw={})
+names = ["Ốp lưng silicon iPhone"] * 40 + ["Cáp Type-C 1m"] * 15 + ["ỐP SILICON IP"] * 5 + ["Op silicon IP"] * 3 + ["Bút bi"] * 2
+L29 = pd.DataFrame({"order_id": range(len(names)), "item_name": names})
+C29 = {"lines": L29}
+check("short names: 8 variant lines renamed", canon.resolve_short_names(C29, bz29) == 8)
+check("short names: full name on every silicon line", (C29["lines"]["item_name"] == "Ốp lưng silicon iPhone").sum() == 48)
+check("short names: other names untouched", (C29["lines"]["item_name"] == "Bút bi").sum() == 2)
+L30 = pd.DataFrame({"order_id": range(60), "item_name": ["Ốp silicon IP"] * 50 + ["Cáp C"] * 10})
+check("short names: a mapping that never looked them up is left to the warning", canon.resolve_short_names({"lines": L30}, bz29) == 0)
+
 print(f"{len(bad)} failures")
 print("PASS" if not bad else "FAIL")

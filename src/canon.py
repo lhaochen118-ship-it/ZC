@@ -785,6 +785,39 @@ def skipped_warnings(biz):
     return w
 
 
+def resolve_short_names(C, biz):
+    """cleaning layer (rulebook §8: names that denote one thing are one thing): when the raw data has a lookup table of short
+    names -> full item names (ghi tắt -> tên hàng) and the mapping already put the full names on most lines, the lines left
+    with a spelling of a short name that differs only in case / accents ('ỐP SILICON IP' for 'Ốp silicon IP') get its full
+    name too (public dev_014, v25: 19 such lines in Jan 2026 -> silicon cases 67 instead of 86). Returns the number of lines
+    renamed; nothing happens when no lookup table is found or when most lines still hold short names (a mapping that never
+    looked the names up: the secondary check asks for the lookup)."""
+    l = C.get("lines")
+    if not isinstance(l, pd.DataFrame) or "item_name" not in l.columns or len(l) <= 50: return 0
+    ln = l["item_name"].map(lambda x: dm.key(x) if isinstance(x, str) else None)
+    for t, df in biz.tables.items():
+        if not 3 <= len(df) <= 3000: continue
+        txt = [c for c in df.columns if not str(c).startswith("_") and (df[c].dtype == object or pd.api.types.is_string_dtype(df[c]))
+               and df[c].notna().mean() > 0.8]
+        for a in txt:
+            for b in txt:
+                if b == a: continue
+                pair = df[[a, b]].dropna().astype(str)
+                if len(pair) < 3: continue
+                ka, kb = pair[a].map(dm.key), pair[b].map(dm.key)
+                longer = float((pair[b].str.len() > pair[a].str.len() + 2).mean())
+                if kb.nunique() < 0.8 * ka.nunique() or longer <= 0.6 or float(ln.isin(set(kb)).mean()) < 0.3: continue
+                full = {}
+                for x, y in zip(ka, pair[b]):
+                    if x not in set(kb): full.setdefault(x, y)
+                left = ln.isin(set(full))
+                if not left.any(): return 0
+                C["lines"] = l = l.copy()
+                l.loc[left, "item_name"] = ln[left].map(full)
+                return int(left.sum())
+    return 0
+
+
 def run_mapping(code, biz, ref_cols=None, llm=False):
     """execute one mapping program -> dict(ok, C, notes, errors, coverage, tables_used, unused, warnings). llm: the
     columns frame() skipped are warnings (an LLM program names the columns of this business)."""
@@ -798,6 +831,8 @@ def run_mapping(code, biz, ref_cols=None, llm=False):
     C = g.get("C")
     if not isinstance(C, dict) or "orders" not in C: return {"ok": False, "error": "the program did not build C with C['orders']"}
     normalize_aliases(C)
+    try: resolve_short_names(C, biz)
+    except Exception as e: print(f"[canon] short-name resolution failed: {type(e).__name__}: {e}", flush=True)
     errs = dm.check(C)
     if errs: return {"ok": False, "error": "canonical tables failed the checks: " + "; ".join(errs), "C": C}
     errs = plausibility(C, biz)                                        # content checks: silent mistakes -> repairable errors

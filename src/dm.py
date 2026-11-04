@@ -1238,6 +1238,7 @@ class Shop(industry.IndustryMetrics):
         it = self.C.get("items")                                       # CANON_DOC names it unit_cost; older mappings: cost
         cc = next((c for c in ("cost", "unit_cost") if it is not None and c in it.columns and it[c].notna().any()), None)
         require(cc is not None, "no catalogue cost")
+        require(pd.to_numeric(it[cc], errors="coerce").fillna(0).gt(0).any(), "the catalogue costs are all 0 (not recorded)")   # no data != 0
         tot = 0.0
         for _, r in it.iterrows():
             k = r["item_code"] if "item_code" in it.columns and pd.notna(r.get("item_code")) else r["item_name"]

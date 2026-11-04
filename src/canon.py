@@ -267,12 +267,12 @@ def warning_penalty(w):
     """coverage points a soft warning costs when candidate mappings are ranked: a wrong revenue column breaks most
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
-    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "lines.item_name is empty on", "the data has an instalment book",
+    return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "lines.item_name is empty on", "the device kinds of C disagree", "the data has an instalment book",
                                                                                       "C['instalments'] lacks", "C['instalment_payments'] lacks", "the data records number plates",
                                                                                       "the data has an instalment book")) \
         or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)|C counts \d+ of \d+ orders .* as still owing|.+? marks \d+ orders as (?:returned|cancelled) \(", w) \
         else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) \
-        or re.match(r"the notes \S+ say \d+ orders (?:on credit are settled|still owe money)|the data writes the vehicle model with its plate|the data has a debt book", w) else 2.0
+        or re.match(r"the notes \S+ say \d+ orders (?:on credit are settled|still owe money)|the data writes the vehicle model with its plate|the data has a debt book|items\.\w+ is 0 on every item", w) else 2.0
 
 
 def rank_score(r):
@@ -383,6 +383,40 @@ def secondary_checks(C, biz):
                          f"names that questions use: map item_name to {t}.{hit[1]} through {hit[0]} (with the item group / type of that table)")
                 break
             if hit: break
+    # 1a-kinds. phone shops: a lookup table gives each item its kind (máy mới / máy cũ / phụ kiện) and the lines must carry it
+    #           (public dev_014, v26: the pooled best mapping r1:llm:9 left the kinds out -> accessories ranked as phone models,
+    #           0 used phones, 733 'phones' in a month)
+    try:
+        if l is not None and "item_name" in l.columns and len(l) > 50:
+            for t, df in biz.tables.items():
+                if not 3 <= len(df) <= 3000: continue
+                kc = next((c for c in df.columns if not str(c).startswith("_") and df[c].notna().mean() > 0.8 and 2 <= df[c].nunique() <= 6
+                           and df[c].dropna().astype(str).map(industry.device_kind).notna().mean() > 0.9), None)
+                if kc is None: continue
+                kind = {}
+                for c in df.columns:
+                    if c == kc or str(c).startswith("_") or not (df[c].dtype == object or pd.api.types.is_string_dtype(df[c])): continue
+                    for nm, kd in zip(df[c], df[kc]):
+                        if isinstance(nm, str) and nm.strip(): kind.setdefault(dm.key(nm), industry.device_kind(kd))
+                exp = l["item_name"].map(lambda n: kind.get(dm.key(n)) if isinstance(n, str) else None)
+                m = exp.notna()
+                if m.sum() < 50: break
+                try: got = dm.Shop(C)._kinds(l); agree = float((got[m] == exp[m]).mean())
+                except dm.Unanswerable: agree = 0.0
+                if agree < 0.9:
+                    w.append(f"the device kinds of C disagree with {t}.{kc} on {1 - agree:.0%} of the lines (máy mới / máy cũ / phụ kiện): set "
+                             f"lines.item_group to the kind {t}.{kc} gives each item (looked up by dm.key of the name)")
+                break
+    except Exception as e: print(f"[canon] kinds check failed: {type(e).__name__}: {e}", flush=True)
+    # 1a-cost. catalogue costs all 0 while the raw catalogue records them (public dev_008, v26: stock value 0)
+    it_ = C.get("items")
+    if isinstance(it_, pd.DataFrame) and len(it_) >= 10:
+        for cc in ("unit_cost", "cost"):
+            if cc in it_.columns and pd.to_numeric(it_[cc], errors="coerce").fillna(0).eq(0).all():
+                src_ = next((f"{t}.{c}" for t, df in biz.tables.items() for c in df.columns
+                             if re.fullmatch(r"giavon|gianhap|giavonhang|cost|unitcost", _fold(c)) and _num(df[c]).fillna(0).gt(0).mean() > 0.5), None)
+                if src_: w.append(f"items.{cc} is 0 on every item but {src_} records the costs: map items.{cc} from it")
+                break
     # 1a-noname. lines without an item name (a name lookup that returned None for the spellings it did not know: public dev_014,
     #           v25: 3 of 12 candidates left 2751 of 10107 lines nameless -> Jan 2026 silicon cases 47 instead of 86)
     if l is not None and "item_name" in l.columns and len(l) > 50:

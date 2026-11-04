@@ -245,5 +245,14 @@ del _os.environ["ZC_ADJ_ROWS"]
 check("adjustments: voucher / points / shipping as order columns", [S_a.voucher_total(jun), S_a.points_total(jun), S_a.shipping_total(jun)], [60000, 120000, 90000])
 check("adjustments: not items", sorted(S_a.item_sales(jun).index), ["Tã quần Bobby size M"])
 
+# debt book layout: paid_at_purchase = paid when buying, C['payments'] = later repayments (public dev_014 'Sổ nợ')
+Od = pd.DataFrame({"order_id": ["A", "B", "C"], "order_date": pd.to_datetime(["2025-07-01"] * 3), "status": "hoàn thành", "valid": True,
+                   "revenue": [100.0, 200.0, 300.0], "total_payable": [100.0, 200.0, 300.0], "paid_at_purchase": [100.0, 50.0, 100.0],
+                   "customer_name": ["An", "Bình", "Chi"]})
+Pd = pd.DataFrame({"order_id": ["B", "C", "C"], "pay_date": pd.to_datetime(["2025-07-10", "2025-07-01", "2025-07-20"]), "amount": [30.0, 100.0, 50.0]})
+S_d = dm.Shop({"orders": Od, "payments": Pd}, "2025-07-31")
+check("debts: paid_at_purchase + later repayments (orders paid in full owe nothing)", S_d.debts("2025-07-31").to_dict(), {"B": 120.0, "C": 150.0})
+check("debts: before the repayment", S_d.debts("2025-07-05").to_dict(), {"B": 150.0, "C": 200.0})
+
 print("FAILED" if fails else "PASS", fails)
 sys.exit(1 if fails else 0)

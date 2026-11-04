@@ -30,7 +30,7 @@ for _cls in (pd.Series, pd.DataFrame):
     if not hasattr(_cls.fillna, "__wrapped__"): _cls.fillna = _lenient_fillna(_cls.fillna)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import dm, ingest
+import dm, ingest, industry
 
 REF_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "compile")
 META = os.path.join(REF_DIR, "_meta.json")
@@ -260,15 +260,19 @@ REV_NAMES = {"tienhang", "tienban", "thanhtienhang", "doanhthu"}       # ruleboo
 def _num(s): return pd.to_numeric(s.map(lambda v: ingest.parse_num(v) if isinstance(v, str) else v), errors="coerce")
 
 
+OWING_MAX = 0.25        # share of orders owing money at the end of the data above which a mapping is implausible (train refs <= 0.4%)
+
+
 def warning_penalty(w):
     """coverage points a soft warning costs when candidate mappings are ranked: a wrong revenue column breaks most
     answers (always ranked below), a missing secondary table only its own questions."""
     w = str(w)
     return 100.0 if w.startswith("orders.revenue differs") else 20.0 if w.startswith(("lines.item_name holds the short names", "the data has an instalment book",
-                                                                                      "C['instalments'] lacks", "C['instalment_payments'] lacks",
+                                                                                      "C['instalments'] lacks", "C['instalment_payments'] lacks", "the data records number plates",
                                                                                       "the data has an instalment book")) \
-        or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)", w) \
-        else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) else 2.0
+        or re.match(r"orders\.\w+ (?:is -?\d+ on every order|adds up to|has the single value)|C counts \d+ of \d+ orders .* as still owing", w) \
+        else 10.0 if w.startswith(("orders.order_time has no time", "orders.staff holds given names", "orders.staff does not follow")) \
+        or re.match(r"the notes \S+ say \d+ orders (?:on credit are settled|still owe money)|the data writes the vehicle model with its plate|the data has a debt book", w) else 2.0
 
 
 def rank_score(r):
@@ -421,8 +425,8 @@ def secondary_checks(C, biz):
             first = nn.groupby(nn[kcol].astype(str).str.strip())[ncols[0]].first()
             owed_note = pd.Series({k: dm.debt_from_note(v, tot.get(k) if tot is not None else None) for k, v in first.items()}).dropna()
             src = f"{t}.{ncols[0]}"; break
-        if owed_note is not None and (owed_note > 0.5).sum() >= 10:
-            pos = owed_note[owed_note > 0.5]
+        if owed_note is not None and ((owed_note > 0.5).sum() >= 10 or (owed_note <= 0.5).sum() >= 20):
+            pos = owed_note[owed_note > 0.5]; settled = owed_note[owed_note <= 0.5]
             if "debt_end" in o and o["debt_end"].notna().any():
                 c_owed = pd.to_numeric(o.set_index(o["order_id"].astype(str).str.strip())["debt_end"], errors="coerce")
             elif "total_payable" in o and ("paid_at_purchase" in o or isinstance(C.get("payments"), pd.DataFrame)):
@@ -434,18 +438,50 @@ def secondary_checks(C, biz):
                 c_owed = tp - paid.reindex(tp.index).fillna(0)
             else: c_owed = None
             c_owed = c_owed[~c_owed.index.duplicated()] if c_owed is not None else None
-            zero = 1.0 if c_owed is None else float((c_owed.reindex(pos.index).fillna(0) <= 0.5).mean())
-            if zero > 0.8:
+            zero = 1.0 if c_owed is None else float((c_owed.reindex(pos.index).fillna(0) <= 0.5).mean()) if len(pos) else 0.0
+            if len(settled) >= 20 and c_owed is not None:     # the reverse: notes 'đã trả đủ' while C still counts the order as
+                still = float((c_owed.reindex(settled.index).fillna(0) > 0.5).mean())          # owing (public dev_008, a v23 run:
+                if still > 0.5:                                                            # paid in full -> owed in full, 19.5 bn)
+                    w.append(f"the notes {src} say {len(settled)} orders on credit are settled (e.g. '{first.get(settled.index[0])}') but C "
+                             f"records {still:.0%} of them as still owing: the note is the debt at the end of the data, set orders.debt_end "
+                             "= debt_from_note(note, total_payable)")
+            if len(pos) >= 10 and zero > 0.8:
                 w.append(f"the notes {src} say {len(pos)} orders still owe money (e.g. owed {int(pos.iloc[0])} by '{first.get(pos.index[0])}') but "
                          f"C records {zero:.0%} of them as owing nothing: set orders.debt_end = debt_from_note(note, total_payable) (the note "
                          "is the debt at the end of the data) and do not make payments equal the order total")
     except Exception as e: print(f"[canon] note-debt check failed: {type(e).__name__}: {e}", flush=True)
+    # 1a-owing. money owed on most orders at the end of the data: orders paid in full recorded as unpaid (public dev_014, v23
+    #           runs: C['payments'] held only the debt book's repayments -> 6286 orders owed 22.9 bn, more than a year of sales;
+    #           dev_008: a payments table 10k short of every total -> 23349 orders owing)
+    try:
+        sh = dm.Shop(C); end = sh.last
+        if end is not None and "total_payable" in o:
+            el = sh._debt_orders(end); dd = sh.debts(end)
+            if len(el) >= 200 and len(dd) > OWING_MAX * len(el):
+                w.append(f"C counts {len(dd)} of {len(el)} orders ({len(dd) / len(el):.0%}) as still owing money at the end of the data "
+                         f"({float(dd.sum()):,.0f} in all): only orders on credit / instalment owe money. Set orders.paid_at_purchase = what was paid "
+                         "when buying (= total_payable for an order paid in full; total - the debt left for a debt-book order) and the later "
+                         "repayments in C['payments'] (order_id must match orders.order_id)")
+    except dm.Unanswerable: pass
+    except Exception as e: print(f"[canon] owing check failed: {type(e).__name__}: {e}", flush=True)
+    # 1a-book. a debt book in the raw data (an owed column + repayment columns) that the toolkit cannot read from C (public
+    #          dev_014, v23: a mapping without orders.total_payable -> only the instalments counted as debts, the debt book lost)
+    try:
+        book = next((t for t, df in biz.tables.items() if len(df) >= 10
+                     and any(re.fullmatch(r"no|conno|sono|tienno|notien|sotienno|nocon", _fold(c)) for c in df.columns)
+                     and any(re.fullmatch(r"datra|ngaytra|tientra|sotientra|ngaytrano|tientrano", _fold(c)) for c in df.columns)), None)
+        if book is not None:
+            sh = dm.Shop(C)
+            try: sh._book_debts(sh.last if sh.last is not None else pd.Timestamp("2100-01-01"))
+            except dm.Unanswerable as e:
+                w.append(f"the data has a debt book ({book}) but the toolkit cannot read debts from C ({e}): set orders.total_payable, "
+                         "orders.paid_at_purchase (what was paid when buying) and the later repayments in C['payments']")
+    except Exception as e: print(f"[canon] debt-book check failed: {type(e).__name__}: {e}", flush=True)
     # 1c. staff written by given names in the book + a staff list of full names: orders.staff must give each ticket to the person
     #     whose name it writes (public dev_012, v23: a mapping hand-wrote {'An': 'Hà Loan Đạt', 'Đạt': 'Lương Chi Đức', ...})
     try:
         St = C.get("staff")
         if isinstance(St, pd.DataFrame) and "staff" in St.columns and "staff" in o.columns and St["staff"].notna().sum() >= 2:
-            import industry
             full = [x for x in St["staff"].dropna().astype(str)]
             mine = o["staff"].dropna().astype(str).map(industry._person_groups(o["staff"].dropna().astype(str), full)).value_counts()
             for t, df in biz.tables.items():
@@ -524,6 +560,23 @@ def secondary_checks(C, biz):
             w.append(f"the data has commission rates ({t}) but C['staff'] has no commission_pct: map the staff list (staff, commission_pct)")
         if anyc(r"ngaydangky|ngaydk|ngaythamgia|ngaylamthe") >= 1 and not (isinstance(C.get("customers"), pd.DataFrame) and "registered" in C["customers"].columns):
             w.append(f"the data has registration dates ({t}) but C['customers'] has no registered column: map the member list")
+        # number plates (public rulebook 'Sửa xe': vehicles are counted by plate; public dev_012, v23: the pooled best mapping had
+        # no orders.plate / orders.vehicle -> every 'bao nhiêu chiếc xe' answer unanswerable)
+        if len(df) >= 50 and not ("plate" in o.columns and o["plate"].notna().mean() > 0.3) or \
+                len(df) >= 50 and not ("vehicle" in o.columns and o["vehicle"].notna().mean() > 0.3):
+            for c in df.columns:
+                if str(c).startswith("_"): continue
+                s = df[c].dropna().astype(str).str.strip().head(400)
+                if len(s) < 30: continue
+                sp = [industry.split_vehicle(x) for x in s]
+                if sum(1 for _, pl in sp if pl) < 0.6 * len(s): continue
+                if not ("plate" in o.columns and o["plate"].notna().mean() > 0.3):
+                    w.append(f"the data records number plates in {t}.{c} (e.g. '{s.iloc[0]}') but orders.plate is empty: set orders.vehicle, "
+                             "orders.plate = split_vehicle(cell) (vehicles are counted by plate)")
+                elif sum(1 for ln, _ in sp if ln) >= 0.6 * len(s):
+                    w.append(f"the data writes the vehicle model with its plate in {t}.{c} (e.g. '{s.iloc[0]}') but orders.vehicle is empty: "
+                             "set orders.vehicle, orders.plate = split_vehicle(cell)")
+                break
     # 1b. the toolkit's columns of each secondary table; debts need the order total and an amount paid at purchase
     for t, cols in REQUIRED.items():
         df = C.get(t)

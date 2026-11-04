@@ -940,11 +940,27 @@ class Shop(industry.IndustryMetrics):
         return o
 
     def paid_until(self, d):
-        """{order_id: amount paid up to the end of day d} (payments table, else paid_at_purchase)."""
+        """{order_id: amount paid up to the end of day d} (payments table, else paid_at_purchase). With both, paid_at_purchase is
+        what was paid when buying and C['payments'] the later repayments (the debt-book layout, public dev_014: 'Nợ là số còn
+        nợ sau khi trả lúc mua'): paid = paid_at_purchase + repayments up to d; a payment row on the order day of the same
+        amount is that purchase payment itself (not counted twice). No training reference sets both."""
         P = self.C.get("payments")
         if P is not None and len(P):
             P = P[pd.to_datetime(P["pay_date"]).dt.normalize() <= _ts(d)]
-            return P.groupby(P["order_id"].astype(str))["amount"].sum()
+            paid = P.groupby(P["order_id"].astype(str))["amount"].sum()
+            o = self.O
+            if "paid_at_purchase" in o.columns and pd.to_numeric(o["paid_at_purchase"], errors="coerce").notna().any():
+                pap = pd.Series(pd.to_numeric(o["paid_at_purchase"], errors="coerce").fillna(0).values, index=o["order_id"].astype(str).values)
+                pap = pap[~pap.index.duplicated()]
+                od = pd.Series(pd.to_datetime(o["order_date"]).dt.normalize().values, index=o["order_id"].astype(str).values)
+                od = od[~od.index.duplicated()]
+                pk = P["order_id"].astype(str)
+                same = (pd.to_datetime(P["pay_date"]).dt.normalize().values == pk.map(od).values) & \
+                       ((pd.to_numeric(P["amount"], errors="coerce").values - pk.map(pap).fillna(-1e18).values).__abs__() < 1)
+                dup = set(pk[same])
+                pap = pap[[i not in dup for i in pap.index]]
+                paid = paid.add(pap, fill_value=0)
+            return paid
         o = self.O; return pd.Series(o["paid_at_purchase"].values, index=o["order_id"]) if "paid_at_purchase" in o.columns else pd.Series(dtype=float)
 
     def debts(self, d):

@@ -161,7 +161,7 @@ def main():
     for (k, _), res in agent.pmap(pool, agent.run_rule_eval, evs):
         built[k]["fail_share"] = res.get("fail_share", 0.0) if res.get("ok") else 0.0
         built[k]["rule_answers"] = res.get("answers") or {} if res.get("ok") else {}
-    best = {}
+    best, pool_dump = {}, {}
     for b in bids:
         pb = sorted([(k[1], r) for k, r in built.items() if k[0] == b], key=lambda x: (not x[0].startswith("ref:"), x[0]))
         for src, r in pb: r["gaps"] = any(meta[i][2].get(b) == src for i in range(len(meta)))   # a reference an adapt round rewrote
@@ -173,8 +173,11 @@ def main():
         agree_runs = sum(1 for i, (c, ch, g) in enumerate(meta) if b in ch and
                          (built.get((b, ch[b] if ch[b].startswith("ref:") else f"r{i}:{ch[b]}")) or {}).get("rule_answers") is not None and
                          sig(built[(b, ch[b] if ch[b].startswith("ref:") else f"r{i}:{ch[b]}")]) == top)
+        pool_dump[b] = [{"src": src, "general": general_score(r), "fail": r.get("fail_share", 0.0), "pen": sum(canonmod.warning_penalty(w) for w in r.get("warnings") or []),
+                         "warnings": [str(w)[:160] for w in r.get("warnings") or []], "rule_answers": r.get("rule_answers") or {}} for src, r in best[b]]
         pen = sum(canonmod.warning_penalty(w) for w in best[b][0][1].get("warnings") or [])
         print(f"  {b}: {len(pb)} pooled candidates -> {best[b][0][0]} (penalty {pen:.0f}); {agree_runs}/{len(runs)} runs had chosen that cluster", flush=True)
+    json.dump(pool_dump, open(os.path.join(a.work, "pool.json"), "w", encoding="utf-8"), ensure_ascii=False, default=str)   # ranked
     # 3. every program of every run on the mappings the question uses: the pooled best and runner-up, or for a debt / vehicle /
     #    staff question the best two candidates without a heavy warning on that topic (none -> abstain)
     def slots(b, rec):

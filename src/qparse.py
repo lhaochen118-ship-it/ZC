@@ -263,6 +263,10 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
         veh = None
         if "vehicle" in O.columns:
             lab = industry.vehicle_lines(O["vehicle"]); veh = name_in(list(lab), 2)
+        if veh is None:      # the question names a model ('bao nhiêu xe Air Blade khác nhau') that this mapping cannot see (no
+            mv = re.search(r"\bxe\s+((?:[A-Z][\w\-]*|\d{2,3}\b)(?:\s+(?:[A-Z][\w\-]*|\d{2,3}\b))*)", str(q))   # orders.vehicle): keep
+            if mv and not re.match(r"(?:Th|T)\d", mv.group(1)): veh = mv.group(1).strip()      # the filter (public dev_012, v25: 368
+                                                                                               # Air Blades = every vehicle)
         sf = f", staff={J(staff)}" if staff else ""
         if has(r"hoa hong|hue hong") and P and S_ is not None and "commission_pct" in S_.columns:
             if staff: return "ind_commission", ans("number", f"commission({P}, staff={J(staff)})")
@@ -354,6 +358,8 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
             if line: return "ind_devices_line", ans("number", f"devices_sold({P}, line={J(line)}{kf})")
             V = Vocab(shop); it = V.find(tk, V.items)
             if it is not None: return None                                 # one item: the item templates
+            if re.search(r"\b(iphone|ip|samsung|galaxy|xiaomi|redmi|oppo|vivo|realme|nokia|honor|huawei|pixel|tecno|infinix)\b", tk):
+                return None                  # a model / brand this mapping's names do not show: not every device (dev_012-like miss)
             return "ind_devices", ans("number", f"devices_sold({P}{kf})")
         return None
     if "baby" in kinds and P:

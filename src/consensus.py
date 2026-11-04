@@ -185,7 +185,7 @@ def main():
         for qid, rec in L.items():
             b = rec["business_id"]
             if b in best and qid not in qslots: qslots[qid], qtop[qid] = slots(b, rec)
-    jobs = []
+    jobs, uniq, alias = [], {}, {}
     for i, L in enumerate(logs):
         for qid, rec in L.items():
             b = rec["business_id"]
@@ -194,7 +194,10 @@ def main():
                 for name, v in rec["samples"].items():
                     if name in SKIP or not isinstance(v, list) or not all(isinstance(x, dict) for x in v): continue
                     ok = agent.last_ok(v)
-                    if ok and ok.get("code"): jobs.append(((i, qid, src, name), b, rec["as_of_date"], ok["code"], a.timeout, r["path"]))
+                    if not (ok and ok.get("code")): continue
+                    ck = (qid, src, ok["code"])                     # the same program logged by several runs runs once
+                    if ck not in uniq: uniq[ck] = len(jobs); jobs.append(((len(jobs),), b, rec["as_of_date"], ok["code"], a.timeout, r["path"]))
+                    alias[(i, qid, src, name)] = uniq[ck]
     rule_jobs = []
     rtext = {qid: t for b in rq for qid, _, t in rq[b]}
     for qid in qslots:
@@ -204,10 +207,12 @@ def main():
     n_top = collections.Counter((next(L[q]["business_id"] for L in logs if q in L), "clean" if qslots[q] else "abstain")
                                 for q in qslots if qtop[q])
     print(f"[consensus] topic questions (debt / instalment / vehicle / staff) per business: {dict(sorted(n_top.items()))}", flush=True)
-    res = dict(agent.pmap(pool, agent.run_code, jobs, per_task=a.timeout))
+    rj = dict(agent.pmap(pool, agent.run_code, jobs, per_task=a.timeout))
+    res = {k: rj.get((j,)) for k, j in alias.items()}
     rres = dict(agent.pmap(pool, agent.run_qparse, rule_jobs, per_task=a.timeout))
     pool.close()
-    print(f"[consensus] {len(jobs)} sample programs + {len(rule_jobs)} rule programs executed ({time.time() - t0:.0f}s)", flush=True)
+    print(f"[consensus] {len(jobs)} distinct sample programs ({len(alias)} logged) + {len(rule_jobs)} rule programs executed "
+          f"({time.time() - t0:.0f}s)", flush=True)
     NEW, WN = pipeline.Pipeline.NEW_RULES, pipeline.Pipeline.NEW_RULE_W
 
     def vote_q(i, qid, rec, src):

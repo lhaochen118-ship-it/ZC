@@ -7,7 +7,8 @@ Cho Agent (hoặc người) nhận dự án ở khung chat mới. Đọc theo th
 | # | File | Để biết |
 |---|---|---|
 | 1 | `CLAUDE.md` | Nguyên tắc user đã chốt, playbook GPU, cổng kiểm tra trước khi chạy |
-| 2 | `handoff/STATUS.md` | Trạng thái sống: điểm portal, kernel đang chạy, việc tiếp theo |
+| 2 | `handoff/STATUS.md` | Trạng thái sống (05/11: kiến trúc rule-first, điểm, Kaggle, việc tiếp theo) |
+| 3 | `EXPERIMENT_LOG.md` entry 20–22 | Khung tất định (automap + qnorm + qparse), kiểm tra tổng quát hoá (paraphrase, nhiễu, README trắng), Kaggle v30 |
 | 4 | `handoff/environment_summary.pdf` | Container, Kaggle (máy, acc, quota), máy chấm / Docker |
 | 5 | `handoff/04_SESSION_0411.pdf` | **Mới nhất (03–05/11)**: điểm v22–v28, đồng thuận ánh xạ, kiểm tra mới, sai lầm cần tránh, việc dở |
 

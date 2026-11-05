@@ -9,7 +9,15 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 - Phương án cũ còn nguyên ở branch `claude/peaceful-carson-0dny90` (v1: LLM tự viết chương trình pandas cho từng câu) và
   `claude/funny-euler-ceut3o` (v2: toolkit nghiệp vụ, chưa chạy với LLM).
 
-## Bàn giao mới nhất (03/11/2026)
+## Trạng thái 05/11/2026: kiến trúc rule-first
+
+Luồng nộp (`docker/predict.sh` → `src/predict_flow.py`): **stage 1 luật** (`src/rules_first.py` = `automap` ánh xạ bảng thô
+từ README + giá trị, `qnorm` làm sạch câu, `qparse` đọc câu thành chương trình trên toolkit `dm` / `industry`; mọi đáp án
+luật là cuối cùng) → **stage 2 Qwen3.5-9B** (`agent.py`) chỉ cho câu luật bỏ lại. Train 3000 / 3000, public 1000 / 1000
+(`submissions/v30/`); câu biến đổi (không dấu / nhiễu chat): luật + LLM 0.989–0.996; paraphrase bằng LLM: xem
+`EXPERIMENT_LOG.md` entry 20–22. Trạng thái sống: `handoff/STATUS.md`.
+
+## Bàn giao trước đó (03/11/2026)
 
 `READING_GUIDE.md` (cách đọc repo + việc tiếp theo) → `handoff/STATUS.md` → `handoff/04_SESSION_0411.pdf`.
 Kết quả khoa học: `handoff/01_SCIENTIFIC_FINDINGS.pdf`; kinh nghiệm kỹ thuật / vận hành:

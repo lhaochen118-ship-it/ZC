@@ -6,6 +6,12 @@ Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3
 `docs/04_DECISION_V3.md` (kiến trúc v3) → `docs/03_WORKFLOW.md` (quy trình, acc Kaggle) → `docs/05_GPU_OPTIMIZATION.md`
 → `EXPERIMENT_LOG.md`.
 
+**Kiến trúc hiện tại (05/11): rule-first** — `src/rules_first.py` (automap + qnorm + qparse + toolkit, CPU) trả lời trước,
+mọi đáp án luật là cuối cùng; `agent.py` (Qwen3.5-9B) chỉ cho câu còn lại (`src/predict_flow.py`, `docker/predict.sh`).
+Kiểm tra: `S=<scratch> WORKERS=4 bash tests/eval_all.sh` (train 3000 / 3000, public 1000 / 1000 phải giữ). Tổng quát
+hoá đo bằng paraphrase LLM (`src/paraphrase_llm.py`, `eval_split.py --perturb-q para:`): chỉ phân tích lỗi biến thể k=0
+public; k=1,2 và train là held-out. Một luật mới chỉ được lấy câu khỏi stage 2 khi độ chính xác held-out ≥ ~85 %.
+
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 
 - Tự động hoá tối đa; chỉ hỏi việc chỉ user làm được (token, nộp portal, accept rules Kaggle trên web).

@@ -17,6 +17,51 @@ import pandas as pd
 import dm, ingest, automap, qparse, qnorm
 
 
+REFS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs")
+_STOP = set("""va hoac cua cho la mot cac nhung trong ky theo khi thi bang ve tu den de duoc co khong""".split())
+
+
+def _rule_rows(text):
+    """{term key: definition key} of a rulebook's table rows ('| Khách sộp nhất | khách có ... |')."""
+    out = {}
+    for line in text.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")] if line.strip().startswith("|") else []
+        if len(cells) < 2 or set(cells[0]) <= set("-: ") or cells[0].lower() in ("luật", "luat", "khái niệm", "khai niem"): continue
+        out[" ".join(qparse.dm.key(cells[0]).split())] = " ".join(qparse.dm.key(" ".join(cells[1:])).split())
+    return out
+
+
+def changed_terms(split):
+    """terms the split's rulebook defines that the rules were not written for: a row whose term is in neither the train
+    nor the public rulebook (public added 'Khách sộp nhất', 'Giờ cao điểm', industry sections ... this way). A question
+    naming such a term goes to the model, which reads the rulebook. Rows only reworded (train -> public clarified 'Đơn
+    thuộc kỳ nào', 'Đến hết ngày X') keep the rules: their words are in most questions. Each term -> its sets of
+    content words (one per comma variant: 'Nhân viên, thợ chăm chỉ nhất' -> {nhan vien cham chi nhat}, {tho cham chi nhat})."""
+    try: rows = _rule_rows(open(os.path.join(split, "rulebook.md"), encoding="utf-8").read())
+    except OSError: return []
+    known = set()
+    for f in ("train_rulebook.md", "public_rulebook.md"):
+        try: known |= set(_rule_rows(open(os.path.join(REFS, f), encoding="utf-8").read()))
+        except OSError: pass
+    out = []
+    for term in rows:
+        if term in known: continue
+        parts = [p.strip() for p in term.split(",")]
+        tail = parts[-1].split()
+        variants = [set(parts[-1].split())] + [set(p.split()) | set(tail[len(p.split()):]) for p in parts[:-1]]
+        variants = [v - _STOP for v in variants if len(v - _STOP) >= 2]
+        if variants: out.append((term, variants))
+    return out
+
+
+def names_changed_term(question, terms):
+    """the first changed term whose content words all occur in the question (accent-free), else None."""
+    w = set(qparse.dm.key(question).split())
+    for term, variants in terms:
+        if any(v <= w for v in variants): return term
+    return None
+
+
 class _Timeout(Exception): pass
 
 
@@ -25,7 +70,8 @@ def _alarm(_s, _f): raise _Timeout()
 
 def answer_business(args):
     """(bid, [record per question]) for one business; a record carries 'final' only when the rules answered."""
-    split, cache, bid, qs, timeout = args
+    split, cache, bid, qs, timeout = args[:5]
+    terms = args[5] if len(args) > 5 else []
     t0 = time.time(); out = []
     try:
         biz = pickle.load(open(os.path.join(cache, bid + ".pkl"), "rb"))
@@ -45,6 +91,9 @@ def answer_business(args):
             text = nz.clean(q["question"], q["as_of_date"])["clean"] if nz is not None else q["question"]
         except Exception: text = q["question"]
         rec["clean"] = text
+        ct = names_changed_term(text, terms) or names_changed_term(q["question"], terms) if terms else None
+        if ct:                                                           # a term this split's rulebook (re)defines: the model
+            rec["tpl"] = "CHANGED_TERM"; rec["error"] = f"rulebook term changed: {ct}"; rec["s"] = 0.0; out.append(rec); continue
         try:
             signal.alarm(timeout)
             shop = dm.Shop(C, q["as_of_date"], meta)
@@ -83,8 +132,11 @@ def main():
     log = open(os.path.join(a.out, "rules_log.jsonl"), "w", encoding="utf-8")
     qmap = {q["id"]: q for q in qs}; n_ok = n_pend = 0
     order = sorted(by, key=lambda b: -len(by[b]))                     # big businesses first (balanced pool)
+    terms = changed_terms(a.split)
+    if terms: print(f"rules: {len(terms)} rulebook term(s) new or redefined in this split -> their questions go to the model: "
+                    + "; ".join(t for t, _ in terms[:12]), flush=True)
     with ProcessPoolExecutor(min(nw, len(order))) as ex:
-        futs = [ex.submit(answer_business, (a.split, cache, b, by[b], a.timeout)) for b in order]
+        futs = [ex.submit(answer_business, (a.split, cache, b, by[b], a.timeout, terms)) for b in order]
         for fu in as_completed(futs):
             bid, recs, secs = fu.result(); ok = 0
             for r in recs:

@@ -57,6 +57,22 @@ def main():
     by = {x["id"]: x for x in rows}
     assert by[some] == sub[some], "a rule answer is never replaced"
     assert by["q_junk_1"]["type"] == "unanswerable" and by["q_junk_2"]["type"] == "abstain"
+    # a term the split's rulebook adds (not in the train / public rulebooks): its questions go to the model
+    sp2 = os.path.join(scratch, "split_newterm"); os.makedirs(sp2)
+    os.symlink(os.path.abspath(os.path.join(split, "data")), os.path.join(sp2, "data"))
+    shutil.copy(os.path.join(split, "calendar.csv"), sp2)
+    rb = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read() + "\n| Khách chịu chơi nhất | khách có nhiều đơn trên 1 triệu nhất |\n"
+    open(os.path.join(sp2, "rulebook.md"), "w", encoding="utf-8").write(rb)
+    q0 = sel[0]
+    with open(os.path.join(sp2, "questions.jsonl"), "w", encoding="utf-8") as f:
+        f.write(json.dumps(dict(q0, id="q_new_term", question="Tháng này khách chịu chơi nhất là ai?"), ensure_ascii=False) + "\n")
+        f.write(json.dumps(q0, ensure_ascii=False) + "\n")
+    out2 = os.path.join(scratch, "out_newterm")
+    r = subprocess.run([sys.executable, os.path.join(SRC, "rules_first.py"), sp2, out2, "--cache", os.path.join(scratch, "cache"), "--workers", "1"],
+                       capture_output=True, text=True, timeout=900)
+    assert r.returncode == 0, r.stderr[-1500:]
+    pend2 = [json.loads(l)["id"] for l in open(os.path.join(out2, "pending.jsonl"), encoding="utf-8")]
+    assert pend2 == ["q_new_term"], f"a new rulebook term must send its question (only) to the model: {pend2}"
     print("test_rules_first PASS")
 
 

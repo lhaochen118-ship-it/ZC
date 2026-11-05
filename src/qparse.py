@@ -223,7 +223,7 @@ class Vocab:
         return best[1] if best else None
 
 
-PAY_WORDS = [("cod", "cod"), ("thu ho", "cod"), ("tien mat", "tiền mặt"), ("chuyen khoan", "chuyển khoản"), ("vi dien tu", "ví điện tử"),
+PAY_WORDS = [("cod", "cod"), ("thu ho", "cod"), ("tien mat", "tiền mặt"), ("tien tuoi", "tiền mặt"), ("chuyen khoan", "chuyển khoản"), ("vi dien tu", "ví điện tử"),
              ("ghi no", "ghi nợ"), ("the ngan hang", "thẻ"), ("quet the", "thẻ")]
 CHAN_WORDS = [("zalo", "zalo"), ("dien thoai", "điện thoại"), ("tai quay", "tại quầy"), ("tai cua hang", "tại quầy"), ("san", "sàn TMĐT"),
               ("shopee", "sàn TMĐT"), ("facebook", "facebook"), ("website", "website")]
@@ -452,13 +452,16 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
 # qualities a shop's data never records (rulebook §7: unanswerable) unless the rulebook defines them; the rulebook's own ranking
 # terms (trung thành, sộp, hay đổi ý, ưa chuộng, chăm chỉ, đắt khách, chính, bán giỏi, bán chạy, lời ...) are never in this list
 SUBJECTIVE = r"\b(ngon|than thien|kho tinh|de tinh|uy tin|dang tin cay|tin cay|chat luong|trung thuc|dep|nhiet tinh|vui ve|lich su|de thuong|" \
-             r"hai long|tu te|chu dao|sach se|nhanh nhen|dang yeu|tan tam|chuyen nghiep|tot bung|de chiu|kho chiu|dep trai|xinh|thoai mai)\b"
+             r"hai long|tu te|chu dao|sach se|nhanh nhen|dang yeu|tan tam|chuyen nghiep|tot bung|de chiu|kho chiu|dep trai|xinh|thoai mai|" \
+             r"lanh nghe|tay nghe|gioi nghe|le phep|quy men|yeu men|men mo|duoc long|cham soc khach|hieu y|khen)\b"
 
 
 def subjective(t):
     """a 'which ... most <quality>' question about a quality no data column records ('sản phẩm nào ngon nhất', 'nhà cung cấp uy
     tín', 'khách thân thiện nhất', 'thợ nhiệt tình nhất'): True when it names such a quality and asks for the top one."""
     if re.search(SUBJECTIVE + r"\s+(?:\w+\s+)?(?:nhat|nhut)\b", t): return True        # '<quality> (tốt) nhất' ('Siro ăn ngon ...
+    if re.search(SUBJECTIVE + r"(?:\s+\w+){0,4}\s+(?:khong|ko|hong)\b", t) and re.search(r"\bco\b", t): return True   # 'có tận tâm … không'
+    if re.search(r"\b(?:hay|duoc) khen\b|\bkhen (?:\w+ )?(?:nao|ai)\b", t): return True                              # praise is not recorded
     m = re.search(r"\b(uy tin|dang tin cay|tin cay)\b", t)                                  # gần hết hạn nhất' is a name)
     return bool(m and re.search(r"\b(la ai|nao|ai)\b", t))
 
@@ -488,8 +491,12 @@ def missing_info(q, t, shop):
         ot = shop.O["order_time"] if "order_time" in shop.O.columns else None
         tt = pd.to_datetime(ot, errors="coerce").dropna() if ot is not None else pd.Series(dtype="datetime64[ns]")
         if not len(tt) or ((tt.dt.hour == 0) & (tt.dt.minute == 0)).mean() > 0.98: return "time of day"
-    if re.search(r"\b(?:bà bầu|mẹ bầu|phụ nữ có thai|người đang mang thai|trẻ sơ sinh|trẻ em|em bé)\b.{0,40}\b(?:dùng|uống|ăn|xài)\b.{0,40}\b(?:được không|được ko|có được|có sao không|an toàn)", ql):
+    if re.search(r"\b(?:bà bầu|mẹ bầu|phụ nữ có thai|người đang mang thai|trẻ sơ sinh|trẻ em|em bé)\b.{0,40}\b(?:dùng|uống|ăn|xài)\b.{0,40}\b(?:được không|được ko|có được|có sao không|an toàn)", ql) \
+            or re.search(r"\b(?:nên|phải)\s+(?:uống|dùng|bôi|xịt)\b.{0,30}\b(?:mỗi lần|một lần|mấy viên|bao nhiêu viên|liều|mấy lần)", ql) \
+            or re.search(r"\b(?:nen|phai) (?:uong|dung) .{0,30}\b(?:moi lan|may vien|bao nhieu vien|lieu)\b", t):
         return "medical advice"
+    if re.search(r"\bnhom khach|\bkhach (?:hang )?(?:nhom|thuoc nhom)\b|\bkhach (?:hang )?(?:than thiet|vip|si)\b", t) and not _has_col(shop, "customer_group", tables=("orders", "customers")):
+        return "customer group"
     return None
 
 
@@ -532,7 +539,9 @@ def parse(q, today, shop=None):
         if not isinstance(name, str): return txt
         k = dm.key(name)
         if len(k) < 4: return txt
-        out = re.sub(r"(^|\s)" + re.escape(k) + r"(\s|$)", r"\1qxq\2", txt)
+        out = txt
+        for kk in dict.fromkeys((k, untelex(k), K(name), untelex(K(name)))):   # the text went through K / untelex ('cheese' -> 'chese')
+            out = re.sub(r"(^|\s)" + re.escape(kk) + r"(\s|$)", r"\1qxq\2", out)
         if out == txt:                                                  # matched through regional words: the span of txt
             ws, kk = txt.split(), dm.regional_key(name)
             n = len(k.split())
@@ -541,6 +550,7 @@ def parse(q, today, shop=None):
                     if 0 < b <= len(ws) and dm.regional_key(" ".join(ws[a:b])) == kk:
                         return " ".join(ws[:a] + ["qxq"] + ws[b:])
         return out
+    t_unmasked = t
     for _v in (item, f.get("group"), f.get("customer_group")):
         t = _mask(t, _v); t0 = _mask(t0, _v)
     pays = [lab for w, lab in PAY_WORDS if re.search(r"\b" + w + r"\b", t)]
@@ -734,7 +744,8 @@ def parse(q, today, shop=None):
         return None
     # ---------------- customers
     _aov_q = has(r"trung binh|binh quan") and has(r"\bdon\b|\bbill\b|hoa don") and not has(r"khach nao|\bai\b|nhom khach|khach hang (?:than thiet|vip|si|le)")
-    if (has(r"khach") or has(r"\bai\b (?:mua|chi|dat)")) and P and not has(r"dat khach") and not _aov_q:
+    _item_q = has(r"(?:\bhang|mat hang|san pham|\bmon|\bsp|\bthuoc) (?:nao|gi)\b") and not has(r"khach (?:hang )?nao|\bai\b")
+    if (has(r"khach") or has(r"\bai\b (?:mua|chi|dat)")) and P and not has(r"dat khach") and not _aov_q and not _item_q:
         m = re.search(r"(?:tu|it nhat|tro len|toi thieu) (\d+) (?:don|bill|hoa don|lan)", t)
         if m:
             if has(r"phan tram|%|ti le"): return "pct_customers", ans("percent", f"pct_customers({P}, {int(m.group(1))})")
@@ -743,7 +754,7 @@ def parse(q, today, shop=None):
         if by:
             m = re.search(r"(?<![\d/])([1-9]|1\d|20) khach", t)
             if m: return "top_customers", ans("list", f"top_customers({P}, {int(m.group(1))}, by={J(by)})")
-            if has(r"\bai\b|khach nao|la ai|nguoi nao"): return "top_customer", ans("string", f"top_customers({P}, 1, by={J(by)})[0]")
+            if has(r"\bai\b|khach nao|khach hang nao|la ai|nguoi nao"): return "top_customer", ans("string", f"top_customers({P}, 1, by={J(by)})[0]")
         if "customer_group" in f and (rev or has(r"gia tri")) and has(r"trung binh|binh quan") and has(r"don"): return "aov", ans("number", f"aov({P}{fa()})")
         if "customer_group" in f and rev: return "revenue", ans("number", f"revenue({P}{fa()})")
         return None
@@ -770,7 +781,9 @@ def parse(q, today, shop=None):
         return "top_item", ans("string", f"top_items({P}, 1, by={J(by)}{fa(g)})[0]")
     if has(r"size (nb|s|m|l|xl|xxl|xxxl)\b") and P and not rev and not has(r"%|phan tram|chiem|ti le|ty le"):
         sz = re.search(r"size (nb|s|m|l|xl|xxl|xxxl)\b", t).group(1).upper(); return "size_qty", ans("number", f"size_qty({P}, {J(sz)})")
-    if P and not rev and (item is not None or "group" in f) and (re.search(r"(bao nhieu|may|bnhiu|bn|so|tong cong|total) " + UNITS + r"\b", t) or has(r"ban ra bao nhieu|ban duoc bao nhieu|ban dc bao nhieu|so luong")) \
+    if P and not rev and (item is not None or "group" in f) and (re.search(r"(bao nhieu|may|bnhiu|bn|so|tong cong|total) " + UNITS + r"\b", t)
+                                                               or re.search(r"(bao nhieu|may|bnhiu|bn|so|tong cong|total) " + UNITS + r"\b", t_unmasked)
+                                                               or has(r"ban ra bao nhieu|ban duoc bao nhieu|ban dc bao nhieu|so luong")) \
             and not has(r"giao|cho di|da cho|van chuyen|so voi|so vs|tang hay giam|chenh|nhap"):
         return "item_qty", ans("number", f"item_qty({P}{fa()})")
     if P and not rev and item is None and not f and not pays and not chans and not two_part:
@@ -791,6 +804,8 @@ def parse(q, today, shop=None):
         return "top_supplier", ans("string", f"top_supplier({P}, by={J(by)})")
     if has(r"\bgiao\b") and has(r"(?:may|bao nhieu|bnhiu|bn|tong cong|tong) (?:\w+ )?dot\b") and P and dlv:
         return "deliveries", ans("number", f"n_delivery_trips({P})")
+    if has(r"loi nhuan gop|lai gop") and P and has(r"(?:hang|mat hang|san pham|mon|sp) (?:nao|gi)|la gi|la hang") and has(r"nhat|nhieu nhat|cao nhat|lon nhat"):
+        return "top_profit_item", ans("string", f"top_items({P}, 1, by='profit')[0]")
     if has(r"loi nhuan gop|lai gop") and P and not has(r"nao|mat hang|san pham"): return "gross_profit", ans("number", f"gross_profit({P}{fa()})")
     # ---------------- revenue variants
     if has(r"co may ngay|bao nhieu ngay|bnhiu ngay|bn ngay|\bmay ngay|may bua|co may hom|so ngay|dem so ngay|bao nhieu bua|nhieu ngay dat|nhiu ngay|co nhieu ngay") and P:
@@ -820,7 +835,7 @@ def parse(q, today, shop=None):
     multi = len(dict.fromkeys(ms)) >= 2 and not P.startswith("between") if P else False   # several months, the template reads one
     count_q = bool(re.search(r"(?i)đếm", str(q))) or has(r"\bdem (?:so|gium|giup|xem|coi|thu)\b|\bco may\b|(?:bao nhieu|bnhiu|\bbn\b|\bmay|\bso) (?:ngay|bua|hom|don|lan|khach|nguoi|phieu|luot|mat hang|mon|san pham|loai)\b")
     yes_no = has(r"\bhon\b|dung (?:vay |the )?(?:khong|ko|hong)|phai (?:khong|ko|hong)|co dung|co phai|\bluon (?:cao |thap |nhieu |it )?hon\b")
-    if rev and P and not two_part and not multi and not count_q and not yes_no and not has(r"tang|giam|so voi|so vs|top|(?<!gan )(?<!moi )nhat|%|phan tram|ti trong|chiem|lan luot|\bva\b|moi loai|tung|trung binh|binh quan"):
+    if rev and P and not two_part and not multi and not count_q and not yes_no and not has(r"tang|giam|so voi|so vs|\btop\b|(?<!gan )(?<!moi )nhat|%|phan tram|ti trong|chiem|lan luot|\bva\b|moi loai|tung|trung binh|binh quan"):
         g = dict(f)
         if not f and not pays and not chans and (unlinked_entity(q, t) or has(r"\btho\b|\bphieu\b")): return None   # a mechanic / a ticket
         if len(pays) == 1 and has(r"tra bang|thanh toan|tra qua|bang"): g["payment"] = pays[0]

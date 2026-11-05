@@ -137,6 +137,19 @@ _QWORDS = re.compile(r"\b(nhất|hơn|hay ít|ít hay|nào|gì|mấy|bao nhiêu|
                      r"có phải|so với|so sánh|nhiêu)\b")
 
 
+_REG = []
+
+
+def _regional_words():
+    """the words of the toolkit's regional synonym pairs (dm.REGIONAL: 'ngao' = 'nghêu', 'lợn' = 'heo' ...)."""
+    if not _REG:
+        try:
+            import dm
+            _REG.append({w for a, b in dm.REGIONAL for x in (a, b) for w in x.lower().split()})
+        except Exception: _REG.append(set())
+    return _REG[0]
+
+
 class Normalizer:
     def __init__(self, texts):
         """texts: accented Vietnamese text (rulebook, training questions); only sentences with accents are learnt."""
@@ -185,6 +198,7 @@ class Normalizer:
         same accent-free letters, or one edit away, scored by its frequency and its bigrams with the neighbours."""
         lw = w.lower()
         if len(lw) < 2 or lw in self.vocab or not re.fullmatch(r"[^\W\d_]+", lw): return None
+        if lw in _regional_words(): return None                           # 'cháo ngao' = 'cháo nghêu': a word, not a typo
         def score(c):
             sc = math.log(1 + self.uni.get(c, 0))
             if prev: sc += 2.0 * math.log(1 + self.bi.get((prev, c), 0))
@@ -219,6 +233,30 @@ class Normalizer:
         if not cands: return None
         best = max(cands, key=lambda c: (cands[c], c))
         return best if cands[best] >= math.log(1 + 3) else None
+
+    def _typo_cands(self, lw):
+        """accented candidate words for an unknown accented word: other tones of its letters, then pronunciation / letter edits
+        (frequent known words only)."""
+        out = {}
+        for c in (self.forms.get(strip_accents(lw)) or {}): out[c] = math.log(1 + self.uni.get(c, 0)) + 1.0
+        for e in self._edits(lw):
+            if e in self.vocab and self.uni.get(e, 0) >= 3: out[e] = max(out.get(e, -1e9), math.log(1 + self.uni[e]) + 0.5)
+            for c in (self.forms.get(strip_accents(e)) or {}):
+                if self.uni.get(c, 0) >= 3: out[c] = max(out.get(c, -1e9), math.log(1 + self.uni[c]) - 1.0)
+        return out
+
+    def pair_fix(self, a, b, prev=None, nxt=None):
+        """two unknown words in a row ('tiềng báng' -> 'tiền bán'): the candidate pair that is a known bigram (>= 3) with the
+        best support of its neighbours; None when no pair is supported."""
+        ca = sorted(self._typo_cands(a).items(), key=lambda x: -x[1])[:10]; cb = sorted(self._typo_cands(b).items(), key=lambda x: -x[1])[:10]
+        best, bs = None, -1e9
+        for x, sx in ca:
+            for y, sy in cb:
+                n = self.bi.get((x, y), 0)
+                if n < 3: continue
+                sc = 2 * math.log(1 + n) + math.log(1 + self.bi.get((prev, x), 0)) + math.log(1 + self.bi.get((y, nxt), 0)) + 0.1 * (sx + sy)
+                if sc > bs: best, bs = (x, y), sc
+        return best if best is not None and bs >= 2 * math.log(1 + 3) + 0.5 else None
 
     def set_entities(self, names):
         """names written in the business's data (items, customers, addresses, labels ...). Two uses:
@@ -422,6 +460,16 @@ class Normalizer:
             if r is not None: changes.append([w, r, rule]); outw.append(_case_like(w, r))
             else: outw.append(w)
             prev = (r or lw).split()[-1].lower()
+        # two typos in a row ('tiềng báng' -> 'tiền bán'): corrected together when the corrected pair is a known bigram
+        for i in range(len(outw) - 1):
+            a_, b_ = outw[i], outw[i + 1]
+            if a_ != words[i] or b_ != words[i + 1] or prot[i] or prot[i + 1] or glued[i] or glued[i + 1]: continue
+            la, lb = a_.lower(), b_.lower()
+            if la in self.vocab or lb in self.vocab or la.isascii() or lb.isascii() or la in ABBR or lb in ABBR: continue
+            if _regional_words() & {la, lb}: continue
+            pv = outw[i - 1].split()[-1].lower() if i else None; nx = outw[i + 2].split()[0].lower() if i + 2 < len(outw) else None
+            r = self.pair_fix(la, lb, pv, nx)
+            if r: outw[i], outw[i + 1] = _case_like(a_, r[0]), _case_like(b_, r[1]); changes.append([f"{a_} {b_}", f"{r[0]} {r[1]}", "typo"])
         # accent restoration on the accent-free words of the (possibly expanded) sentence
         toks = " ".join(outw).split(" ") if outw else []
         flat = [t.lower() for t in toks]

@@ -1159,8 +1159,16 @@ class Shop(industry.IndustryMetrics):
                 if df is None or "item_name" not in df.columns: continue
                 names = pd.Series(df["item_name"].dropna().astype(str).unique())
                 hit = names[names.map(regional_key) == rk]
-                ks |= set(hit)
+                ks |= set(hit); found |= bool(len(hit))
                 if "item_code" in df.columns and len(hit): ks |= set(df.loc[df["item_name"].astype(str).isin(set(hit)), "item_code"].dropna().astype(str))
+        if not found and isinstance(item, str):                          # a name the shop's data does not have is a misspelling
+            import difflib                                               # to repair, not an item that sold 0 (v30 stage 2: 'Cốc xạc',
+            names = sorted({str(x) for df in (self.C.get("items"), self.L) if df is not None and "item_name" in df.columns   # 'cá chàu'
+                            for x in df["item_name"].dropna().unique()})                                                   # -> 0)
+            close = difflib.get_close_matches(item, names, n=5, cutoff=0.4) or \
+                [names[i] for i in sorted(range(len(names)), key=lambda i: -difflib.SequenceMatcher(None, key(item), key(names[i])).ratio())[:5]]
+            raise LookupError(f"no item named {item!r} in this shop's data; closest names: {close} "
+                              "(use the exact name; match_names(...) lists spellings)")
         return list(ks)
 
     def purchase_total(self, p):

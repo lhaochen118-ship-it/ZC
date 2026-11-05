@@ -1398,7 +1398,7 @@ def shop_api(shop):
              "n_orders_revenue_at_least", "monthly_revenue", "best_month", "item_qty", "item_sales", "top_items", "customer_sales",
              "top_customers", "n_customers", "staff_sales", "debts", "debt_total", "debt_by_customer", "n_debtors", "top_debtors",
              "debt_aging", "debt_older_than", "debt_flow", "share", "increasing", "weekday_avg", "peak_hour", "size_qty", "unsold_items",
-             "purchase_total", "avg_purchase_price", "supplier_ranking", "top_supplier", "import_minus_sales", "stock_at", "stock_split",
+             "purchase_total", "avg_purchase_price", "supplier_ranking", "top_supplier", "import_minus_sales", "purchased_qty_base", "stock_at", "stock_split",
              "stock_value", "lot_stock", "lots_expiring", "items_expiring", "out_of_stock", "nearest_expiry", "price_on", "price_change_date", "price_effect",
              "gross_profit", "net_profit", "n_delivery_trips", "pct_customers", "factor", "delivered_qty", "n_orders_by_trips", "n_due_orders"] + industry.INDUSTRY_NAMES
     return {n: getattr(shop, n) for n in names}

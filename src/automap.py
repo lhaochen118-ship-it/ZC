@@ -285,6 +285,8 @@ NAME_RULES = [
     (r"gia cu", "old_price"),
     (r"gia moi", "new_price"),
     (r"imei", "imei"),
+    (r"ngay nhan viec|ngay vao lam|ngay bat dau lam|ngay bat dau", "start_date"),
+    (r"chuc vu|vi tri|vai tro", "staff_role"),
     (r"so ky|so thang gop|so ky gop|ky han gop", "n_terms"),
     (r"gop thang|gop moi thang|tien gop thang|gop ky|tien moi ky|gop moi ky", "per_term"),
     (r"tra truoc|dat coc|tra lan dau", "prepaid"),
@@ -312,10 +314,15 @@ def desc_role(desc):
 
 def name_roles(col):
     """every role whose name pattern matches the column name exactly (several: 'thành tiền' is a line amount in a
-    sales table and an amount in a purchase table)."""
+    sales table and an amount in a purchase table); a qualifier in brackets is tried without it ('Nhóm hàng(3 Cấp)',
+    'Đơn giá (đ)', 'SL (ĐV cơ bản)')."""
     n = fold_name(col)
     n = re.sub(r"^(?:\d+\s+)", "", n)
-    return [r for rx, r in _NAME if rx.match(n)]
+    out = [r for rx, r in _NAME if rx.match(n)]
+    if "(" in str(col):
+        n2 = re.sub(r"^(?:\d+\s+)", "", fold_name(re.sub(r"\([^)]*\)", " ", str(col))))
+        out += [r for rx, r in _NAME if rx.match(n2) and r not in out]
+    return out
 
 
 STATUS_WORDS = re.compile(r"\b(xong|hoan thanh|hoan tat|da giao|huy|tra hang|hoan hang|dang giao|dang van chuyen|khach tra|giao that bai|ok|done|completed|cancel)\b")
@@ -419,7 +426,8 @@ def classify(ti):
     if not f("item_code", first=True) and f("debt_end") and f("paid_total", "amount") and f("pay_time", dtype=DATE) \
             and not ti.col("order_id", first=True) and not f("qty", "unit_price", first=True): return "debt_book"
     if f("promo_name") and (f("date_from") or f("date_to")): return "promotions"
-    if f("commission_pct") or (f("staff_name") and (f("start_date") or f("commission_pct"))): return "staff_list"
+    if f("commission_pct") or (f("staff_name") and (f("start_date") or f("commission_pct"))) or \
+            (f("staff", first=True) and (f("start_date") or f("staff_role")) and n <= 300 and not item and not oid): return "staff_list"
     if f("lot_id") and f("expiry") and item and not f("receipt_date", first=True) and ti.uniq(ti.col("lot_id")) > 0.95 \
             and not (f("unit_cost", first=True) and f("qty", first=True) and not f("qty_in_base")): return "lots"
     if oid and f("lot_id") and (f("lot_qty_base", "qty", "qty_base", "returned_base")) and not f("item_name", first=True): return "lot_sales"
@@ -1043,7 +1051,10 @@ def build_side(K, C, cv, items, notes):
     for ti in K.get("terms", []):
         g = ti.col
         t = dm.frame(ti.df, order_id=g("order_id"), credit_days=g("term_days", dtype=NUM), due_date=g("due_date", dtype=DATE))
-        t["order_id"] = t["order_id"].astype(str).str.strip(); C["terms"] = t; break
+        t["order_id"] = t["order_id"].astype(str).str.strip(); C["terms"] = t
+        if "due_date" in t and "orders" in C:                          # toolkit: orders.due_date (n_due_orders)
+            C["orders"]["due_date"] = C["orders"]["order_id"].astype(str).str.strip().map(t.drop_duplicates("order_id").set_index("order_id")["due_date"])
+        break
     for ti in K.get("prices", []):
         g = ti.col
         pr = dm.frame(ti.df, date=g("price_date", dtype=DATE), item_code=g("item_code", first=True), item_name=g("item_name", first=True) or g("item_name"),
@@ -1157,7 +1168,13 @@ def build(biz):
     if mem is not None: C["customers"] = mem
     for st in K.get("staff_list", []):
         g = st.col
-        C["staff"] = dm.frame(st.df, staff=g("staff_name") or g("staff"), commission_pct=g("commission_pct", dtype=NUM), start_date=g("start_date", dtype=DATE))
+        code = g("staff", first=True)
+        name = g("staff_name") or next((c for c in st.cols("item_name", "customer_name") if c != code), None)
+        if code and name:                                              # a coded list: orders carry the code, questions the name
+            C["staff"] = dm.frame(st.df, staff=code, staff_name=name, role=g("staff_role"), commission_pct=g("commission_pct", dtype=NUM),
+                                  start_date=g("start_date", dtype=DATE))
+        else:
+            C["staff"] = dm.frame(st.df, staff=name or code, commission_pct=g("commission_pct", dtype=NUM), start_date=g("start_date", dtype=DATE))
         break
     if items is not None: C["items"] = items
     if cv is not None: C["conversions"] = cv

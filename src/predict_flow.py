@@ -59,6 +59,8 @@ def main():
     ap.add_argument("--runs", type=int, default=3); ap.add_argument("--work", default="/tmp/zc")
     ap.add_argument("--llm", type=int, default=1); ap.add_argument("--dp", type=int, default=0)
     ap.add_argument("--rules-workers", type=int, default=0)
+    ap.add_argument("--canon", type=int, default=0, help="stage 1.5 (opt-in until measured): the model restates the pending questions "
+                    "in the training questions' style (src/canon_llm.py); the rule program votes on the restatement in stage 2")
     ap.add_argument("--min-conf", type=float, default=0.75, help="model answers kept only when the mean vote share of the runs is at "
                     "least this (src/vote.py --min-conf)")
     ap.add_argument("--fake-responder", default="", help="tests / preflight: no model, agent.py --fake-responder; at most "
@@ -105,6 +107,12 @@ def main():
     if not os.path.exists(os.path.join(psplit, "data")): os.symlink(os.path.abspath(os.path.join(a.split, "data")), os.path.join(psplit, "data"))
     for f in ("calendar.csv", "rulebook.md"): shutil.copy(os.path.join(a.split, f), psplit)
     with open(os.path.join(psplit, "questions.jsonl"), "w", encoding="utf-8") as f: f.writelines(pending)
+    if a.canon:                                                       # stage 1.5 (one GPU, ~minutes): restatements as '_clean'
+        csplit = os.path.join(a.work, "pending_canon")
+        cmd = [sys.executable, os.path.join(HERE, "canon_llm.py"), psplit, csplit, "--model", a.model, "--quant", "fp8", "--cache", cache]
+        if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]
+        if run(cmd, log) == 0 and os.path.isfile(os.path.join(csplit, "questions.jsonl")): psplit = csplit
+        else: log("stage 1.5 failed: stage 2 reads the questions as they are")
     vote_sub = os.path.join(a.work, "llm_vote.jsonl")
     srcs = [rules_sub, vote_sub]
     log(f"stage 2: {len(pending)} questions  model {a.model}  dp {dp}  runs up to {a.runs}")

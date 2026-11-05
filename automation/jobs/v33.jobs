@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/canon_pub --script canon_llm.py --questions INPUT/zc-pend/pend_pub.jsonl --model Qwen/Qwen3.5-9B --quant fp8;run_kaggle.py train OUT/canon_train --script canon_llm.py --questions INPUT/zc-pend/pend_train.jsonl --model Qwen/Qwen3.5-9B --quant fp8

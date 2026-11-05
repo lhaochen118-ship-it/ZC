@@ -285,6 +285,16 @@ NAME_RULES = [
     (r"gia cu", "old_price"),
     (r"gia moi", "new_price"),
     (r"imei", "imei"),
+    (r"so size|size|kich co|co size|kich thuoc|so size cua hang", "size"),
+    (r"ho ten|ho va ten|ten tho|ten nhan vien|ho ten tho|ho ten nhan vien", "staff_name"),
+    (r"hoa hong|ti le hoa hong|ty le hoa hong|phan tram hoa hong|hoa hong %|% hoa hong", "commission_pct"),
+    (r"ngay dang ky|ngay dang ky thanh vien|ngay tham gia|ngay lam the", "member_since"),
+    (r"diem|diem hien co|diem tich luy|so diem", "points"),
+    (r"thuong hieu|nhan hieu|brand|hang san xuat", "brand"),
+    (r"so don|so don hang|so thu tu don", "order_id"),
+    (r"xe|dong xe|loai xe|xe va bien so|xe bien so|xe khach", "vehicle"),
+    (r"lam gi|cong viec|noi dung sua|viec lam|hang muc sua|hang muc|viec da lam|sua gi", "tasks"),
+    (r"tho|tho sua|ky thuat vien|nguoi sua|nguoi lam|tho lam", "staff"),
     (r"ngay nhan viec|ngay vao lam|ngay bat dau lam|ngay bat dau", "start_date"),
     (r"chuc vu|vi tri|vai tro", "staff_role"),
     (r"so ky|so thang gop|so ky gop|ky han gop", "n_terms"),
@@ -312,10 +322,15 @@ def desc_role(desc):
     return None
 
 
+ACCENTED_NAMES = {"hãng": "brand", "hãng sản xuất": "brand"}
+
+
 def name_roles(col):
     """every role whose name pattern matches the column name exactly (several: 'thành tiền' is a line amount in a
     sales table and an amount in a purchase table); a qualifier in brackets is tried without it ('Nhóm hàng(3 Cấp)',
     'Đơn giá (đ)', 'SL (ĐV cơ bản)')."""
+    acc = unicodedata.normalize("NFC", str(col)).strip().lower()
+    if acc in ACCENTED_NAMES: return [ACCENTED_NAMES[acc]]
     n = fold_name(col)
     n = re.sub(r"^(?:\d+\s+)", "", n)
     out = [r for rx, r in _NAME if rx.match(n)]
@@ -372,6 +387,9 @@ def column_roles(df, descs):
         for r in name_roles(c):
             if r not in rs: rs.append(r)
         if not rs and d and fold(d) in ("ten", "ten goi"): rs.append("item_name")
+        if "conversion_text" not in rs and df[c].dtype == object:
+            v = df[c].dropna().astype(str).head(500)
+            if len(v) >= 3 and v.str.contains(r"^\s*1\s*[^\d=]+=\s*\d", regex=True).mean() > 0.8: rs.insert(0, "conversion_text")
         out[c] = rs
     return out
 
@@ -488,6 +506,28 @@ def _amount_identity(df, qty, price, amt, disc=None):
     if not len(x): return 0.0
     e = x["q"] * x["p"] - (x["d"] if disc is not None else 0)
     return float(((x["a"] - e).abs() <= 1 + 0.001 * x["a"].abs()).mean())
+
+
+def _varies_within(df, key, col):
+    """share of the multi-line orders (key ffilled) on which col takes more than one value."""
+    k = df[key].where(df[key].notna() & df[key].astype(str).str.strip().ne("")).ffill()
+    x = pd.DataFrame({"k": k, "v": pd.to_numeric(df[col], errors="coerce")}).dropna()
+    g = x.groupby("k")["v"]; n = g.size(); u = g.nunique()
+    m = n >= 2
+    return float((u[m] > 1).mean()) if m.any() else 0.0
+
+
+def _order_number(df, col):
+    """True when a numbered column counts ORDERS (its values, carried down blank cells, rise run after run through the book and
+    there are many of them), not lines of an order (1, 2, 1, 2, 3 ... restarts)."""
+    v = pd.to_numeric(df[col], errors="coerce")
+    if v.notna().mean() < 0.3 or v.dropna().nunique() < 20: return False
+    groups = df["_source"] if "_source" in df.columns else pd.Series("", index=df.index)
+    ok = steps = 0
+    for _, idx in df.groupby(groups, sort=False).groups.items():
+        w = v.loc[idx].ffill().dropna()
+        d = w.diff().dropna(); steps += len(d); ok += int((d >= 0).sum())
+    return steps > 0 and ok / steps >= 0.97 and v.dropna().nunique() >= 0.2 * v.notna().sum() * (0.5 if v.isna().any() else 1)
 
 
 def _datetime_with_time(df, c):
@@ -667,8 +707,11 @@ def split_toppings(L, rd):
     """README: 'topping ghi chung ô với món, nối bằng " + " ... tiền topping ghi trong ngoặc và đã cộng vào thành tiền'
     -> one line for the dish (amount minus the toppings) and one line per topping (qty = its number of portions, default
     1; amount = the price in brackets). Public rulebook: the topping is its own item."""
-    if not any(re.search(r"topping", c, re.I) and "+" in c for c in rd["conventions"]): return L
     if "item_name" not in L: return L
+    said = any(re.search(r"topping", c, re.I) and "+" in c for c in rd["conventions"])
+    if not said:                                                     # no README note: the cells themselves show the pattern
+        nm = L["item_name"].dropna().astype(str).head(20000)
+        if not len(nm) or nm.str.contains(r"\s\+\s.+\(\s*[\d.,]+\s*(?:k|đ|d|vnđ|vnd)?\s*\)\s*$", regex=True).mean() < 0.005: return L
     rows, out = [], []
     for idx, r in L.iterrows():
         nm = r["item_name"]
@@ -717,6 +760,9 @@ def pick_fields(ti, wanted, line_table):
         return c
     # ids and dates first (they disambiguate the rest)
     take("order_id", "order_id")
+    if "order_id" not in f and line_table:                          # an order number written as 'STT' (blank or repeated on the
+        c = next((x for x in ti.cols("line_no") if _order_number(ti.df, x)), None)   # order's other lines) is the order key
+        if c: f["order_id"] = c; used.add(c)
     if "line_no" in wanted: take("line_no", "line_no", dtype=NUM, first_only=True)
     dcols = [c for c in ti.cols("order_date", "order_time", dtype=DATE) if c not in used]
     tcol = next((c for c in ti.cols("order_time", dtype=DATE, first=True) if c not in used and _datetime_with_time(ti.df, c)), None) or \
@@ -756,6 +802,11 @@ def pick_fields(ti, wanted, line_table):
                 k = "line_discount"
         if k in f: continue
         f[k] = c; used.add(c)
+    if line_table and "line_amount" not in f and f.get("order_id"):
+        for k in ("total_payable", "gross", "paid_total"):          # a money column that differs between the lines of one order is
+            c = f.get(k)                                              # the line's amount, whatever its name says ('Tổng tiền')
+            if c and _varies_within(ti.df, f["order_id"], c) >= 0.5:
+                f["line_amount"] = c; del f[k]; break
     if not line_table and "total_payable" not in f:
         take("total_payable", "total_payable", "line_amount", dtype=NUM)
     for k, roles in (("note", ("note",)), ("phone", ("phone",)), ("address", ("address",)), ("table_no", ("table_no",)), ("area", ("area",)),
@@ -839,6 +890,7 @@ def build_sales(biz, infos, K, rd, items, cv, notes):
         else:
             for c in PSEUDO_ORDERS.columns: orders[c] = orders["order_id"].astype(str).str.strip().map(PSEUDO_ORDERS[c])
     if "gross" in L: L = L.drop(columns=["gross"])
+    if "qty_base" not in L: cv = infer_unit_factors(L, cv, items, notes)
     O, L = dm.finalize(L, orders, conversions=cv, items=items)
     for c in ("paid_total", "debt_end", "tradein", "phone", "address", "table_no", "area", "guests", "note", "imei_count"):
         if c in L.columns and c not in O.columns and "order_id" in L.columns:   # order-level cells of a flat book (finalize keeps
@@ -924,13 +976,50 @@ def debts_from_notes(O, rd, notes):
     if "note" not in O or "debt_end" in O or "paid_total" in O: return O
     said = any(re.search(r"\b(no|ghi no|con thieu|da dua)\b", fold(c)) and re.search(r"ghi chu|note", fold(c)) for c in rd["conventions"]) or \
         any(re.search(r"ghi no thi ghi|con thieu|ghi chu no", fold(d)) for sec in rd["sections"] for d in sec["cols"].values())
-    if not said: return O
+    if not said:                                                     # the notes themselves: debt words with money on many orders
+        nt = O["note"].dropna().astype(str)
+        hits = nt.map(lambda x: bool(re.search(r"\b(no|ghi no|con thieu|thieu lai|ghi so|da dua|dua truoc)\b", fold(x))) and bool(dm.money_in_text(x)))
+        if hits.sum() < 20: return O
     tot = O["total_payable"] if "total_payable" in O else pd.Series(np.nan, index=O.index)
     de = [dm.debt_from_note(n, t) for n, t in zip(O["note"], tot)]
     if sum(1 for x in de if x is not None) < 5: return O
     O = O.copy(); O["debt_end"] = [x if x is not None else 0.0 for x in de]
     notes.append(f"debts read from the order notes ({sum(1 for x in de if x)} orders still owing at the end of the data)")
     return O
+
+
+def infer_unit_factors(L, cv, items, notes):
+    """factors of (item, unit) pairs that no conversion table / README line defines, read from the prices: a 'bó' sold at 10x
+    the price of a 'cây' of the same item on the same days is 10 cây (README-less books). Only near-integer ratios >= 2 seen
+    on >= 3 days; the cheapest unit of the item (or its catalogue base unit) is the base."""
+    if not {"item_name", "unit", "unit_price", "order_date"} <= set(L.columns): return cv
+    have = set()
+    if cv is not None and len(cv): have = {(dm.key(i), dm.key(u)) for i, u in zip(cv["item"], cv["unit"])}
+    base_of = {}
+    if items is not None and {"item_name", "base_unit"} <= set(items.columns):
+        base_of = {dm.key(n): dm.key(u) for n, u in zip(items["item_name"], items["base_unit"]) if isinstance(n, str) and isinstance(u, str)}
+    x = L[["item_name", "unit", "unit_price", "order_date"]].dropna().copy()
+    x["ik"] = x["item_name"].astype(str).map(dm.key); x["uk"] = x["unit"].astype(str).map(dm.key)
+    x["d"] = pd.to_datetime(x["order_date"], errors="coerce").dt.normalize()
+    rows = []
+    for ik, g in x.groupby("ik"):
+        units = g["uk"].unique()
+        if len(units) < 2: continue
+        med = g.groupby("uk")["unit_price"].median()
+        base = base_of.get(ik) if base_of.get(ik) in med.index else med.idxmin()
+        pb = g[g["uk"] == base].groupby("d")["unit_price"].median()
+        for u in units:
+            if u == base or (ik, u) in have: continue
+            pu = g[g["uk"] == u].groupby("d")["unit_price"].median()
+            r = (pu / pb.reindex(pu.index)).dropna()
+            if len(r) < 3: continue
+            f = float(r.median())
+            if f >= 2 and abs(f - round(f)) <= 0.02 * f and (abs(r - round(f)) <= 0.02 * f).mean() >= 0.8:
+                rows.append((g["item_name"].iloc[0], g.loc[g["uk"] == u, "unit"].iloc[0], float(round(f)), g.loc[g["uk"] == base, "unit"].iloc[0]))
+    if not rows: return cv
+    notes.append(f"{len(rows)} unit factors read from the prices (e.g. {rows[0][0]}: 1 {rows[0][1]} = {rows[0][2]:g} {rows[0][3]})")
+    add = pd.DataFrame(rows, columns=["item", "unit", "factor", "base_unit"])
+    return add if cv is None else pd.concat([cv, add], ignore_index=True)
 
 
 def build_customers(K, O):

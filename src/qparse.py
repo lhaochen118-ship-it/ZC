@@ -60,6 +60,9 @@ def slang(t):
     'tro len', 'cất hàng' / 'đánh hàng (về)' (buying stock) -> 'nhap hang', '<từ / đạt / trên> 10 củ' -> '10 trieu', '3tr7' -> '3.7 trieu'."""
     t = re.sub(r"\bbq\b", "binh quan", t); t = re.sub(r"\bbin quan\b", "binh quan", t); t = re.sub(r"\btrung bin\b", "trung binh", t)
     t = re.sub(r"\blne\b", "len", t); t = re.sub(r"\bdh\b", "don hang", t)                # 'đh' = đơn hàng
+    t = re.sub(r"(\d(?:\s?(?:d|dong|k|nghin|trieu|tr|cu))?)\s+(?:cho|tro|cho|tro) ?(?:len|lne|lenn)\b|(\d)\s*trolen\b", lambda m: (m.group(1) or m.group(2)) + " tro len", t)
+    t = re.sub(r"\bchung binh\b", "trung binh", t); t = re.sub(r"\bchung bin\b", "trung binh", t)   # tr -> ch
+    t = re.sub(r"\bcomay\b", "co may", t); t = re.sub(r"\bbnhiu(?=\w)", "bao nhieu ", t)
     t = re.sub(r"\bnhut\b", "nhat", t); t = re.sub(r"\b(ban|mua|ban ra|ban duoc) bao nhieu nhat\b", r"\1 nhieu nhat", t)   # southern 'nhứt'
     t = re.sub(r"\b(?:cat|danh) hang(?: ve)?\b", "nhap hang", t)
     t = re.sub(r"\b(tu|dat|tren|hon|duoi|it nhat|qua|vuot|khoang|toi|den|tro len) (\d+(?:[.,]\d+)?) ?cu\b", r"\1 \2 trieu", t)
@@ -202,6 +205,7 @@ class Vocab:
         it = shop.C.get("items")
         if it is not None: self.items.update({dm.key(x): x for x in vals(it, "item_name") if dm.key(x) not in self.items})
         self.items_reg = {dm.regional_key(x): x for x in self.items.values()}   # regional words ('cá tràu' = 'cá lóc')
+        self.items_reg_plain = {dm.regional_key_plain(x): x for x in self.items.values()}   # the same, typed without accents
         self.codes = {dm.key(x): x for x in vals(L, "item_code")}
         self.groups = {dm.key(x): x for x in vals(L, "item_group")}
         self.cgroups = {dm.key(x): x for x in vals(O, "customer_group")}
@@ -500,7 +504,45 @@ def missing_info(q, t, shop):
     return None
 
 
+_MONEY_Q = re.compile(r"(?<![\d/])(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s*(?:d|dong|vnd|k|nghin|ngan|trieu|tr|cu)\b|(?<![\d/.,])(\d{1,3}(?:[.,]\d{3}){2,})(?![\d/])")
+_NO_MONEY_TPL = ("price_effect", "price_on", "n_days_rev_ge", "n_orders_rev_ge", "subjective", "unrecorded", "price_change")
+
+
+def _amounts(code):
+    return {float(x) for x in re.findall(r"(?<![\w.])(\d+(?:\.\d+)?)(?![\w])", code)}
+
+
+def consistent(q, t, tpl, code):
+    """precision guard: a rule answer is kept only when it uses what the question states. A money amount written in the
+    question that the program never uses ('đạt từ 40.000.000 đồng chở lên' read as plain revenue), a count of days / customers /
+    orders answered with money, are misreadings (typing noise hid the qualifier): no rule answer (the LLM or abstain decides)."""
+    if tpl in _NO_MONEY_TPL or tpl.startswith("ind_"): return True
+    for m in _MONEY_Q.finditer(t):
+        raw = m.group(1) or m.group(2); unit = m.group(0)[len(raw):].strip()
+        v = float(re.sub(r"[.,]", "", raw)) if re.fullmatch(r"\d{1,3}(?:[.,]\d{3})+", raw) else float(raw.replace(",", "."))
+        mult = 1e6 if unit.startswith(("trieu", "tr", "cu")) else 1e3 if unit.startswith(("k", "nghin", "ngan")) else 1
+        val = v * mult
+        if val < 1000: continue                                          # '3 lon', '2 đợt': not money
+        if not any(abs(a - val) < 0.5 or abs(a - v) < 0.5 for a in _amounts(code)): return False
+    if tpl == "revenue" and re.search(r"\b(?:moi|mot|1|tung) (?:don|bill|hoa don|phieu)\b|\b(?:binh quan|trung binh|chung binh)\b", t):
+        return False                                                     # an average per order read as the total
+    money_tpl = tpl in ("revenue", "aov", "purchase_total", "gross_profit", "net_profit", "debt_total", "stock_value", "share", "rev_pair", "months_list")
+    tp = dm.strip_accents(unicodedata.normalize("NFC", str(q)).lower())    # punctuation kept: 'bao nhiêu, đơn qua …' is two clauses
+    if money_tpl and re.search(r"\b(?:may|bao nhieu|bnhiu|bn|so|dem) (?:ngay|bua|hom|khach|nguoi|don|lan|luot|phieu|mat hang|mon|san pham)\b", tp) \
+            and not re.search(r"\bbao nhieu tien\b|\bdoanh thu\b.{0,20}\b(?:moi|tung) ngay\b", tp):
+        return False
+    return True
+
+
 def parse(q, today, shop=None):
+    """(template, code) for the common templates; None when unsure (also when the precision guard rejects the reading)."""
+    r = _parse(q, today, shop)
+    if r is None: return None
+    t = untelex(K(q))
+    return r if consistent(q, t, r[0], r[1]) else None
+
+
+def _parse(q, today, shop=None):
     """(template, code) for the common templates; None when unsure."""
     t0 = K(q); t = untelex(t0); tk = dm.key(q)                                    # Telex typos undone first ('quys 3/2025')
     if re.search(r"(?i)(?<!\w)[oô]\s?-?\s?đờ(?!\w)", str(q)): t = re.sub(r"\bo ?do\b", "order", t)   # 'o đờ' = order ('ở đó' keeps its accents)
@@ -520,7 +562,7 @@ def parse(q, today, shop=None):
     V = Vocab(shop) if shop is not None else None
     f = {}; item = None
     if V is not None:
-        item = V.find(tk, V.items) or V.find(tk, V.codes) or V.find(dm.regional_key(q), V.items_reg)
+        item = V.find(tk, V.items) or V.find(tk, V.codes) or V.find(dm.regional_key(q), V.items_reg) or V.find(dm.regional_key_plain(q), V.items_reg_plain, min_len=8)
         if item is not None: f["item"] = item
         m = re.search(r"nhom (?:hang |mon |san pham )?(.+)", tk)
         if m and item is None:

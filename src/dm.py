@@ -241,6 +241,18 @@ def regional_key(s):
     return _ckey(t)
 
 
+_REGIONAL_PLAIN = [(re.compile(r"(?<!\w)" + re.escape(strip_accents(a).lower()) + r"(?!\w)"), strip_accents(b).lower()) for a, b in REGIONAL
+                   if len(strip_accents(a)) >= 3]
+
+
+def regional_key_plain(s):
+    """regional_key for text typed without accents ('ke dien thoai' -> 'gia do dien thoai'): accent-free pairs of at least three
+    letters; used to link a whole item name only."""
+    t = re.sub(r"\s+", " ", strip_accents(norm_text(s)))
+    for rx, b in _REGIONAL_PLAIN: t = rx.sub(b, t)
+    return _ckey(t)
+
+
 LINE_REST = re.compile(r"(?:\d+\s*/\s*)?\d+\s*(?:gb|tb)\b")      # rulebook (phones): dòng máy = the name before '…GB'
 
 

@@ -130,6 +130,7 @@ MONTHS = [
     (re.compile(r"(?<![\d/\-.])(\d{1,2})/(2[3-9])(?![\d/])"), _not_after_thang(lambda m: f"tháng {int(m.group(1))}/20{m.group(2)}")),
     (re.compile(r"\b(?:th|thg)\s?(\d{1,2})\b(?!\s*(?:giờ|h\b|ngày|/))", re.I), lambda m: f"tháng {int(m.group(1))}"),
     (re.compile(r"\b(?:th|thg)\s+(trước|này|sau|rồi|tới|nay|liền trước|kế tiếp)\b", re.I), lambda m: f"tháng {m.group(1)}"),
+    (re.compile(r"\b(?:th|thg)(trước|này|sau|rồi|tới|nay)\b", re.I), lambda m: f"tháng {m.group(1)}"),      # glued: 'thnày'
 ]
 
 
@@ -186,11 +187,42 @@ class Normalizer:
             if w.startswith(a): out.add(b + w[len(a):])
         for a, b in self._FINAL:
             if w.endswith(a): out.add(w[:-len(a)] + b)
+        for i in range(len(w) - 1):                                     # two letters swapped ('bna' -> 'ban')
+            out.add(w[:i] + w[i + 1] + w[i] + w[i + 2:])
         if len(w) >= 3:
             for i in range(len(w)):                                     # one letter dropped / doubled (no free substitution:
                 out.add(w[:i] + w[i + 1:])                              # 'xả' -> 'cả', 'vô' -> 'có' are other words)
                 for c in self._LETTERS: out.add(w[:i] + c + w[i:])
         return {x for x in out if len(x) >= 2}
+
+    def glue_split(self, w, prev=None, nxt=None):
+        """a token that is two words typed without the space: 'chiếciPhone' (a capital inside) -> 'chiếc iPhone'; 'denhet' /
+        'phiship' / 'daunam' (accent-free) -> 'den het' / 'phi ship' / 'dau nam' when both halves are known words and form a known
+        bigram (accents restored later); accented halves ('nàothu') need the accented bigram. None when no split is supported."""
+        m = re.search(r"[a-zà-ỹđ](?=[A-Z])", w)
+        if m:                                                             # 'chiếciPhone': the brand may start in lowercase ('iPhone')
+            k = m.end()
+            for cut in (k, k - 1):
+                a = w[:cut]
+                if len(a) >= 2 and (a.lower() in self.vocab or a.lower() in self.forms): return a + " " + w[cut:]
+        lw = w.lower()
+        if len(lw) < 4 or lw in self.vocab or (lw.isascii() and lw in self.forms): return None
+        best, bs = None, 0
+        for i in range(2, len(lw) - 1):
+            a, b = lw[:i], lw[i:]
+            if lw.isascii():
+                if a not in self.forms or b not in self.forms: continue
+                n = sum(self.bi.get((x, y), 0) for x in self.forms[a] for y in self.forms[b])
+            else:
+                if a not in self.vocab or b not in self.vocab: continue
+                n = self.bi.get((a, b), 0)
+            if lw.isascii():
+                fa, fb = sum(self.forms[a].values()), sum(self.forms[b].values())
+            else:
+                fa, fb = self.uni.get(a, 0), self.uni.get(b, 0)
+            sc = n + (0.5 if min(fa, fb) >= 30 and min(len(a), len(b)) >= 3 else 0)   # a known bigram, or two frequent words
+            if sc >= 1 and (sc > bs or (sc == bs and min(len(a), len(b)) > min(len(best[0]), len(best[1])))): best, bs = (a, b), sc
+        return f"{best[0]} {best[1]}" if best else None
 
     def typo_fix(self, w, prev=None, nxt=None):
         """the known word a typed word most likely means ('tền' -> 'tiền', 'dảm' -> 'giảm', 'xo' -> 'so', 'chong' -> 'trong',
@@ -218,15 +250,17 @@ class Normalizer:
                 if e in self.vocab and self.uni.get(e, 0) >= 3: cands[e] = max(cands.get(e, -1e9), score(e) + 0.5)
                 for c in (self.forms.get(strip_accents(e)) or {}):         # an edit + other accents ('dảm' -> 'giảm')
                     if self.uni.get(c, 0) >= 3: cands[c] = max(cands.get(c, -1e9), score(c) - 1.0)
-        for i in range(2, len(lw) - 1):                                   # two words glued ('nhiềuđơn', 'ngàynào')
+        for i in range(2, len(lw) - 1):                                   # two words glued ('nhiềuđơn', 'ngàynào', 'thnày' = 'th' + 'này')
             a, b = lw[:i], lw[i:]
-            if a in self.vocab and b in self.vocab and self.uni[a] >= 5 and self.uni[b] >= 5:
-                cands[a + " " + b] = 0.5 * (score(a) + score(b)) + math.log(1 + self.bi.get((a, b), 0))
+            a2, b2 = ABBR.get(a, a).split()[-1], ABBR.get(b, b).split()[0]
+            if (a in self.vocab or a in ABBR) and (b in self.vocab or b in ABBR) and self.uni.get(a2, 0) >= 5 and self.uni.get(b2, 0) >= 5:
+                ca, cb = ABBR.get(a, a), ABBR.get(b, b)
+                cands[ca + " " + cb] = 0.5 * (score(a2) + score(b2)) + math.log(1 + self.bi.get((a2, b2), 0))
         def ctx(c):                                                       # a correction must fit its neighbours strongly: known
             ws = c.split(); first, last = ws[0], ws[-1]                   # bigrams worth >= log 21 together ('bao nhiêu tền' ->
             fs = self.forms.get(first, {first: 1}) if c.isascii() else {first: 1}   # 262 x 'nhiêu tiền'); a valid word outside
             ls = self.forms.get(last, {last: 1}) if c.isascii() else {last: 1}      # the vocabulary ('có tận tâm', 'đường hậu
-            if len(ws) == 2: return self.bi.get((ws[0], ws[1]), 0) >= 1           # giang') rarely has that much support
+            if len(ws) >= 2: return self.bi.get((ws[-2], ws[-1]), 0) >= 1 or len(ws) > 2   # giang') rarely has that much support
             bp = max([self.bi.get((prev, f), 0) for f in fs] or [0]); bn = max([self.bi.get((l, nxt), 0) for l in ls] or [0])
             return math.log(1 + bp) + math.log(1 + bn) >= math.log(21)
         cands = {c: v for c, v in cands.items() if ctx(c)}
@@ -455,8 +489,14 @@ class Normalizer:
             elif r is None and lw in ("rứa", "chừ"): r, rule = {"rứa": "vậy", "chừ": "giờ"}[lw], "dialect"   # not 'răng' (= teeth)
             elif r is None and not inner_cap and lw not in self.vocab and (not lw.isascii() or lw not in self.forms):
                 nxt = words[i + 1].lower() if i + 1 < len(words) else None
-                r = self.typo_fix(lw, prev, nxt)
-                if r is not None: rule = "typo"
+                r = self.glue_split(w, prev, nxt)
+                if r is not None: rule = "glue"
+                else:
+                    r = self.typo_fix(lw, prev, nxt)
+                    if r is not None: rule = "typo"
+            elif r is None and inner_cap and re.match(r"^[^\W\d_]*[a-zà-ỹđ][A-Z]", w):
+                r = self.glue_split(w)
+                if r is not None: rule = "glue"
             if r is not None: changes.append([w, r, rule]); outw.append(_case_like(w, r))
             else: outw.append(w)
             prev = (r or lw).split()[-1].lower()

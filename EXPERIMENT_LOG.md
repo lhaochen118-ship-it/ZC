@@ -555,3 +555,29 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   khi chép, sai là dừng. Job xác nhận GPU: `automation/jobs/v30.jobs` (luồng nộp trên câu public / train biến đổi: đo chất
   lượng LLM ở đúng các câu luật bỏ lại); CPU: `v30cpu.jobs` (luật trên môi trường Kaggle + seed nhiễu mới chưa dùng khi
   phát triển: ước lượng không thiên lệch).
+
+## Entry 21 — 2026-11-05 17:45: paraphrase (ước lượng tổng quát hoá thật), các bộ chặn, Kaggle v30, file nộp v30
+
+- **Paraphrase bằng Qwen3.5-9B** (`src/paraphrase_llm.py`, Kaggle yuan1103, trọng số kiểm sha256 với HF): public 3000 →
+  2065 giữ (kiểm số / ngày / mã / tên); train 6000 → 5689. Chấm bằng đáp án câu gốc (`eval_split.py --perturb-q para:`).
+  Quy trình chống khớp: chỉ phân tích lỗi của biến thể k=0 public (dev); k=1,2 public và **toàn bộ train là held-out**.
+- **Kết quả (chỉ luật, chưa có LLM):** lần đầu public 0.497 (1254 / 227 / 584) — kém xa 100 % canonical: bộ đọc câu khớp
+  với cách hỏi đã thấy. Đọc 74 lỗi dev: ~2/3 do paraphrase đổi nghĩa ('dh' = đơn hàng thành doanh thu, 'Th nay' thành
+  'Hôm nay', 'Quy 2/2026' thành tên người), ~1/3 lỗi thật, đều là lớp chung:
+  - **Bộ chặn loại đáp án** (`qparse.answer_kind_ok`): hỏi 'nào … nhất' mà trả số, '% / tỷ lệ' mà trả đếm, 'bao nhiêu
+    tiền' mà trả đếm, 'bao nhiêu mặt hàng' mà trả tên, có 'N ngày / đầu năm' mà dùng hôm nay, 'bao nhiêu phần' mà trả doanh
+    thu, doanh thu không có từ bán, 'thu nhập' đọc thành nhập hàng, 'chia cho số đơn' đọc thành tổng.
+  - **Bộ chặn tên không dùng** (`qparse.names_used`): câu nêu nhân viên / khách / mặt hàng mà chương trình không lọc theo.
+  - **Cách hỏi chung:** khoảng 'từ thời điểm bắt đầu năm nay cho đến hôm nay', 'tính ngược lại N ngày', 'năm 2025 tháng 5';
+    số sau 'tháng' không phải top N; nhóm sau 'món / các / loại'; xếp khách theo 'số lượng đơn'; 'tiêu thụ' = bán, 'chi trả /
+    phải thanh toán' = phải trả, 'thu được máy cũ' = thu máy cũ; **lỗi 'sàn' khớp 'sản phẩm'** (lọc nhầm kênh TMĐT).
+- **Sau sửa (canonical vẫn 3000 / 3000, 1000 / 1000):** public dev 0.533 → 0.588, held-out 0.479 → 0.506; **train held-out
+  0.6655 → 0.6692** (4084 / 277 / 1328). Phần chênh lớn nhất là abstain (~23–30 %) → stage 2.
+- **Kaggle v30 (quynhtran35, 4×L4, code trước các sửa trên):** public 4000 câu biến đổi: luật trả lời 3907, còn 93 cho
+  mô hình (luật 179 s); train 6000: 5965 / 35 (116 s); mỗi lần chạy mô hình 18–25 phút (chủ yếu khởi động + ánh xạ).
+  Chấm đáp án của mô hình: chờ tải file (API Kaggle giới hạn tốc độ vì 6000 file log nhỏ → stress_flow nay chỉ lưu
+  submission + run.log). CPU v30c: chết vì `nvidia-smi` không có trên máy CPU → sửa `run_kaggle.py`, preflight thêm bước
+  chạy qua wrapper như phiên CPU.
+- **File nộp `submissions/v30/`:** stage 1 trên public (môi trường image), 1000 / 1000, định dạng 0 lỗi.
+- Tiếp: v31 = luồng nộp đầy đủ (luật + Qwen3.5-9B) trên paraphrase public + train (dataset private `quynhtran35/zc-para`):
+  độ chính xác của stage 2 trên đúng loại câu mà luật bỏ lại.

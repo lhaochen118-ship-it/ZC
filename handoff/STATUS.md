@@ -1,6 +1,6 @@
 # STATUS — trạng thái hiện tại (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-05 (chiều). Chi tiết: `EXPERIMENT_LOG.md` entry 20. Bàn giao cũ (03–05/11): `handoff/04_SESSION_0411.pdf`.*
+*Cập nhật 2026-11-05 17:45. Chi tiết: `EXPERIMENT_LOG.md` entry 20–21. Bàn giao cũ (03–05/11): `handoff/04_SESSION_0411.pdf`.*
 
 ## Kiến trúc hiện tại: rule-first (`docker/predict.sh` → `src/predict_flow.py`)
 
@@ -9,8 +9,10 @@
 | 1 (CPU, phút) | `src/rules_first.py` = `automap` (bảng thô → C) + `qnorm` (làm sạch câu) + `qparse` (câu → chương trình) + toolkit `dm` / `industry` | train **3000 / 3000**, public **1000 / 1000** (chấm nghiêm; cả pandas 2.3.3 + calamine của image) |
 | 2 (GPU) | `agent.py` (Qwen3.5-9B FP8, mô hình duy nhất) chỉ cho câu stage 1 bỏ lại, ánh xạ ưu tiên `fmt:automap` | đang đo trên Kaggle (`automation/jobs/v30.jobs`) |
 
-Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=4 bash tests/eval_all.sh`): README xoá trắng train 3000 / 3000, public 0.991;
-câu không dấu 0.981; nhiễu chat 0.95–0.96 (phần thiếu chủ yếu là abstain → stage 2).
+Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=4 bash tests/eval_all.sh`): README xoá trắng train 3000 / 3000, public 0.993;
+câu không dấu 0.989; nhiễu chat 0.972–0.978. **Paraphrase bằng LLM (ước lượng thật cho cách hỏi mới), chỉ luật:** public
+held-out 0.506, train held-out 0.669 (abstain ~23–30 % → stage 2). File nộp public: `submissions/v30/` (1000 / 1000).
+Routine tự tiếp tục khi hết quota: `trig_01Vrvp6RpbNVxYYfUB1YGeJW` (mỗi giờ, :42) — xoá khi xong việc.
 
 ## Kaggle
 

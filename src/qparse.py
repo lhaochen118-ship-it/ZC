@@ -68,6 +68,14 @@ def slang(t):
     t = re.sub(r"\b(?:cat|danh) hang(?: ve)?\b", "nhap hang", t)
     t = re.sub(r"\btieu thu (duoc|ra|het)\b", r"ban \1", t)                # 'tiêu thụ được' = 'bán được'
     t = re.sub(r"\bphai thanh toan\b", "phai tra", t)                        # 'khách phải thanh toán' = 'khách phải trả'
+    # takings said in other words = revenue ('tổng thu từ món X', 'tiền thu từ việc bán X', 'thu nhập từ các đơn ...', 'quán làm
+    # được tổng tiền bao nhiêu'); not 'thu nợ' / 'thu mua' / 'thu máy' (debts, trade-ins)
+    t = re.sub(r"\btong (?:so )?(?:tien )?thu (?:duoc )?(?:tu |cua )(?!no\b|mua\b|may\b)", "doanh thu cua ", t)
+    t = re.sub(r"\btien thu (?:duoc )?tu (?:viec )?ban\b", "doanh thu ban", t)
+    t = re.sub(r"\bthu nhap (?:tu|cua) (?!no\b)", "doanh thu cua ", t)
+    t = re.sub(r"\blam (?:ra |duoc |ra duoc )(?:tong (?:cong )?)?(bao nhieu|bnhiu) tien\b", r"ban duoc \1 tien", t)   # money said: not
+    t = re.sub(r"\blam (?:ra |duoc )tong (?:cong )?tien (bao nhieu|bnhiu)\b", r"ban duoc \1 tien", t)                # 'làm được mấy phiếu'
+    t = re.sub(r"\bban ra duoc\b", "ban duoc", t)
     t = re.sub(r"\bkhach (?:(trung binh|binh quan) )?chi tra\b", lambda m: "khach " + (m.group(1) + " " if m.group(1) else "") + "phai tra", t)
     t = re.sub(r"\b(tu|dat|tren|hon|duoi|it nhat|qua|vuot|khoang|toi|den|tro len) (\d+(?:[.,]\d+)?) ?cu\b", r"\1 \2 trieu", t)
     return re.sub(r"\b(\d+) ?tr ?(\d)\b", r"\1.\2 trieu", t)
@@ -533,7 +541,7 @@ _ENT_NOUN = r"(?:mat hang|mon|san pham|sp|hang|khach(?: hang)?|nha cung cap|ncc|
 _COUNT_CALL = re.compile(r"\b(?:n_\w+|len)\(")
 
 
-def answer_kind_ok(t, tpl, code):
+def answer_kind_ok(t, tpl, code, raw=None):
     """the kind of answer the question asks (which one / how many / what share / how much money / which period) against the
     kind the program gives. A conflict means the reading missed the question's head (paraphrases of the public questions,
     k=0 split: 11 of 74 wrong answers caught, no right one lost; no canonical train / public answer is affected):
@@ -554,7 +562,8 @@ def answer_kind_ok(t, tpl, code):
     if "today_p(" in (code or "") and re.search(r"\b\d+\s*ngay\b|\bdau (?:nam|thang|tuan)\b|\btro lai day\b|\bnguoc lai\b|\bbat dau\b", t): return False
     if tpl == "revenue" and re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + UNITS + r"\b", t) and not re.search(r"\btien\b|doanh thu|dthu", t): return False
     if tpl == "revenue" and not re.search(r"\b(?:ban|doanh thu|dthu|doanh so|thu|kiem|bill|tien hang|duoc|revenue|sales)\b", t): return False
-    if (tpl or "").startswith("purchase") and re.search(r"\bthu nhap\b", t) and not re.search(r"(?<!thu )\bnhap\b", t): return False
+    for x in (t, raw or t):                                              # raw: before the slang ('thu nhập từ' -> 'doanh thu của')
+        if (tpl or "").startswith("purchase") and re.search(r"\bthu nhap\b", x) and not re.search(r"(?<!thu )\bnhap\b", x): return False
     if re.search(r"\bchia (?:cho|deu|trung binh)\b", t) and tpl in ("n_orders", "revenue", "n_customers", "purchase_total"): return False
     return True
 
@@ -563,7 +572,7 @@ def consistent(q, t, tpl, code):
     """precision guard: a rule answer is kept only when it uses what the question states. A money amount written in the
     question that the program never uses ('đạt từ 40.000.000 đồng chở lên' read as plain revenue), a count of days / customers /
     orders answered with money, are misreadings (typing noise hid the qualifier): no rule answer (the LLM or abstain decides)."""
-    if tpl not in ("subjective", "unrecorded") and not answer_kind_ok(t, tpl, code): return False
+    if tpl not in ("subjective", "unrecorded") and not answer_kind_ok(t, tpl, code, K(q)): return False
     if tpl in _NO_MONEY_TPL or tpl.startswith("ind_"): return True
     for m in _MONEY_Q.finditer(t):
         raw = m.group(1) or m.group(2); unit = m.group(0)[len(raw):].strip()

@@ -277,11 +277,27 @@ class Pipeline:
         biz = self.bizs[b]; bs = {"cands": [], "pending": 0, "llm": {}, "prio": prio, "t": time.time()}
         tasks = [((b, rid), b, code, rid, os.path.join(self.cdir, f"{b}.ref_{rid.replace(':', '_')}.pkl")) for rid, code in self.progs.items()
                  if not (self.exclude_own and rid == b) and canonmod.resolvable(biz, "generic" if rid.startswith("fmt:") else self.meta.get(rid, {}))]
-        bs["pending"] = len(tasks)
         def on_ref(rid, r):
             if r.get("ok"): bs["cands"].append(("ref:" + rid, r))
             bs["pending"] -= 1
             if bs["pending"] == 0: self.after_transfer(b, bs)
+        pref = getattr(self.a, "prefer_map", "") or ""
+        first = [t for t in tasks if pref and re.search(pref, "ref:" + t[3])]
+        if first:                                                       # --prefer-map: the preferred mapping alone first; the other
+            rest = [t for t in tasks if t not in first]                 # references run only when it fails or carries a heavy warning
+            bs["pending"] = len(first)                                   # (the choice would take it anyway: ~40 transfers saved / shop)
+            def on_first(rid, r):
+                pen = sum(canonmod.warning_penalty(w) for w in (r.get("warnings") or [])) if r.get("ok") else None
+                if r.get("ok"): bs["cands"].append(("ref:" + rid, r))
+                bs["pending"] -= 1
+                if bs["pending"]: return
+                if pen is not None and pen < self.HEAVY_PEN: return self.after_transfer(b, bs)
+                bs["pending"] = len(rest)
+                for t in rest: self.cpu.submit(agent.run_mapping, t, 300, lambda r2, rid2=t[3]: on_ref(rid2, r2))
+                if not rest: self.after_transfer(b, bs)
+            for t in first: self.cpu.submit(agent.run_mapping, t, 300, lambda r, rid=t[3]: on_first(rid, r))
+            return
+        bs["pending"] = len(tasks)
         for t in tasks: self.cpu.submit(agent.run_mapping, t, 300, lambda r, rid=t[3]: on_ref(rid, r))
         if not tasks: self.after_transfer(b, bs)
 

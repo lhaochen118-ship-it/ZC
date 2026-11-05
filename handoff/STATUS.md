@@ -18,13 +18,19 @@ Routine tự tiếp tục khi hết quota: `trig_01Vrvp6RpbNVxYYfUB1YGeJW` (mỗ
 
 - Acc phiên này (token ở `~/.kaggle/tok_<acc>`, mất khi đổi container): L4 quynhtran35, yuan1103, phatle1578; T4 yeshenhi,
   mxuanquy. Lấp đầy 1 acc (2 GPU + 5 CPU) rồi mới sang acc khác.
+- **Quota GPU tính theo GPU:** một phiên 4×L4 tiêu ~4 giờ quota mỗi giờ chạy (30 h / tuần / acc ≈ 7.5 h phiên 4×L4).
+  Tuần 2026-W45: quynhtran35, phatle1578 hết; yuan1103 đang chạy v32 (có thể hết giữa chừng). T4 không chạy được Qwen3.5-9B FP8.
 - Trọng số: Kaggle Model `danbth/qwen3-5-9b/transformers/default/1` (`--ms`), `run_kaggle.py` kiểm sha256 với Hugging Face
-  (`src/model_hashes.json`). Wheels: `--ks nhatlong1103/zc-assets`. Dữ liệu: `nhatlong1103/zc-2026`. Dataset trọng số cũ
-  (`nhatlong1103/…`, `lelynhan/…`) là private → 403 với acc mới.
-- v30 (GPU, quynhtran35): luồng nộp trên câu public / train biến đổi; v30cpu: luật trên môi trường Kaggle + seed nhiễu mới.
+  (`src/model_hashes.json`). Wheels: `--ks nhatlong1103/zc-assets`. Dữ liệu: `nhatlong1103/zc-2026`. Paraphrase / câu chờ:
+  dataset private `<acc>/zc-para`, `phatle1578/zc-pend` (mỗi acc một bản: private không chia sẻ được giữa acc).
+- Kết quả: v30 (câu nhiễu, toàn luồng 0.989–0.996), v30d (CPU, môi trường Kaggle 1000/1000, 3000/3000), v31 (paraphrase:
+  public 0.66 / 0.59 / 0.57, train 0.768; phần giữ kỳ 0.79 / 0.71 / 0.82), v32 (code mới nhất, đang chạy), v33 (stage 1.5
+  `canon_llm.py`, chưa chạy: chờ quota).
 
 ## Việc tiếp theo
 
-1. Đọc kết quả v30: độ chính xác của stage 2 trên câu luật bỏ lại (> 50 % mới có lợi; nếu không → `LLM=0` hoặc ngưỡng).
-2. Paraphrase bằng LLM (`paraphrase_llm.py`) → kiểm độ bền của bộ đọc câu với cách hỏi mới; sửa bằng quy tắc chung.
-3. Tạo file nộp (`automation/make_submission.py`), build Docker, đo trên GPU trước **16/11/2026 23:59 GMT+7**.
+1. Chấm v32 (so với v31: LookupError, prefer-first, thuật ngữ mới, từ đồng nghĩa) — chấm lại offline với `vote.py --min-conf 0.75`.
+2. Khi quota reset: v33 (stage 1.5) → chỉ bật `--canon 1` nếu luật trên câu viết lại chính xác hơn mô hình.
+3. **Việc của user:** build Docker (`docker/SETUP_DOCKER.md`: `docker/fetch_assets.sh` → `docker/build.sh` →
+   `docker/run_public_test.sh` → `docker/export_image.sh`), nộp link + checksum trước **16/11/2026 23:59 GMT+7**.
+   File nộp public hiện tại: `submissions/v30/` (1000 / 1000 khi chấm cục bộ).

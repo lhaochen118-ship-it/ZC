@@ -160,6 +160,66 @@ class Normalizer:
         self.N = sum(self.uni.values()) or 1
         self.vocab = {w for w in self.uni}
 
+    # ---- typo repair (generic Vietnamese typing noise: consonants swapped by pronunciation, a letter dropped / doubled, a
+    #      final n / ng, two words typed without the space). Only for a word that is neither known nor part of a name.
+    _INIT = [("tr", "ch"), ("ch", "tr"), ("s", "x"), ("x", "s"), ("d", "gi"), ("gi", "d"), ("d", "v"), ("v", "d"), ("r", "d"), ("d", "r"),
+             ("r", "gi"), ("gi", "r"), ("l", "n"), ("n", "l"), ("ng", "nh"), ("k", "c"), ("c", "k"), ("ph", "f"), ("q", "c")]
+    _FINAL = [("ng", "n"), ("n", "ng"), ("c", "t"), ("t", "c"), ("nh", "n"), ("n", "nh"), ("ch", "t"), ("i", "y"), ("y", "i")]
+    _LETTERS = "aăâeêioôơuưyhngcthđmnrsvx"
+
+    def _edits(self, w):
+        out = set()
+        for a, b in self._INIT:
+            if w.startswith(a): out.add(b + w[len(a):])
+        for a, b in self._FINAL:
+            if w.endswith(a): out.add(w[:-len(a)] + b)
+        if len(w) >= 3:
+            for i in range(len(w)):                                     # one letter dropped / doubled (no free substitution:
+                out.add(w[:i] + w[i + 1:])                              # 'xả' -> 'cả', 'vô' -> 'có' are other words)
+                for c in self._LETTERS: out.add(w[:i] + c + w[i:])
+        return {x for x in out if len(x) >= 2}
+
+    def typo_fix(self, w, prev=None, nxt=None):
+        """the known word a typed word most likely means ('tền' -> 'tiền', 'dảm' -> 'giảm', 'xo' -> 'so', 'chong' -> 'trong',
+        'đơng' -> 'đơn', 'nhiềuđơn' -> 'nhiều đơn'), or None. Accents of the typed word are a weak hint: a candidate with the
+        same accent-free letters, or one edit away, scored by its frequency and its bigrams with the neighbours."""
+        lw = w.lower()
+        if len(lw) < 2 or lw in self.vocab or not re.fullmatch(r"[^\W\d_]+", lw): return None
+        def score(c):
+            sc = math.log(1 + self.uni.get(c, 0))
+            if prev: sc += 2.0 * math.log(1 + self.bi.get((prev, c), 0))
+            if nxt: sc += 2.0 * math.log(1 + self.bi.get((c, nxt), 0))
+            return sc
+        cands = {}
+        base = strip_accents(lw)
+        if lw.isascii():                                                  # typed without accents: letters only (the accent
+            if base in self.forms: return None                            # restoration step decides the accents)
+            for e in self._edits(lw):
+                if e in self.forms and sum(self.forms[e].values()) >= 5:
+                    cands[e] = math.log(1 + sum(self.forms[e].values())) + 2.0 * math.log(1 + sum(self.bi.get((prev, c), 0) for c in self.forms[e]) if prev else 1)
+        else:
+            for c, n in (self.forms.get(base) or {}).items():             # same letters, other accents ('mội' -> 'mỗi')
+                cands[c] = score(c) + 1.0
+            for e in self._edits(lw):
+                if e in self.vocab and self.uni.get(e, 0) >= 3: cands[e] = max(cands.get(e, -1e9), score(e) + 0.5)
+                for c in (self.forms.get(strip_accents(e)) or {}):         # an edit + other accents ('dảm' -> 'giảm')
+                    if self.uni.get(c, 0) >= 3: cands[c] = max(cands.get(c, -1e9), score(c) - 1.0)
+        for i in range(2, len(lw) - 1):                                   # two words glued ('nhiềuđơn', 'ngàynào')
+            a, b = lw[:i], lw[i:]
+            if a in self.vocab and b in self.vocab and self.uni[a] >= 5 and self.uni[b] >= 5:
+                cands[a + " " + b] = 0.5 * (score(a) + score(b)) + math.log(1 + self.bi.get((a, b), 0))
+        def ctx(c):                                                       # a correction must fit its neighbours strongly: known
+            ws = c.split(); first, last = ws[0], ws[-1]                   # bigrams worth >= log 21 together ('bao nhiêu tền' ->
+            fs = self.forms.get(first, {first: 1}) if c.isascii() else {first: 1}   # 262 x 'nhiêu tiền'); a valid word outside
+            ls = self.forms.get(last, {last: 1}) if c.isascii() else {last: 1}      # the vocabulary ('có tận tâm', 'đường hậu
+            if len(ws) == 2: return self.bi.get((ws[0], ws[1]), 0) >= 1           # giang') rarely has that much support
+            bp = max([self.bi.get((prev, f), 0) for f in fs] or [0]); bn = max([self.bi.get((l, nxt), 0) for l in ls] or [0])
+            return math.log(1 + bp) + math.log(1 + bn) >= math.log(21)
+        cands = {c: v for c, v in cands.items() if ctx(c)}
+        if not cands: return None
+        best = max(cands, key=lambda c: (cands[c], c))
+        return best if cands[best] >= math.log(1 + 3) else None
+
     def set_entities(self, names):
         """names written in the business's data (items, customers, addresses, labels ...). Two uses:
         - linking: a span of the question that spells an accented name (accents, case and punctuation aside; the whole
@@ -355,6 +415,10 @@ class Normalizer:
             elif r is None and lw in ("ni",) and prev in DIALECT_NI: r, rule = "này", "dialect"
             elif r is None and (lw == "mô" or (lw == "mo" and prev in DIALECT_MO)): r, rule = "nào", "dialect"
             elif r is None and lw in ("rứa", "chừ"): r, rule = {"rứa": "vậy", "chừ": "giờ"}[lw], "dialect"   # not 'răng' (= teeth)
+            elif r is None and not inner_cap and lw not in self.vocab and (not lw.isascii() or lw not in self.forms):
+                nxt = words[i + 1].lower() if i + 1 < len(words) else None
+                r = self.typo_fix(lw, prev, nxt)
+                if r is not None: rule = "typo"
             if r is not None: changes.append([w, r, rule]); outw.append(_case_like(w, r))
             else: outw.append(w)
             prev = (r or lw).split()[-1].lower()

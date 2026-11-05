@@ -17,7 +17,7 @@ cases = {   # rule cases found while reviewing the 3000 training questions (gene
     "thang 6/2025 top 5 hang ban chay nhat la j vay": "tháng 6/2025 top 5 hàng bán chạy nhất là gì vậy",
     "gia 50 k mot chai la bao nhieu": "giá 50 k một chai là bao nhiêu",
     "Ngày 01/11/2025 cửa hàng bán Kem đánh răng P/S 180g": "Ngày 01/11/2025 cửa hàng bán Kem đánh răng P/S 180g",
-    "Tháng 6/2026 khách Tô Phúc Huy ghi nợ thêm bao nhiêu": "tháng 6/2026 khách Tô Phúc Huy ghi nợ thêm bao nhiêu",
+    "Th6/2026 khách Tô Phúc Huy ghi nợ thêm bao nhiêu": "tháng 6/2026 khách Tô Phúc Huy ghi nợ thêm bao nhiêu",
     "giờ mở cửa 1/1 là mấy giờ": "giờ mở cửa 1/1 là mấy giờ",
     "Cho tôi hỏi 6-2026 trung bình mỗi đơn": "Cho tôi hỏi tháng 6/2026 trung bình mỗi đơn",
     "ê trong tháng 2/2025, số ly size l bán được là nhiêu": "ê trong tháng 2/2025, số ly size l bán được là bao nhiêu",
@@ -27,6 +27,11 @@ cases = {   # rule cases found while reviewing the 3000 training questions (gene
     "thang 3/2026 co bao nhieu don bi huy vi giao tre": "tháng 3/2026 có bao nhiêu đơn bị huỷ vì giao trễ",
     "cac don dat da hon 7 ngay ma khach chua tra het": "các đơn đặt đã hơn 7 ngày mà khách chưa trả hết",
     "tính mọi loại đồ uống bao nhiêu ly": "tính mọi loại đồ uống bao nhiêu ly",
+    # generic typing noise (typo_fix: pronunciation swaps, a dropped / doubled letter, glued words; only with a known bigram)
+    "Tuần trước bán được bao nhiêu tền hả?": "Tuần trước bán được bao nhiêu tiền hả?",
+    "Doanh thu tháng 4/2026 tăng dảm bao nhiêu % xo với tháng liền trước?": "Doanh thu tháng 4/2026 tăng giảm bao nhiêu % so với tháng liền trước?",
+    "tháng 6/2025 ai là khách mua nhiềuđơn nhất quán vậy?": "tháng 6/2025 ai là khách mua nhiều đơn nhất quán vậy?",
+    "Tháng 10 năm 2025 có mấy chiếc xe vô sửa từ 2 lần trở lênn?": "Tháng 10 năm 2025 có mấy chiếc xe vô sửa từ 2 lần trở lên?",
 }
 bad = [(q, nz.clean(q)["clean"], want) for q, want in cases.items() if nz.clean(q)["clean"].lower() != want.lower()]
 # names of the data (synthetic here): protected from Telex / abbreviations / context rules, linked for accents only,

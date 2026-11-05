@@ -887,6 +887,8 @@ def build_parser():
     ap.add_argument("--max-batched-tokens", type=int, default=0, help="vLLM max tokens per scheduler step (0 = vLLM default)")
     ap.add_argument("--kv-dtype", default="", help="vLLM kv_cache_dtype ('fp8': twice the KV tokens; '' = model dtype)")
     ap.add_argument("--spec-mtp", type=int, default=0, help="speculative decoding with the model's MTP head, N draft tokens (Qwen3.5); falls back to plain decoding")
+    ap.add_argument("--prefer-map", default="", help="pipeline: regex of a mapping source (e.g. 'fmt:automap') chosen whenever it runs "
+                    "without a heavy warning (the deterministic mapper of the rule-first stage: train 3000 / 3000, public 1000 / 1000)")
     ap.add_argument("--fake-responder", default="", help="tests: python file defining responder(conv) -> text; no model is loaded")
     return ap
 

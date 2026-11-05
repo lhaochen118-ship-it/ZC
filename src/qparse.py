@@ -386,8 +386,11 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
         if has(r"tra gop|\bgop\b|ky gop|tien gop") and has_inst:
             if has(r"toi han|den han") and has(r"may ky|bao nhieu ky|so ky") and cust: return "ind_terms_due", ans("number", f"terms_due({d}, customer={J(cust)})")
             if has(r"(?:may|bao nhieu|bnhiu|bn|so) (?:khach|nguoi)") and has(r"qua han|tre han|cham"): return "ind_overdue_customers", ans("number", f"n_overdue_customers({d})")
-            if has(r"qua han|tre han|cham gop|cham dong"): return "ind_inst_overdue", ans("number", f"instalment_overdue({d}{cf})")
-            if has(r"con lai|con thieu|chua gop|chua tra|con no"): return "ind_inst_remaining", ans("number", f"instalment_remaining({d}{cf})")
+            asks_money = has(r"tien|bao nhieu|bnhiu|\bbn\b|\btong\b|gia tri")   # an amount is asked in money words; without them
+            if asks_money and has(r"qua han|tre han|cham gop|cham dong"):      # the question lost its head ('ko mi ngui' = 'có mấy
+                return "ind_inst_overdue", ans("number", f"instalment_overdue({d}{cf})")   # người'): no rule answer
+            if asks_money and has(r"con lai|con thieu|chua gop|chua tra|con no"):
+                return "ind_inst_remaining", ans("number", f"instalment_remaining({d}{cf})")
             return None
         if has_ti and has(r"(?<!doanh )\bthu (?:lai |mua |vao )?may(?: cu)?\b|tien may cu|may cu (?:thu|tru)|thu cu doi moi") and \
                 not has(r"ban (?:ra |duoc |dc )?(?:bao nhieu|may|bnhiu|bn) (?:may|chiec)|dien thoai cu|trung binh moi may|gia bao nhieu|moi may gia"):

@@ -424,6 +424,11 @@ class Pipeline:
             order = sorted(range(len(cs)), key=lambda i: (-(canonmod.rank_score(cs[i][1]) - self.SEL_FAIL_W * cs[i][1].get("fail_share", 0.0) + W * ag[i]
                                                             - (self.REF_GAP_W if cs[i][1].get("gaps") else 0.0)),
                                                           -scores[i], i))   # coverage - warnings - rule failures + answer agreement
+            pref = getattr(self.a, "prefer_map", "") or ""
+            if pref:                                                     # --prefer-map: the validated deterministic mapping first
+                hit = [i for i in order if re.search(pref, cs[i][0]) and
+                       sum(canonmod.warning_penalty(w) for w in cs[i][1].get("warnings") or []) < self.HEAVY_PEN]
+                if hit: order = hit[:1] + [i for i in order if i != hit[0]]
             src, r = cs[order[0]]; can = {"path": r["path"], "card": r["card"], "src": src, "unused": r.get("unused") or []}
             M = max(1, int(getattr(self.a, "map_vote", 1) or 1), int(getattr(self.a, "map_fallback", 1) or 1))   # next ranked candidates
             if M > 1: can["alts"] = [cs[i][1]["path"] for i in order[1:M]]; can["alt_src"] = [cs[i][0] for i in order[1:M]]

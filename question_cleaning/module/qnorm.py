@@ -224,6 +224,46 @@ class Normalizer:
             if sc >= 1 and (sc > bs or (sc == bs and min(len(a), len(b)) > min(len(best[0]), len(best[1])))): best, bs = (a, b), sc
         return f"{best[0]} {best[1]}" if best else None
 
+    def glue_segment(self, w):
+        """liberal fallback of glue_split for an unknown token of two or more syllables (a Vietnamese word has one vowel
+        group, so 'cấthàng', 'huybao', 'củtrở', 'vebnhiu', 'hàngkokê' are words typed without their spaces): its split into
+        2 (else 3) known parts (a vocabulary word, an accent-free form, a chat abbreviation, a Telex-typed word), every part
+        seen at least 3 times, the split with the most frequent rarest part. Abbreviations are expanded ('vebnhiu' -> 've bao
+        nhiêu'). None when the token is one syllable or no split is supported. Names of the shop's data never get here."""
+        lw = w.lower()
+        if len(lw) < 4 or len(re.findall(r"[aeiouy]+", strip_accents(lw))) < 2: return None
+        plain = lw.isascii()       # typed without accents: foreign words ('soda', 'combo', 'latte') look like syllables too, so
+                                   # each part must be a chat abbreviation, a Telex-typed word or a frequent word of >= 3 letters
+                                   # (a frequent 2-letter word only next to an abbreviation / Telex word: 'vebnhiu')
+        strong = set()
+        def part(x):
+            """-> (replacement, frequency, exact) or None; exact = the word as typed is known (accents included)"""
+            if len(x) < 2: return None
+            if x in ABBR: strong.add(x); return ABBR[x], 50, True
+            if x.isascii() and len(x) >= 3:
+                ts = [t for t in telex_all(x) if t != x and self.uni.get(t, 0) >= 3]
+                if ts: strong.add(x); t = max(ts, key=lambda t: self.uni[t]); return t, self.uni[t], True
+            if plain:
+                nf = sum(self.forms[x].values()) if x in self.forms else 0
+                return (x, nf, len(x) >= 3) if nf >= 30 else None
+            if x in self.vocab and self.uni.get(x, 0) >= (1 if not x.isascii() else 3): return x, self.uni[x], True
+            fx = strip_accents(x); nf = sum(self.forms[fx].values()) if fx in self.forms else 0
+            if nf >= 3: return x, (nf if x.isascii() else max(1, nf // 4)), x.isascii()   # a known syllable ('cất' of 'cát')
+            return None
+        best = None
+        for n in (2, 3):
+            for cuts in ([(i,) for i in range(2, len(lw) - 1)] if n == 2 else
+                         [(i, j) for i in range(2, len(lw) - 3) for j in range(i + 2, len(lw) - 1)]):
+                bounds = (0,) + cuts + (len(lw),)
+                xs = [lw[bounds[k]:bounds[k + 1]] for k in range(n)]
+                ps = [part(x) for x in xs]
+                if any(x is None for x in ps): continue
+                if plain and not all(e for _, _, e in ps) and not any(x in strong for x in xs): continue
+                sc = (sum(e for _, _, e in ps), min(f for _, f, _ in ps), sum(math.log(1 + f) for _, f, _ in ps))
+                if best is None or sc > best[0]: best = (sc, " ".join(r for r, _, _ in ps))
+            if best: return best[1]
+        return None
+
     def typo_fix(self, w, prev=None, nxt=None):
         """the known word a typed word most likely means ('tền' -> 'tiền', 'dảm' -> 'giảm', 'xo' -> 'so', 'chong' -> 'trong',
         'đơng' -> 'đơn', 'nhiềuđơn' -> 'nhiều đơn'), or None. Accents of the typed word are a weak hint: a candidate with the
@@ -492,8 +532,11 @@ class Normalizer:
                 r = self.glue_split(w, prev, nxt)
                 if r is not None: rule = "glue"
                 else:
-                    r = self.typo_fix(lw, prev, nxt)
-                    if r is not None: rule = "typo"
+                    r = self.glue_segment(w)
+                    if r is not None: rule = "glue"
+                    else:
+                        r = self.typo_fix(lw, prev, nxt)
+                        if r is not None: rule = "typo"
             elif r is None and inner_cap and re.match(r"^[^\W\d_]*[a-zà-ỹđ][A-Z]", w):
                 r = self.glue_split(w)
                 if r is not None: rule = "glue"

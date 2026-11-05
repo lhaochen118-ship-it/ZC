@@ -48,3 +48,25 @@ gets the closest real table / column names; `fillna(None)` is a no-op; the soft 
 a revenue that differs from a "Tiền hàng" column and lots without lot sales, and nothing on a right mapping; the
 ranking puts a wrong revenue below any candidate; stock comes from the lots when there is no snapshot.
 `test_plausibility.py` also requires zero soft warnings for every reference mapping on its own business.
+
+## Rule-first stack (2026-11-05)
+
+```bash
+python3 tests/test_rules_first.py data/raw/train/train <scratch>
+```
+
+`test_rules_first.py`: `src/rules_first.py` (stage 1 of `docker/predict.sh`: automap + qnorm + qparse + toolkit, no
+model) on 60 training questions + 2 unreadable ones: every question ends answered xor pending, the answered ones match
+`answers.jsonl` (strict judge), unreadable ones are pending; `src/merge_sub.py` keeps a rule answer first, fills the
+others from the model's file, writes abstain for the rest, in the split's order.
+
+```bash
+S=<scratch with cache_train / cache_pub> WORKERS=4 bash tests/eval_all.sh [quick]
+```
+
+`eval_all.sh` (~20 min on 4 cores): regenerates the train question cleaning, `test_qnorm`, then `tests/eval_split.py`
+(mapping by `src/automap.py`, no reference programs, no model) on train and public, and the stress tests: questions
+accent-free / with chat noise (3 seeds, `src/perturb.py`), every README blanked. 2026-11-05: train 3000 / 3000, public
+1000 / 1000, train README-blanked 3000 / 3000, public README-blanked 0.991, accent-free 0.981, noise 0.948-0.962 (the
+gap is mostly abstains, which the model stage receives). The public reference file only scores; nothing in `src/`
+reads it. Under the Docker image's pandas 2.3.3 + calamine (local `--target` install) public is 1000 / 1000 as well.

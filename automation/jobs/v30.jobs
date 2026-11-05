@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/stress_pub --script stress_flow.py --modes accentfree,noise:1,noise:2,noise:3 --model Qwen/Qwen3.5-9B --budget 20400 --runs 3;run_kaggle.py train OUT/stress_train --script stress_flow.py --modes accentfree,noise:1 --model Qwen/Qwen3.5-9B --budget 20400 --runs 3

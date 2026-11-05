@@ -77,7 +77,7 @@ def main():
             if "--cache" in args: args[args.index("--cache") + 1] = os.path.join(work, "cache")
             ident = os.path.join(work, "ident.py"); open(ident, "w").write("def responder(conv):\n    return conv[-1]['content']\n")
             r = subprocess.run([sys.executable, os.path.join(ROOT, "src", script), split, out] + args + ["--fake-responder", ident],
-                               capture_output=True, text=True, timeout=3600)
+                               capture_output=True, text=True, timeout=3600, env=dict(os.environ, ZC_SMOKE="1"))   # flows: 2 businesses
             if r.returncode != 0: fail(f"smoke of {script}:\n" + (r.stdout + r.stderr)[-3000:])
             print(f"[4] smoke {script} on {j[1]}: rc 0, outputs {sorted(os.listdir(out))}", flush=True); continue
         for flag in ("--cache",):                                       # local paths for the smoke

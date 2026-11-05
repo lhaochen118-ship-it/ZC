@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Kaggle job wrapper: install vLLM (from a mounted wheels dir if any, else PyPI), then run agent.py.
 Usage (as a make_kernel job): run_kaggle.py <split: train|public_test> OUT <agent args...>"""
-import os, sys, glob, subprocess, time
+import os, sys, json, glob, subprocess, time
 
 t = time.time()
 # 1. vLLM from the mounted wheels (zc-assets/wheels, ~400-470 s of pip; proven on every L4 run). The prebuilt environment
@@ -12,7 +12,13 @@ env_dir = None
 if os.environ.get("ZC_USE_ENV") == "1":
     env_dir = next((os.path.dirname(f) for f in glob.glob("/kaggle/input/*/*/*/ZC_ENV_MARKER") + glob.glob("/kaggle/input/*/ZC_ENV_MARKER")), None)
 use_env = False
-if env_dir:
+NO_VLLM = os.environ.get("ZC_NO_VLLM") == "1"                          # CPU jobs of the rule stage: only the Excel reader
+if NO_VLLM:
+    wh = next((d for d in glob.glob("/kaggle/input/**/wheels", recursive=True) if glob.glob(d + "/python_calamine-*.whl")), None)
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["python-calamine"],
+                       capture_output=True, text=True)
+    print("pip python-calamine:", "wheels" if wh else "pypi", r.returncode, flush=True)
+if env_dir and not NO_VLLM:
     pe = dict(os.environ, PYTHONPATH=env_dir + os.pathsep + os.environ.get("PYTHONPATH", ""))
     try:
         r = subprocess.run([sys.executable, "-c", "import torch, vllm, python_calamine; print(vllm.__version__, torch.__version__, torch.cuda.is_available())"],
@@ -23,7 +29,7 @@ if env_dir:
 if use_env:
     os.environ["PYTHONPATH"] = pe["PYTHONPATH"]; sys.path.insert(0, env_dir)
     subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)
-else:
+elif not NO_VLLM:
     wh = next((d for d in glob.glob("/kaggle/input/**/wheels", recursive=True) if glob.glob(d + "/vllm-*.whl")), None)
     cmd = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["vllm"]
     r = subprocess.run(cmd, capture_output=True, text=True); print("pip vllm:", "wheels" if wh else "pypi", r.returncode, r.stderr[-300:], flush=True)
@@ -35,15 +41,48 @@ data = os.environ["ZC_DATA"]
 split = next(d for d in glob.glob(os.path.join(data, "**", sys.argv[1]), recursive=True) if os.path.isfile(os.path.join(d, "questions.jsonl")))
 out = sys.argv[2]
 args = sys.argv[3:]
-if "--model" in args:                                                 # prefer weights mounted from nhatlong1103/zc-assets (offline sessions)
-    i = args.index("--model") + 1
-    local = next(iter(glob.glob(f"/kaggle/input/**/models/{os.path.basename(args[i])}/config.json", recursive=True)), None)
+def copy_verified(src, dst, hashes):
+    """copy a model directory; every file listed in hashes (model_hashes.json: the sha256 Hugging Face publishes) is hashed
+    while it is copied and must match, else the job stops (no run on weights that are not the official ones)."""
+    import hashlib, shutil
+    from concurrent.futures import ThreadPoolExecutor
+    os.makedirs(dst, exist_ok=True)
+    def one(rel):
+        a, b = os.path.join(src, rel), os.path.join(dst, rel); os.makedirs(os.path.dirname(b), exist_ok=True)
+        if rel not in hashes: shutil.copyfile(a, b); return rel, True
+        h = hashlib.sha256()
+        with open(a, "rb") as fi, open(b, "wb") as fo:
+            for chunk in iter(lambda: fi.read(16 << 20), b""): h.update(chunk); fo.write(chunk)
+        return rel, h.hexdigest() == hashes[rel]["sha256"]
+    rels = [os.path.relpath(os.path.join(d, f), src) for d, _, fs in os.walk(src) for f in fs]
+    with ThreadPoolExecutor(4) as ex: res = dict(ex.map(one, rels))
+    bad = [r for r, ok in res.items() if not ok] + [r for r in hashes if r not in res]
+    if bad: print(f"MODEL CHECK FAILED: {bad} differ from {src} / are missing; not running", flush=True); sys.exit(3)
+    print(f"model files verified against model_hashes.json: {len([r for r in res if r in hashes])} hashed", flush=True)
+
+
+if "--model" in args:                                                 # weights mounted offline (dataset models/<name>/ or a Kaggle Model)
+    i = args.index("--model") + 1; want = os.path.basename(args[i])
+    hashes = {}
+    try:
+        hj = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_hashes.json")))
+        if hj.get("repo") == args[i]: hashes = hj["files"]
+    except Exception: pass
+    cands = glob.glob(f"/kaggle/input/**/models/{want}/config.json", recursive=True)
+    if not cands and hashes:                                           # a Kaggle Model (--ms): the directory holding every hashed file
+        cands = [c for c in glob.glob("/kaggle/input/**/config.json", recursive=True)
+                 if all(os.path.isfile(os.path.join(os.path.dirname(c), f)) for f in hashes)]
+    local = cands[0] if cands else None
     if local:                                                          # copy once to local disk: 4 GPU processes reading the
-        src = os.path.dirname(local); dst = "/tmp/models/" + os.path.basename(src)   # network mount took 18 min in E2b
+        src = os.path.dirname(local); dst = "/tmp/models/" + want        # network mount took 18 min in E2b
         os.makedirs("/tmp/models", exist_ok=True)
         if not os.path.isfile(os.path.join(dst, "config.json")):
-            t = time.time(); subprocess.run(["cp", "-r", src, dst]); print(f"model copied to {dst} in {time.time() - t:.0f}s", flush=True)
+            t = time.time()
+            if hashes: copy_verified(src, dst, hashes)
+            else: subprocess.run(["cp", "-r", src, dst])
+            print(f"model copied to {dst} from {src} in {time.time() - t:.0f}s", flush=True)
         args[i] = dst
+    elif hashes: print(f"MODEL NOT FOUND: no mounted copy of {args[i]} (models/{want}/ or a Kaggle Model with its files)", flush=True)
 os.makedirs(out, exist_ok=True)
 try:
     import vllm; print("vllm", vllm.__version__, flush=True)

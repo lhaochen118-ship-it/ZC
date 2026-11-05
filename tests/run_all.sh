@@ -26,5 +26,6 @@ run test_qnorm 900 python3 tests/test_qnorm.py $SPLIT $S/t_qn
 run test_mapping_fixes 300 python3 tests/test_mapping_fixes.py
 run test_industry 120 python3 tests/test_industry.py
 run test_vote 120 python3 tests/test_vote.py $S/t_vote
+run test_rules_first 1800 python3 tests/test_rules_first.py $SPLIT $S/t_rules
 run test_pipeline 3600 python3 tests/test_pipeline.py $SPLIT $S/t_pipe
 echo "ALL PASS"

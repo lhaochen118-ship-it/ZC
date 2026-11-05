@@ -225,9 +225,9 @@ NAME_RULES = [
     (r"ma lo|lo|so lo|malo|lo hang", "lot_id"),
     # dates
     (r"ngay|ngay ban|ngay dat hang|ngay hd|ngay xuat|ngay giao dich|ngay thang|date|ngay lap|ngay mua|ngayban|ngaylap|thoi gian|ngay chung tu|ngay sua", "order_date"),
-    (r"gio|gio ban|gio tao don|thoi gian tao|thoi gian lap|thoigianlap|gio dat|thoi diem dat|time", "order_time"),
+    (r"gio|gio ban|gio tao don|thoi gian tao|thoi gian lap|thoigianlap|gio dat|thoi diem dat|time|thoi diem|thoi diem ban|thoi diem giao dich", "order_time"),
     (r"ngay nhap|ngay nhap kho|ngaynhapkho", "receipt_date"),
-    (r"ngay thu|ngay tt|ngay gio thu|ngaygiothu|thoi gian thu|thoi diem thu|ngay tra", "pay_time"),
+    (r"ngay thu|ngay tt|ngay gio thu|ngaygiothu|thoi gian thu|thoi diem thu|ngay tra|thoi diem thanh toan|thoi gian thanh toan|ngay thanh toan|ngay gio thanh toan", "pay_time"),
     (r"ngay giao|ngay giao hang|thoi gian giao|ngay cho", "delivery_date"),
     (r"han su dung|hsd|hansudung|han dung", "expiry"),
     (r"han thanh toan|han tra|ngay phai tra|ngay den han", "due_date"),
@@ -244,7 +244,7 @@ NAME_RULES = [
     (r"sl|s l|slg|sluong|so luong|sl ban|so luong ban|so luong hang|so luong san pham|soluong|so luong mua|sl nhap|so luong nhap", "qty"),
     (r"sl le|so luong le|sl quy doi|so luong quy doi|quy ra dv le|sl co ban|sl dv co ban|sl quy ra le|slquydoi|so luong dvt co ban|sl thuc giao|so luong giao", "qty_base"),
     (r"sl nhap quy doi|so luong nhap quy doi|sl nhap dvt co ban|so luong nhap dvt co ban|sl nhap co ban", "qty_in_base"),
-    (r"sl tra quy doi|so luong tra quy doi|sl tra dvt co ban|so luong tra dvt co ban|sl tra", "returned_base"),
+    (r"sl tra quy doi|so luong tra quy doi|sl tra dvt co ban|so luong tra dvt co ban|sl tra|so luong tra|so luong tra lai|sl tra lai|so luong hoan|sl hoan", "returned_base"),
     (r"don gia|don gia d|gia 1 dv|gia ban|gia|gia le|gia san pham|gia niem yet|gia don vi|giadonvi|price|dg|don gia ban|gia ban le", "unit_price"),
     (r"thanh tien|thanh tien d|tt|amount|tri gia|trigia|tien|cong|tien hang|tong|t tien|thanh tien sau giam|tien ban", "line_amount"),
     (r"giam d|giam|chiet khau|ck|giam gia|khuyen mai|chietkhau|tien giam", "discount"),
@@ -260,14 +260,15 @@ NAME_RULES = [
     (r"so tien|so tien thu|tien thu|sotienthu|gia tri", "amount"),
     (r"tong tien phieu|tong tien phieu nhap|tong gia tri nhap|tonggiatrinhap|can tra ncc", "receipt_total"),
     # labels
-    (r"trang thai|trang thai don|trang thai don hang|tinh trang|tt don|tien do|xu ly|ket qua|status|trang thai xu ly|trang thai giao|tinhtrang|ghi chu tt", "status"),
+    (r"trang thai|trang thai don|trang thai don hang|tinh trang|tt don|tien do|xu ly|ket qua|status|trang thai xu ly|trang thai giao|tinhtrang|ghi chu tt"
+     r"|tinh trang don|tinh trang don hang|tinh trang giao|tinh trang giao hang|trang thai giao hang|tinh trang xu ly", "status"),
     (r"trang thai phieu|trang thai phieu nhap", "receipt_status"),
-    (r"khach|khach hang|ten khach|ten khach hang|ho ten khach|ten kh|khach hang ten|doi tac|ben mua|tenkh|khach mua|khach hang mua|khach le si", "customer_name"),
+    (r"khach|khach hang|ten khach|ten khach hang|ho ten khach|ten kh|khach hang ten|doi tac|ben mua|tenkh|khach mua|khach hang mua|khach le si|kh", "customer_name"),
     (r"nhom khach hang|nhom khach|loai khach|loai khach hang|hang khach|kieu khach|hang", "customer_group"),
     (r"kenh|kenh ban|nguon|kenh dat|nguon don|ban qua|loai ban|kenhbanhang|kenh ban hang", "channel"),
     (r"thanh toan bang|phuong thuc tt|hinh thuc thanh toan|phuong thuc thanh toan|httt|pttt|tra bang|phuongthuctt|loai tt|phuong thuc|phuongthuc|hinh thuc tt", "payment_method"),
     (r"ghi chu|note|luu y|dien giai|mo ta|ghi chu don|noi dung", "note"),
-    (r"sdt|so dt|so dien thoai|phone|dien thoai|dt|sodienthoai", "phone"),
+    (r"sdt|so dt|so dien thoai|phone|dien thoai|dt|sodienthoai|di dong|so di dong|dtdd|so dtdd|mobile", "phone"),
     (r"dia chi|addr|address|diachilienhe", "address"),
     (r"ban|phong ban|so ban", "table_no"),
     (r"khu vuc", "area"),
@@ -310,9 +311,42 @@ NAME_RULES = [
     (r"may thu|may cu thu", "tradein_item"),
     (r"may|ten may|dong may|model|may ban", "item_name"),
     (r"ngay tra|ngay khach tra", "pay_time"),
+    # promotions, baby names, other names of an item
+    (r"chuong trinh|ten chuong trinh|chuong trinh khuyen mai|ten ctkm|ctkm|ten khuyen mai", "promo_name"),
+    (r"hang ap dung|san pham ap dung|mat hang ap dung|ap dung cho|hang duoc ap dung", "promo_items"),
+    (r"tu ngay|ngay bat dau ap dung|bat dau tu", "date_from"),
+    (r"den ngay|ngay ket thuc|ket thuc|het han ngay", "date_to"),
+    (r"ten be|ten o nha cua be|ten con|ten cua be", "baby_name"),
+    (r"ten goi khac|ten khac|ten thuong goi|biet danh|khach hay goi", "alias_names"),
+]
+# folded column-name PREFIX -> role, used only when no exact name matches ('Mã khách lẻ/sỉ', 'Tình trạng đơn hàng', 'Số điện
+# thoại liên hệ'): the head word of a Vietnamese noun phrase carries its meaning, the rest qualifies it.
+PREFIX_RULES = [
+    (r"ma (?:phieu nhap|nhap hang|don nhap)\b", "receipt_id"),
+    (r"ma (?:phieu thu|thanh toan)\b", "payment_id"),
+    (r"ma (?:don|hoa don|hd|bill)\b", "order_id"),
+    (r"ma (?:khach|kh)\b", "customer_id"),
+    (r"ma (?:hang|sp|san pham|mat hang|sku)\b", "item_code"),
+    (r"ma (?:nv|nhan vien)\b", "staff"),
+    (r"ma (?:ncc|nha cung cap)\b", "supplier"),
+    (r"ten (?:khach|kh)\b", "customer_name"),
+    (r"ten (?:hang|sp|san pham|mat hang)\b", "item_name"),
+    (r"(?:trang thai|tinh trang) (?:don|giao|xu ly)\b", "status"),
+    (r"(?:so dien thoai|sdt|dien thoai|di dong)\b", "phone"),
+    (r"(?:hinh thuc|phuong thuc) (?:thanh toan|tt)\b", "payment_method"),
+    (r"kenh ban\b", "channel"),
+    (r"ngay (?:ban|dat hang|lap hoa don)\b", "order_date"),
+    (r"ngay nhap\b", "receipt_date"),
+    (r"(?:nhom|loai) khach\b", "customer_group"),
+    (r"nhom hang\b", "item_group"),
+    (r"dia chi\b", "address"),
+    (r"ghi chu\b", "note"),
+    (r"so luong tra\b", "returned_base"),
+    (r"han su dung\b", "expiry"),
 ]
 _DESC = [(re.compile(p), r) for p, r in DESC_RULES]
 _NAME = [(re.compile(r"^(?:" + p + r")$"), r) for p, r in NAME_RULES]
+_PREFIX = [(re.compile(r"^(?:" + p + r")"), r) for p, r in PREFIX_RULES]
 
 
 def desc_role(desc):
@@ -337,10 +371,12 @@ def name_roles(col):
     if "(" in str(col):
         n2 = re.sub(r"^(?:\d+\s+)", "", fold_name(re.sub(r"\([^)]*\)", " ", str(col))))
         out += [r for rx, r in _NAME if rx.match(n2) and r not in out]
+    if not out: out = [r for rx, r in _PREFIX if rx.match(n)][:1]
     return out
 
 
-STATUS_WORDS = re.compile(r"\b(xong|hoan thanh|hoan tat|da giao|huy|tra hang|hoan hang|dang giao|dang van chuyen|khach tra|giao that bai|ok|done|completed|cancel)\b")
+STATUS_WORDS = re.compile(r"\b(xong|hoan thanh|hoan tat|da giao|huy|tra hang|hoan hang|dang giao|dang van chuyen|khach tra|giao that bai|ok|done"
+                          r"|completed?|cancel(?:l?ed)?|returned|refunded|pending|processing|delivered|shipped|shipping|failed|cho xu ly|dang xu ly)\b")
 PAY_WORDS = re.compile(r"\b(tien mat|chuyen khoan|vi dien tu|cod|ghi no|cash|transfer|ewallet|debt|the|momo|thu ho)\b")
 CHAN_WORDS = re.compile(r"\b(tai quay|store|zalo|shopee|lazada|tiktok|san tmdt|phone|facebook|website|grab|tai tiem|dien thoai|online|offline)\b")
 WALKIN_WORDS = re.compile(r"^(khach le|le|kl|k l|khach vang lai|vang lai|guest)$")
@@ -387,11 +423,51 @@ def column_roles(df, descs):
         for r in name_roles(c):
             if r not in rs: rs.append(r)
         if not rs and d and fold(d) in ("ten", "ten goi"): rs.append("item_name")
-        if "conversion_text" not in rs and df[c].dtype == object:
+        if "conversion_text" not in rs and (pd.api.types.is_object_dtype(df[c]) or pd.api.types.is_string_dtype(df[c])):   # pandas 2 / 3
             v = df[c].dropna().astype(str).head(500)
             if len(v) >= 3 and v.str.contains(r"^\s*1\s*[^\d=]+=\s*\d", regex=True).mean() > 0.8: rs.insert(0, "conversion_text")
         out[c] = rs
     return out
+
+
+def _close(a, b):
+    """share of rows (both known) on which two money series agree to within 1 dong."""
+    x = pd.DataFrame({"a": a, "b": b}).dropna()
+    return float(((x["a"] - x["b"]).abs() <= 1).mean()) if len(x) >= 20 else 0.0
+
+
+def refine_roles(df, roles, prof):
+    """the values decide where the name and the README do not:
+    (1) a column without a role whose values are order statuses / payment methods / sales channels / phone numbers;
+    (2) a customer-name column that holds codes ('KH0001') is the customer id;
+    (3) the money identity of an order: an unnamed amount equal to total - debt is the amount paid, total - paid the debt
+        left, paid + debt the total."""
+    for c, rs in roles.items():
+        p = prof.get(c, {})
+        if not rs and p.get("dtype") == "text":
+            few = p.get("nunique", 99) <= 30
+            if p.get("phone", 0) >= 0.8: rs.append("phone")
+            elif few and p.get("status", 0) >= 0.6: rs.append("status")
+            elif few and p.get("pay", 0) >= 0.6: rs.append("payment_method")
+            elif few and p.get("chan", 0) >= 0.6: rs.append("channel")
+        if rs[:1] == ["customer_name"] and p.get("code", 0) >= 0.9 and p.get("dtype") == "text":
+            if "customer_id" in rs: rs.remove("customer_id")
+            rs.insert(0, "customer_id")
+    first = {}
+    for c, rs in roles.items():
+        if rs and prof.get(c, {}).get("dtype") == "number": first.setdefault(rs[0], c)
+    free = [c for c, rs in roles.items() if not rs and prof.get(c, {}).get("dtype") == "number"]
+    if not free or sum(k in first for k in ("total_payable", "paid_total", "debt_end")) < 2: return roles
+    T, P, D = (_num(df[first[k]]) if k in first else None for k in ("total_payable", "paid_total", "debt_end"))
+    for c in free:
+        x = _num(df[c])
+        if T is not None and D is not None and "paid_total" not in first and _close(x, T - D) >= 0.98:
+            roles[c] = ["paid_total"]; first["paid_total"] = c
+        elif T is not None and P is not None and "debt_end" not in first and _close(x, T - P) >= 0.98:
+            roles[c] = ["debt_end"]; first["debt_end"] = c
+        elif P is not None and D is not None and "total_payable" not in first and _close(x, P + D) >= 0.98:
+            roles[c] = ["total_payable"]; first["total_payable"] = c
+    return roles
 
 
 # ------------------------------------------------------------------ 3. table kinds
@@ -402,6 +478,7 @@ class TableInfo:
         self.descs = table_descriptions(biz, name, rd)
         self.roles = column_roles(self.df, self.descs)
         self.prof = {c: profile(self.df[c]) for c in self.roles}
+        self.roles = refine_roles(self.df, self.roles, self.prof)
         self.kind, self.score = None, 0.0
 
     def cols(self, *roles, first=False, dtype=None):
@@ -447,8 +524,11 @@ def classify(ti):
     if f("commission_pct") or (f("staff_name") and (f("start_date") or f("commission_pct"))) or \
             (f("staff", first=True) and (f("start_date") or f("staff_role")) and n <= 300 and not oid
              and not f("qty", "line_amount", "unit_price", first=True)): return "staff_list"
+    rid = ti.col("receipt_id", first=True)
+    rid_in = bool(rid) and "nhap" in fold_name(rid) + " " + fold(ti.descs.get(rid, ""))      # 'Mã nhập hàng', 'Số phiếu nhập'
+    priced = f("unit_cost", first=True) or (rid_in and not oid and f("unit_price", first=True, dtype=NUM))
     if f("lot_id") and f("expiry") and item and not f("receipt_date", first=True) and ti.uniq(ti.col("lot_id")) > 0.95 \
-            and not (f("unit_cost", first=True) and f("qty", first=True) and not f("qty_in_base")): return "lots"
+            and not (priced and f("qty", first=True) and not f("qty_in_base")): return "lots"
     if oid and f("lot_id") and (f("lot_qty_base", "qty", "qty_base", "returned_base")) and not f("item_name", first=True): return "lot_sales"
     if oid and f("delivery_date") and (f("trip_no") or f("driver") or f("plate")): return "deliveries"
     if oid and (f("due_date") or f("term_days")) and not item: return "terms"
@@ -457,7 +537,7 @@ def classify(ti):
     if f("item_code", "item_name") and (f("active_ingredient") or f("prescription")) and not f("item_group", "base_unit", "price", "cost", first=True) \
             and not oid: return "drug_info"
     purch = sum(map(bool, (f("receipt_id", first=True), f("receipt_date", first=True), f("supplier", first=True), f("receipt_total"),
-                          f("receipt_status"), f("qty_in_base"), f("unit_cost", first=True) and not oid)))
+                          f("receipt_status"), f("qty_in_base"), priced and not oid, rid_in and not oid)))
     sales = sum(map(bool, (ti.col("order_id", first=True), f("order_date", first=True, dtype=DATE), f("status", first=True),
                           f("customer_name", "customer_id", first=True), f("line_amount", first=True), f("order_time", first=True))))
     if purch >= 2 and purch >= sales and (f("receipt_id") or f("receipt_date")):
@@ -465,8 +545,11 @@ def classify(ti):
     if item and (f("qty", "qty_base", "line_amount", "unit_price") and (oid or f("order_date", dtype=DATE))):
         if f("factor", dtype=NUM) and f("big_unit", "unit") and n <= 5000 and not oid: return "conversions"
         return "sales_lines"
-    if oid and not item and f("amount", first=True) and (f("pay_time", "payment_id") or f("order_date", "order_time", dtype=DATE)) \
-            and not f("total_payable", "status", "customer_name", "customer_id", "gross", first=True): return "payments"
+    n_ids = len(ti.cols("order_id", "payment_id"))
+    money = f("amount", first=True) or (f("line_amount", first=True, dtype=NUM) and (f("pay_time", "payment_id") or n_ids >= 2))
+    when = f("pay_time", "payment_id") or f("order_date", "order_time", dtype=DATE) or (n_ids >= 2 and any(p["dtype"] == "datetime" for p in ti.prof.values()))
+    if oid and not item and money and when and not f("total_payable", "status", "customer_name", "customer_id", "gross", first=True):
+        return "payments"
     if oid and not item and (f("order_date", "order_time", dtype=DATE)) and (f("total_payable", "gross", "paid_total", "debt_end", "line_amount", "status")):
         return "orders"
     if item and f("factor", dtype=NUM) and (f("big_unit") or f("unit") or f("base_unit")): return "conversions"
@@ -807,6 +890,11 @@ def pick_fields(ti, wanted, line_table):
             c = f.get(k)                                              # the line's amount, whatever its name says ('Tổng tiền')
             if c and _varies_within(ti.df, f["order_id"], c) >= 0.5:
                 f["line_amount"] = c; del f[k]; break
+    if line_table and "line_amount" not in f and not f.get("order_id") and f.get("qty") and f.get("unit_price"):
+        for k in ("total_payable", "gross", "paid_total"):          # a record book without order keys: each row is a line, and a
+            c = f.get(k)                                              # 'total' equal to qty x price on its rows is the line amount
+            if c and _amount_identity(ti.df, f["qty"], f["unit_price"], c) >= 0.9:
+                f["line_amount"] = c; del f[k]; break
     if not line_table and "total_payable" not in f:
         take("total_payable", "total_payable", "line_amount", dtype=NUM)
     for k, roles in (("note", ("note",)), ("phone", ("phone",)), ("address", ("address",)), ("table_no", ("table_no",)), ("area", ("area",)),
@@ -1085,7 +1173,12 @@ def build_side(K, C, cv, items, notes):
     """payments, stock, ledger, lots, lot sales, deliveries, credit terms, prices, expenses, returns."""
     for ti in K.get("payments", []):
         g = ti.col
-        P = dm.frame(ti.df, order_id=g("order_id"), pay_time=g("pay_time", dtype=DATE) or g("order_time", "order_date", dtype=DATE),
+        oids = set(C["orders"]["order_id"].dropna().astype(str).str.strip()) if "orders" in C and "order_id" in C["orders"] else set()
+        keys = ti.cols("order_id") or ti.cols("payment_id")
+        okey = max(keys, key=lambda c: (len(set(ti.df[c].dropna().astype(str).str.strip()) & oids), -keys.index(c))) if keys else None
+        when = g("pay_time", dtype=DATE) or g("order_time", "order_date", dtype=DATE) or \
+            next((c for c in ti.roles if ti.prof[c]["dtype"] == "datetime"), None)
+        P = dm.frame(ti.df, order_id=okey, pay_time=when,
                      amount=g("amount", dtype=NUM, first=True) or g("amount", "line_amount", dtype=NUM), method=g("payment_method", "method"))
         P["order_id"] = P["order_id"].astype(str).str.strip(); P["pay_date"] = pd.to_datetime(P["pay_time"]).dt.normalize()
         C["payments"] = P; break
@@ -1247,6 +1340,9 @@ def build(biz):
     for ti in infos.values():
         ti.kind = classify(ti)
         if ti.kind: K[ti.kind].append(ti)
+        if ti.kind == "customers" and not ti.has("customer_group"):        # a bare 'Nhóm' / 'Loại' of a customer list groups customers
+            c = ti.col("item_group", first=True)
+            if c: ti.roles[c] = ["customer_group"] + [r for r in ti.roles[c] if r != "customer_group"]
     notes = []
     items = build_items(K, notes)
     cv = build_conversions(K, rd, items, biz)

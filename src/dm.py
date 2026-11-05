@@ -242,12 +242,12 @@ def regional_key(s):
 
 
 _REGIONAL_PLAIN = [(re.compile(r"(?<!\w)" + re.escape(strip_accents(a).lower()) + r"(?!\w)"), strip_accents(b).lower()) for a, b in REGIONAL
-                   if len(strip_accents(a)) >= 3]
+                   if len(strip_accents(a)) >= 2]                    # 'ke' (kệ) too: only a whole item name is linked this way
 
 
 def regional_key_plain(s):
-    """regional_key for text typed without accents ('ke dien thoai' -> 'gia do dien thoai'): accent-free pairs of at least three
-    letters; used to link a whole item name only."""
+    """regional_key for text typed without accents ('ke dien thoai' -> 'gia do dien thoai'): accent-free pairs of at least two
+    letters; used to link a whole item name only (qparse: a match of >= 8 characters)."""
     t = re.sub(r"\s+", " ", strip_accents(norm_text(s)))
     for rx, b in _REGIONAL_PLAIN: t = rx.sub(b, t)
     return _ckey(t)

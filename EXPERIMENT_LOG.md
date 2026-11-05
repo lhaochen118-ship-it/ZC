@@ -581,3 +581,21 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
 - **File nộp `submissions/v30/`:** stage 1 trên public (môi trường image), 1000 / 1000, định dạng 0 lỗi.
 - Tiếp: v31 = luồng nộp đầy đủ (luật + Qwen3.5-9B) trên paraphrase public + train (dataset private `quynhtran35/zc-para`):
   độ chính xác của stage 2 trên đúng loại câu mà luật bỏ lại.
+
+## Entry 22 — 2026-11-05 18:45: kết quả Kaggle v30 (luồng nộp đầy đủ) + CPU v30d; stage 2 nhanh hơn
+
+- **Luồng nộp đầy đủ trên câu biến đổi (v30, quynhtran35 4×L4, code trước các sửa paraphrase):** stage 2 (Qwen3.5-9B)
+  trên câu luật bỏ lại: **104 đúng / 14 sai / 10 abstain (81 % đúng)**. Toàn hệ thống: public không dấu 0.984 → **0.993**,
+  nhiễu 1 / 2 / 3: 0.968 / 0.974 / 0.975 → **0.990 / 0.989 / 0.991**; train nhiễu 1: 0.986 → **0.996**, không dấu 1.000.
+  Tăng ngưỡng abstain của stage 2 không có lợi (giữ chia sẻ phiếu ≥ 0.5: net +90; ≥ 0.75: +87; ≥ 0.9: +76).
+- **CPU v30d (quynhtran35, môi trường Kaggle pandas 2.3.3 / numpy 2.1.3 / calamine):** luật public **1000 / 1000** (346 s
+  trên 4 lõi Kaggle), train **3000 / 3000** (727 s). Seed nhiễu mới chưa dùng khi phát triển: public 4 / 5 / 6 =
+  0.966 / 0.970 / 0.972, train 2 / 3 / 4 / 5 = 0.987 / 0.987 / 0.983 / 0.985 (0–4 sai mỗi bộ; phần còn lại abstain → stage 2).
+- **Quy tắc giữ thay đổi:** với stage 2 đúng ~81 % / sai ~11 %, một luật mới chỉ nên lấy câu khỏi stage 2 khi độ chính xác
+  của nó trên câu held-out ít nhất như vậy (từ đồng nghĩa doanh thu: 83 % đúng trên train held-out — giữ; 12 / 12 câu
+  chuyển sang 'nhập hàng' sai → tìm ra bộ chặn 'thu nhập' bị slang làm mất tác dụng, sửa).
+- **Stage 2 nhanh hơn:** `--prefer-map` chạy ánh xạ ưu tiên trước, chỉ chạy ~40 chương trình tham chiếu khi nó lỗi.
+- quynhtran35 hết 30 h GPU tuần (18:00) → v31 (luồng đầy đủ trên paraphrase) chạy ở phatle1578 (dataset private
+  `phatle1578/zc-para`).
+- Bộ kiểm tra cục bộ (code mới nhất): canonical 3000 / 1000; không dấu 0.989; nhiễu 0.971 / 0.974 / 0.978; README trắng
+  public 0.993, train 1.000; paraphrase public 0.541, train held-out 0.677 (chỉ luật).

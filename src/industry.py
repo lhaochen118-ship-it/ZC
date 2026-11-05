@@ -412,7 +412,9 @@ class IndustryMetrics:
         l = self._devices(sold); dm.require("imei" in l.columns, "the sales book does not record IMEIs")
         ik = lambda s: s.astype(str).str.replace(r"\D", "", regex=True)
         W = W[W["date"] <= dm._ts(d)]
-        return int(ik(l["imei"].dropna()).isin(set(ik(W["imei"].dropna()))).sum())
+        sold = l["imei"].dropna().astype(str).str.split(r"\s*[/;,|]\s*").explode()     # a line of 2 devices writes 2 IMEIs
+        sold = ik(sold[sold.str.strip().ne("")])
+        return int(sold.isin(set(ik(W["imei"].dropna()))).sum())
 
     # -- repair shops: one order = one ticket (phiếu, lượt xe)
     def n_tickets(self, p, paid=None, warranty=None, job=None, vehicle=None, **f):
@@ -566,6 +568,10 @@ class IndustryMetrics:
             else: l = l[l["item_name"].map(lambda n: bool(re.search(r"(?:^|\s)" + re.escape(bk) + r"(?:\s|$)", dm.key(n))))]
         return l
 
+    def diaper_qty(self, p, size=None, brand=None, **f):
+        """diaper packs (bịch / gói, base units) sold in p, of that size and / or brand (catalogue columns; diapers only)."""
+        return _dm()._num(self._pack_lines(p, size, brand, diapers=True, **f)["qty_base"].sum())
+
     def pack_share(self, p, size=None, brand=None, **f):
         """percent of the diaper packs (bịch / gói, base units) sold in p that are of that size and / or brand; the whole is every
         diaper item of the period (rulebook 'Mẹ và bé'; size and brand from the catalogue columns)."""
@@ -586,7 +592,7 @@ INDUSTRY_NAMES = ["devices_sold", "device_sales", "top_lines", "device_share", "
                   "tradein_share", "payable_total", "avg_payable", "instalment_remaining", "instalment_overdue", "n_overdue_customers",
                   "terms_due", "warranty_visits", "warranty_rate", "warranty_sales", "top_warranty_lines", "devices_with_warranty",
                   "n_tickets", "job_tickets", "avg_ticket", "n_vehicles", "top_plates", "vehicle_sales", "top_vehicles", "staff_stats",
-                  "top_staff", "commission", "voucher_total", "points_total", "shipping_total", "new_members", "pack_share",
+                  "top_staff", "commission", "voucher_total", "points_total", "shipping_total", "new_members", "pack_share", "diaper_qty",
                   "brand_sales", "top_brands"]
 HELPERS = {"model_line": model_line, "brand_of": brand_of, "split_vehicle": split_vehicle, "split_jobs": split_jobs, "job_of": job_of}
 
@@ -638,7 +644,8 @@ INDUSTRY_API = {
   top_staff(p, k, by=...), commission(p, staff=None) (table [tho, hoa_hong], or one mechanic's amount).""",
     "mẹ và bé": """Mother & baby toolkit (rulebook 'Mẹ và bé'):
 - voucher_total(p), points_total(p), shipping_total(p) (positive, valid invoices by invoice date), new_members(p) (registered in p).
-- size_qty(p, "XL"|"Số 4", group=...) (catalogue Số / Size column), pack_share(p, size=None, brand=None) (% of every diaper pack sold),
+- size_qty(p, "XL"|"Số 4", group=...) (catalogue Số / Size column), diaper_qty(p, size=None, brand=None) (diaper packs sold),
+  pack_share(p, size=None, brand=None) (% of every diaper pack sold),
   brand_sales(p, by="qty"|"revenue", size=None, group=...) -> Series, top_brands(p, k, by="qty", size=None, group=...).""",
 }
 

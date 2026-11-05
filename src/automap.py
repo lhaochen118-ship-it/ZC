@@ -236,7 +236,7 @@ NAME_RULES = [
     (r"ten hang|ten hang hoa|hang hoa|hang ban|hang|mat hang|ten mat hang|san pham|ten san pham|ten sp|mon|ten mon|product|item|chi tiet hang|noi dung|tengoi|ten goi|tenhang|ten hang ban|ten hang hoa ban", "item_name"),
     (r"nhom hang|nhom hang hoa|nhom|loai hang|loai san pham|danh muc|phan loai|danhmuc|nganh hang", "item_group"),
     (r"dvt|don vi tinh|don vi|dv|dv tinh|d vi|unit|donvitinh|donvi|dvt ban", "unit"),
-    (r"dv goc|don vi co ban|dvt co ban|don vi goc|dv co ban|donvicoso|dv nho", "base_unit"),
+    (r"dv goc|don vi co ban|dvt co ban|don vi goc|dv co ban|donvicoso|don vi co so|dv nho", "base_unit"),
     (r"dvt nhap|don vi nhap", "unit"),
     (r"he so|ti le quy doi|ty le quy doi|he so qd|bang|he so quy doi|hesoquydoi|quy doi", "factor"),
     (r"loai dv|don vi quy doi|dv lon|quy cach|dv nhap|don vi lon", "big_unit"),
@@ -427,7 +427,8 @@ def classify(ti):
             and not ti.col("order_id", first=True) and not f("qty", "unit_price", first=True): return "debt_book"
     if f("promo_name") and (f("date_from") or f("date_to")): return "promotions"
     if f("commission_pct") or (f("staff_name") and (f("start_date") or f("commission_pct"))) or \
-            (f("staff", first=True) and (f("start_date") or f("staff_role")) and n <= 300 and not item and not oid): return "staff_list"
+            (f("staff", first=True) and (f("start_date") or f("staff_role")) and n <= 300 and not oid
+             and not f("qty", "line_amount", "unit_price", first=True)): return "staff_list"
     if f("lot_id") and f("expiry") and item and not f("receipt_date", first=True) and ti.uniq(ti.col("lot_id")) > 0.95 \
             and not (f("unit_cost", first=True) and f("qty", first=True) and not f("qty_in_base")): return "lots"
     if oid and f("lot_id") and (f("lot_qty_base", "qty", "qty_base", "returned_base")) and not f("item_name", first=True): return "lot_sales"

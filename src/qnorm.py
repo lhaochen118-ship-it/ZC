@@ -137,6 +137,19 @@ _QWORDS = re.compile(r"\b(nhất|hơn|hay ít|ít hay|nào|gì|mấy|bao nhiêu|
                      r"có phải|so với|so sánh|nhiêu)\b")
 
 
+_REG = []
+
+
+def _regional_words():
+    """the words of the toolkit's regional synonym pairs (dm.REGIONAL: 'ngao' = 'nghêu', 'lợn' = 'heo' ...)."""
+    if not _REG:
+        try:
+            import dm
+            _REG.append({w for a, b in dm.REGIONAL for x in (a, b) for w in x.lower().split()})
+        except Exception: _REG.append(set())
+    return _REG[0]
+
+
 class Normalizer:
     def __init__(self, texts):
         """texts: accented Vietnamese text (rulebook, training questions); only sentences with accents are learnt."""
@@ -185,6 +198,7 @@ class Normalizer:
         same accent-free letters, or one edit away, scored by its frequency and its bigrams with the neighbours."""
         lw = w.lower()
         if len(lw) < 2 or lw in self.vocab or not re.fullmatch(r"[^\W\d_]+", lw): return None
+        if lw in _regional_words(): return None                           # 'cháo ngao' = 'cháo nghêu': a word, not a typo
         def score(c):
             sc = math.log(1 + self.uni.get(c, 0))
             if prev: sc += 2.0 * math.log(1 + self.bi.get((prev, c), 0))

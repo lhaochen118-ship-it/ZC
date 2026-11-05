@@ -438,6 +438,8 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
         brand = name_in(brands, 2)
         if has(r"bich|goi") and has(r"bim|ta\b") and has(r"%|phan tram|chiem|ti le") and (size or brand):
             return "ind_pack_share", ans("percent", f"pack_share({P}" + (f", size={J(size)}" if size else "") + (f", brand={J(brand)}" if brand else "") + ")")
+        if (size or brand) and has(r"\bbim\b|\bta\b") and has(r"(?:bao nhieu|may|bnhiu|bn|tong cong|tong) (?:bich|goi)") and not has(r"%|phan tram|chiem|ti le|tien|doanh thu"):
+            return "ind_diaper_qty", ans("number", f"diaper_qty({P}" + (f", size={J(size)}" if size else "") + (f", brand={J(brand)}" if brand else "") + ")")
         if has(r"hang nao|hang gi") and has(r"nhieu|nhat") and size:
             g = Vocab(shop).find(tk, Vocab(shop).groups); gf = f", group={J(g)}" if g else ""
             return "ind_top_brand", ans("string", f"top_brands({P}, 1, by='qty', size={J(size)}{gf})[0]")
@@ -478,7 +480,7 @@ def missing_info(q, t, shop):
     if re.search(r"\b(?:ở|tại|o|tai) (?:đường|phố|quận|phường|duong|pho|quan|phuong)\b|\bđịa chỉ\b|\bdia chi\b|\bkhách (?:ở|đường)\b", ql):
         if not _has_col(shop, "address", "street", "district"): return "address"
     if re.search(r"\bvì sao\b|\blý do\b|\bnguyên nhân\b|\bvi sao\b|\bly do\b|\bnguyen nhan\b", ql) or \
-            re.search(r"\b(?:huỷ|hủy|trả lại|trả món|trả hàng|trả)\b[^?]{0,30}\bvì\b(?! ví)", ql):
+            re.search(r"\b(?:huỷ|hủy|trả lại|trả món|trả hàng|trả)\b[^?]{0,30}\bvì\b(?! ví| điện tử)", ql):
         if not _has_col(shop, "reason", "cancel_reason", "return_reason"): return "reason"
     if re.search(r"\bnhom (?!khach|tuoi|nguoi|thanh vien|ngay|no\b)(?:hang |mon |san pham |sp )?\w", t) and not re.search(r"\bnhom (?:khach|tuoi)", t):
         if not _has_col(shop, "item_group", tables=("lines", "items")): return "item group"
@@ -547,6 +549,9 @@ def parse(q, today, shop=None):
     if re.search(r"\btai tiem\b", t) and "tại quầy" not in chans: chans.append("tại quầy")
     if re.search(r"\bsan thuong mai dien tu\b|\bsan tmdt\b", t) and "sàn TMĐT" not in chans: chans.append("sàn TMĐT")
     chans = list(dict.fromkeys(chans))
+    if isinstance(item, str):
+        ik_ = dm.regional_key(item) + " " + dm.key(item)
+        chans = [c for c in chans if not any(re.search(r"\b" + w + r"\b", ik_) for w, lab in CHAN_WORDS if lab == c)]
     if has(r"ca sang") and not has(r"ca chieu"): f["shift"] = "sáng"
     elif has(r"ca chieu") and not has(r"ca sang"): f["shift"] = "chiều"
     if has(r"ke don|can don bac si|theo don"):
@@ -654,7 +659,7 @@ def parse(q, today, shop=None):
         return "gross_profit", ans("number", f"gross_profit({P}{fa()})")
     # ---------------- unsold items
     m = re.search(r"(?:it nhat|tu|tren|o|trong) (\d+) don (?:hang )?khac nhau|co mat (?:trong|o) (?:it nhat )?(\d+) don|o (\d+) don (?:hang )?khac nhau"
-                  r"|(?:xuat hien|co mat|duoc mua|nam|duoc goi|goi|gop mat|duoc ban|duoc dat) (?:trong|o) (?:it nhat |tu |tro len |toi thieu )?(\d+) (?:don|bill|hoa don)", t)
+                  r"|(?:xuat hien|co mat|duoc mua|nam|duoc goi|goi|gop mat|duoc ban|duoc dat) (?:trong|chong|o) (?:it nhat |tu |tro len |toi thieu )?(\d+) (?:don|bill|hoa don)", t)
     if m and P and has(r"mat hang|mon|san pham"):
         n = int(next(g for g in m.groups() if g)); return "items_in_n_orders", ans("number", f"int((item_sales({P}, by='n_orders') >= {n}).sum())")
     if has(r"\bbi e\b|ban khong duoc|ban ko duoc|ban ko dc|khong ban (?:duoc|ra duoc|ra) (?:cai|lan|mon) nao|khong ai mua|e han|\bees\b|mat hang e\b|mon e\b|hang e\b|\be\b.*khong ban|\be\b.*ko ban|\be\b.*k ban") and P and has(r"mat hang|mon|san pham"):
@@ -728,7 +733,8 @@ def parse(q, today, shop=None):
         if g: return "share", ans("percent", f"share({P}{fa(g)})")
         return None
     # ---------------- customers
-    if (has(r"khach") or has(r"\bai\b (?:mua|chi|dat)")) and P:
+    _aov_q = has(r"trung binh|binh quan") and has(r"\bdon\b|\bbill\b|hoa don") and not has(r"khach nao|\bai\b|nhom khach|khach hang (?:than thiet|vip|si|le)")
+    if (has(r"khach") or has(r"\bai\b (?:mua|chi|dat)")) and P and not has(r"dat khach") and not _aov_q:
         m = re.search(r"(?:tu|it nhat|tro len|toi thieu) (\d+) (?:don|bill|hoa don|lan)", t)
         if m:
             if has(r"phan tram|%|ti le"): return "pct_customers", ans("percent", f"pct_customers({P}, {int(m.group(1))})")
@@ -769,7 +775,7 @@ def parse(q, today, shop=None):
         return "item_qty", ans("number", f"item_qty({P}{fa()})")
     if P and not rev and item is None and not f and not pays and not chans and not two_part:
         # 'bán được bao nhiêu <đơn vị>' over the whole shop (rulebook: only items whose base unit is that unit)
-        mu = re.search(r"\bban (?:ra |duoc |dc )*(?:tong cong |tat ca |het )?(?:duoc |dc )?(?:la )?(?:bao nhieu|bnhiu|bn|may) " + UNITS + r"\b", t) or \
+        mu = re.search(r"\bban (?:ra |duoc |dc )*(?:tong cong |tat ca |het |tong )?(?:duoc |dc )?(?:la )?(?:bao nhieu|bnhiu|bn|may) " + UNITS + r"\b", t) or \
              re.search(r"(?:^|\s)(?:tong )?so " + UNITS + r" (?:da )?ban (?:ra|duoc|dc)\b", t)
         _t_np = re.sub(r"\d+ ngay (?:gan nhat|gan nhut|lien tiep gan nhat)", " ", t)
         if mu and not any(re.search(x, _t_np) for x in (r"(?:mat hang|san pham|\bmon|\bsp|loai|hang) (?:nao|gi)|(?:bao nhieu|may|so|bnhiu|bn) (?:mat hang|san pham|mon|sp|loai)\b",

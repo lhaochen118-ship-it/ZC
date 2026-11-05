@@ -613,3 +613,8 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
 - **An toàn rulebook:** câu nhắc thuật ngữ mà rulebook của split thêm mới (không có trong rulebook train / public) → mô hình
   (`rules_first.changed_terms`); dòng chỉ viết lại vẫn để luật.
 - Đang chạy: v31 train (phatle1578), v32 = luồng mới nhất trên paraphrase public + train (yuan1103).
+- **Ước lượng sạch hơn (bỏ paraphrase đổi kỳ thời gian — gần như toàn đổi nghĩa: 'hôm qua' → 'ngày mai', 'Th 4/25' → 'thứ 4
+  ngày 25', '3/26' → '26/3'):** dev k=0 (591 câu) luật 0.689 → **toàn luồng 0.790**; held-out k=1,2 (1173 câu) 0.610 →
+  **0.705**. Phần đổi kỳ: âm (đáp án gốc không còn đúng với câu đã đổi). Vẫn còn đổi nghĩa trong phần giữ kỳ (doanh thu →
+  lãi, số đơn → số tiền), nên độ chính xác thật với cách hỏi mới cao hơn các số này. Câu cách hỏi như train / public: ~1.0;
+  gõ nhiễu / không dấu: 0.99.

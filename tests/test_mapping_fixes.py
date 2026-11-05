@@ -94,12 +94,14 @@ lines = pd.DataFrame({"order_id": ["O1", "O2"], "order_date": orders["order_date
 lots = pd.DataFrame({"lot_id": ["L1", "L2"], "item_code": ["X", "X"], "expiry": ["2026-01-01", "2027-01-01"], "qty_in_base": [4, 10],
                      "receipt_date": pd.to_datetime(["2025-01-01", "2025-02-01"])})
 ls = pd.DataFrame({"order_id": ["O1", "O2"], "lot_id": ["L1", "L1"], "qty_base": [2, 2], "returned_base": [0, 0]})
-sh = dm.Shop({"orders": orders, "lines": lines, "items": lines[["item_code", "item_name"]].drop_duplicates(), "lots": lots, "lot_sales": ls},
-             today="2025-03-10")
+items6 = pd.concat([lines[["item_code", "item_name"]].drop_duplicates(), pd.DataFrame({"item_code": ["Y"], "item_name": ["Thuốc Y"]})])
+sh = dm.Shop({"orders": orders, "lines": lines, "items": items6, "lots": lots, "lot_sales": ls}, today="2025-03-10")
 check("stock from lots", sh.stock_at("Thuốc X", "2025-03-10") == 10 and sh.stock_at("X", "2025-03-02") == 12,
       (sh.stock_at("Thuốc X", "2025-03-10"), sh.stock_at("X", "2025-03-02")))
 try: sh.stock_at("Thuốc Y", "2025-03-10"); check("stock of an item without lots is unanswerable", False)
 except dm.Unanswerable: pass
+try: sh.stock_at("Thuốc Z", "2025-03-10"); check("a name the data does not have is a misspelling (LookupError + closest names)", False)
+except LookupError as e: check("the misspelling error names the closest items", "Thuốc" in str(e), str(e))
 
 # 7. a person named differently from the data: full name ~ nickname, name ~ name + phone; never two people
 pdf = pd.DataFrame({"staff": ["Đức", "Phúc", None], "customer_name": ["Từ Hải Thanh 0359470831", "Lê An", "Trần An"]})

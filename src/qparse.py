@@ -66,6 +66,8 @@ def slang(t):
     t = re.sub(r"\bcomay\b", "co may", t); t = re.sub(r"\bbnhiu(?=\w)", "bao nhieu ", t)
     t = re.sub(r"\bnhut\b", "nhat", t); t = re.sub(r"\b(ban|mua|ban ra|ban duoc) bao nhieu nhat\b", r"\1 nhieu nhat", t)   # southern 'nhứt'
     t = re.sub(r"\b(?:cat|danh) hang(?: ve)?\b", "nhap hang", t)
+    t = re.sub(r"\btieu thu (duoc|ra|het)\b", r"ban \1", t)                # 'tiêu thụ được' = 'bán được'
+    t = re.sub(r"\bkhach (?:(trung binh|binh quan) )?chi tra\b", lambda m: "khach " + (m.group(1) + " " if m.group(1) else "") + "phai tra", t)
     t = re.sub(r"\b(tu|dat|tren|hon|duoi|it nhat|qua|vuot|khoang|toi|den|tro len) (\d+(?:[.,]\d+)?) ?cu\b", r"\1 \2 trieu", t)
     return re.sub(r"\b(\d+) ?tr ?(\d)\b", r"\1.\2 trieu", t)
 
@@ -101,6 +103,13 @@ def parse_period(text, today):
         if m: return dm.tet(int(m.group(1))), f"tet({int(m.group(1))})"
         if re.search(r"tet nam (truoc|ngoai|roi)", t): return dm.tet(today.year - 1), f"tet({today.year - 1})"
         return dm.tet_of(today), "tet_of(TODAY)"
+    if re.search(r"(?:thoi diem |ngay )?bat dau (?:cua )?nam (?:nay |ni )?(?:(?!tu )\S+ ){0,3}(?:den|toi) (?:het )?(?:ngay )?(?:hom nay|nay|bay gio|hien tai)", t):
+        return dm.ytd(today), "ytd(TODAY)"                              # 'từ thời điểm bắt đầu năm nay cho đến ngày hôm nay'
+    if re.search(r"(?:tu |ke tu )(?:thoi diem )?(?:bat dau|dau) tuan (?:nay |ni )?(?:(?!tu )\S+ ){0,3}(?:den|toi) (?:het )?(?:ngay )?(?:hom nay|nay|bay gio|hien tai)", t):
+        return dm.this_week(today), "this_week(TODAY)"
+    m = re.search(r"(?:tinh )?nguoc (?:lai|ve truoc) (\d+) ngay|(\d+) ngay (?:tro lai day|tro lai|tro ve truoc)\b|trong vong (\d+) ngay (?:qua|gan day|gan nhat|vua qua|tro lai day)\b", t)
+    if m:                                                              # 'tính ngược lại 30 ngày', '7 ngày trở lại đây'
+        n = int(next(g for g in m.groups() if g)); return dm.last_n_days(n, today), f"last_n_days({n}, TODAY)"
     if re.search(r"(dau thang nay|tu dau thang|tu mung 1|thang nay|thang ni|th nay|thang hien tai)", t): return dm.this_month(today), "this_month(TODAY)"
     if re.search(r"(tu dau nam|dau nam (toi|den)|nam nay tinh tu|nam nay (?:tinh )?(?:toi|den) (?:het )?(?:hom nay|nay|bay gio)|tu ngay 1/1|tu 1/1|tu mung 1 tet duong)", t): return dm.ytd(today), "ytd(TODAY)"
     m = re.search(r"(\d+) ngay (gan nhat|qua|vua qua|gan day|lien tiep gan nhat|cuoi|gan nhut|vua roi)", t)
@@ -120,6 +129,9 @@ def parse_period(text, today):
     if m: d = _date(*m.group(1, 2, 3)); return dm.day(d), f"day({_dc(d)})"
     m = re.search(r"\b" + MON + r"(\d{1,2})\s*(?:/|-|nam |cua nam )\s*" + Y + r"\b", t) or re.search(r"(?<![\d/])(\d{1,2})[/-](20\d\d|\d\d)\b(?![/\d])", t)
     if m: return dm.month(_y(m.group(2)), int(m.group(1))), f"month({_y(m.group(2))}, {int(m.group(1))})"
+    m = re.search(r"\bnam (20\d\d)\b,? (?:(?!den |toi |tu |cho )\S+ ){0,2}?(?:thang|thg|th) (\d{1,2})\b(?![/\d])", t)
+    if m and 1 <= int(m.group(2)) <= 12:                               # the year before its month: 'năm 2025 tháng 5', 'Năm 2026, tháng 5'
+        return dm.month(int(m.group(1)), int(m.group(2))), f"month({int(m.group(1))}, {int(m.group(2))})"
     m = re.search(r"\b(?:thang|thg|th)\s*(\d{1,2})\b(?!/)", t)
     if m: return dm.month_noyear(int(m.group(1)), today), f"month_noyear({int(m.group(1))}, TODAY)"
     if re.search(r"(hom qua|hqua|bua qua|ngay qua\b|hom truoc|ngay hom qua)", t): return dm.yesterday(today), "yesterday(TODAY)"
@@ -632,6 +644,14 @@ def _parse(q, today, shop=None):
             else:
                 g = V.find(m.group(1), V.groups)
                 if g is not None: f["group"] = g
+        if item is None and "group" not in f and "customer_group" not in f and V.groups:
+            ws = tk.split()
+            for i, w in enumerate(ws):                                   # the exact name of a group right after 'món' / 'loại' /
+                if w in ("mon", "loai", "cac", "dong") or (w == "hang" and i > 0 and ws[i - 1] == "mat"):   # 'các' / 'mặt hàng'
+                    for n in (4, 3, 2, 1):
+                        cand = " ".join(ws[i + 1:i + 1 + n])
+                        if len(cand) >= 4 and cand in V.groups: f["group"] = V.groups[cand]; break
+                    if "group" in f: break
         m = re.search(r"(?:nhan vien|nguoi ban|nv)(?: ma)? (nv\s*\d+)", tk) or re.search(r"(?<!\w)(nv\s?\d{2,})(?!\w)", tk)
         if m: f["staff"] = V.find(m.group(1).replace(" ", ""), V.staff) or m.group(1).upper().replace(" ", "")
         m = re.search(r"hoat chat (.+)", tk)
@@ -853,7 +873,7 @@ def _parse(q, today, shop=None):
         if m:
             if has(r"phan tram|%|ti le"): return "pct_customers", ans("percent", f"pct_customers({P}, {int(m.group(1))})")
             return "n_customers_min", ans("number", f"n_customers({P}, min_orders={int(m.group(1))})")
-        by = "n_cancelled" if has(r"hay doi y|doi y (?:nhieu|nhat)|hay huy") else "n_orders" if has(r"nhieu (lan|don)|nhiu (lan|don)|so don|nhieu don") else "n_days" if has(r"trung thanh|nhieu ngay") else "aov" if has(r"\bsop\b") else "revenue" if has(r"nhieu tien|nhiu tien|chi tieu|tien nhieu|mua nhieu nhat|cao nhat|lon nhat|nhieu nhat|nhiu nhat|tong tien mua") else None
+        by = "n_cancelled" if has(r"hay doi y|doi y (?:nhieu|nhat)|hay huy") else "n_orders" if has(r"nhieu (lan|don)|nhiu (lan|don)|so (?:luong )?don|nhieu don|don hang (?:nhieu|cao) nhat|so lan mua") else "n_days" if has(r"trung thanh|nhieu ngay") else "aov" if has(r"\bsop\b") else "revenue" if has(r"nhieu tien|nhiu tien|chi tieu|tien nhieu|mua nhieu nhat|cao nhat|lon nhat|nhieu nhat|nhiu nhat|tong tien mua") else None
         if by:
             m = re.search(r"(?<![\d/])([1-9]|1\d|20) khach", t)
             if m: return "top_customers", ans("list", f"top_customers({P}, {int(m.group(1))}, by={J(by)})")
@@ -871,7 +891,7 @@ def _parse(q, today, shop=None):
         return None
     # ---------------- items: top / qty / size
     m = re.search(r"(?:top |liet ke |^|cho minh |cho toi )(\d+) (?:mat hang|hang|san pham|mon|sp|best)", t) or re.search(r"top (\d+)", t) or re.search(r"(\d+) (?:mat hang|mon|san pham|hang|sp) (?:ban )?(?:chay|nhieu|hot|best)", t) \
-        or re.search(r"(?<![\d/.,])(\d{1,2}|hai|ba|bon|nam|sau|bay|tam|chin|muoi) (?:mat hang|san pham|mon|sp)\b", t) or re.search(r"\btop (hai|ba|bon|nam|sau|bay|tam|chin|muoi)\b", t)
+        or re.search(r"(?<![\d/.,])(?<!thang )(?<!thg )(?<!th )(?<!ngay )(?<!nam )(?<!quy )(?<!tuan )(\d{1,2}|hai|ba|bon|nam|sau|bay|tam|chin|muoi) (?:mat hang|san pham|mon|sp)\b", t) or re.search(r"\btop (hai|ba|bon|nam|sau|bay|tam|chin|muoi)\b", t)
     nN = (int(m.group(1)) if m.group(1).isdigit() else NUMW[m.group(1)]) if m else None
     if nN is not None and nN > 50: m = nN = None                       # 'Tết 2026 hàng bán nhiều nhất': a year, not top-2026
     best = has(r"ban chay|chay nhat|ban nhieu nhat|ban dc nhieu nhat|ban duoc nhieu nhat|hot nhat|best seller|ban nhiu nhat|ban dc nhiu nhat|nhieu nhat|nhiu nhat",

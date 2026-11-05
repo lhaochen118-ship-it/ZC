@@ -618,3 +618,7 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   **0.705**. Phần đổi kỳ: âm (đáp án gốc không còn đúng với câu đã đổi). Vẫn còn đổi nghĩa trong phần giữ kỳ (doanh thu →
   lãi, số đơn → số tiền), nên độ chính xác thật với cách hỏi mới cao hơn các số này. Câu cách hỏi như train / public: ~1.0;
   gõ nhiễu / không dấu: 0.99.
+- **v31 train (held-out hoàn toàn, 5689 paraphrase):** luật trả lời 4360 (151 s), mô hình nhận 1329; 3 lần chạy, tổng 15 389 s
+  (4.3 h). Luật 0.669 → toàn luồng 0.752 → **+ ngưỡng 0.75: 0.768** (4877 / 510 / 302); phần giữ kỳ (5371): 0.707 → 0.806 →
+  **0.816**. Mô hình trên câu còn lại (ngưỡng 0.75): 793 đúng / 234 sai / 302 abstain. Ngưỡng 0.75 cũng có lợi trên tập
+  held-out này (chọn trước trên dev) → giữ.

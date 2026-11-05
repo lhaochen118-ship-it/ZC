@@ -11,6 +11,6 @@ WORKDIR /app
 COPY src/ /app/src/
 COPY docker/predict.sh /app/predict.sh
 COPY models/${MODEL_NAME}/ /models/${MODEL_NAME}/
-RUN chmod +x /app/predict.sh && python3 -c "import sys; sys.path.insert(0, '/app/src'); import ingest, dm, qparse, canon, fewshot, score, agent, pipeline; print('agent import OK')"
+RUN chmod +x /app/predict.sh && python3 -c "import sys; sys.path.insert(0, '/app/src'); import ingest, dm, qparse, qnorm, automap, industry, canon, fewshot, score, agent, pipeline, rules_first, merge_sub, predict_flow, vote; print('agent import OK')"
 ENV MODEL=/models/${MODEL_NAME} HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 VLLM_NO_USAGE_STATS=1 DO_NOT_TRACK=1 PYTHONHASHSEED=0
 ENTRYPOINT ["/app/predict.sh"]

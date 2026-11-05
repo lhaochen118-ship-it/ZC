@@ -1164,7 +1164,12 @@ def build_purchases(K, cv, items):
     if "item_code" in P: P["item_code"] = P["item_code"].astype(str).str.strip()
     sup = K.get("suppliers", [])
     if sup and "supplier" in P:
-        s = sup[0]; sc, sn = s.col("supplier"), next((c for c in s.df.columns if fold_name(c) in ("ten goi", "ten", "ten nha cung cap", "ten ncc")), None)
+        s = sup[0]; sc = s.col("supplier")
+        sn = next((c for c in s.df.columns if fold_name(c) in ("ten goi", "ten", "ten nha cung cap", "ten ncc")), None)
+        if sn is None and sc:                                            # another export's header: the names are the most unique
+            texts = [c for c in s.df.columns if c != sc and not str(c).startswith("_") and s.prof.get(c, {}).get("dtype") == "text"
+                     and s.prof[c].get("code", 1) < 0.5 and s.prof[c].get("phone", 0) < 0.5]   # text column that is not a code / phone
+            sn = max(texts, key=lambda c: (s.prof[c].get("uniq", 0), -list(s.df.columns).index(c)), default=None)
         if sc and sn: P["supplier_name"] = P["supplier"].astype(str).map(dict(zip(s.df[sc].astype(str), s.df[sn])))
     return P
 

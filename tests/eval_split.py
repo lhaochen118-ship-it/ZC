@@ -87,6 +87,30 @@ def eval_biz(args):
     t0 = time.time(); out = []
     biz = pickle.load(open(os.path.join(cache, bid + ".pkl"), "rb"))
     if pdata == "noreadme": biz.readme = ""
+    if pdata.startswith("rename"):                                       # another export of the same data: every column whose name
+        import random                                                    # is one alternative of an automap name rule gets another
+        rng = random.Random(f"{pdata}:{bid}")                            # alternative of the SAME rule (the README keeps the old
+        alts = []                                                        # names), the column order is shuffled
+        for pat, role in automap.NAME_RULES:
+            opts = [o for o in pat.split("|") if re.fullmatch(r"[a-z ]+", o) and " " in o or len(o) >= 3]
+            alts.append((set(pat.split("|")), [o for o in opts if re.fullmatch(r"[a-z ]+", o)]))
+        for t, df in list(biz.tables.items()):
+            ren = {}
+            for c in df.columns:
+                if str(c).startswith("_") or str(c).endswith("__unit"): continue
+                n = automap.fold_name(c); roles = automap.name_roles(c)
+                if len(roles) != 1: continue                             # only a name with one meaning ('Hãng' = brand, but 'hang'
+                for names, opts in alts:                                 # alone also names items): renamed to a name with the
+                    if n in names:                                       # SAME single role
+                        others = [o for o in opts if o != n and automap.name_roles(o.title()) == roles]
+                        if others: ren[c] = rng.choice(others).capitalize()
+                        break
+            for c in df.columns:                                         # ingest's companion '<col>__unit' follows its column
+                if str(c).endswith("__unit") and str(c)[:-6] in ren: ren[c] = ren[str(c)[:-6]] + "__unit"
+            df = df.rename(columns=ren)
+            if df.columns.duplicated().any(): df = biz.tables[t]                 # a clash: keep that table as it was
+            cols = [c for c in df.columns if not str(c).startswith("_")]; rng.shuffle(cols)
+            biz.tables[t] = df[[c for c in df.columns if str(c).startswith("_")] + cols]
     if pq:
         import random
         rng = random.Random(f"{pq}:{bid}")
@@ -135,7 +159,8 @@ def main():
     ap.add_argument("--clean", default=""); ap.add_argument("--workers", type=int, default=4); ap.add_argument("--show", type=int, default=0)
     ap.add_argument("--perturb-q", default="", help="stress test: accentfree | noise:<seed> (questions rewritten, then cleaned at run time) | "
                     "para:<paraphrases.jsonl> (LLM paraphrases, scored by the original question's reference)")
-    ap.add_argument("--perturb-data", default="", help="stress test: noreadme (the README of every business blanked)")
+    ap.add_argument("--perturb-data", default="", help="stress test: noreadme (the README of every business blanked) | rename:<seed> (column names "
+                    "replaced by other names of the same role, columns shuffled)")
     a = ap.parse_args()
     qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8")]
     refs = score.load(a.ref)

@@ -150,12 +150,20 @@ def main():
     ap.add_argument("split"); ap.add_argument("cache"); ap.add_argument("work"); ap.add_argument("out"); ap.add_argument("runs", nargs="+")
     ap.add_argument("--biz", default=""); ap.add_argument("--workers", type=int, default=max(1, min(8, (os.cpu_count() or 2) - 1)))
     ap.add_argument("--timeout", type=int, default=60)
+    ap.add_argument("--extra", default="fmt:automap", help="format adapters added to every business's pool ('' = none)")
+    ap.add_argument("--force", default="", help="regex: the candidate a business uses when one matches (experiments)")
     a = ap.parse_args(); t0 = time.time()
     os.makedirs(os.path.join(a.work, "canon"), exist_ok=True)
     agent._init_worker(a.cache, a.split)
     runs = [r for r in a.runs if os.path.isfile(os.path.join(r, "logs.jsonl"))]
     logs = [{x["id"]: x for x in load_jsonl(os.path.join(r, "logs.jsonl"))} for r in runs]
     meta = [candidates(r) for r in runs]
+    for x in [x for x in a.extra.split(",") if x.strip()]:              # deterministic adapters for every business (run 0's pool)
+        p_ = os.path.join(FMT, x.split(":", 1)[1] + ".py")
+        if os.path.isfile(p_) and meta:
+            code_ = open(p_, encoding="utf-8").read()
+            for b in {q["business_id"] for q in map(json.loads, open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8"))}:
+                meta[0][0][b]["ref:" + x] = (code_, x)
     qs_all = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8")]
     bids = sorted({q["business_id"] for q in qs_all if not a.biz or re.search(a.biz, q["business_id"])})
     pool = mp.get_context("fork").Pool(a.workers, initializer=agent._init_worker, initargs=(a.cache, a.split), maxtasksperchild=100)
@@ -192,6 +200,9 @@ def main():
         order = rank(pb, topic_q.get(b, frozenset()))
         if not order: continue
         best[b] = [pb[j] for j in order]                                  # full pooled ranking
+        if a.force:
+            forced = [m for m in best[b] if re.search(a.force, m[0])]
+            if forced: best[b] = forced[:1] + [m for m in best[b] if m is not forced[0]]
         sig = lambda r: json.dumps(sorted((r.get("rule_answers") or {}).items()))
         top = sig(best[b][0][1])
         agree_runs = sum(1 for i, (c, ch, g) in enumerate(meta) if b in ch and

@@ -132,7 +132,8 @@ def data_end(biz):
 def namespace(biz, ref_cols=None):
     T = Tables({k: v.copy() for k, v in biz.tables.items()}, ref_cols or {})
     R = Tables(dict(biz.raw), ref_cols or {})
-    g = {"T": T, "RAW": R, "README": biz.readme or "", "pd": pd, "np": np, "re": re, "parse_num": ingest.parse_num, "parse_date": ingest.parse_date}
+    g = {"T": T, "RAW": R, "README": biz.readme or "", "pd": pd, "np": np, "re": re, "parse_num": ingest.parse_num, "parse_date": ingest.parse_date,
+         "BIZ": biz}                                                   # the whole package (refs/formats/automap.py)
     for k in ("finalize", "map_status", "canon_status", "canon_payment", "canon_channel", "key", "is_walkin", "money", "round_half_up",
               "readme_conversions", "conversions_table", "frame", "money_in_text", "debt_from_note"):
         g[k] = getattr(dm, k)

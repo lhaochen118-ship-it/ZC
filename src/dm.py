@@ -385,7 +385,8 @@ def _order_adjustments(L):
         adj[col] = amt.groupby(L.loc[m, "order_id"].astype(str).str.strip()).sum(); drop |= m
     if drop.any():
         import os
-        if os.environ.get("ZC_ADJ_ROWS", "keep") == "move":           # rulebook §1 read literally: not in the revenue
+        if os.environ.get("ZC_ADJ_ROWS", "move") == "move":           # rulebook §1: not in the revenue (current public key: dev_013
+                                                                       # 45 / 9 right / wrong with 'move', 17 / 40 with 'keep' (v28))
             print(f"finalize: {int(drop.sum())} invoice adjustment rows (voucher / points / shipping) moved from the lines to the order columns", flush=True)
             L = L[~drop].reset_index(drop=True)
         else:                                                          # default: the invoice total of the book (v23 public 0.87 vs

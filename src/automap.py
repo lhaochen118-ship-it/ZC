@@ -243,11 +243,13 @@ NAME_RULES = [
     # quantities / money
     (r"sl|s l|slg|sluong|so luong|sl ban|so luong ban|so luong hang|so luong san pham|soluong|so luong mua|sl nhap|so luong nhap", "qty"),
     (r"sl le|so luong le|sl quy doi|so luong quy doi|quy ra dv le|sl co ban|sl dv co ban|sl quy ra le|slquydoi|so luong dvt co ban|sl thuc giao|so luong giao", "qty_base"),
+    (r"sl nhap quy doi|so luong nhap quy doi|sl nhap dvt co ban|so luong nhap dvt co ban|sl nhap co ban", "qty_in_base"),
+    (r"sl tra quy doi|so luong tra quy doi|sl tra dvt co ban|so luong tra dvt co ban|sl tra", "returned_base"),
     (r"don gia|don gia d|gia 1 dv|gia ban|gia|gia le|gia san pham|gia niem yet|gia don vi|giadonvi|price|dg|don gia ban|gia ban le", "unit_price"),
     (r"thanh tien|thanh tien d|tt|amount|tri gia|trigia|tien|cong|tien hang|tong|t tien|thanh tien sau giam|tien ban", "line_amount"),
     (r"giam d|giam|chiet khau|ck|giam gia|khuyen mai|chietkhau|tien giam", "discount"),
-    (r"gia von|gia von luc ban|giavonlucban|gia von hien tai|giavonhang", "cost"),
-    (r"gia nhap|don gia nhap|dongianhap", "unit_cost"),
+    (r"gia von|gia von luc ban|giavonlucban|gia von hien tai|giavonhang|gia von hang", "cost"),
+    (r"gia nhap|don gia nhap|dongianhap|gia nhap don vi", "unit_cost"),
     (r"tong tien hang|tien hang truoc giam|gia tri hang|tong tien hang hoa|tongtienhang", "gross"),
     (r"giam gia hd|giam gia don|ck don|chiet khau don|bot", "order_discount"),
     (r"phi ship|phi giao hang|phi van chuyen|phivanchuyen|ship", "shipping_fee"),
@@ -759,7 +761,7 @@ def build_sales(biz, infos, K, rd, items, cv, notes):
         O, L = dm.finalize(lines, orders.drop(columns=[c for c in ("gross",) if c in orders]))
         return O, L, {"lines": None, "orders": H.name, "fields": hf}
     lf = pick_fields(S, LINE_FIELDS, True)
-    df = S.df
+    df = S.df; LOOKUPS = []
     L = _frame(S, lf)
     # status: a status column, else the notes (rulebook §8)
     if "status" in lf: L["status"] = dm.map_status(df[lf["status"]])
@@ -773,10 +775,11 @@ def build_sales(biz, infos, K, rd, items, cv, notes):
             amt = L.loc[ps, "line_amount"] if "line_amount" in L else pd.Series(0, index=L.index[ps])
             kind = k[ps].map(lambda x: "shipping_fee" if x.startswith(("phi ship", "phi giao")) else "points_discount" if x.startswith("dung") else "voucher_discount")
             oid = L.loc[ps, "order_id"].astype(str).str.strip() if "order_id" in L else None
-            P = pd.DataFrame({"order_id": oid, "kind": kind, "amount": _num(amt).abs()})
+            P = pd.DataFrame({"order_id": oid, "kind": kind, "amount": _num(amt).abs(), "name": L.loc[ps, "item_name"]})
             if "order_id" in L:
                 ids = L["order_id"].where(L["order_id"].astype(str).str.strip().isin(["", "nan", "None"]) == False).ffill()
                 P["order_id"] = ids[ps].astype(str).str.strip().values
+            P = P.drop_duplicates(["order_id", "kind", "amount", "name"])     # rulebook §8: identical rows of one order = export error
             piv = P.pivot_table(index="order_id", columns="kind", values="amount", aggfunc="sum").fillna(0)
             pts = k[ps & k.str.startswith("dung")].str.extract(r"dung (\d+) diem")[0].astype(float)
             L = L[~ps].reset_index(drop=True)
@@ -795,7 +798,7 @@ def build_sales(biz, infos, K, rd, items, cv, notes):
             mm = dict(zip(ti.df[b].astype(str).map(dm.key), ti.df[c]))
             L["item_type"] = L["item_name"].map(lambda x: mm.get(dm.key(x)) if isinstance(x, str) else None)
             if "item_group" not in L: L["item_group"] = L["item_type"]
-        notes.append(f"item names expanded through the lookup {ti.name}.{a} -> {b}")
+        notes.append(f"item names expanded through the lookup {ti.name}.{a} -> {b}"); LOOKUPS.append(ti.name)
     orders = None
     if H is not None:
         orders = _frame(H, hf)
@@ -814,10 +817,10 @@ def build_sales(biz, infos, K, rd, items, cv, notes):
         for c in PSEUDO_ORDERS.columns:
             if c not in O: O[c] = O["order_id"].map(PSEUDO_ORDERS[c])
             O[c] = O[c].fillna(0.0)
-        disc = [c for c in ("voucher_discount", "points_discount") if c in O]
-        if disc and "order_discount" not in O: O["order_discount"] = O[disc].sum(axis=1)
+        if "voucher_discount" in O and "order_discount" not in O: O["order_discount"] = O["voucher_discount"]   # voucher money off
+        if "points_discount" not in O: O["points_discount"] = 0.0                                                # (industry.voucher_total)
         if "shipping_fee" not in O and "shipping_fee" in PSEUDO_ORDERS: O["shipping_fee"] = O["order_id"].map(PSEUDO_ORDERS["shipping_fee"]).fillna(0)
-    return O, L, {"lines": S.name, "orders": H.name if H is not None else None, "fields": lf, "order_fields": hf}
+    return O, L, {"lines": S.name, "orders": H.name if H is not None else None, "fields": lf, "order_fields": hf, "lookups": LOOKUPS}
 
 
 PLATE = re.compile(r"\b(\d{2}\s?-?\s?[A-Z]{1,2}\d?\s?-?\s?\d{3}\.?\d{2}|\d{2}[A-Z]{1,2}\d?-?\d{4,5})\b")
@@ -853,7 +856,8 @@ def build_tickets(biz, K, notes):
     nc = g("note")
     if ac is None: ac = next((c for c in df.columns if ti.prof.get(c, {}).get("dtype") == "number"), None)
     oid = "T" + pd.Series(range(len(df))).astype(str)
-    mp = df[vc].map(split_vehicle) if vc else pd.Series([(None, None)] * len(df))
+    import industry
+    mp = df[vc].map(industry.split_vehicle) if vc else pd.Series([(None, None)] * len(df))
     staff = df[sc] if sc else None
     for st in K.get("staff_list", []):
         fn = st.col("staff_name") or st.col("staff")
@@ -861,15 +865,41 @@ def build_tickets(biz, K, notes):
     amt = _num(df[ac]).fillna(0) if ac else pd.Series(0.0, index=df.index)
     note = df[nc] if nc else pd.Series([None] * len(df))
     warranty = note.map(lambda x: isinstance(x, str) and "bao hanh" in dm.key(x)) | ((amt == 0) & note.notna())
-    lines = pd.DataFrame({"order_id": oid, "order_date": df[dc] if dc else pd.NaT, "item_name": df[tc] if tc else "phiếu", "qty": 1.0,
+    lines = pd.DataFrame({"order_id": oid, "order_date": df[dc] if dc else pd.NaT, "item_name": "phiếu sửa xe", "qty": 1.0,
                           "line_amount": amt, "staff": staff, "note": note})
     O, L = dm.finalize(lines, dedupe=False)
-    O["vehicle"] = df[vc].values if vc else None
-    O["vehicle_model"] = [m for m, _ in mp]; O["plate"] = [p for _, p in mp]
-    O["tasks"] = df[tc].values if tc else None; O["warranty"] = warranty.values
+    O["vehicle_cell"] = df[vc].values if vc else None
+    O["vehicle"] = [m for m, _ in mp]; O["plate"] = [p for _, p in mp]
+    O["work"] = df[tc].values if tc else None; O["warranty"] = warranty.values
     O["staff_raw"] = df[sc].values if sc else None
     notes.append(f"service book {ti.name}: one ticket per row ({len(O)} tickets, {int(warranty.sum())} warranty)")
     return O, L, {"lines": ti.name, "orders": None, "fields": {"order_date": dc, "vehicle": vc, "tasks": tc, "staff": sc, "amount": ac, "note": nc}}
+
+
+def build_member_list(K):
+    """C['customers']: the customer / member list (customer_id, customer_name, customer_group, phone, registered, points)."""
+    for ti in K.get("customers", []):
+        g = ti.col
+        c = dm.frame(ti.df, customer_id=g("customer_id", first=True), customer_name=g("customer_name", first=True) or g("customer_name") or g("item_name"),
+                     customer_group=g("customer_group", first=True), phone=g("phone"), registered=g("member_since", dtype=DATE), points=g("points", dtype=NUM))
+        if "customer_id" in c: c["customer_id"] = c["customer_id"].astype(str).str.strip()
+        return c
+    return None
+
+
+def debts_from_notes(O, rd, notes):
+    """orders whose debt is written only in a free-text note (README: 'đơn ghi nợ thì ghi khách đã đưa / còn thiếu bao nhiêu',
+    'ghi chú nợ ở Note là tình trạng của đơn tính đến hết ngày cuối dữ liệu'): debt_end = debt_from_note(note, total)."""
+    if "note" not in O or "debt_end" in O or "paid_total" in O: return O
+    said = any(re.search(r"\b(no|ghi no|con thieu|da dua)\b", fold(c)) and re.search(r"ghi chu|note", fold(c)) for c in rd["conventions"]) or \
+        any(re.search(r"ghi no thi ghi|con thieu|ghi chu no", fold(d)) for sec in rd["sections"] for d in sec["cols"].values())
+    if not said: return O
+    tot = O["total_payable"] if "total_payable" in O else pd.Series(np.nan, index=O.index)
+    de = [dm.debt_from_note(n, t) for n, t in zip(O["note"], tot)]
+    if sum(1 for x in de if x is not None) < 5: return O
+    O = O.copy(); O["debt_end"] = [x if x is not None else 0.0 for x in de]
+    notes.append(f"debts read from the order notes ({sum(1 for x in de if x)} orders still owing at the end of the data)")
+    return O
 
 
 def build_customers(K, O):
@@ -1026,14 +1056,24 @@ def build(biz):
     cv = build_conversions(K, rd, items, biz)
     O, L, rep = build_sales(biz, infos, K, rd, items, cv, notes)
     O = build_customers(K, O)
+    O = debts_from_notes(O, rd, notes)
     C = {"orders": O, "lines": L}
+    mem = build_member_list(K)
+    if mem is not None: C["customers"] = mem
+    for st in K.get("staff_list", []):
+        g = st.col
+        C["staff"] = dm.frame(st.df, staff=g("staff_name") or g("staff"), commission_pct=g("commission_pct", dtype=NUM), start_date=g("start_date", dtype=DATE))
+        break
     if items is not None: C["items"] = items
     if cv is not None: C["conversions"] = cv
     P = build_purchases(K, cv, items)
     if P is not None: C["purchases"] = P
     C = build_side(K, C, cv, items, notes)
     rep["kinds"] = {t: ti.kind for t, ti in infos.items()}
-    rep["unused"] = [t for t, ti in infos.items() if ti.kind is None]
+    used = {t for t, ti in infos.items() if ti.kind is not None and ti.kind not in ("suppliers",)} | set(rep.get("lookups", []))
+    if K.get("suppliers") and "purchases" in C: used |= {ti.name for ti in K["suppliers"]}
+    rep["used_tables"] = sorted(used); rep["unused"] = [t for t in infos if t not in used]
+    rep["fields"] = {k: v for k, v in (rep.get("fields") or {}).items()}
     return C, "; ".join(notes), rep
 
 

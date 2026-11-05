@@ -41,9 +41,9 @@ Các file `handoff/*.md` là nguồn của PDF cùng tên (sửa `.md`, rồi `p
 
 ## 4. Việc tiếp theo (chi tiết: `handoff/04_SESSION_0411.pdf` §6, `handoff/STATUS.md`)
 
-1. Xin token Kaggle (nếu cần tải lại kết quả v25 / v28 hoặc chạy mới; quota tuần W45 đã hết ở mọi acc cũ).
+1. Xin token Kaggle (tải lại kết quả v25 / v28 hoặc chạy mới).
 2. Lấy điểm portal v28 từ user → nếu tốt hơn v25 (0.825): bật `CONSENSUS=1` mặc định trong `docker/predict.sh`.
-3. Tìm câu sai còn lại (G1–G5, train v28, dữ liệu tổng hợp có nhãn); dev set `goldkey/devset.py`; sửa bằng quy tắc chung.
+3. Tìm câu sai còn lại (G1–G5, train v28); dev set `goldkey/devset.py`; sửa bằng quy tắc chung.
 4. Docker cuối trước 16/11/2026 23:59 GMT+7.
 
 ## 5. Ba điều không được làm

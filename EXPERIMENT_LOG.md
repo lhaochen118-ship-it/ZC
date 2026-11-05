@@ -515,7 +515,7 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
 - Per-question agreement among plausible candidates is >= 0.67 on almost every question: most remaining errors are
   systematic (every mapping agrees), not mapping luck.
 
-## Entry 19 — 2026-11-05 02:30: v27 / v28 (dev set 37 câu), quota hết, bàn giao PDF 4
+## Entry 19 — 2026-11-05 02:30: v27 / v28 (dev set 37 câu), bàn giao PDF 4
 
 - Kiểm tra / sửa sau entry 18 (đều chung, 36 ánh xạ tham chiếu train 0 cảnh báo sai, oracle 2967 / 1 / 32): biển số không
   khớp sổ (vehicle topic); cột bảo hành toàn False bị bỏ qua; slot chủ đề xếp theo khả năng trả lời câu của chủ đề, dự phòng

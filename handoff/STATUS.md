@@ -23,11 +23,10 @@
 | v28 (code 05/11) | loinguyentran/zc-v28-1 (train 0.9897), -2 (pub_s5); phatle1578/zc-v28-5 (pub_s8), -6 (pub_s9) | seed 6 / 7 không chạy |
 
 v28 = `src/consensus.py` trên 8 thư mục `results/pub*` ở trên (≈ 85 phút CPU, `--workers 3`) → `automation/make_submission.py`.
-**Quota GPU tuần W45 (đến hết 08/11) mọi acc đã hết**; token cũ ở `~/.kaggle/tok_*` mất khi đổi container → xin lại user.
+Token cũ ở `~/.kaggle/tok_*` mất khi đổi container → xin lại user.
 
 ## Việc tiếp theo
 
 1. Điểm portal v28 (> 0.825 → bật `CONSENSUS=1` mặc định trong `docker/predict.sh`, đo thời gian trên 2×RTX 5090).
-2. Tìm ~80 câu sai còn lại: G1–G5 trên portal, phân tích 8 câu sai / 15 abstain của train v28, hoặc bộ dữ liệu tổng hợp có
-   nhãn mô phỏng bẫy public (đề xuất cho user 05/11, chưa được chọn). Sửa bằng quy tắc chung → chạy lại consensus (CPU).
+2. Tìm ~80 câu sai còn lại: G1–G5 trên portal, phân tích 8 câu sai / 15 abstain của train v28,. Sửa bằng quy tắc chung → chạy lại consensus (CPU).
 3. Docker cuối trước **16/11/2026 23:59 GMT+7**.

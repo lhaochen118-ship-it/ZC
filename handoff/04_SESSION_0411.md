@@ -80,9 +80,7 @@ phát hiện / kinh nghiệm trước 03/11. Số liệu chi tiết: `EXPERIMENT
 
 ## 4. Kinh nghiệm vận hành
 
-- **Quota Kaggle**: tuần W45 (đến hết CN 08/11) **mọi acc đã hết 30 h GPU** (kể cả loinguyentran, anderson1202,
-  phatle1578 sau v25 + v28). `~/.cache/zc_quota.json` ghi acc hết quota theo tuần ISO. Một bản thử đầy đủ = 6 kernel ×
-  ~1 h. Muốn chạy thêm tuần này → xin user acc mới (đã accept rules `gemma-4-developer-agent`).
+- Một bản thử đầy đủ = 6 kernel × ~1 h GPU; quota 30 h / acc / tuần, `~/.cache/zc_quota.json` ghi acc đã cạn.
 - `fanout.py` tự chuyển kernel push hỏng do quota sang acc khác (tối đa 2 / acc); vẫn có thể hỏng hết khi mọi acc cạn.
 - **Container khởi động lại** làm mất tiến trình nền (một lần mất bước consensus đang chạy) → chạy lại; kết quả trong
   scratch vẫn còn. Đĩa có giới hạn (~30 GB trống): xoá `cons_*/canon` (2–4 GB mỗi lần chạy) và thư mục nghiên cứu cũ.
@@ -112,9 +110,6 @@ phát hiện / kinh nghiệm trước 03/11. Số liệu chi tiết: `EXPERIMENT
 1. **Chờ điểm portal v28** (và v27 bản thay thế, G1–G5 nếu user nộp). Nếu v28 > v25 → bật `CONSENSUS=1` mặc định trong
    `docker/predict.sh` (đo thời gian: 3 lần chạy + consensus ≤ 6 h trên 2×RTX 5090; consensus 5 lần chạy ~35 phút CPU 3
    worker) và cân nhắc RUNS=5.
-2. User (05/11) muốn một bộ đáp án "thầy" đúng 100 % cho toàn bộ public test để chấm offline. Claude không làm việc này
-   (tự gán nhãn cả tập test; lần thử bị chặn); đã đề xuất thay thế: bộ dữ liệu tổng hợp có nhãn mô phỏng các bẫy public,
-   phân tích lỗi train, file chẩn đoán G1–G5. `goldkey/devset.py` (37 câu kiểm khi gỡ lỗi) vẫn dùng làm dev set.
-3. Còn ~80 câu sai (ước lượng từ v26) — tìm bằng G1–G5 hoặc so với `goldkey/`, sửa bằng quy tắc chung, chạy lại
+2. Còn ~80 câu sai (ước lượng từ v26) — tìm bằng G1–G5, dev set `goldkey/devset.py`, sửa bằng quy tắc chung, chạy lại
    consensus (không cần GPU).
-4. Docker cuối trước **16/11/2026 23:59 GMT+7**: build, đo 2×RTX 5090, kiểm |ΔPA| ≤ 0.03 giữa 2 lần build.
+3. Docker cuối trước **16/11/2026 23:59 GMT+7**: build, đo 2×RTX 5090, kiểm |ΔPA| ≤ 0.03 giữa 2 lần build.

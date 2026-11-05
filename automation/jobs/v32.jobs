@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/para_pub_flow --script stress_flow.py --modes para:INPUT/zc-para/para_pub.jsonl --model Qwen/Qwen3.5-9B --budget 20400 --runs 3;run_kaggle.py train OUT/para_train_flow --script stress_flow.py --modes para:INPUT/zc-para/para_train.jsonl --model Qwen/Qwen3.5-9B --budget 20400 --runs 3

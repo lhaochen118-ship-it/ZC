@@ -285,6 +285,19 @@ NAME_RULES = [
     (r"gia cu", "old_price"),
     (r"gia moi", "new_price"),
     (r"imei", "imei"),
+    (r"so ky|so thang gop|so ky gop|ky han gop", "n_terms"),
+    (r"gop thang|gop moi thang|tien gop thang|gop ky|tien moi ky|gop moi ky", "per_term"),
+    (r"tra truoc|dat coc|tra lan dau", "prepaid"),
+    (r"han gop ngay|han gop|ngay han gop|ngay gop hang thang", "due_day"),
+    (r"ngay gop|ngay dong gop", "inst_pay_date"),
+    (r"da gop|tien da gop|so tien gop", "inst_paid"),
+    (r"ngay nhan|ngay nhan may|ngay tiep nhan", "received_date"),
+    (r"loi|loi may|tinh trang loi|hong", "fault"),
+    (r"gia thu|gia thu mua|tien thu may|gia thu may", "tradein_price"),
+    (r"tru vao stt so ban|tru vao|tru vao don|stt so ban", "tradein_order"),
+    (r"may thu|may cu thu", "tradein_item"),
+    (r"may|ten may|dong may|model|may ban", "item_name"),
+    (r"ngay tra|ngay khach tra", "pay_time"),
 ]
 _DESC = [(re.compile(p), r) for p, r in DESC_RULES]
 _NAME = [(re.compile(r"^(?:" + p + r")$"), r) for p, r in NAME_RULES]
@@ -400,6 +413,11 @@ def classify(ti):
     oid = ti.col("order_id", first=True) or ti.col("order_id")
     # industry books and side lists first (they also carry item / order columns)
     if f("vehicle") and f("tasks"): return "repair_tickets"
+    if f("n_terms") and (f("per_term") or f("prepaid")): return "instalments"
+    if f("tradein_price") and (f("tradein_order") or f("tradein_item")): return "tradein_book"
+    if f("received_date") and (f("imei") or f("fault")): return "warranty_book"
+    if not f("item_code", first=True) and f("debt_end") and f("paid_total", "amount") and f("pay_time", dtype=DATE) \
+            and not ti.col("order_id", first=True) and not f("qty", "unit_price", first=True): return "debt_book"
     if f("promo_name") and (f("date_from") or f("date_to")): return "promotions"
     if f("commission_pct") or (f("staff_name") and (f("start_date") or f("commission_pct"))): return "staff_list"
     if f("lot_id") and f("expiry") and item and not f("receipt_date", first=True) and ti.uniq(ti.col("lot_id")) > 0.95 \
@@ -813,6 +831,10 @@ def build_sales(biz, infos, K, rd, items, cv, notes):
             for c in PSEUDO_ORDERS.columns: orders[c] = orders["order_id"].astype(str).str.strip().map(PSEUDO_ORDERS[c])
     if "gross" in L: L = L.drop(columns=["gross"])
     O, L = dm.finalize(L, orders, conversions=cv, items=items)
+    for c in ("paid_total", "debt_end", "tradein", "phone", "address", "table_no", "area", "guests", "note", "imei_count"):
+        if c in L.columns and c not in O.columns and "order_id" in L.columns:   # order-level cells of a flat book (finalize keeps
+            first = L.dropna(subset=[c]).groupby(L["order_id"].astype(str))[c].first()   # only ORDER_COLS on the orders)
+            O[c] = O["order_id"].astype(str).map(first)
     if PSEUDO_ORDERS is not None and len(PSEUDO_ORDERS):
         for c in PSEUDO_ORDERS.columns:
             if c not in O: O[c] = O["order_id"].map(PSEUDO_ORDERS[c])
@@ -1043,6 +1065,79 @@ def build_side(K, C, cv, items, notes):
     return C
 
 
+def _order_ref(x):
+    """the sales order a side-book row refers to: 'STT 26' / 'đơn 26' / 26.0 -> '26' (the sales book's order number as text)."""
+    if x is None or (isinstance(x, float) and math.isnan(x)): return None
+    if isinstance(x, (int, float, np.integer, np.floating)): return str(int(x))
+    m = re.search(r"(\d+)", str(x)); return m.group(1) if m else None
+
+
+def _norm_ids(s):
+    """order codes as text, '26.0' -> '26' (numbers read from a sheet)."""
+    return s.map(lambda x: str(int(x)) if isinstance(x, (float, np.floating)) and not math.isnan(x) and float(x).is_integer()
+                 else (str(x).strip()[:-2] if isinstance(x, str) and re.fullmatch(r"\d+\.0", str(x).strip()) else (None if x is None or (isinstance(x, float) and math.isnan(x)) else str(x).strip())))
+
+
+def build_side_books(K, C, notes):
+    """books of a shop selling on credit / instalments / with trade-ins / warranty visits (public rulebook 'Cửa hàng điện thoại';
+    src/industry.py reads them): instalment book -> C['instalments'] + C['instalment_payments']; debt book -> C['payments']
+    + orders.paid_at_purchase; warranty book -> C['warranty']; trade-in book -> C['tradeins']."""
+    O = C["orders"]; oid = _norm_ids(O["order_id"])
+    O["order_id"] = oid
+    if "total_payable" not in O and "paid_total" in O:                # 'Khách trả' of a hand-kept book = what the order costs
+        O["total_payable"] = O["paid_total"]
+    for ti in K.get("instalments", []):
+        df = ti.df.copy(); g = ti.col
+        k = g("order_id") or g("line_no"); idc = _norm_ids(df[k]).ffill() if k else None
+        dc = next((c for c in ti.cols("order_date", dtype=DATE) if c != g("inst_pay_date")), None)
+        head = df[dc].notna() if dc else pd.Series(True, index=df.index)
+        I = dm.frame(df[head], order_id=idc[head] if idc is not None else None, buy_date=dc, customer_name=g("customer_name"), phone=g("phone"),
+                     item_name=g("item_name") or g("tradein_item"), price=g("unit_price", "price", "line_amount", "total_payable", dtype=NUM),
+                     prepaid=g("prepaid", dtype=NUM), n_terms=g("n_terms", dtype=NUM), per_term=g("per_term", dtype=NUM), due_day=g("due_day", dtype=NUM))
+        C["instalments"] = I.reset_index(drop=True)
+        pc, ac = g("inst_pay_date", dtype=DATE), g("inst_paid", dtype=NUM)
+        if pc and ac:
+            P = pd.DataFrame({"order_id": idc, "pay_date": pd.to_datetime(df[pc], errors="coerce").dt.normalize(), "amount": _num(df[ac])})
+            C["instalment_payments"] = P.dropna(subset=["pay_date", "amount"]).reset_index(drop=True)
+        notes.append(f"instalment book {ti.name}: {len(I)} contracts"); break
+    for ti in K.get("debt_book", []):
+        df = ti.df.copy(); g = ti.col
+        nc = g("note"); dc = next((c for c in ti.cols("order_date", dtype=DATE)), None)
+        ref = df[nc].map(_order_ref) if nc else None
+        if ref is None or ref.notna().mean() < 0.5: continue
+        ref = ref.ffill(); owed = _num(df[g("debt_end")]); head = owed.notna() & (df[dc].notna() if dc else True)
+        after = pd.Series(owed[head].values, index=ref[head].values); after = after[~after.index.duplicated()]
+        pc, ac = g("pay_time", dtype=DATE), g("paid_total", "amount", dtype=NUM)
+        pay = pd.DataFrame({"order_id": ref, "pay_date": pd.to_datetime(df[pc], errors="coerce").dt.normalize() if pc else pd.NaT,
+                            "amount": _num(df[ac]) if ac else np.nan}).dropna(subset=["pay_date", "amount"])
+        tot = pd.to_numeric(O["total_payable"], errors="coerce") if "total_payable" in O else None
+        if tot is not None:
+            pap = tot.copy()
+            m = O["order_id"].isin(set(after.index))
+            pap[m] = (tot[m] - O.loc[m, "order_id"].map(after)).clip(lower=0)
+            if C.get("instalments") is not None and "order_id" in C["instalments"]:
+                mi = O["order_id"].isin(set(C["instalments"]["order_id"].dropna().astype(str)))
+                pap[mi] = tot[mi]                                         # instalments are owed through the instalment book
+            O["paid_at_purchase"] = pap
+        C["payments"] = pay.reset_index(drop=True)
+        notes.append(f"debt book {ti.name}: {len(after)} orders owing after purchase, {len(pay)} repayments"); break
+    for ti in K.get("warranty_book", []):
+        g = ti.col; rc = g("received_date", dtype=DATE)
+        bc = next((c for c in ti.cols("order_date", dtype=DATE) if c != rc), None)
+        C["warranty"] = dm.frame(ti.df, date=rc, customer_name=g("customer_name"), phone=g("phone"), item_name=g("item_name") or g("tradein_item"),
+                                 imei=g("imei"), buy_date=bc, fault=g("fault")).reset_index(drop=True)
+        notes.append(f"warranty book {ti.name}: {len(ti.df)} visits"); break
+    for ti in K.get("tradein_book", []):
+        g = ti.col
+        T_ = dm.frame(ti.df, date=g("order_date", dtype=DATE), customer_name=g("customer_name"), phone=g("phone"), item_name=g("tradein_item") or g("item_name"),
+                      imei=g("imei"), amount=g("tradein_price", dtype=NUM), order_id=g("tradein_order"))
+        if "order_id" in T_: T_["order_id"] = T_["order_id"].map(_order_ref)
+        C["tradeins"] = T_.reset_index(drop=True)
+        notes.append(f"trade-in book {ti.name}: {len(T_)} phones taken"); break
+    C["orders"] = O
+    return C
+
+
 def build(biz):
     """raw tables of one business -> (C, NOTES, report)."""
     rd = parse_readme(biz.readme)
@@ -1069,6 +1164,8 @@ def build(biz):
     P = build_purchases(K, cv, items)
     if P is not None: C["purchases"] = P
     C = build_side(K, C, cv, items, notes)
+    C = build_side_books(K, C, notes)
+    if "lines" in C and "order_id" in C["lines"]: C["lines"]["order_id"] = _norm_ids(C["lines"]["order_id"])
     rep["kinds"] = {t: ti.kind for t, ti in infos.items()}
     used = {t for t, ti in infos.items() if ti.kind is not None and ti.kind not in ("suppliers",)} | set(rep.get("lookups", []))
     if K.get("suppliers") and "purchases" in C: used |= {ti.name for ti in K["suppliers"]}

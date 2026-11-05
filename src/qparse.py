@@ -67,6 +67,7 @@ def slang(t):
     t = re.sub(r"\bnhut\b", "nhat", t); t = re.sub(r"\b(ban|mua|ban ra|ban duoc) bao nhieu nhat\b", r"\1 nhieu nhat", t)   # southern 'nhứt'
     t = re.sub(r"\b(?:cat|danh) hang(?: ve)?\b", "nhap hang", t)
     t = re.sub(r"\btieu thu (duoc|ra|het)\b", r"ban \1", t)                # 'tiêu thụ được' = 'bán được'
+    t = re.sub(r"\bphai thanh toan\b", "phai tra", t)                        # 'khách phải thanh toán' = 'khách phải trả'
     t = re.sub(r"\bkhach (?:(trung binh|binh quan) )?chi tra\b", lambda m: "khach " + (m.group(1) + " " if m.group(1) else "") + "phai tra", t)
     t = re.sub(r"\b(tu|dat|tren|hon|duoi|it nhat|qua|vuot|khoang|toi|den|tro len) (\d+(?:[.,]\d+)?) ?cu\b", r"\1 \2 trieu", t)
     return re.sub(r"\b(\d+) ?tr ?(\d)\b", r"\1.\2 trieu", t)
@@ -405,7 +406,7 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
             if asks_money and has(r"con lai|con thieu|chua gop|chua tra|con no"):
                 return "ind_inst_remaining", ans("number", f"instalment_remaining({d}{cf})")
             return None
-        if has_ti and has(r"(?<!doanh )\bthu (?:lai |mua |vao )?may(?: cu)?\b|tien may cu|may cu (?:thu|tru)|thu cu doi moi") and \
+        if has_ti and has(r"(?<!doanh )\bthu (?:lai |mua |vao |duoc )?may(?: cu)?\b|tien may cu|may cu (?:thu|tru)|thu cu doi moi") and \
                 not has(r"ban (?:ra |duoc |dc )?(?:bao nhieu|may|bnhiu|bn) (?:may|chiec)|dien thoai cu|trung binh moi may|gia bao nhieu|moi may gia"):
             if has(r"khach phai tra|phai tra"):
                 if has(r"trung binh|binh quan|moi don|mot don|1 don"): return "ind_avg_payable", ans("number", f"avg_payable({P})") if P else None
@@ -418,7 +419,7 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
         if has(r"bao hanh") and P and has_w:
             if has(r"%|phan tram|ti le|chiem|so voi"): return "ind_warranty_rate", ans("percent", f"warranty_rate({P})")
             if has(r"dong may|may nao") and has(r"nhieu|nhat"): return "ind_top_warranty", ans("string", f"top_warranty_lines({P}, 1)[0]")
-            if has(r"may ban") and has(r"(?:bao nhieu|may|bnhiu|bn) may"): return "ind_devices_warranty", ans("number", f"devices_with_warranty({P}, {d})")
+            if has(r"may ban") and has(r"(?:bao nhieu|may|bnhiu|bn) (?:chiec )?may"): return "ind_devices_warranty", ans("number", f"devices_with_warranty({P}, {d})")
             if has(r"luot|bao nhieu|may|bnhiu"): return "ind_warranty_visits", ans("number", f"warranty_visits({P})")
             return None
         dev = has(r"\bmay\b(?! cu thu)|chiec|dien thoai") and P
@@ -544,10 +545,12 @@ def answer_kind_ok(t, tpl, code):
     if ty in ("number", "percent") and re.search(r"\b" + _ENT_NOUN + r"\s+nao\b|\bla ai\b|\bai la\b|\bai (?:\w+ ){0,4}nhat\b", t) \
             and not count_cue and not re.search(r"\bco\b.*\bnao\b.*\b(?:khong|ko|chua)\b", t): return False
     if ty == "number" and re.search(r"\b(?:ty le|ti le|phan tram)\b|(?<![\d.,])\s*%", t) and not re.search(r"\bbao nhieu tien\b", t): return False
-    if ty == "number" and _COUNT_CALL.search(code or "") and re.search(r"\bbao nhieu tien\b", t) \
-            and not re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + _ENT_NOUN + r"\b", t): return False
-    if ty == "string" and re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + _ENT_NOUN + r"\b", t) and not re.search(r"\bnao\b|\bla ai\b|\bla gi\b", t):
+    money_ask = re.search(r"\bbao nhieu tien\b", t) or (re.search(r"\btong (?:so )?tien\b(?! (?:hang )?(?:tu|tren|duoi|it nhat|hon|tro len))", t)
+                                                       and re.search(r"\bbao nhieu\b", t))
+    if ty == "number" and _COUNT_CALL.search(code or "") and money_ask and not re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + _ENT_NOUN + r"\b", t):
         return False
+    if ty == "string" and re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + _ENT_NOUN + r"\b", t) \
+            and not re.search(r"\b" + _ENT_NOUN + r"\s+nao\b|\bla ai\b|\bla gi\b", t): return False
     if "today_p(" in (code or "") and re.search(r"\b\d+\s*ngay\b|\bdau (?:nam|thang|tuan)\b|\btro lai day\b|\bnguoc lai\b|\bbat dau\b", t): return False
     if tpl == "revenue" and re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + UNITS + r"\b", t) and not re.search(r"\btien\b|doanh thu|dthu", t): return False
     if tpl == "revenue" and not re.search(r"\b(?:ban|doanh thu|dthu|doanh so|thu|kiem|bill|tien hang|duoc|revenue|sales)\b", t): return False
@@ -677,7 +680,7 @@ def _parse(q, today, shop=None):
     for _v in (item, f.get("group"), f.get("customer_group")):
         t = _mask(t, _v); t0 = _mask(t0, _v)
     pays = [lab for w, lab in PAY_WORDS if re.search(r"\b" + w + r"\b", t)]
-    chans = [lab for w, lab in CHAN_WORDS if re.search(r"(qua|ban|tai|kenh|dat|tren)\s+(?:\w+\s+)?" + w + r"\b", t) or (w in ("zalo", "shopee") and w in t)
+    chans = [lab for w, lab in CHAN_WORDS if re.search(r"(qua|ban|tai|kenh|dat|tren)\s+(?:\w+\s+)?" + w + r"\b(?! pham)", t) or (w in ("zalo", "shopee") and w in t)
              or (w in ("tai quay", "tai cua hang") and re.search(r"\b" + w + r"\b", t))]
     if re.search(r"\btai tiem\b", t) and "tại quầy" not in chans: chans.append("tại quầy")
     if re.search(r"\bsan thuong mai dien tu\b|\bsan tmdt\b", t) and "sàn TMĐT" not in chans: chans.append("sàn TMĐT")

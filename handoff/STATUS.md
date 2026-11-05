@@ -1,8 +1,30 @@
 # STATUS — trạng thái làm việc hiện tại (cập nhật liên tục; đọc file này đầu tiên khi tiếp tục)
 
-*Cập nhật: 2026-11-04 05:50 UTC. **Đang dừng theo yêu cầu user: chờ điểm portal của v26 (và chẩn đoán X1–X3).**
-Điểm portal: v22 0.71, v23 0.87 (đáp án / tập chấm khi đó; theo X2, v23 bây giờ ≈ 0.75), v24 0.747, **v25 0.825, v26 0.825**, X1 0.793, X2 0.756, X3 0.768 (EXPERIMENT_LOG entry 18). Token: 14 acc ở `~/.kaggle/tok_<user>` (mới: loinguyentran,
-anderson1202, phatle1578 — còn quota tuần W45; các acc cũ hết quota).*
+*Cập nhật: 2026-11-05 03:00 UTC. Đọc thêm `handoff/04_SESSION_0411.pdf` (khung 03/11 tối → 05/11: điểm, phát hiện đúng /
+sai, kinh nghiệm, việc dở). **Đang chờ user nộp v28** (+ v27 bản thay thế, G1–G5 nếu được). Song song: bộ đáp án tham chiếu
+`goldkey/` (user yêu cầu 05/11).*
+
+## Điểm portal (cùng đáp án hiện tại trừ v23)
+
+| File | Portal | Dev set 37 câu (`goldkey/devset.py`) |
+|---|---|---|
+| v23 | 0.87 (đáp án cũ; theo X2 ≈ 0.75 hiện tại) | — |
+| v24 | 0.747 | — |
+| v25 | 0.825 | 19 / 37 |
+| v26 | 0.825 | ~15 / 37 |
+| X1 / X2 / X3 | 0.793 / 0.756 / 0.768 | — |
+| v27 (bản thay thế) | chưa | 36 / 37 |
+| **v28** | **chưa — bản đề xuất** | **37 / 37** |
+
+## Kết quả Kaggle (tải lại được bằng token: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels output <acc>/<slug> -p <dir>`)
+
+| Bản | Kernel | Job |
+|---|---|---|
+| v25 (98d601f) | loinguyentran/zc-v25-1, -2; anderson1202/zc-v25-3, -4; phatle1578/zc-v25-5, -6 | train, pub, pub_s1, pub_s2, pub_s3, pub_s4 |
+| v28 (code 05/11 sáng) | loinguyentran/zc-v28-1 (train), -2 (pub_s5); phatle1578/zc-v28-5 (pub_s8), -6 (pub_s9) | seed 6 / 7 không chạy (hết quota) |
+
+- v28 = `src/consensus.py` trên 8 lần chạy public trên (lệnh: `automation/jobs/mksub5.sh` hoặc xem EXPERIMENT_LOG entry 19).
+- **Quota W45 (đến hết 08/11) mọi acc đã hết** → không chạy GPU thêm tuần này trừ khi user cấp acc mới.
 
 ## Mới (khung 04/11) — EXPERIMENT_LOG entry 17
 

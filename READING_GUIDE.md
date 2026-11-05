@@ -10,6 +10,7 @@ Cho Agent (hoặc người) nhận dự án ở khung chat mới. Đọc theo th
 | 2 | `handoff/STATUS.md` | Trạng thái sống: điểm portal, kernel đang chạy, việc tiếp theo |
 | 3 | `handoff/03_HANDOFF.pdf` | Mục tiêu, quyết định, vị trí mọi thứ, các bước tiếp theo |
 | 4 | `handoff/environment_summary.pdf` | Container, Kaggle (máy, acc, quota), máy chấm / Docker |
+| 5 | `handoff/04_SESSION_0411.pdf` | **Mới nhất (03–05/11)**: điểm v22–v28, đồng thuận ánh xạ, kiểm tra mới, sai lầm cần tránh, việc dở |
 
 ## 2. Khi cần hiểu sâu
 
@@ -39,18 +40,16 @@ Các file `handoff/*.md` là nguồn của PDF cùng tên (sửa `.md`, rồi `p
 8. `tests/` — `run_all.sh` (bộ CPU), `eval_lib.py` (oracle), `test_plausibility.py`, `test_mapping_fixes.py`.
 9. `docker/` — bài nộp cuối.
 
-## 4. Việc tiếp theo (tóm tắt; chi tiết ở `handoff/03_HANDOFF.pdf` §5)
+## 4. Việc tiếp theo (chi tiết: `handoff/04_SESSION_0411.pdf` §6, `handoff/STATUS.md`)
 
-1. Xin token Kaggle → `~/.kaggle/tok_<user>` (chmod 600); tải dữ liệu `nhatlong1103/zc-2026`; ingest train + public.
-2. Tải output **v21** (huyenco / mucnokieu) và **v22** (thnliu / duylnng) đang chạy trên Kaggle.
-3. Chấm train; tạo file nộp v21 / v22 với `automation/map_penalties.py` + `src/vote.py`; so từng câu với v19
-   (portal 0.687); push + gửi user.
-4. Ổn định ánh xạ giữa các lần chạy (gộp ứng viên) — đòn bẩy public lớn nhất.
-5. Tiếp tục tìm lỗi chung không cần nhãn (`automation/jobs/`), sửa bằng quy tắc tổng quát, giữ oracle 2967 / 1 / 32.
-6. Build + đo Docker trên 2×RTX 5090 trước hạn 16/11/2026.
+1. Xin token Kaggle (nếu cần tải lại kết quả v25 / v28 hoặc chạy mới; quota tuần W45 đã hết ở mọi acc cũ).
+2. Lấy điểm portal v28 từ user → nếu tốt hơn v25 (0.825): bật `CONSENSUS=1` mặc định trong `docker/predict.sh`.
+3. Bộ đáp án tham chiếu `goldkey/` (`goldkey/README.md`): chấm offline mọi bản sau, tìm câu sai còn lại, sửa bằng quy tắc chung.
+4. Docker cuối trước 16/11/2026 23:59 GMT+7.
 
 ## 5. Ba điều không được làm
 
-- Không fix theo id DN / câu, không gán nhãn tay đáp án public, không train trên test.
+- Không fix theo id DN / câu, không đưa đáp án public (kể cả `goldkey/`) vào `src/` hay prompt, không train trên test.
+  `goldkey/` chỉ để chấm offline (user yêu cầu 05/11).
 - Không đưa token vào code, commit, prompt hay báo cáo; không đụng kernel không phải `zc-*`.
 - Không đẩy kernel khi preflight chưa `PREFLIGHT OK`; không `pkill -f` theo mẫu có trong chính lệnh.

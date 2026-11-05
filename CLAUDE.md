@@ -1,8 +1,8 @@
 # CLAUDE.md — bộ nhớ dự án (Claude Code tự đọc file này mỗi phiên)
 
 Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3-0dny90`** (repo `lhaochen118-ship-it/ZC`).
-**Khung chat mới: đọc `READING_GUIDE.md` trước** (bàn giao 03/11: `handoff/STATUS.md`, `handoff/0[1-3]_*.pdf`,
-`handoff/environment_summary.pdf`). Đọc theo thứ tự: `README.md` → `docs/ZAIC_REQUIREMENTS.md` (yêu cầu user) → `docs/00_TASK.md` (đề) →
+**Khung chat mới: đọc `READING_GUIDE.md` trước** (bàn giao: `handoff/STATUS.md`, `handoff/0[1-4]_*.pdf` — PDF 4 = khung
+03–05/11 mới nhất, `handoff/environment_summary.pdf`). Đáp án tham chiếu public `goldkey/` chỉ để chấm offline. Đọc theo thứ tự: `README.md` → `docs/ZAIC_REQUIREMENTS.md` (yêu cầu user) → `docs/00_TASK.md` (đề) →
 `docs/04_DECISION_V3.md` (kiến trúc v3) → `docs/03_WORKFLOW.md` (quy trình, acc Kaggle) → `docs/05_GPU_OPTIMIZATION.md`
 → `EXPERIMENT_LOG.md`.
 

@@ -514,3 +514,18 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   consensus ranking with rule failures on non-topic questions and agreement among plausible candidates only.
 - Per-question agreement among plausible candidates is >= 0.67 on almost every question: most remaining errors are
   systematic (every mapping agrees), not mapping luck.
+
+## Entry 19 — 2026-11-05 02:30: v27 / v28 (dev set 37 câu), quota hết, bàn giao PDF 4
+
+- Kiểm tra / sửa sau entry 18 (đều chung, 36 ánh xạ tham chiếu train 0 cảnh báo sai, oracle 2967 / 1 / 32): biển số không
+  khớp sổ (vehicle topic); cột bảo hành toàn False bị bỏ qua; slot chủ đề xếp theo khả năng trả lời câu của chủ đề, dự phòng
+  4 slot, câu không chủ đề mà 2 ánh xạ đầu không trả lời được dùng thêm ứng viên hợp lý có chương trình luật trả lời được;
+  sổ nợ còn nợ mà C không nợ; ngày trả đọc mềm (dòng tiêu đề lẫn vào làm hỏng hàm nợ và che cảnh báo).
+- v27 lần đầu (gửi user) làm hỏng 6 câu ngày phải trả dev_004 (slot chủ đề lấy ứng viên không có ngày phải trả) → bản thay
+  thế 36 / 37 dev set. v28 = consensus 8 lần chạy (v25 ×5 + v28 seed 5 / 8 / 9; seed 6 / 7 không chạy vì hết quota):
+  **37 / 37 dev set**, 10 abstain (3 câu tổng nợ dev_014: mọi ứng viên thiếu sổ nợ hoặc sổ góp), so với v27 998 câu giống.
+  Train v28 (code mới): PA 0.9897 (2977 / 8 / 15).
+- Lệnh v28: `python3 src/consensus.py data/raw/public_test/public_test <cache_pub> <work> <work>/submission.jsonl
+  <8 thư mục results> --workers 3` (≈ 85 phút) → `automation/make_submission.py`.
+- Bàn giao: `handoff/04_SESSION_0411.{md,pdf}`, công cụ `automation/jobs/analysis/`, `goldkey/` (dev set + đáp án tham
+  chiếu đang làm theo yêu cầu user 05/11; chỉ để chấm offline).

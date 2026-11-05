@@ -42,6 +42,7 @@ def untelex(t):
             v = re.sub(r"(?<=[aou])w", "", v).replace("uow", "uo")
             if len(v) > 2 and v[-1] in "fsrxj" and re.search(r"[aeiouy]", v[:-1]): v = v[:-1]
             w = v
+        if w == "hong" and out and out[-1] in ("hoa", "hue"): out.append(w); continue   # 'hoa / huê hồng' = commission, not 'không'
         out.append(NEG.get(w, w))
     return dialect(" ".join(out))
 

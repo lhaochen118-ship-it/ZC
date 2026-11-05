@@ -79,7 +79,16 @@ def main():
             r = subprocess.run([sys.executable, os.path.join(ROOT, "src", script), split, out] + args + ["--fake-responder", ident],
                                capture_output=True, text=True, timeout=3600, env=dict(os.environ, ZC_SMOKE="1"))   # flows: 2 businesses
             if r.returncode != 0: fail(f"smoke of {script}:\n" + (r.stdout + r.stderr)[-3000:])
-            print(f"[4] smoke {script} on {j[1]}: rc 0, outputs {sorted(os.listdir(out))}", flush=True); continue
+            print(f"[4] smoke {script} on {j[1]}: rc 0, outputs {sorted(os.listdir(out))}", flush=True)
+            # the same job through the Kaggle wrapper, as on a CPU session (no nvidia-smi, no vLLM; pip offline so nothing
+            # local changes): run_kaggle.py's own code (split lookup, model lookup, GPU monitor) runs too (v30c: it did not)
+            out2 = out + "_wrap"
+            env = dict(os.environ, ZC_SMOKE="1", ZC_NO_VLLM="1", PIP_NO_INDEX="1", ZC_DATA=os.path.join(ROOT, "data", "raw"),
+                       PATH=":".join(d for d in os.environ.get("PATH", "").split(":") if not os.path.isfile(os.path.join(d, "nvidia-smi"))))
+            r = subprocess.run([sys.executable, os.path.join(ROOT, "src", "run_kaggle.py"), j[1], out2] + j[3:] + ["--fake-responder", ident],
+                               capture_output=True, text=True, timeout=3600, env=env)
+            if r.returncode != 0: fail(f"smoke of run_kaggle.py {' '.join(j[1:4])} (CPU session):\n" + (r.stdout + r.stderr)[-3000:])
+            print(f"[4] smoke run_kaggle.py {script} on {j[1]} (CPU session): rc 0", flush=True); continue
         for flag in ("--cache",):                                       # local paths for the smoke
             if flag in args: args[args.index(flag) + 1] = os.path.join(work, "cache")
         if "--budget" in args: args[args.index("--budget") + 1] = "600"

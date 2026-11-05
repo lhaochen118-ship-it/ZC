@@ -76,11 +76,15 @@ if "--model" in args:                                                 # weights 
     if local:                                                          # copy once to local disk: 4 GPU processes reading the
         src = os.path.dirname(local); dst = "/tmp/models/" + want        # network mount took 18 min in E2b
         os.makedirs("/tmp/models", exist_ok=True)
-        if not os.path.isfile(os.path.join(dst, "config.json")):
-            t = time.time()
-            if hashes: copy_verified(src, dst, hashes)
-            else: subprocess.run(["cp", "-r", src, dst])
-            print(f"model copied to {dst} from {src} in {time.time() - t:.0f}s", flush=True)
+        import fcntl                                                   # several jobs of one kernel: one copy, the others wait
+        with open(f"/tmp/models/.{want}.lock", "w") as lk:
+            fcntl.flock(lk, fcntl.LOCK_EX)
+            if not os.path.isfile(os.path.join(dst, ".complete")):
+                t = time.time()
+                if hashes: copy_verified(src, dst, hashes)
+                else: subprocess.run(["cp", "-r", src + "/.", dst], check=True)
+                open(os.path.join(dst, ".complete"), "w").write(src)
+                print(f"model copied to {dst} from {src} in {time.time() - t:.0f}s", flush=True)
         args[i] = dst
     elif hashes: print(f"MODEL NOT FOUND: no mounted copy of {args[i]} (models/{want}/ or a Kaggle Model with its files)", flush=True)
 os.makedirs(out, exist_ok=True)
@@ -92,16 +96,18 @@ try:                                                                  # library 
                                        "python", sys.version.split()[0], flush=True)    # same (pandas 2 / 3 differ on NaN keys)
 except Exception as e: print("versions:", e, flush=True)
 # GPU monitor: one sample per GPU every 5 s (utilisation %, memory MiB) -> OUT/gpu_monitor.csv, summary -> gpu_summary.json
-mon = subprocess.Popen(["nvidia-smi", "--query-gpu=index,utilization.gpu,memory.used,memory.total", "--format=csv,noheader,nounits", "-l", "5"],
-                       stdout=open(os.path.join(out, "gpu_monitor.csv"), "w"), stderr=subprocess.DEVNULL)
+try:                                                                  # CPU sessions have no nvidia-smi: no monitor (zc-v30c-*)
+    mon = subprocess.Popen(["nvidia-smi", "--query-gpu=index,utilization.gpu,memory.used,memory.total", "--format=csv,noheader,nounits", "-l", "5"],
+                           stdout=open(os.path.join(out, "gpu_monitor.csv"), "w"), stderr=subprocess.DEVNULL)
+except OSError: mon = None
 t0 = time.time()
 script = "agent.py"                                                   # --script <file>: another job of src/ (qnorm_llm.py)
 if "--script" in args: i = args.index("--script"); script = args[i + 1]; del args[i:i + 2]
 rc = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), script), split, out] + args).returncode
-mon.terminate()
+if mon is not None: mon.terminate()
 import json, collections
 g = collections.defaultdict(list)
-for line in open(os.path.join(out, "gpu_monitor.csv")):
+for line in (open(os.path.join(out, "gpu_monitor.csv")) if os.path.isfile(os.path.join(out, "gpu_monitor.csv")) else []):
     try: i, u, m, tot = [float(x) for x in line.split(",")]; g[int(i)].append((u, m, tot))
     except ValueError: pass
 summ = {f"gpu{i}": {"mean_util": round(sum(u for u, _, _ in v) / len(v), 1), "busy_share": round(sum(u >= 50 for u, _, _ in v) / len(v), 3),

@@ -232,6 +232,7 @@ class Normalizer:
         nhiêu'). None when the token is one syllable or no split is supported. Names of the shop's data never get here."""
         lw = w.lower()
         if len(lw) < 4 or len(re.findall(r"[aeiouy]+", strip_accents(lw))) < 2: return None
+        if strip_accents(lw) in getattr(self, "name_words", ()): return None   # a word of the shop's names ('samsung', 'soda')
         plain = lw.isascii()       # typed without accents: foreign words ('soda', 'combo', 'latte') look like syllables too, so
                                    # each part must be a chat abbreviation, a Telex-typed word or a frequent word of >= 3 letters
                                    # (a frequent 2-letter word only next to an abbreviation / Telex word: 'vebnhiu')
@@ -245,7 +246,7 @@ class Normalizer:
                 if ts: strong.add(x); t = max(ts, key=lambda t: self.uni[t]); return t, self.uni[t], True
             if plain:
                 nf = sum(self.forms[x].values()) if x in self.forms else 0
-                return (x, nf, len(x) >= 3) if nf >= 30 else None
+                return (x, nf, len(x) >= 3) if nf >= 10 else None
             if x in self.vocab and self.uni.get(x, 0) >= (1 if not x.isascii() else 3): return x, self.uni[x], True
             fx = strip_accents(x); nf = sum(self.forms[fx].values()) if fx in self.forms else 0
             if nf >= 3: return x, (nf if x.isascii() else max(1, nf // 4)), x.isascii()   # a known syllable ('cất' of 'cát')
@@ -276,18 +277,24 @@ class Normalizer:
             if prev: sc += 2.0 * math.log(1 + self.bi.get((prev, c), 0))
             if nxt: sc += 2.0 * math.log(1 + self.bi.get((c, nxt), 0))
             return sc
+        nb = getattr(self, "name_bigrams", set()); fp = strip_accents(prev).lower() if prev else None; fn = strip_accents(nxt).lower() if nxt else None
+        if strip_accents(lw) in self.forms: nb = set()                    # a known syllable with other accents ('hậu' of 'hấu') may be a
+                                                                          # real word the data lacks ('đường hậu giang'): no name pull
+        def in_name(c):                                                   # c completes a bigram of the shop's names with a neighbour
+            fc = strip_accents(c.split()[0]).lower(); lc = strip_accents(c.split()[-1]).lower()
+            return bool(nb) and ((fp is not None and (fp, fc) in nb) or (fn is not None and (lc, fn) in nb))
         cands = {}
         base = strip_accents(lw)
         if lw.isascii():                                                  # typed without accents: letters only (the accent
             if base in self.forms: return None                            # restoration step decides the accents)
             for e in self._edits(lw):
-                if e in self.forms and sum(self.forms[e].values()) >= 5:
+                if e in self.forms and (sum(self.forms[e].values()) >= 5 or in_name(e)):
                     cands[e] = math.log(1 + sum(self.forms[e].values())) + 2.0 * math.log(1 + sum(self.bi.get((prev, c), 0) for c in self.forms[e]) if prev else 1)
         else:
             for c, n in (self.forms.get(base) or {}).items():             # same letters, other accents ('mội' -> 'mỗi')
                 cands[c] = score(c) + 1.0
             for e in self._edits(lw):
-                if e in self.vocab and self.uni.get(e, 0) >= 3: cands[e] = max(cands.get(e, -1e9), score(e) + 0.5)
+                if e in self.vocab and (self.uni.get(e, 0) >= 3 or in_name(e)): cands[e] = max(cands.get(e, -1e9), score(e) + 0.5)
                 for c in (self.forms.get(strip_accents(e)) or {}):         # an edit + other accents ('dảm' -> 'giảm')
                     if self.uni.get(c, 0) >= 3: cands[c] = max(cands.get(c, -1e9), score(c) - 1.0)
         for i in range(2, len(lw) - 1):                                   # two words glued ('nhiềuđơn', 'ngàynào', 'thnày' = 'th' + 'này')
@@ -297,6 +304,7 @@ class Normalizer:
                 ca, cb = ABBR.get(a, a), ABBR.get(b, b)
                 cands[ca + " " + cb] = 0.5 * (score(a2) + score(b2)) + math.log(1 + self.bi.get((a2, b2), 0))
         def ctx(c):                                                       # a correction must fit its neighbours strongly: known
+            if in_name(c): return True                                    # (or rebuild a bigram of the shop's own names)
             ws = c.split(); first, last = ws[0], ws[-1]                   # bigrams worth >= log 21 together ('bao nhiêu tền' ->
             fs = self.forms.get(first, {first: 1}) if c.isascii() else {first: 1}   # 262 x 'nhiêu tiền'); a valid word outside
             ls = self.forms.get(last, {last: 1}) if c.isascii() else {last: 1}      # the vocabulary ('có tận tâm', 'đường hậu
@@ -305,8 +313,8 @@ class Normalizer:
             return math.log(1 + bp) + math.log(1 + bn) >= math.log(21)
         cands = {c: v for c, v in cands.items() if ctx(c)}
         if not cands: return None
-        best = max(cands, key=lambda c: (cands[c], c))
-        return best if cands[best] >= math.log(1 + 3) else None
+        best = max(cands, key=lambda c: (in_name(c), cands[c], c))
+        return best if cands[best] >= math.log(1 + 3) or in_name(best) else None
 
     def _typo_cands(self, lw):
         """accented candidate words for an unknown accented word: other tones of its letters, then pronunciation / letter edits
@@ -340,11 +348,11 @@ class Normalizer:
         - protection: a word typed next to its neighbour in a name ('Plusssz Max', 'Sino SP D20', 'Galaxy Z') is part
           of that name: no Telex decoding, abbreviation or context rule touches it."""
         idx = defaultdict(lambda: defaultdict(Counter)); idx_a = defaultdict(lambda: defaultdict(Counter))
-        self.name_bigrams = set(); self.name_upper = set()
+        self.name_bigrams = set(); self.name_upper = set(); self.name_words = set()
         for n in {unicodedata.normalize("NFC", str(n)) for n in names}:
             lw = WORD.findall(n)
             self.name_upper.update(w for w in lw if len(w) > 1 and w.isupper())
-            kl = [strip_accents(w).lower() for w in lw]; self.name_bigrams.update(zip(kl, kl[1:]))
+            kl = [strip_accents(w).lower() for w in lw]; self.name_bigrams.update(zip(kl, kl[1:])); self.name_words.update(kl)
             ws = re.findall(r"[^\W_]+", n)
             if len(ws) < 2 or len(ws) > 24: continue
             kw = [strip_accents(w).lower() for w in ws]; d = idx_a if n.isascii() else idx
@@ -487,6 +495,8 @@ class Normalizer:
             # ^ a question needs a question word: 'bán được nhieu tiền' asks 'bao nhiêu'; 'nhiều ... nhất / hơn' stays
             elif i == 0 and typed[i] in ("e", "E") and n > 1: out[i] = _case_like(typed[i], "ê")   # opening 'e' = 'ê' (hey), not 'ế'
             elif w == "chi" and i == n - 1 and prv == "là": out[i] = "gì"            # central 'là chi' = 'là gì'
+            elif w == "nên" and prv == "trở" and re.search(r"\d", "".join(seps[max(0, i - 6):i + 1])): out[i] = _case_like(out[i], "lên")
+            # ^ 'từ 15 triệu trở nên' = 'trở lên' (l / n spoken alike): a threshold, never 'become'
             # context words, only on words typed WITHOUT accents (the user's accents are never overridden)
             elif not typed[i].isascii(): continue
             elif w == "mọi" and i + 1 < n and low[i + 1] == "loại" and re.search(r"\bbao nhiêu\b", " ".join(low[i + 2:i + 5])): out[i] = _case_like(out[i], "mỗi")
@@ -494,7 +504,11 @@ class Normalizer:
                     and re.search(r"\bvới\b", " ".join(low[i + 2:])): out[i] = _case_like(out[i], "so")   # 'so 30 ngày ... với 30 ngày'
             elif w == "tục" and re.search(r",\s*$", seps[i]): out[i] = "tức"                          # ', tức hạn dùng từ ...'
             elif w == "nhưng" and i + 1 < n and low[i + 1] in ("đơn", "mặt", "sản", "khách", "lô", "món", "nhân", "hàng", "ngày"): out[i] = _case_like(out[i], "những")
-            elif w == "vị" and i + 1 < n and low[i + 1] in ("giao", "lỗi", "hết", "mua", "khách", "sai", "hỏng", "trễ", "hư"): out[i] = _case_like(out[i], "vì")
+            elif w in ("vị", "vỉ", "ví") and i + 1 < n and low[i + 1] in ("giao", "lỗi", "hết", "mua", "khách", "sai", "hỏng", "trễ", "hư", "gói",
+                                                                   "món", "nhầm", "đổi", "bị", "không", "chê", "thiếu"):
+                out[i] = _case_like(out[i], "vì")                                  # 'trả lại vi gói nhầm' = because ('ví điện tử' stays)
+            elif w == "đếm" and i + 1 < n and low[i + 1] in ("về", "lại") and re.search(r"\b(doanh thu|tiền|lãi|lời)\b", " ".join(low[i + 2:i + 7])):
+                out[i] = _case_like(out[i], "đem")                                 # 'dem ve bao nhieu doanh thu' = 'đem về'
             elif w == "mã" and i + 2 < n and low[i + 1] == "khách" and low[i + 2] in ("chưa", "không", "vẫn", "còn"): out[i] = _case_like(out[i], "mà")
         return out
 

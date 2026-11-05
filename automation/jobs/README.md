@@ -1,12 +1,8 @@
-# automation/jobs — job strings and analysis helpers of the 03/11 chat
+# automation/jobs — job chuẩn + công cụ
 
-- `v22.jobs`: the exact job string of v21 / v22 (train + public seed 0 / 1 / 2; one line, jobs separated by `;`).
-  Next version: copy it to `vNN.jobs`, change only what the experiment changes.
-- `prepreflight.py <jobs>`: runs `automation/preflight.py` and writes fanout's cache mark (so fanout starts at once).
-- `mksub.sh vNN` (env `S` = scratch dir with `runs/`): vote the 3 public runs of vNN → validate → `submissions/vNN/`.
-- Analysis of logged runs (no labels needed; they hard-code the old scratch dir — set `S` / paths before use):
-  - `rule_vs_llm.py <run>`: per business, questions where every LLM sample disagrees with the rule program;
-  - `agree_biz.py <run1> <run2> <run3>`: unanimous / majority / split per business;
-  - `alt_diff.py <results>`: rule answers on the chosen vs the runner-up mapping;
-  - `scan_maps.py <results>...`: rebuild every candidate mapping and list new-check hits (env `BIZ=dev_003,...`);
-  - `two_maps.py <results> <biz> <cand1> <cand2>`: rebuild two candidates, pickle their C for comparison.
+- `v25.jobs`, `v28.jobs`: chuỗi job chuẩn (train + 5 public, seed khác nhau; jobs cách nhau `;`). Bản sau: copy, đổi seed / cờ.
+- `prepreflight.py "<jobs>"`: chạy `automation/preflight.py`, ghi mark cache để `fanout.py` khởi chạy ngay.
+- `mksub5.sh vNN [vCONS]` (env `S` = scratch có `runs/`, `cache_pub/`): bỏ phiếu 5 lần chạy public của vNN + (tuỳ chọn)
+  consensus → `submissions/`.
+- Phân tích log (không cần nhãn): `rule_vs_llm.py`, `agree_biz.py` (3 lần chạy), `alt_diff.py`, `scan_maps.py`, `two_maps.py`.
+- `analysis/`: so sánh file nộp, chạy kiểm tra trên ứng viên ánh xạ, tự tính từ sổ thô (xem `analysis/README.md`).

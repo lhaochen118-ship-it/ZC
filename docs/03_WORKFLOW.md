@@ -1,6 +1,6 @@
 # 03 — Quy trình làm việc
 
-*Cập nhật 03/11/2026 14:30 UTC (thêm §5–§7 từ khung chat 03/11). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW_original.pdf`, `git show de4360e:handoff/04_RESEARCH_WORKFLOW.md`), đổi đích từ "paper" sang "điểm PA
+*Cập nhật 03/11/2026 14:30 UTC (thêm §5–§7 từ khung chat 03/11). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
 tối đa trên private test, trong 6 giờ, tái lập được".*
 
 ## 1. Nguyên tắc chung

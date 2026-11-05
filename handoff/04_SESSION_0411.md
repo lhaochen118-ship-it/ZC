@@ -1,8 +1,19 @@
 # PDF 4 — Khung chat 03/11 tối → 05/11/2026: v22 → v28, đồng thuận ánh xạ, kiểm tra mới, bài học
 
-*Đọc sau `READING_GUIDE.md`, `handoff/STATUS.md`. PDF 1–3 vẫn đúng cho phần trước 03/11; file này ghi phần mới:
-điểm portal, phát hiện đúng / sai, kinh nghiệm code + vận hành, việc dở dang. Số liệu chi tiết: `EXPERIMENT_LOG.md`
-entry 14–19.*
+*Đọc sau `READING_GUIDE.md`, `handoff/STATUS.md`. Đây là tài liệu bàn giao chính (thay PDF 3 cũ). PDF 1–2 vẫn đúng cho
+phát hiện / kinh nghiệm trước 03/11. Số liệu chi tiết: `EXPERIMENT_LOG.md` entry 14–19.*
+
+## 0. Mục tiêu, quyết định đã chốt, vị trí
+
+- Zalo AI Challenge 2026, track **DataMate**: PA cao nhất trên **private test**, nhanh nhất có thể; ≤ 15B tham số, offline,
+  ≤ 6 giờ trên 2×RTX 5090; nộp Docker trước **16/11/2026 23:59 GMT+7** (user nộp portal). Public test chỉ để phát triển.
+- Kiến trúc v3 (`docs/04_DECISION_V3.md`): ánh xạ theo DN (LLM viết) → bảng chuẩn → toolkit `dm.Shop` → luật đọc câu + mẫu
+  LLM → bỏ phiếu; Qwen3.5-9B FP8 (vLLM 0.32), Kaggle 4×L4 `--dp 4 --pipeline`. Cấu hình chuẩn: `automation/jobs/v28.jobs`.
+- Mọi sửa lỗi là **quy tắc chung + test**; oracle train giữ 2967 / 1 / 32; 36 ánh xạ tham chiếu train 0 cảnh báo sai;
+  không vá theo DN / câu; không đưa đáp án public vào `src/` / prompt; preflight trước mọi kernel; push ngay + gửi user.
+- Repo `lhaochen118-ship-it/ZC`, branch `claude/datamate-v3-0dny90`. Dữ liệu BTC: Kaggle dataset `nhatlong1103/zc-2026`
+  → `data/raw/{train,public_test}/` (không commit); ingest: `python3 src/ingest.py <split_dir> <cache_dir> 4`.
+- Bản đồ mã nguồn: `READING_GUIDE.md` §3 + §5 dưới đây.
 
 ## 1. Điểm portal và cách đọc chúng
 
@@ -93,7 +104,7 @@ entry 14–19.*
 | `automation/jobs/mksub5.sh` | bỏ phiếu 5 lần chạy + consensus → `submissions/` |
 | `automation/jobs/v25.jobs`, `v28.jobs` | job chuẩn (train + 5 public, seed khác nhau) |
 | `automation/jobs/analysis/` | công cụ so sánh / kiểm thô (chuyển từ scratch): `cmp.py`, `diff_detail.py`, `warnprobe.py`, `revprobe.py`, `debtprobe.py`, `phone_direct.py`, `dev014_direct.py` |
-| `goldkey/` | dev set đã kiểm + bộ đáp án tham chiếu đang làm (chỉ để đánh giá, **không** dùng trong `src/`) |
+| `goldkey/devset.py` | dev set 37 câu đã kiểm (chỉ để đánh giá, **không** dùng trong `src/`) |
 | `docker/predict.sh` | `CONSENSUS=1` tuỳ chọn (mặc định tắt) |
 
 ## 6. Việc dở dang / tiếp theo
@@ -101,8 +112,9 @@ entry 14–19.*
 1. **Chờ điểm portal v28** (và v27 bản thay thế, G1–G5 nếu user nộp). Nếu v28 > v25 → bật `CONSENSUS=1` mặc định trong
    `docker/predict.sh` (đo thời gian: 3 lần chạy + consensus ≤ 6 h trên 2×RTX 5090; consensus 5 lần chạy ~35 phút CPU 3
    worker) và cân nhắc RUNS=5.
-2. **Bộ đáp án tham chiếu `goldkey/`** (user yêu cầu 05/11): đáp án từng câu public do Claude tự tính từ dữ liệu thô theo
-   rulebook, kèm mức tin cậy; dùng để chấm offline các bản sau. Tiến độ ở `goldkey/README.md`.
+2. User (05/11) muốn một bộ đáp án "thầy" đúng 100 % cho toàn bộ public test để chấm offline. Claude không làm việc này
+   (tự gán nhãn cả tập test; lần thử bị chặn); đã đề xuất thay thế: bộ dữ liệu tổng hợp có nhãn mô phỏng các bẫy public,
+   phân tích lỗi train, file chẩn đoán G1–G5. `goldkey/devset.py` (37 câu kiểm khi gỡ lỗi) vẫn dùng làm dev set.
 3. Còn ~80 câu sai (ước lượng từ v26) — tìm bằng G1–G5 hoặc so với `goldkey/`, sửa bằng quy tắc chung, chạy lại
    consensus (không cần GPU).
 4. Docker cuối trước **16/11/2026 23:59 GMT+7**: build, đo 2×RTX 5090, kiểm |ΔPA| ≤ 0.03 giữa 2 lần build.

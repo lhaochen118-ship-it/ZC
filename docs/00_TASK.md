@@ -133,4 +133,4 @@ Giải: nhất 3,500 USD, nhì 2,500 USD, top 5 mỗi track có quà.
 
 20 đội đầu đều có **Score = 1** (nộp từ 26–28/10). Có hai khả năng: public test nhỏ/dễ, hoặc điểm hiển thị đã làm tròn.
 Nếu nhiều đội đạt PA ≈ 1 thì thứ hạng cuối sẽ do **private test** (khó hơn hoặc khác phân phối) và **thời gian
-inference** quyết định. Kế hoạch (`01_PLAN.md`) vì thế tối ưu cả độ bền trên dữ liệu mới lẫn tốc độ.
+inference** quyết định. Thiết kế (`04_DECISION_V3.md`) vì thế tối ưu cả độ bền trên dữ liệu mới lẫn tốc độ.

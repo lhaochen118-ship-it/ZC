@@ -11,7 +11,7 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 
 ## Bàn giao mới nhất (03/11/2026)
 
-`READING_GUIDE.md` (cách đọc repo + việc tiếp theo) → `handoff/STATUS.md` → `handoff/03_HANDOFF.pdf`.
+`READING_GUIDE.md` (cách đọc repo + việc tiếp theo) → `handoff/STATUS.md` → `handoff/04_SESSION_0411.pdf`.
 Kết quả khoa học: `handoff/01_SCIENTIFIC_FINDINGS.pdf`; kinh nghiệm kỹ thuật / vận hành:
 `handoff/02_ENGINEERING_OPS_LESSONS.pdf`; môi trường: `handoff/environment_summary.pdf`; quy trình:
 `docs/RESEARCH_WORKFLOW.pdf` (nguồn `docs/03_WORKFLOW.md`). Điểm portal tốt nhất: v19 = 0.687.
@@ -26,8 +26,6 @@ Kết quả khoa học: `handoff/01_SCIENTIFIC_FINDINGS.pdf`; kinh nghiệm kỹ
 | 4 | `docs/03_WORKFLOW.md` | Quy trình làm việc + nguyên tắc user đã chốt |
 | 5 | `docs/02_KAGGLE_OPS.md` | Vận hành Kaggle (GPU L4, dataset, lệnh) |
 | 6 | `docs/05_GPU_OPTIMIZATION.md` (tóm tắt trong `CLAUDE.md`) | Playbook tốc độ GPU: đo, data parallel, prefix cache, pipeline, work stealing |
-| — | `docs/01_PLAN.md` | Kế hoạch gốc + tổng quan paper |
-| — | `docs/history/` | Kết quả, bài học kỹ thuật, nhật ký thí nghiệm của v1 |
 | — | `EXPERIMENT_LOG.md` | Nhật ký thí nghiệm v3 |
 
 ## Cấu trúc

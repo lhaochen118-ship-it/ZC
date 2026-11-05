@@ -19,7 +19,7 @@ hiện tại, rồi quyết định giữ hay bỏ.*
 
 ## 2. Phương án v1 (branch `claude/peaceful-carson-0dny90`): LLM tự viết chương trình pandas cho từng câu
 
-| Chỉ số | Giá trị (nguồn: `docs/history/v1_findings.md`) |
+| Chỉ số | Giá trị (v1, xem git history) |
 |---|---|
 | PA train (cấu hình tốt nhất, 3000 câu) | dev +0.47 / holdout +0.44; top-answer đúng 71 % |
 | + thinking (354 câu holdout) | +0.51 |

@@ -2,7 +2,7 @@
 
 Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3-0dny90`** (repo `lhaochen118-ship-it/ZC`).
 **Khung chat mới: đọc `READING_GUIDE.md` trước** (bàn giao: `handoff/STATUS.md`, `handoff/0[1-4]_*.pdf` — PDF 4 = khung
-03–05/11 mới nhất, `handoff/environment_summary.pdf`). Đáp án tham chiếu public `goldkey/` chỉ để chấm offline. Đọc theo thứ tự: `README.md` → `docs/ZAIC_REQUIREMENTS.md` (yêu cầu user) → `docs/00_TASK.md` (đề) →
+03–05/11 mới nhất, `handoff/environment_summary.pdf`). Dev set 37 câu đã kiểm `goldkey/devset.py` chỉ để chấm offline. Đọc theo thứ tự: `README.md` → `docs/ZAIC_REQUIREMENTS.md` (yêu cầu user) → `docs/00_TASK.md` (đề) →
 `docs/04_DECISION_V3.md` (kiến trúc v3) → `docs/03_WORKFLOW.md` (quy trình, acc Kaggle) → `docs/05_GPU_OPTIMIZATION.md`
 → `EXPERIMENT_LOG.md`.
 
@@ -57,4 +57,4 @@ Mục tiêu: không còn run chết giữa chừng hay chạy cấu hình chưa 
 
 Test CPU (`tests/run_all.sh`, chi tiết `tests/README.md`): `test_ingest_robust`, `test_engine_batching`, `test_sandbox`,
 `test_agent_v2`, `test_pipeline` (gồm chạy CLI dưới `__main__`, `--dp 2` với claim, ngân sách thời gian), và
-`eval_lib.py` (oracle mapping train: 2666 đúng / 36 sai / 298 chưa đọc, 02/11).
+`eval_lib.py` (oracle, chạy với `--clean question_cleaning/train_questions_clean.jsonl`: phải giữ 2967 đúng / 1 sai / 32 chưa đọc).

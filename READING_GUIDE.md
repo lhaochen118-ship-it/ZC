@@ -8,7 +8,6 @@ Cho Agent (hoặc người) nhận dự án ở khung chat mới. Đọc theo th
 |---|---|---|
 | 1 | `CLAUDE.md` | Nguyên tắc user đã chốt, playbook GPU, cổng kiểm tra trước khi chạy |
 | 2 | `handoff/STATUS.md` | Trạng thái sống: điểm portal, kernel đang chạy, việc tiếp theo |
-| 3 | `handoff/03_HANDOFF.pdf` | Mục tiêu, quyết định, vị trí mọi thứ, các bước tiếp theo |
 | 4 | `handoff/environment_summary.pdf` | Container, Kaggle (máy, acc, quota), máy chấm / Docker |
 | 5 | `handoff/04_SESSION_0411.pdf` | **Mới nhất (03–05/11)**: điểm v22–v28, đồng thuận ánh xạ, kiểm tra mới, sai lầm cần tránh, việc dở |
 
@@ -44,12 +43,11 @@ Các file `handoff/*.md` là nguồn của PDF cùng tên (sửa `.md`, rồi `p
 
 1. Xin token Kaggle (nếu cần tải lại kết quả v25 / v28 hoặc chạy mới; quota tuần W45 đã hết ở mọi acc cũ).
 2. Lấy điểm portal v28 từ user → nếu tốt hơn v25 (0.825): bật `CONSENSUS=1` mặc định trong `docker/predict.sh`.
-3. Bộ đáp án tham chiếu `goldkey/` (`goldkey/README.md`): chấm offline mọi bản sau, tìm câu sai còn lại, sửa bằng quy tắc chung.
+3. Tìm câu sai còn lại (G1–G5, train v28, dữ liệu tổng hợp có nhãn); dev set `goldkey/devset.py`; sửa bằng quy tắc chung.
 4. Docker cuối trước 16/11/2026 23:59 GMT+7.
 
 ## 5. Ba điều không được làm
 
-- Không fix theo id DN / câu, không đưa đáp án public (kể cả `goldkey/`) vào `src/` hay prompt, không train trên test.
-  `goldkey/` chỉ để chấm offline (user yêu cầu 05/11).
+- Không fix theo id DN / câu, không đưa đáp án public (kể cả `goldkey/devset.py`) vào `src/` hay prompt, không train trên test.
 - Không đưa token vào code, commit, prompt hay báo cáo; không đụng kernel không phải `zc-*`.
 - Không đẩy kernel khi preflight chưa `PREFLIGHT OK`; không `pkill -f` theo mẫu có trong chính lệnh.

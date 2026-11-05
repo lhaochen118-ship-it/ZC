@@ -516,10 +516,39 @@ def _amounts(code):
     return {float(x) for x in re.findall(r"(?<![\w.])(\d+(?:\.\d+)?)(?![\w])", code)}
 
 
+_ENT_NOUN = r"(?:mat hang|mon|san pham|sp|hang|khach(?: hang)?|nha cung cap|ncc|dong (?:may|san pham|hang)|ngay|thang|nhan vien|tho|nhom(?: hang)?|loai)"
+_COUNT_CALL = re.compile(r"\b(?:n_\w+|len)\(")
+
+
+def answer_kind_ok(t, tpl, code):
+    """the kind of answer the question asks (which one / how many / what share / how much money / which period) against the
+    kind the program gives. A conflict means the reading missed the question's head (paraphrases of the public questions,
+    k=0 split: 11 of 74 wrong answers caught, no right one lost; no canonical train / public answer is affected):
+    'mặt hàng nào ... nhất' answered with a number, 'tỷ lệ / %' with a count, 'bao nhiêu tiền' with a count, 'bao nhiêu
+    mặt hàng' with a name, 'tính ngược lại 30 ngày' with today, 'bao nhiêu phần' with revenue, revenue without any word
+    of selling, 'thu nhập' read as 'nhập hàng', 'doanh thu chia cho số đơn' read as a total."""
+    m = re.search(r'"type": "(\w+)"', code or ""); ty = m.group(1) if m else None
+    count_cue = re.search(r"\b(?:bao nhieu|may|bnhiu|bn|so luong|dem)\b", t)
+    if ty in ("number", "percent") and re.search(r"\b" + _ENT_NOUN + r"\s+nao\b|\bla ai\b|\bai la\b|\bai (?:\w+ ){0,4}nhat\b", t) \
+            and not count_cue and not re.search(r"\bco\b.*\bnao\b.*\b(?:khong|ko|chua)\b", t): return False
+    if ty == "number" and re.search(r"\b(?:ty le|ti le|phan tram)\b|(?<![\d.,])\s*%", t) and not re.search(r"\bbao nhieu tien\b", t): return False
+    if ty == "number" and _COUNT_CALL.search(code or "") and re.search(r"\bbao nhieu tien\b", t) \
+            and not re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + _ENT_NOUN + r"\b", t): return False
+    if ty == "string" and re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + _ENT_NOUN + r"\b", t) and not re.search(r"\bnao\b|\bla ai\b|\bla gi\b", t):
+        return False
+    if "today_p(" in (code or "") and re.search(r"\b\d+\s*ngay\b|\bdau (?:nam|thang|tuan)\b|\btro lai day\b|\bnguoc lai\b|\bbat dau\b", t): return False
+    if tpl == "revenue" and re.search(r"\b(?:bao nhieu|may|bnhiu)\s+" + UNITS + r"\b", t) and not re.search(r"\btien\b|doanh thu|dthu", t): return False
+    if tpl == "revenue" and not re.search(r"\b(?:ban|doanh thu|dthu|doanh so|thu|kiem|bill|tien hang|duoc|revenue|sales)\b", t): return False
+    if (tpl or "").startswith("purchase") and re.search(r"\bthu nhap\b", t) and not re.search(r"(?<!thu )\bnhap\b", t): return False
+    if re.search(r"\bchia (?:cho|deu|trung binh)\b", t) and tpl in ("n_orders", "revenue", "n_customers", "purchase_total"): return False
+    return True
+
+
 def consistent(q, t, tpl, code):
     """precision guard: a rule answer is kept only when it uses what the question states. A money amount written in the
     question that the program never uses ('đạt từ 40.000.000 đồng chở lên' read as plain revenue), a count of days / customers /
     orders answered with money, are misreadings (typing noise hid the qualifier): no rule answer (the LLM or abstain decides)."""
+    if tpl not in ("subjective", "unrecorded") and not answer_kind_ok(t, tpl, code): return False
     if tpl in _NO_MONEY_TPL or tpl.startswith("ind_"): return True
     for m in _MONEY_Q.finditer(t):
         raw = m.group(1) or m.group(2); unit = m.group(0)[len(raw):].strip()
@@ -538,12 +567,40 @@ def consistent(q, t, tpl, code):
     return True
 
 
+def names_used(q, code, shop, tpl=""):
+    """every person the question names (a staff member's full name or code, a customer of >= 2 words) and the item it names
+    must appear in the program: a shop-wide answer to 'thợ Đoàn Bảo Phúc sửa được bao nhiêu xe' or 'bao nhiêu lượt thay dầu
+    láp' answers another question."""
+    V = getattr(shop, "_qp_vocab", None)
+    if V is None:
+        V = Vocab(shop)
+        try: shop._qp_vocab = V
+        except Exception: pass
+    tk = dm.key(q); code_k = dm.key(code or "")
+    def named(k): return len(k) >= 6 and re.search(r"(^|\s)" + re.escape(k) + r"(\s|$)", tk)
+    for k, sc in V.staff_names.items():                                 # a staff list: the program filters on the code or the name
+        if named(k) and k not in code_k and dm.key(str(sc)) not in code_k: return False
+    for k, v in V.staff.items():
+        if len(k.split()) >= 2 and named(k) and k not in code_k: return False
+    for k, v in V.customers.items():
+        if len(k.split()) >= 2 and not dm.is_walkin(v) and named(k) and k not in code_k: return False
+    if tpl.startswith("ind_"): return True                              # industry books name their own things (tasks: 'sửa xe')
+    item = V.find(tk, V.items, min_len=6)
+    if item is not None and len(dm.key(item).split()) >= 2 and dm.key(item) not in code_k and "item" not in (code or ""): return False
+    return True
+
+
 def parse(q, today, shop=None):
     """(template, code) for the common templates; None when unsure (also when the precision guard rejects the reading)."""
     r = _parse(q, today, shop)
     if r is None: return None
     t = untelex(K(q))
-    return r if consistent(q, t, r[0], r[1]) else None
+    if not consistent(q, t, r[0], r[1]): return None
+    if shop is not None and r[0] not in ("subjective", "unrecorded"):
+        try:
+            if not names_used(q, r[1], shop, r[0]): return None
+        except Exception: pass
+    return r
 
 
 def _parse(q, today, shop=None):

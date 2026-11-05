@@ -7,6 +7,9 @@ compile logs complete, the claim of a business is exclusive.
 Usage: test_pipeline.py <train_split_dir> <scratch_dir>"""
 import os, sys, json, shutil, argparse
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
+# the LLM mapping path is under test: the deterministic adapter fmt:automap (which maps biz_101 by itself, the production
+# choice) is hidden here and in the CLI / --dp subprocesses (canon.ref_programs reads ZC_HIDE_REFS)
+os.environ["ZC_HIDE_REFS"] = "fmt:automap"
 import agent, pipeline, qparse
 
 split, scratch = sys.argv[1], sys.argv[2]

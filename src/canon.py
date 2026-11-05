@@ -44,7 +44,8 @@ def ref_programs(formats=True):
     with tbl() so they apply to any export of that layout)."""
     out = {os.path.basename(f)[:-3]: open(f, encoding="utf-8").read() for f in sorted(glob.glob(os.path.join(REF_DIR, "*.py")))}
     if formats: out.update({"fmt:" + os.path.basename(f)[:-3]: open(f, encoding="utf-8").read() for f in sorted(glob.glob(os.path.join(FMT_DIR, "*.py")))})
-    return out
+    hide = {x for x in os.environ.get("ZC_HIDE_REFS", "").split(",") if x}   # tests of the LLM mapping path hide fmt:automap
+    return {k: v for k, v in out.items() if k not in hide}
 
 
 def used_tables(code):

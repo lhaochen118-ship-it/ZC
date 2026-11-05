@@ -1,32 +1,28 @@
 # STATUS — trạng thái hiện tại (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-05. Chi tiết khung 03–05/11: `handoff/04_SESSION_0411.pdf`. Đang chờ user nộp **v28**.*
+*Cập nhật 2026-11-05 (chiều). Chi tiết: `EXPERIMENT_LOG.md` entry 20. Bàn giao cũ (03–05/11): `handoff/04_SESSION_0411.pdf`.*
 
-## Điểm portal (các file chấm cùng đáp án hiện tại, trừ v23)
+## Kiến trúc hiện tại: rule-first (`docker/predict.sh` → `src/predict_flow.py`)
 
-| File | Portal | Dev set 37 câu (`goldkey/devset.py`) |
+| Stage | Thành phần | Kết quả |
 |---|---|---|
-| `submissions/v23` | 0.87 (đáp án cũ; theo X2 ≈ 0.75 hiện tại) | — |
-| `submissions/v25` | 0.825 (bỏ phiếu 5 lần chạy, train 0.9893) | 19 / 37 |
-| `submissions/v26` | 0.825 (consensus lần 1) | ~15 / 37 |
-| `submissions/diag/X1–X3` | 0.793 / 0.756 / 0.768 | — |
-| `submissions/v27` (bản thay thế) | chưa | 36 / 37 |
-| **`submissions/v28`** | **chưa — bản đề xuất** | **37 / 37** |
+| 1 (CPU, phút) | `src/rules_first.py` = `automap` (bảng thô → C) + `qnorm` (làm sạch câu) + `qparse` (câu → chương trình) + toolkit `dm` / `industry` | train **3000 / 3000**, public **1000 / 1000** (chấm nghiêm; cả pandas 2.3.3 + calamine của image) |
+| 2 (GPU) | `agent.py` (Qwen3.5-9B FP8, mô hình duy nhất) chỉ cho câu stage 1 bỏ lại, ánh xạ ưu tiên `fmt:automap` | đang đo trên Kaggle (`automation/jobs/v30.jobs`) |
 
-`submissions/diag/G1–G5` (v27 với một nhóm DN để abstain) đã tạo, chưa nộp: điểm(v27) − điểm(Gi) = đúng − sai của nhóm.
+Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=4 bash tests/eval_all.sh`): README xoá trắng train 3000 / 3000, public 0.991;
+câu không dấu 0.981; nhiễu chat 0.95–0.96 (phần thiếu chủ yếu là abstain → stage 2).
 
-## Kết quả Kaggle (tải lại: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels output <acc>/<slug> -p <dir>`)
+## Kaggle
 
-| Bản | Kernel | Job |
-|---|---|---|
-| v25 (98d601f) | loinguyentran/zc-v25-1, -2; anderson1202/zc-v25-3, -4; phatle1578/zc-v25-5, -6 | train, pub, pub_s1 … pub_s4 |
-| v28 (code 05/11) | loinguyentran/zc-v28-1 (train 0.9897), -2 (pub_s5); phatle1578/zc-v28-5 (pub_s8), -6 (pub_s9) | seed 6 / 7 không chạy |
-
-v28 = `src/consensus.py` trên 8 thư mục `results/pub*` ở trên (≈ 85 phút CPU, `--workers 3`) → `automation/make_submission.py`.
-Token cũ ở `~/.kaggle/tok_*` mất khi đổi container → xin lại user.
+- Acc phiên này (token ở `~/.kaggle/tok_<acc>`, mất khi đổi container): L4 quynhtran35, yuan1103, phatle1578; T4 yeshenhi,
+  mxuanquy. Lấp đầy 1 acc (2 GPU + 5 CPU) rồi mới sang acc khác.
+- Trọng số: Kaggle Model `danbth/qwen3-5-9b/transformers/default/1` (`--ms`), `run_kaggle.py` kiểm sha256 với Hugging Face
+  (`src/model_hashes.json`). Wheels: `--ks nhatlong1103/zc-assets`. Dữ liệu: `nhatlong1103/zc-2026`. Dataset trọng số cũ
+  (`nhatlong1103/…`, `lelynhan/…`) là private → 403 với acc mới.
+- v30 (GPU, quynhtran35): luồng nộp trên câu public / train biến đổi; v30cpu: luật trên môi trường Kaggle + seed nhiễu mới.
 
 ## Việc tiếp theo
 
-1. Điểm portal v28 (> 0.825 → bật `CONSENSUS=1` mặc định trong `docker/predict.sh`, đo thời gian trên 2×RTX 5090).
-2. Tìm ~80 câu sai còn lại: G1–G5 trên portal, phân tích 8 câu sai / 15 abstain của train v28. Sửa bằng quy tắc chung → chạy lại consensus (CPU).
-3. Docker cuối trước **16/11/2026 23:59 GMT+7**.
+1. Đọc kết quả v30: độ chính xác của stage 2 trên câu luật bỏ lại (> 50 % mới có lợi; nếu không → `LLM=0` hoặc ngưỡng).
+2. Paraphrase bằng LLM (`paraphrase_llm.py`) → kiểm độ bền của bộ đọc câu với cách hỏi mới; sửa bằng quy tắc chung.
+3. Tạo file nộp (`automation/make_submission.py`), build Docker, đo trên GPU trước **16/11/2026 23:59 GMT+7**.

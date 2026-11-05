@@ -133,12 +133,19 @@ def main():
     ap.add_argument("split"); ap.add_argument("cache"); ap.add_argument("ref")
     ap.add_argument("--map", default="auto"); ap.add_argument("--bids", default=""); ap.add_argument("--out", default="")
     ap.add_argument("--clean", default=""); ap.add_argument("--workers", type=int, default=4); ap.add_argument("--show", type=int, default=0)
-    ap.add_argument("--perturb-q", default="", help="stress test: accentfree | noise:<seed> (questions rewritten, then cleaned at run time)")
+    ap.add_argument("--perturb-q", default="", help="stress test: accentfree | noise:<seed> (questions rewritten, then cleaned at run time) | "
+                    "para:<paraphrases.jsonl> (LLM paraphrases, scored by the original question's reference)")
     ap.add_argument("--perturb-data", default="", help="stress test: noreadme (the README of every business blanked)")
     a = ap.parse_args()
     qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8")]
     refs = score.load(a.ref)
     clean = "QNORM" if a.clean == "qnorm" else {r["id"]: r["clean"] for r in map(json.loads, open(a.clean, encoding="utf-8"))} if a.clean else {}
+    if a.perturb_q.startswith("para:"):                                 # LLM paraphrases (src/paraphrase_llm.py): every kept one
+        orig = {q["id"]: q for q in qs}; qs = []                       # is a question scored by the original's reference
+        for r in map(json.loads, open(a.perturb_q[5:], encoding="utf-8")):
+            if r.get("ok") and r["id"] in orig:
+                pid = f"{r['id']}~p{r['k']}"; qs.append(dict(orig[r["id"]], id=pid, question=r["paraphrase"])); refs[pid] = refs[r["id"]]
+        a.perturb_q = ""; clean = "QNORM"
     by = defaultdict(list)
     for q in qs: by[q["business_id"]].append(q)
     bids = [b for b in sorted(by) if not a.bids or b in a.bids.split(",")]

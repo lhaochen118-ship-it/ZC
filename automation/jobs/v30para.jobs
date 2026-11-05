@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/para_pub --script paraphrase_llm.py --model Qwen/Qwen3.5-9B --n 3 --quant fp8;run_kaggle.py train OUT/para_train --script paraphrase_llm.py --model Qwen/Qwen3.5-9B --n 2 --quant fp8

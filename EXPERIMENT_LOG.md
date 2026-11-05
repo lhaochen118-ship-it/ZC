@@ -529,3 +529,29 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   <8 thư mục results> --workers 3` (≈ 85 phút) → `automation/make_submission.py`.
 - Bàn giao: `handoff/04_SESSION_0411.{md,pdf}`, công cụ `automation/jobs/analysis/`, `goldkey/` (dev set + đáp án tham
   chiếu đang làm theo yêu cầu user 05/11; chỉ để chấm offline).
+
+## Entry 20 — 2026-11-05 13:30: khung tất định (automap + qnorm + qparse + toolkit) — train 3000 / 3000, public 1000 / 1000
+
+- **Kiến trúc mới (rule-first):** `src/automap.py` ánh xạ bảng thô → C từ README (mô tả cột, định nghĩa in đậm) + từ điển
+  tên cột (khớp đúng, rồi khớp tiền tố) + hồ sơ giá trị (trạng thái, PTTT, kênh, SĐT, mã) + đồng nhất thức tiền của đơn
+  (đã trả = tổng − nợ …); phân loại bảng theo vai trò cột (đơn, dòng, phiếu nhập, lô, thanh toán, sổ góp, sổ nợ, phiếu sửa
+  …). `src/qnorm.py` làm sạch câu hỏi; `src/qparse.py` đọc câu → chương trình trên toolkit `dm` / `industry`; bộ chặn độ
+  chính xác (`consistent`, thiếu thông tin → unanswerable). Không dùng ánh xạ tham chiếu train, không LLM.
+- **Điểm (chấm nghiêm, `tests/eval_split.py`):** train 3000 / 3000, public 1000 / 1000; cả dưới pandas 2.3.3 + calamine
+  (phiên bản của image Docker) lẫn pandas 3.0.5.
+- **Kiểm tra tổng quát hoá (`tests/eval_all.sh`, câu biến đổi bằng `src/perturb.py`, không dùng để khớp):** README bị xoá
+  trắng: train 0.862 → 3000 / 3000 (sau các quy tắc độc lập README), public 0.991; câu không dấu 0.981; nhiễu chat 3 seed
+  0.948 / 0.957 / 0.962 — phần thiếu chủ yếu là abstain (câu chuyển cho LLM ở stage 2).
+- **Sai dưới nhiễu → sửa chung:** từ dính không tách được (`cấthàng`, `củtrở`, `huybao`, `vebnhiu`, `hàngkokê`) →
+  `glue_segment` (token ≥ 2 âm tiết chưa biết → tách thành từ đã biết; token không dấu cần từ viết tắt / Telex hoặc từ
+  ≥ 3 chữ phổ biến để không tách từ ngoại `soda`, `combo`); từ vùng miền 2 chữ (`ke` = kệ) khi khớp nguyên tên hàng;
+  câu tiền trả góp phải có từ hỏi tiền.
+- **Luồng nộp mới (`docker/predict.sh` → `src/predict_flow.py`):** stage 1 `src/rules_first.py` (CPU, public 91 s với 3
+  worker: 1000 / 1000 trả lời, 0 chờ) — mọi đáp án luật là cuối cùng; stage 2 chỉ cho câu luật bỏ lại: `agent.py`
+  (Qwen3.5-9B, mô hình duy nhất, 9B ≤ 15B) với `--prefer-map fmt:automap --adj-rows move`, bỏ phiếu nhiều lần chạy, gộp
+  lại mỗi 20 s (`src/merge_sub.py`, luật trước).
+- **Kaggle:** trọng số Qwen3.5-9B của các acc cũ là dataset private (403 với acc mới) → dùng Kaggle Model
+  `danbth/qwen3-5-9b` (bản sao HF) và `run_kaggle.py` kiểm sha256 từng file so với Hugging Face (`src/model_hashes.json`)
+  khi chép, sai là dừng. Job xác nhận GPU: `automation/jobs/v30.jobs` (luồng nộp trên câu public / train biến đổi: đo chất
+  lượng LLM ở đúng các câu luật bỏ lại); CPU: `v30cpu.jobs` (luật trên môi trường Kaggle + seed nhiễu mới chưa dùng khi
+  phát triển: ước lượng không thiên lệch).

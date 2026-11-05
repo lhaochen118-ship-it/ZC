@@ -6,6 +6,9 @@ executed and voted, Unanswerable becomes an `unanswerable` answer, and the run i
 Usage: test_agent_v2.py <train_split_dir> <scratch_dir>"""
 import os, sys, json, shutil, argparse
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
+# this test exercises the LLM mapping + repair path: the deterministic adapter fmt:automap maps biz_101 by itself (the
+# production choice, --prefer-map), so it is hidden here (canon.ref_programs reads ZC_HIDE_REFS)
+os.environ["ZC_HIDE_REFS"] = "fmt:automap"
 import agent
 
 split, scratch = sys.argv[1], sys.argv[2]

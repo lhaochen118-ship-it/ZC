@@ -1,8 +1,7 @@
 # 01 — Scientific Findings (DataMate, Zalo AI Challenge 2026)
 
 *Bàn giao ngày 2026-10-30 (branch `datamate`, repo `lhaochen118-ship-it/ZC`). Tài liệu này nêu đóng góp, ý nghĩa, kết
-quả tích cực và tiêu cực, bằng chứng và điều kiện kiểm chứng. **Chưa có điểm PA nào đo được trên dữ liệu có đáp án**
-(các run có đáp án vẫn đang chạy lúc bàn giao, xem `RUNNING_KERNELS.md`).*
+quả tích cực và tiêu cực, bằng chứng và điều kiện kiểm chứng. Điểm PA duy nhất đo được: **−0.14 trên 150 câu train** (E2b, code cũ), xem §3.*
 
 ## 1. Bài toán và hệ quả của thước đo
 
@@ -75,6 +74,30 @@ Test đầu-cuối không GPU (`tests/test_agent_local.py`, FakeEngine): đúng 
 | Vòng tự kiểm tra (kết quả 0/rỗng) | 246 lần | cần đo xem có cải thiện không (chưa có đáp án) |
 | Thông lượng | 110–170 token/s mỗi L4 (kỳ vọng ≥ 1,500) | **tiêu cực**: prefix cache bị đẩy ra liên tục (đã sửa, chưa đo lại) |
 
+**E2b train — điểm PA đầu tiên trên đáp án thật** (150/300 câu: shard 1 và 3 xong; shard 2 chết vì prompt quá dài;
+shard 0 treo tới khi kernel hết 12 giờ; code cũ: còn lỗi `1,134tr`, chưa sinh theo nhóm prefix). Phân tích:
+`python3 src/analyze.py <logs> data/raw/train/train/answers.jsonl`.
+
+| Đo | Giá trị |
+|---|---|
+| **PA (τ = 0.5)** | **−0.14** (57 đúng, 78 sai, 15 abstain) |
+| Độ chính xác từng mẫu riêng lẻ | nhánh A 30 %, nhánh B 37–41 % |
+| Đúng theo tỷ lệ phiếu | 4/4: 65 % (60 câu); 3/4: 23 %; 2/4: 24 %; 1/4: 17 % |
+| PA nếu chỉ trả lời khi 4/4 (τ = 1.0, trong mẫu) | +0.12 |
+| Theo type | number −0.10 (97 câu), percent 0.00, list −0.83, string −0.71, date +0.45 |
+
+**Kết luận:**
+- (1) Độ chính xác từng chương trình (~37 %) là nút thắt; voting chỉ đáng tin khi đồng thuận tuyệt đối.
+- (2) τ phải cao (≥ 1.0 với K = 4) cho tới khi độ chính xác tăng.
+- (3) Lỗi ngữ nghĩa lặp lại, sửa được bằng prompt/helper tổng quát:
+  - **khách lẻ bị tính là khách** (`"Khách lẻ"`, `"lẻ"`, `"kl"` trong top khách hàng);
+  - trả `"Giảm 1.79%"` (string) thay vì percent `-1.79`;
+  - trả table khi câu hỏi cần list;
+  - đếm dòng thay vì đơn (147 so với 59);
+  - doanh thu không lọc ngày (5.37 tỷ so với 8.1 triệu);
+  - số đơn huỷ sai (170 so với 61).
+- (4) Lỗi chương trình hàng đầu: sai tên cột (`'Thời gian'` 59, `'Ngày bán'` 21), ngày ngoài phạm vi.
+
 **E2c public test** (code mới nhất: bảo vệ độ dài prompt, sinh theo nhóm prefix, chép model cục bộ; 1000/1000 câu):
 
 | Đo | E2b | E2c |
@@ -112,8 +135,8 @@ Lỗi chương trình hàng đầu ở E2c giống E2b: ngày ngoài phạm vi (
 
 ## 4. Hạn chế và điều kiện kiểm chứng
 
-- **Chưa có PA trên train** cho bất kỳ cấu hình LLM nào. Mọi kết luận về độ chính xác đang chờ e1b / e1c / e2b
-  (`RUNNING_KERNELS.md`); e1b, e1c, e2b dùng code cũ còn lỗi (xem bảng ở đó), nên số của chúng là cận dưới.
+- PA duy nhất đo được: **−0.14 trên 150 câu train** (E2b, code cũ, chỉ 15 DN). Cỡ mẫu nhỏ và code có lỗi đã biết;
+  phải đo lại bằng code mới trên toàn bộ train (dev / holdout).
 - Ngưỡng τ, tỷ lệ K giữa hai nhánh, có giữ compile hay không phải chọn trên DN dev (`biz_101`–`biz_120`) và báo cáo
   trên holdout (`biz_121`–`biz_130`); public chỉ để đối chiếu.
 - Bộ làm sạch được phát triển nhìn cả train và public (audit chạy trên cả hai); bộ test tổng hợp là bằng chứng độc lập

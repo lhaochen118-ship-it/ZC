@@ -32,7 +32,7 @@ trong `hmm-develop`, giữ lịch sử; nội dung HMM đã bỏ, khôi phục �
 | Bộ làm sạch | Xong, đã kiểm chứng (audit 0 cột lỗi, 12/12 biến thể tổng hợp, chương trình viết tay khớp tuyệt đối) |
 | Agent v1 | Compile + 2 nhánh + sửa lỗi + tự kiểm tra + vote + ngân sách thời gian + DP. Test không GPU: đạt |
 | Hạ tầng Kaggle | fanout / make_kernel / run_kernel / watch_done; assets offline public; L4 đã xác nhận |
-| Đo độ chính xác | **Chưa có PA nào.** 3 kernel train/baseline còn chạy (`handoff/RUNNING_KERNELS.md`); E2c public xong (không có đáp án) |
+| Đo độ chính xác | **PA = −0.14 trên 150 câu train** (E2b, code cũ; từng chương trình đúng ~37 %, 4/4 phiếu đúng 65 %). Không còn kernel nào chạy |
 | Fine-tune | `harvest.py`, `train_sft.py` viết xong, chưa chạy |
 | Docker | File xong (`docker/`, hướng dẫn `docker/SETUP_DOCKER.md`); user sẽ build trên máy mình; chưa có Docker guideline của BTC |
 
@@ -63,6 +63,19 @@ trong `hmm-develop`, giữ lịch sử; nội dung HMM đã bỏ, khôi phục �
    ```
 
 ### Bước 1 — Khắc phục hết lỗi đã mắc (user yêu cầu)
+
+**Ưu tiên số 1 sau E2b:** độ chính xác từng chương trình chỉ ~37 % → PA âm.
+
+Sửa lỗi ngữ nghĩa bằng prompt/helper tổng quát (không theo DN):
+
+- khách lẻ / vãng lai / `kl` / trống không phải khách (loại khỏi xếp hạng khách);
+- câu hỏi % thay đổi → `percent` số có dấu, không phải chuỗi;
+- "liệt kê / top k là ai" → `list` tên, không phải `table`;
+- số đơn = số mã đơn duy nhất (không phải số dòng);
+- luôn lọc kỳ trước khi cộng;
+- trước khi kết luận, in kiểm tra (số dòng sau lọc, giá trị trạng thái).
+
+Đặt τ = 1.0 (K = 4) cho tới khi có bằng chứng holdout khác.
 
 Từ `01_SCIENTIFIC_FINDINGS.md` §3 và `02_ENGINEERING_OPS_NOTES.md` §5:
 

@@ -54,3 +54,10 @@ Code mới nhất, 4×L4, `--compile --k 4 --kc 4 --dp 4`: 1000/1000 câu; nạp
 vòng trả lời đầu 176–234 tok/s mỗi L4 (+30 %), compile 21–57 tok/s; 4/4 phiếu 26 %, 2/4 45 %; compile 3/14 DN; lỗi
 hàng đầu không đổi (ngày ngoài phạm vi, tên cột, `.str`, thiếu ANSWER, đọc file). Không tạo file nộp (user: chỉ khi
 kết quả tốt). Chi tiết: `handoff/01_SCIENTIFIC_FINDINGS.md` §3.
+
+## Entry 4 — 2026-10-31: E2b train (PA đầu tiên)
+
+Kernel bị cắt ở 12 h; còn 150/300 câu (shard 2 chết vì prompt > max_len, shard 0 treo). **PA = −0.14** (57 đúng / 78 sai /
+15 abstain). Mẫu đơn lẻ đúng ~37 %; đáp án 4/4 phiếu đúng 65 %, 3/4 → 23 %, 2/4 → 24 %. τ = 1.0 cho PA +0.12 (trong
+mẫu). Lỗi ngữ nghĩa: tính khách lẻ là khách, "Giảm 1.79%" (string) thay vì percent, table thay vì list, đếm dòng thay vì
+đơn, không lọc kỳ. Chi tiết: `handoff/01_SCIENTIFIC_FINDINGS.md` §3.

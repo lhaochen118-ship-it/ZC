@@ -28,5 +28,5 @@ Token cũ ở `~/.kaggle/tok_*` mất khi đổi container → xin lại user.
 ## Việc tiếp theo
 
 1. Điểm portal v28 (> 0.825 → bật `CONSENSUS=1` mặc định trong `docker/predict.sh`, đo thời gian trên 2×RTX 5090).
-2. Tìm ~80 câu sai còn lại: G1–G5 trên portal, phân tích 8 câu sai / 15 abstain của train v28,. Sửa bằng quy tắc chung → chạy lại consensus (CPU).
+2. Tìm ~80 câu sai còn lại: G1–G5 trên portal, phân tích 8 câu sai / 15 abstain của train v28. Sửa bằng quy tắc chung → chạy lại consensus (CPU).
 3. Docker cuối trước **16/11/2026 23:59 GMT+7**.

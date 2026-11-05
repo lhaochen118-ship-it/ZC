@@ -65,7 +65,10 @@ docker/run_public_test.sh ~/zc_data/public_test/public_test ./result_public
 
 - Kết quả: `result_public/submission.jsonl` (đem nộp lên portal để xem điểm public), log từng câu ở
   `result_public/logs/<id>.json`, log tổng ở `result_public/logs/run.log`.
-- `submission.jsonl` được ghi dần (mỗi câu ghi ngay khi có đáp án), nên dừng giữa chừng vẫn có các câu đã xong.
+- `submission.jsonl` đủ mọi câu ngay sau stage 1 (luật, CPU, vài phút); stage 2 (mô hình, chỉ câu luật bỏ lại) gộp lại
+  mỗi 20 s, luật luôn ưu tiên — dừng giữa chừng vẫn giữ mọi đáp án đã có. Public: stage 1 trả lời đủ 1000 câu nên stage 2
+  không chạy (dòng `stage 1: 1000 answered by the rules, 0 left for the model` trong `run.log`).
+- Chạy chỉ luật (không nạp mô hình): `DOCKER_ARGS="-e LLM=0"`.
 
 ### 4b. GPU nhỏ hơn (16 GB)
 

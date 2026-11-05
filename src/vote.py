@@ -7,7 +7,10 @@ accurate and more stable than any single run (train, 4 runs: PA 0.980 vs 0.928-0
 2 of 3, 1 of 2) of the runs that reached the question; ties are broken by the summed confidence, then by run order.
 Train, every subset of the 4 runs: 2 runs 0.956-0.972 (about the mean of the two), 3 runs 0.976-0.981, 4 runs 0.980.
 The submission is written atomically.
-Usage: vote.py <out_submission.jsonl> <run_dir> ... [--min-share 0.4] [--log-dir DIR]"""
+Usage: vote.py <out_submission.jsonl> <run_dir> ... [--min-share 0.4] [--min-conf 0.0] [--log-dir DIR]
+--min-conf: abstain unless the mean vote share of the runs that reached the question is at least this (the submitted flow
+uses 0.75: Kaggle v30 noise + v31 paraphrase k=0 questions left by the rules, net +126 at 0.5 -> +137 at 0.75; held-out
+paraphrases k=1,2 +73 -> +100)."""
 import os, sys, json, glob, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import agent
@@ -37,7 +40,7 @@ def penalties(run):
 TIE_GAP = 10.0   # a split is broken only by a run whose mapping is clearly cleaner (a revenue / short-name / staff warning less)
 
 
-def vote(runs, min_share=0.4, pens=None):
+def vote(runs, min_share=0.4, pens=None, min_conf=0.0):
     """[logs of each run] -> {qid: (final answer, {canon answer: votes})} for every question of any run. pens: [{business:
     penalty of the run's chosen mapping}] per run; a question no answer wins (split) takes the answer of the ONE run whose
     mapping penalty for that business is lower than every other answering run's by >= TIE_GAP (the runs disagree because
@@ -52,6 +55,8 @@ def vote(runs, min_share=0.4, pens=None):
             if r is None or r["final"].get("type") == "abstain": continue
             c = agent.canon_of(r["final"]); v[c] += 1; conf[c] += float(r.get("conf") or 0); rep.setdefault(c, r["final"]); first.setdefault(c, i)
         if not v: out[q] = ({"type": "abstain"}, {}); continue
+        mean_conf = sum(float(L[q].get("conf") or 0) for L in runs if q in L) / max(n, 1)
+        if mean_conf < min_conf: out[q] = ({"type": "abstain"}, {str(k): m for k, m in v.items()}); continue   # --min-conf
         top = max(v, key=lambda c: (v[c], conf[c], -first[c]))
         if v[top] >= min_share * n: out[q] = (rep[top], {str(k): m for k, m in v.items()}); continue
         final = {"type": "abstain"}
@@ -72,10 +77,12 @@ def main():
     ms = 0.4; log_dir = ""
     if "--min-share" in args: i = args.index("--min-share"); ms = float(args[i + 1]); del args[i:i + 2]
     if "--log-dir" in args: i = args.index("--log-dir"); log_dir = args[i + 1]; del args[i:i + 2]
+    mc = 0.0                                                           # mean confidence over the runs that reached a question
+    if "--min-conf" in args: i = args.index("--min-conf"); mc = float(args[i + 1]); del args[i:i + 2]
     out, run_dirs = args[0], args[1:]
     pairs = [(load(r), r) for r in run_dirs]; pairs = [(L, r) for L, r in pairs if L]
     runs = [L for L, _ in pairs]; pens = [penalties(r) for _, r in pairs]
-    res = vote(runs, ms, pens if all(pens) else None)
+    res = vote(runs, ms, pens if all(pens) else None, mc)
     tmp = out + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         for q, (final, _) in res.items(): f.write(json.dumps({"id": q, **final}, ensure_ascii=False) + "\n")

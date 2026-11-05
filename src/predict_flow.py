@@ -59,6 +59,8 @@ def main():
     ap.add_argument("--runs", type=int, default=3); ap.add_argument("--work", default="/tmp/zc")
     ap.add_argument("--llm", type=int, default=1); ap.add_argument("--dp", type=int, default=0)
     ap.add_argument("--rules-workers", type=int, default=0)
+    ap.add_argument("--min-conf", type=float, default=0.75, help="model answers kept only when the mean vote share of the runs is at "
+                    "least this (src/vote.py --min-conf)")
     ap.add_argument("--fake-responder", default="", help="tests / preflight: no model, agent.py --fake-responder; at most "
                     "--max-pending questions go to it")
     ap.add_argument("--max-pending", type=int, default=0, help="at most this many questions for the model, spread over the "
@@ -122,7 +124,8 @@ def main():
     s0 = time.time(); out0, rc = agent(0, a.budget - (time.time() - t0), logs); last = time.time() - s0
     stop.set(); th.join()
     if rc != 0: log(f"model run 1 exit code {rc}")
-    if os.path.isfile(os.path.join(out0, "submission.jsonl")): shutil.copy(os.path.join(out0, "submission.jsonl"), vote_sub)
+    run([sys.executable, os.path.join(HERE, "vote.py"), vote_sub, out0, "--min-conf", str(a.min_conf), "--log-dir", logs], log)   # one run:
+    # the same confidence floor as several (vote.py --min-conf)
     n = merge_sub.merge(a.split, final, srcs, quiet=True); log(f"after model run 1: rules {n[0]}, model {n[1]}")
     dirs = [out0]
     for i in range(1, a.runs):
@@ -130,7 +133,7 @@ def main():
         if last * 1.15 >= left: log(f"model run {i + 1} skipped: {left:.0f}s left, a run takes {last:.0f}s"); break
         s0 = time.time(); ld = os.path.join(a.work, f"llm_{i}", "logs"); os.makedirs(ld, exist_ok=True)
         out_i, rc = agent(i, left, ld); last = time.time() - s0; dirs.append(out_i)
-        run([sys.executable, os.path.join(HERE, "vote.py"), vote_sub] + dirs + ["--log-dir", logs], log)
+        run([sys.executable, os.path.join(HERE, "vote.py"), vote_sub] + dirs + ["--min-conf", str(a.min_conf), "--log-dir", logs], log)
         n = merge_sub.merge(a.split, final, srcs, quiet=True); log(f"after model run {i + 1}: rules {n[0]}, model {n[1]}")
     log(f"end: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}  ({time.time() - t0:.0f}s)")
 

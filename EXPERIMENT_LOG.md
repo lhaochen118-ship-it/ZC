@@ -599,3 +599,17 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   `phatle1578/zc-para`).
 - Bộ kiểm tra cục bộ (code mới nhất): canonical 3000 / 1000; không dấu 0.989; nhiễu 0.971 / 0.974 / 0.978; README trắng
   public 0.993, train 1.000; paraphrase public 0.541, train held-out 0.677 (chỉ luật).
+
+## Entry 23 — 2026-11-05 21:40: v31 (luồng nộp đầy đủ trên paraphrase public), ngưỡng tin cậy stage 2
+
+- **v31 public (phatle1578, 4×L4, code trước LookupError / prefer-first):** 2065 paraphrase; luật trả lời 1450 (134 s), mô
+  hình nhận 615; 3 lần chạy mô hình, tổng 12 336 s. Kết quả: k=0 0.588 → **0.640**, k=1 0.513 → 0.577, k=2 0.498 → 0.539.
+  Stage 2 trên các câu này: 324 đúng / 215 sai / 76 abstain (yếu hơn nhiều so với câu nhiễu: 81 % đúng) — một phần "sai" là
+  paraphrase đổi nghĩa (mô hình trả lời đúng câu đã đổi).
+- **Ngưỡng tin cậy:** bỏ đáp án mô hình khi trung bình chia sẻ phiếu của các lần chạy < 0.75 (`vote.py --min-conf`, chọn
+  trên dữ liệu dev = v30 nhiễu + paraphrase k=0: net +126 → +137). Kiểm lại offline trên log đã tải: paraphrase public
+  0.640 → **0.660** (k=0), held-out 0.577 → 0.588 (k=1), 0.539 → 0.569 (k=2); bộ nhiễu / không dấu không đổi (±0.003).
+  `predict_flow.py` nay luôn bỏ phiếu qua `vote.py` (cả khi chỉ 1 lần chạy).
+- **An toàn rulebook:** câu nhắc thuật ngữ mà rulebook của split thêm mới (không có trong rulebook train / public) → mô hình
+  (`rules_first.changed_terms`); dòng chỉ viết lại vẫn để luật.
+- Đang chạy: v31 train (phatle1578), v32 = luồng mới nhất trên paraphrase public + train (yuan1103).

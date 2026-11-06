@@ -631,3 +631,11 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   trị (cột văn bản duy nhất nhất, không phải mã / SĐT). Sau sửa: **public 1000 / 1000, train 3000 / 3000** (2 seed public).
 - Thêm vào `tests/eval_all.sh`. Container khởi động lại giữa chừng (OOM khi train chạy 4 worker + bảng sao chép): chạy train
   rename với 2 worker; poller Kaggle v32 gắn lại bằng `run_kernel.py --attach`.
+
+## Entry 25 — 2026-11-06 00:30: v32 (code mới nhất) trên paraphrase public
+
+- yuan1103, 4×L4: luật trả lời 1472 / 2065 (137 s), mô hình nhận 593 (v31: 615); 3 lần chạy, tổng 11 932 s (v31: 12 336 s —
+  prefer-first tiết kiệm ít: thời gian chủ yếu là sinh token, không phải ánh xạ).
+- Toàn luồng + ngưỡng 0.75 (chấm lại offline): dev k=0 **0.660 → 0.681** (giữ kỳ 0.790 → 0.814); held-out k=1,2
+  **0.579 → 0.584** (giữ kỳ 0.705 → 0.712). Cải thiện nhỏ nhưng cùng chiều trên cả dev và held-out.
+- Quota GPU tuần W45 gần như hết ở cả 3 acc L4 (một phiên 4×L4 tiêu ~4 h quota / giờ) → stage 1.5 (v33) chờ tuần sau.

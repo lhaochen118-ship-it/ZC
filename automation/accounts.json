@@ -1,2 +1,8 @@
-{"_doc": "Kaggle account facts fanout.py uses (names only, never tokens). no_l4: accounts without the 4xL4 grant (T4 only, or the gemma-4-developer-agent rules not accepted): an --l4 launch never goes there.",
- "no_l4": ["mxuanquy", "nguyenmanh0404"]}
+{
+ "_doc": "Kaggle account facts fanout.py uses (names only, never tokens). no_l4: accounts without the 4xL4 grant (T4 only, or the gemma-4-developer-agent rules not accepted): an --l4 launch never goes there.",
+ "no_l4": [
+  "mxuanquy",
+  "nguyenmanh0404",
+  "yeshenhi"
+ ]
+}

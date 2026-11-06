@@ -622,3 +622,12 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   (4.3 h). Luật 0.669 → toàn luồng 0.752 → **+ ngưỡng 0.75: 0.768** (4877 / 510 / 302); phần giữ kỳ (5371): 0.707 → 0.806 →
   **0.816**. Mô hình trên câu còn lại (ngưỡng 0.75): 793 đúng / 234 sai / 302 abstain. Ngưỡng 0.75 cũng có lợi trên tập
   held-out này (chọn trước trên dev) → giữ.
+
+## Entry 24 — 2026-11-06 00:05: dữ liệu xuất kiểu khác (đổi tên cột) — public 1000 / 1000, train 3000 / 3000
+
+- `eval_split.py --perturb-data rename:<seed>`: mỗi cột có tên mang **một** vai trò trong từ điển automap được đổi sang tên
+  khác cùng vai trò (cột `__unit` đi theo), thứ tự cột xáo trộn, README giữ tên cũ — mô phỏng một shop mới xuất file theo
+  cách khác. Lần đầu: public 0.998; lỗi duy nhất: tên nhà cung cấp tra trong danh sách tên cột cố định → nay chọn theo giá
+  trị (cột văn bản duy nhất nhất, không phải mã / SĐT). Sau sửa: **public 1000 / 1000, train 3000 / 3000** (2 seed public).
+- Thêm vào `tests/eval_all.sh`. Container khởi động lại giữa chừng (OOM khi train chạy 4 worker + bảng sao chép): chạy train
+  rename với 2 worker; poller Kaggle v32 gắn lại bằng `run_kernel.py --attach`.

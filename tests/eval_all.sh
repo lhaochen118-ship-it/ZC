@@ -1,6 +1,7 @@
 #!/bin/bash
 # Regression suite of the deterministic stack (CPU, ~15 min on 4 cores): question cleaning of train regenerated, qnorm unit
-# test, canonical train / public scores, and stress tests (questions without accents, chat noise, READMEs blanked).
+# test, canonical train / public scores, and stress tests (questions without accents, chat noise, READMEs blanked,
+# column names of another export: rename).
 # Usage: S=<scratch with cache_train / cache_pub> bash tests/eval_all.sh [quick]
 #   quick: canonical train + public only.
 # The public reference file (data/raw/public_gt.jsonl) is used only to SCORE; nothing in src/ reads it.
@@ -23,3 +24,5 @@ for pq in accentfree noise:1 noise:2 noise:3; do
 done
 echo "public noreadme  : $(run data/raw/public_test/public_test "$S/cache_pub" data/raw/public_gt.jsonl --map auto --clean qnorm --perturb-data noreadme --out "$S/ana/r_pub_noreadme.jsonl")"
 echo "train  noreadme  : $(run data/raw/train/train "$S/cache_train" data/raw/train/train/answers.jsonl --map auto --clean question_cleaning/train_questions_clean.jsonl --perturb-data noreadme --out "$S/ana/r_train_noreadme.jsonl")"
+echo "public rename:1  : $(run data/raw/public_test/public_test "$S/cache_pub" data/raw/public_gt.jsonl --map auto --clean qnorm --perturb-data rename:1 --out "$S/ana/r_pub_rename1.jsonl")"
+echo "train  rename:1  : $(WORKERS=2 run data/raw/train/train "$S/cache_train" data/raw/train/train/answers.jsonl --map auto --clean question_cleaning/train_questions_clean.jsonl --perturb-data rename:1 --out "$S/ana/r_train_rename1.jsonl")"

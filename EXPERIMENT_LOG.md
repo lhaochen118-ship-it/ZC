@@ -642,3 +642,6 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
 - **v32 train (held-out hoàn toàn):** luật trả lời 4426 / 5689 (135 s), mô hình nhận 1263 (v31: 1329); 3 lần chạy, 14 011 s.
   Toàn luồng + ngưỡng 0.75: **0.768 → 0.780** (4910 / 474 / 305); giữ kỳ **0.816 → 0.829**. Các thay đổi của ngày 05/11
   (LookupError, prefer-first, thuật ngữ mới, từ đồng nghĩa, bộ chặn) cải thiện cùng chiều trên dev và held-out.
+- 06/11 03:05: cả 3 acc L4 hết quota GPU tuần W45 (đẩy v33 lên yuan1103 bị từ chối). Khi reset: `python3 automation/fanout.py
+  <S>/runs/v33 zc-v33 automation/jobs/v33.jobs 2 --accounts <acc> --l4 --ds <acc>/zc-pend --ms danbth/qwen3-5-9b/transformers/default/1
+  --ks nhatlong1103/zc-assets`, rồi chấm: `canon_to_para.py <out>/canon_log.jsonl para.jsonl` + `eval_split.py --perturb-q para:para.jsonl`.

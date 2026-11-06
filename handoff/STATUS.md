@@ -26,7 +26,8 @@ File nộp public: `submissions/v30/` (1000 / 1000). Routine tự tiếp tục: 
 - Acc phiên này (token ở `~/.kaggle/tok_<acc>`, mất khi đổi container): L4 quynhtran35, yuan1103, phatle1578; T4 yeshenhi,
   mxuanquy. Lấp đầy 1 acc (2 GPU + 5 CPU) rồi mới sang acc khác.
 - **Quota GPU tính theo GPU:** một phiên 4×L4 tiêu ~4 giờ quota mỗi giờ chạy (30 h / tuần / acc ≈ 7.5 h phiên 4×L4).
-  Tuần 2026-W45: quynhtran35, phatle1578 hết; yuan1103 đang chạy v32 (có thể hết giữa chừng). T4 không chạy được Qwen3.5-9B FP8.
+  Tuần 2026-W45: **cả 3 acc L4 hết quota** (06/11 03:05: đẩy v33 lên yuan1103 bị từ chối). T4 không chạy được Qwen3.5-9B FP8.
+  v33 đã qua preflight (code 06/11) và có dataset `<acc>/zc-pend` ở cả 3 acc: đẩy lại khi quota reset (lệnh trong `EXPERIMENT_LOG.md` entry 25).
 - Trọng số: Kaggle Model `danbth/qwen3-5-9b/transformers/default/1` (`--ms`), `run_kaggle.py` kiểm sha256 với Hugging Face
   (`src/model_hashes.json`). Wheels: `--ks nhatlong1103/zc-assets`. Dữ liệu: `nhatlong1103/zc-2026`. Paraphrase / câu chờ:
   dataset private `<acc>/zc-para`, `phatle1578/zc-pend` (mỗi acc một bản: private không chia sẻ được giữa acc).

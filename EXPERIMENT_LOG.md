@@ -639,3 +639,6 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
 - Toàn luồng + ngưỡng 0.75 (chấm lại offline): dev k=0 **0.660 → 0.681** (giữ kỳ 0.790 → 0.814); held-out k=1,2
   **0.579 → 0.584** (giữ kỳ 0.705 → 0.712). Cải thiện nhỏ nhưng cùng chiều trên cả dev và held-out.
 - Quota GPU tuần W45 gần như hết ở cả 3 acc L4 (một phiên 4×L4 tiêu ~4 h quota / giờ) → stage 1.5 (v33) chờ tuần sau.
+- **v32 train (held-out hoàn toàn):** luật trả lời 4426 / 5689 (135 s), mô hình nhận 1263 (v31: 1329); 3 lần chạy, 14 011 s.
+  Toàn luồng + ngưỡng 0.75: **0.768 → 0.780** (4910 / 474 / 305); giữ kỳ **0.816 → 0.829**. Các thay đổi của ngày 05/11
+  (LookupError, prefer-first, thuật ngữ mới, từ đồng nghĩa, bộ chặn) cải thiện cùng chiều trên dev và held-out.

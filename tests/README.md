@@ -68,5 +68,8 @@ S=<scratch with cache_train / cache_pub> WORKERS=4 bash tests/eval_all.sh [quick
 (mapping by `src/automap.py`, no reference programs, no model) on train and public, and the stress tests: questions
 accent-free / with chat noise (3 seeds, `src/perturb.py`), every README blanked. 2026-11-05: train 3000 / 3000, public
 1000 / 1000, train README-blanked 3000 / 3000, public README-blanked 0.991, accent-free 0.981, noise 0.948-0.962 (the
-gap is mostly abstains, which the model stage receives). The public reference file only scores; nothing in `src/`
-reads it. Under the Docker image's pandas 2.3.3 + calamine (local `--target` install) public is 1000 / 1000 as well.
+gap is mostly abstains, which the model stage receives). 2026-11-06 (final code): accent-free 0.989, noise 0.971 /
+0.974 / 0.978, README blanked public 0.993 / train 1.000, columns renamed (`--perturb-data rename:<seed>`, another
+export of the same data) public 1000 / 1000, train 3000 / 3000. The public reference file only scores; nothing in
+`src/` reads it. Under the Docker image's pandas 2.3.3 + calamine (local `--target` install) public is 1000 / 1000 as
+well.

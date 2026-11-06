@@ -9,10 +9,17 @@
 | 1 (CPU, phút) | `src/rules_first.py` = `automap` (bảng thô → C) + `qnorm` (làm sạch câu) + `qparse` (câu → chương trình) + toolkit `dm` / `industry` | train **3000 / 3000**, public **1000 / 1000** (chấm nghiêm; cả pandas 2.3.3 + calamine của image) |
 | 2 (GPU) | `agent.py` (Qwen3.5-9B FP8, mô hình duy nhất) chỉ cho câu stage 1 bỏ lại, ánh xạ ưu tiên `fmt:automap` | đang đo trên Kaggle (`automation/jobs/v30.jobs`) |
 
-Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=4 bash tests/eval_all.sh`): README xoá trắng train 3000 / 3000, public 0.993;
-câu không dấu 0.989; nhiễu chat 0.972–0.978. **Paraphrase bằng LLM (ước lượng thật cho cách hỏi mới), chỉ luật:** public
-held-out 0.506, train held-out 0.669 (abstain ~23–30 % → stage 2). File nộp public: `submissions/v30/` (1000 / 1000).
-Routine tự tiếp tục khi hết quota: `trig_01Vrvp6RpbNVxYYfUB1YGeJW` (mỗi giờ, :42) — xoá khi xong việc.
+Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=3 bash tests/eval_all.sh`, code cuối 06/11; chỉ luật trừ khi ghi khác):
+
+| Kiểm tra | Kết quả |
+|---|---|
+| Train / public gốc | 3000 / 3000, 1000 / 1000 |
+| Đổi tên cột + xáo cột (xuất kiểu khác) | train 3000 / 3000, public 1000 / 1000 |
+| README xoá trắng | train 1.000, public 0.993 |
+| Câu không dấu / nhiễu chat (public) | 0.989 / 0.971–0.978 (0–2 sai; phần còn lại → LLM: toàn luồng 0.99) |
+| Paraphrase LLM, toàn luồng (luật + LLM, ngưỡng 0.75) | public held-out 0.584 (giữ kỳ 0.712), train held-out 0.780 (giữ kỳ 0.829) |
+
+File nộp public: `submissions/v30/` (1000 / 1000). Routine tự tiếp tục: `trig_01Vrvp6RpbNVxYYfUB1YGeJW` (mỗi giờ, :42).
 
 ## Kaggle
 

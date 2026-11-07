@@ -56,7 +56,8 @@ def main():
     os.makedirs(os.path.join(out, "flow"), exist_ok=True)               # Kaggle output download hit the API rate limit, zc-v30)
     for f in ("submission.jsonl", os.path.join("logs", "run.log")):
         if os.path.isfile(os.path.join(flow, f)): shutil.copy(os.path.join(flow, f), os.path.join(out, "flow", os.path.basename(f)))
-    for f in ("rules/submission.jsonl", "rules/pending.jsonl", "rules/rules_log.jsonl", "llm_vote.jsonl"):   # keep the stage outputs
+    for f in ("rules/submission.jsonl", "rules/pending.jsonl", "rules/rules_log.jsonl", "llm_vote.jsonl", "rules_canon/submission.jsonl",
+              "rules_canon/rules_log.jsonl", "pending_canon/canon_log.jsonl"):   # keep the stage outputs
         if os.path.isfile(os.path.join(work, f)): shutil.copy(os.path.join(work, f), os.path.join(out, f.replace("/", "_")))
     for d in sorted(os.listdir(work)) if os.path.isdir(work) else []:
         if d.startswith("llm_") and os.path.isdir(os.path.join(work, d)):

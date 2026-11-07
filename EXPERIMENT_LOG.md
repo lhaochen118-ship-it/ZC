@@ -674,3 +674,8 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
 - Toàn luồng (ngưỡng 0.75), chấm theo đáp án câu gốc: held-out k=1,2 **0.584 → 0.602** (1039 / 212 / 122; ước lượng entry 26:
   0.600); dev k=0 0.681 → 0.676 (557 / 89 / 46: +6 đúng, +9 sai — trong dao động lấy mẫu của mô hình); toàn bộ 2065 câu
   0.616 → **0.627**. Giữ `--canon 1`.
+- Phân tích lỗi dev k=0 (public) của luật trên câu viết lại: 12 / 13 "sai" là paraphrase đổi nghĩa (đáp án gốc là số đơn
+  huỷ, câu viết lại hỏi %; "ngày mai" thay ngày cụ thể ...). Một lỗi code: mẫu khớp mà thiếu kỳ trả `(tên, None)` → lỗi khi
+  chạy (trong luồng nộp chỉ chuyển câu sang mô hình) → `qparse.parse` nay trả None. Thử "tháng trước / tháng vừa qua" đứng
+  một mình = tháng liền trước: 0 đúng / 3 sai trên public (cả ba là paraphrase đổi kỳ) → không có bằng chứng, bỏ.
+  Train / public gốc vẫn 3000 / 3000, 1000 / 1000.

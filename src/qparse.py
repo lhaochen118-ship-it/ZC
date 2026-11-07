@@ -617,7 +617,7 @@ def names_used(q, code, shop, tpl=""):
 def parse(q, today, shop=None):
     """(template, code) for the common templates; None when unsure (also when the precision guard rejects the reading)."""
     r = _parse(q, today, shop)
-    if r is None: return None
+    if r is None or r[1] is None: return None                       # a template that matched without a period
     t = untelex(K(q))
     if not consistent(q, t, r[0], r[1]): return None
     if shop is not None and r[0] not in ("subjective", "unrecorded"):

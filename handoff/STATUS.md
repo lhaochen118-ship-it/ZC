@@ -1,6 +1,6 @@
 # STATUS — trạng thái hiện tại (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-07 01:30. Chi tiết: `EXPERIMENT_LOG.md` entry 20–26. Bàn giao cũ (03–05/11): `handoff/04_SESSION_0411.pdf`.*
+*Cập nhật 2026-11-07 05:00. Chi tiết: `EXPERIMENT_LOG.md` entry 20–27. Bàn giao cũ (03–05/11): `handoff/04_SESSION_0411.pdf`.*
 
 ## Kiến trúc hiện tại: rule-first (`docker/predict.sh` → `src/predict_flow.py`)
 
@@ -18,7 +18,7 @@ Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=3 bash tests/eval_all.sh`, co
 | Đổi tên cột + xáo cột (xuất kiểu khác) | train 3000 / 3000, public 1000 / 1000 |
 | README xoá trắng | train 1.000, public 0.993 |
 | Câu không dấu / nhiễu chat (public) | 0.989 / 0.971–0.978 (0–2 sai; phần còn lại → LLM: toàn luồng 0.99) |
-| Paraphrase LLM, toàn luồng (luật + LLM, ngưỡng 0.75) | v32: public held-out 0.584, train held-out 0.780; + stage 1.5 (ước lượng entry 26): **0.600 / 0.801** |
+| Paraphrase LLM, toàn luồng (luật + LLM, ngưỡng 0.75) | v32: public held-out 0.584, train held-out 0.780; + stage 1.5: public held-out **0.602** (đo trên GPU, v34), train held-out ~0.801 (ước lượng entry 26) |
 
 File nộp public: `submissions/v30/` (1000 / 1000). Routine tự tiếp tục: `trig_01Vrvp6RpbNVxYYfUB1YGeJW` (mỗi giờ, :42).
 
@@ -39,7 +39,7 @@ File nộp public: `submissions/v30/` (1000 / 1000). Routine tự tiếp tục: 
 ## Việc tiếp theo
 
 1. (xong) v32 tốt hơn v31 trên cả dev và held-out (entry 25).
-2. (xong) v33: luật trên câu viết lại chính xác hơn mô hình → `--canon 1` mặc định (entry 26). Đang kiểm toàn luồng mới trên GPU (v34).
+2. (xong) v33: luật trên câu viết lại chính xác hơn mô hình → `--canon 1` mặc định (entry 26). v34 (GPU thật, 3.1 h): held-out public 0.584 → 0.602 (entry 27).
 3. **Việc của user:** build Docker (`docker/SETUP_DOCKER.md`: `docker/fetch_assets.sh` → `docker/build.sh` →
    `docker/run_public_test.sh` → `docker/export_image.sh`), nộp link + checksum trước **16/11/2026 23:59 GMT+7**.
    File nộp public hiện tại: `submissions/v30/` (1000 / 1000 khi chấm cục bộ).

@@ -665,3 +665,12 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   là cuối cùng (sau đáp án stage 1); chỉ câu luật vẫn không đọc được sang stage 2, với câu gốc như trước (đúng như đã đo).
   Lỗi stage 1.5 → stage 2 nhận mọi câu chờ như cũ. Test CPU mới `tests/test_canon_flow.py` (mô hình giả, câu viết lại thật
   của v33). Câu train / public gốc không có câu chờ → không đổi (3000 / 3000, 1000 / 1000).
+
+## Entry 27 — 2026-11-07 04:55: v34 = luồng nộp mới (stage 1.5 bật) trên GPU thật — paraphrase public
+
+- yuan1103, 4×L4, `stress_flow.py --modes para:` (2065 paraphrase public), code c97e2e8. Chạy trọn không lỗi: stage 1 1472
+  (134 s) → stage 1.5 viết lại 506 / 593, luật trả lời 171 → stage 2 nhận 422 (v32: 593); 3 lần chạy; tổng **11 157 s**
+  (v32: 11 932 s). Nạp mô hình hai lần (stage 1.5 rồi stage 2) không vấn đề bộ nhớ.
+- Toàn luồng (ngưỡng 0.75), chấm theo đáp án câu gốc: held-out k=1,2 **0.584 → 0.602** (1039 / 212 / 122; ước lượng entry 26:
+  0.600); dev k=0 0.681 → 0.676 (557 / 89 / 46: +6 đúng, +9 sai — trong dao động lấy mẫu của mô hình); toàn bộ 2065 câu
+  0.616 → **0.627**. Giữ `--canon 1`.

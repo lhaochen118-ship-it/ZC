@@ -29,7 +29,11 @@ service; the container runs with `--network none`.
    drops a reading that ignores what the question states (an amount, a count, a qualifier), and a question about data
    the shop does not record is answered `unanswerable`. A rule answer is final.
 
-**Stage 2, model (GPU)** — only the questions stage 1 leaves (not read, program failed, mapping failed): `src/agent.py`
+**Stage 1.5, restatement (one GPU, minutes)** — `src/canon_llm.py`: Qwen3.5-9B restates each question stage 1 left in
+the plain style of the training questions (same meaning; a restatement that drops a number, date, code or name is
+rejected; style examples are training questions only). Stage 1 runs again on the restatements; what it reads is final.
+
+**Stage 2, model (GPU)** — only the questions stages 1 and 1.5 leave (not read, program failed, mapping failed): `src/agent.py`
 with Qwen3.5-9B on a split holding just those questions. Mapping = the stage-1 mapper when it runs cleanly, else
 mapping programs written by the model (executed, checked, repaired); K answer programs per question with retrieved
 verified training examples; answers voted with the organisers' matching rules, abstain below the vote threshold;

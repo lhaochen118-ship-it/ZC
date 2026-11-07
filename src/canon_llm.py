@@ -7,7 +7,8 @@ in every prompt. Style examples are the most similar TRAINING questions (bag of 
 
 Job: canon_llm.py <split> <out_split> --model <path> [--quant fp8] [--cache DIR] [--n-examples 6] [--fake-responder f.py]
 Writes <out_split>/questions.jsonl (the questions with '_clean' where a restatement passed the check) and
-<out_split>/canon_log.jsonl (question, restatement, accepted)."""
+<out_split>/canon_log.jsonl (question, restatement, accepted) and <out_split>/restated/ (a split whose questions.jsonl holds
+the accepted restatements as the question text, for src/rules_first.py: src/predict_flow.py --canon 1)."""
 import os, re, sys, json, math, pickle, shutil, argparse, unicodedata
 from collections import Counter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -87,6 +88,11 @@ def main():
         texts, _ = eng.gen(convs, [0.0] * len(convs), [1] * len(convs), 160, think=False)
     else: texts = []
     norms = {}; n_ok = 0
+    rdir = os.path.join(a.out, "restated"); os.makedirs(rdir, exist_ok=True)
+    for f in ("calendar.csv", "rulebook.md"):
+        if os.path.isfile(os.path.join(a.out, f)): shutil.copy(os.path.join(a.out, f), rdir)
+    if not os.path.exists(os.path.join(rdir, "data")): os.symlink(os.path.abspath(os.path.join(a.split, "data")), os.path.join(rdir, "data"))
+    rs = open(os.path.join(rdir, "questions.jsonl"), "w", encoding="utf-8")
     with open(os.path.join(a.out, "questions.jsonl"), "w", encoding="utf-8") as f, open(os.path.join(a.out, "canon_log.jsonl"), "w", encoding="utf-8") as lg:
         for q, t in zip(qs, texts):
             t = (t or "").strip().strip('"').strip(); ok = check(q["question"], t)
@@ -102,9 +108,11 @@ def main():
                 try: c = norms[b].clean(t, q["as_of_date"]) if norms[b] else {"clean": t, "period": None, "key": qparse.K(t)}
                 except Exception: c = {"clean": t, "period": None, "key": qparse.K(t)}
                 rec["_clean"] = {"clean": c["clean"], "period": c.get("period"), "key": c.get("key")}; n_ok += 1
+                rs.write(json.dumps({**{k: v for k, v in rec.items() if k != "_clean"}, "question": t, "question_original": q["question"]},
+                                    ensure_ascii=False, default=str) + "\n")
             f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
             lg.write(json.dumps({"id": q["id"], "question": q["question"], "canonical": t, "accepted": ok}, ensure_ascii=False) + "\n")
-    print(f"CANON {n_ok} / {len(qs)} restated", flush=True)
+    rs.close(); print(f"CANON {n_ok} / {len(qs)} restated", flush=True)
 
 
 if __name__ == "__main__":

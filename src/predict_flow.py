@@ -3,6 +3,8 @@
 
 Stage 1, rules (CPU, minutes, no model): src/rules_first.py. Every answer it gives is final. The submission is complete
   after this stage (questions it leaves are written as abstain).
+Stage 1.5 (one GPU, minutes; --canon 1): the model restates the questions the rules left in the training questions' style
+  (src/canon_llm.py); the rules answer the restatements they read (final, after the stage-1 answers).
 Stage 2, model (GPU), only for the questions the rules leave: agent.py (Qwen3.5-9B, the only model) on a split holding
   just those questions; mapping = the stage-1 mapper when it runs without a heavy warning (--prefer-map fmt:automap),
   LLM mapping samples otherwise; independent runs voted (src/vote.py) while the time allows. The submission is
@@ -59,8 +61,8 @@ def main():
     ap.add_argument("--runs", type=int, default=3); ap.add_argument("--work", default="/tmp/zc")
     ap.add_argument("--llm", type=int, default=1); ap.add_argument("--dp", type=int, default=0)
     ap.add_argument("--rules-workers", type=int, default=0)
-    ap.add_argument("--canon", type=int, default=0, help="stage 1.5 (opt-in until measured): the model restates the pending questions "
-                    "in the training questions' style (src/canon_llm.py); the rule program votes on the restatement in stage 2")
+    ap.add_argument("--canon", type=int, default=1, help="stage 1.5: the model restates the pending questions in the training "
+                    "questions' style (src/canon_llm.py); the rules answer the restatements they read, the rest goes to stage 2")
     ap.add_argument("--min-conf", type=float, default=0.75, help="model answers kept only when the mean vote share of the runs is at "
                     "least this (src/vote.py --min-conf)")
     ap.add_argument("--fake-responder", default="", help="tests / preflight: no model, agent.py --fake-responder; at most "
@@ -107,14 +109,29 @@ def main():
     if not os.path.exists(os.path.join(psplit, "data")): os.symlink(os.path.abspath(os.path.join(a.split, "data")), os.path.join(psplit, "data"))
     for f in ("calendar.csv", "rulebook.md"): shutil.copy(os.path.join(a.split, f), psplit)
     with open(os.path.join(psplit, "questions.jsonl"), "w", encoding="utf-8") as f: f.writelines(pending)
-    if a.canon:                                                       # stage 1.5 (one GPU, ~minutes): restatements as '_clean'
-        csplit = os.path.join(a.work, "pending_canon")
+    canon_sub = os.path.join(a.work, "rules_canon", "submission.jsonl")
+    shutil.rmtree(os.path.dirname(canon_sub), ignore_errors=True)     # never a stale answer of an earlier run in the same --work
+    if a.canon:                                                       # stage 1.5 (one GPU, ~minutes): the model restates the
+        # pending questions in the training questions' style; the rules answer the restatements they read (held-out precision
+        # 0.90 train / 0.84 public paraphrases, above the model's: EXPERIMENT_LOG entry 26); the rest goes to stage 2 as asked
+        csplit = os.path.join(a.work, "pending_canon"); rdir = os.path.join(csplit, "restated")
         cmd = [sys.executable, os.path.join(HERE, "canon_llm.py"), psplit, csplit, "--model", a.model, "--quant", "fp8", "--cache", cache]
         if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]
-        if run(cmd, log) == 0 and os.path.isfile(os.path.join(csplit, "questions.jsonl")): psplit = csplit
+        if run(cmd, log) == 0 and os.path.isfile(os.path.join(rdir, "questions.jsonl")):
+            rc2 = run([sys.executable, os.path.join(HERE, "rules_first.py"), rdir, os.path.dirname(canon_sub), "--cache", cache, "--log-dir", logs]
+                      + (["--workers", str(a.rules_workers)] if a.rules_workers else []), log)
+            if rc2 == 0 and os.path.isfile(canon_sub):
+                done = {json.loads(l)["id"] for l in open(canon_sub, encoding="utf-8") if l.strip()}
+                pending = [l for l in pending if json.loads(l)["id"] not in done]
+                with open(os.path.join(psplit, "questions.jsonl"), "w", encoding="utf-8") as f: f.writelines(pending)
+                n = merge_sub.merge(a.split, final, [rules_sub, canon_sub], quiet=True)
+                log(f"stage 1.5: rules answered {len(done)} restated questions; {len(pending)} left for the model")
+            else: log(f"stage 1.5: rules on the restatements exit code {rc2}: ignored")
         else: log("stage 1.5 failed: stage 2 reads the questions as they are")
+        if not pending:
+            log(f"end: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}  ({time.time() - t0:.0f}s)"); return
     vote_sub = os.path.join(a.work, "llm_vote.jsonl")
-    srcs = [rules_sub, vote_sub]
+    srcs = [rules_sub, canon_sub, vote_sub]
     log(f"stage 2: {len(pending)} questions  model {a.model}  dp {dp}  runs up to {a.runs}")
 
     def agent(i, budget, logdir):
@@ -126,7 +143,7 @@ def main():
     stop = threading.Event()
     def merger(src):
         while not stop.wait(20):
-            try: merge_sub.merge(a.split, final, [rules_sub, src], quiet=True)
+            try: merge_sub.merge(a.split, final, [rules_sub, canon_sub, src], quiet=True)
             except Exception as e: log(f"merge: {type(e).__name__}: {e}")
     th = threading.Thread(target=merger, args=(os.path.join(a.work, "llm_0", "submission.jsonl"),), daemon=True); th.start()
     s0 = time.time(); out0, rc = agent(0, a.budget - (time.time() - t0), logs); last = time.time() - s0
@@ -134,7 +151,7 @@ def main():
     if rc != 0: log(f"model run 1 exit code {rc}")
     run([sys.executable, os.path.join(HERE, "vote.py"), vote_sub, out0, "--min-conf", str(a.min_conf), "--log-dir", logs], log)   # one run:
     # the same confidence floor as several (vote.py --min-conf)
-    n = merge_sub.merge(a.split, final, srcs, quiet=True); log(f"after model run 1: rules {n[0]}, model {n[1]}")
+    n = merge_sub.merge(a.split, final, srcs, quiet=True); log(f"after model run 1: rules {n[0]}, rules on restatements {n[1]}, model {n[2]}")
     dirs = [out0]
     for i in range(1, a.runs):
         left = a.budget - (time.time() - t0)
@@ -142,7 +159,7 @@ def main():
         s0 = time.time(); ld = os.path.join(a.work, f"llm_{i}", "logs"); os.makedirs(ld, exist_ok=True)
         out_i, rc = agent(i, left, ld); last = time.time() - s0; dirs.append(out_i)
         run([sys.executable, os.path.join(HERE, "vote.py"), vote_sub] + dirs + ["--min-conf", str(a.min_conf), "--log-dir", logs], log)
-        n = merge_sub.merge(a.split, final, srcs, quiet=True); log(f"after model run {i + 1}: rules {n[0]}, model {n[1]}")
+        n = merge_sub.merge(a.split, final, srcs, quiet=True); log(f"after model run {i + 1}: rules {n[0]}, rules on restatements {n[1]}, model {n[2]}")
     log(f"end: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}  ({time.time() - t0:.0f}s)")
 
 

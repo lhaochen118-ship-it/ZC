@@ -60,6 +60,10 @@ model) on 60 training questions + 2 unreadable ones: every question ends answere
 `answers.jsonl` (strict judge), unreadable ones are pending; `src/merge_sub.py` keeps a rule answer first, fills the
 others from the model's file, writes abstain for the rest, in the split's order.
 
+`test_canon_flow.py` (stage 1.5, `predict_flow.py --canon 1`, fake model): two training questions asked in a new way
+(restatements from the real v33 run) must be answered by the rules on the restatement, only the unreadable question
+reaches stage 2, the stage-1 answer is kept.
+
 ```bash
 S=<scratch with cache_train / cache_pub> WORKERS=4 bash tests/eval_all.sh [quick]
 ```

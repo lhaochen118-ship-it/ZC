@@ -1,12 +1,13 @@
 # STATUS — trạng thái hiện tại (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-05 17:45. Chi tiết: `EXPERIMENT_LOG.md` entry 20–21. Bàn giao cũ (03–05/11): `handoff/04_SESSION_0411.pdf`.*
+*Cập nhật 2026-11-07 01:30. Chi tiết: `EXPERIMENT_LOG.md` entry 20–26. Bàn giao cũ (03–05/11): `handoff/04_SESSION_0411.pdf`.*
 
 ## Kiến trúc hiện tại: rule-first (`docker/predict.sh` → `src/predict_flow.py`)
 
 | Stage | Thành phần | Kết quả |
 |---|---|---|
 | 1 (CPU, phút) | `src/rules_first.py` = `automap` (bảng thô → C) + `qnorm` (làm sạch câu) + `qparse` (câu → chương trình) + toolkit `dm` / `industry` | train **3000 / 3000**, public **1000 / 1000** (chấm nghiêm; cả pandas 2.3.3 + calamine của image) |
+| 1.5 (1 GPU, phút) | `canon_llm.py`: mô hình viết lại câu chờ theo văn phong train → `rules_first.py` trên câu viết lại (mặc định `--canon 1`) | độ chính xác held-out 0.90 train / 0.84 public (entry 26) |
 | 2 (GPU) | `agent.py` (Qwen3.5-9B FP8, mô hình duy nhất) chỉ cho câu stage 1 bỏ lại, ánh xạ ưu tiên `fmt:automap` | đang đo trên Kaggle (`automation/jobs/v30.jobs`) |
 
 Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=3 bash tests/eval_all.sh`, code cuối 06/11; chỉ luật trừ khi ghi khác):
@@ -17,7 +18,7 @@ Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=3 bash tests/eval_all.sh`, co
 | Đổi tên cột + xáo cột (xuất kiểu khác) | train 3000 / 3000, public 1000 / 1000 |
 | README xoá trắng | train 1.000, public 0.993 |
 | Câu không dấu / nhiễu chat (public) | 0.989 / 0.971–0.978 (0–2 sai; phần còn lại → LLM: toàn luồng 0.99) |
-| Paraphrase LLM, toàn luồng (luật + LLM, ngưỡng 0.75) | public held-out 0.584 (giữ kỳ 0.712), train held-out 0.780 (giữ kỳ 0.829) |
+| Paraphrase LLM, toàn luồng (luật + LLM, ngưỡng 0.75) | v32: public held-out 0.584, train held-out 0.780; + stage 1.5 (ước lượng entry 26): **0.600 / 0.801** |
 
 File nộp public: `submissions/v30/` (1000 / 1000). Routine tự tiếp tục: `trig_01Vrvp6RpbNVxYYfUB1YGeJW` (mỗi giờ, :42).
 
@@ -38,7 +39,7 @@ File nộp public: `submissions/v30/` (1000 / 1000). Routine tự tiếp tục: 
 ## Việc tiếp theo
 
 1. (xong) v32 tốt hơn v31 trên cả dev và held-out (entry 25).
-2. Khi quota reset: v33 (stage 1.5) → chỉ bật `--canon 1` nếu luật trên câu viết lại chính xác hơn mô hình.
+2. (xong) v33: luật trên câu viết lại chính xác hơn mô hình → `--canon 1` mặc định (entry 26). Đang kiểm toàn luồng mới trên GPU (v34).
 3. **Việc của user:** build Docker (`docker/SETUP_DOCKER.md`: `docker/fetch_assets.sh` → `docker/build.sh` →
    `docker/run_public_test.sh` → `docker/export_image.sh`), nộp link + checksum trước **16/11/2026 23:59 GMT+7**.
    File nộp public hiện tại: `submissions/v30/` (1000 / 1000 khi chấm cục bộ).

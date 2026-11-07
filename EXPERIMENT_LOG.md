@@ -645,3 +645,23 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
 - 06/11 03:05: cả 3 acc L4 hết quota GPU tuần W45 (đẩy v33 lên yuan1103 bị từ chối). Khi reset: `python3 automation/fanout.py
   <S>/runs/v33 zc-v33 automation/jobs/v33.jobs 2 --accounts <acc> --l4 --ds <acc>/zc-pend --ms danbth/qwen3-5-9b/transformers/default/1
   --ks nhatlong1103/zc-assets`, rồi chấm: `canon_to_para.py <out>/canon_log.jsonl para.jsonl` + `eval_split.py --perturb-q para:para.jsonl`.
+
+## Entry 26 — 2026-11-07 01:10: v33 (stage 1.5) — luật trên câu viết lại vượt mô hình → bật mặc định (`--canon 1`)
+
+- Quota reset 07/11 00:00 UTC. yuan1103, 2 phiên L4 (1 GPU dùng): `canon_llm.py` viết lại câu chờ của v31 (public 615,
+  train 1329) theo văn phong câu train; 700–743 s / phiên gồm nạp mô hình. Qua kiểm (giữ số / mã / tên viết hoa): public
+  527 / 615, train 1256 / 1329.
+- Luật đọc câu viết lại (`eval_split --perturb-q para:`, chấm theo đáp án câu gốc): public 163 đúng / 34 sai / 330 abstain,
+  train 722 / 64 / 470. **Độ chính xác khi trả lời:** train (held-out hoàn toàn) 0.938 (k=0) / 0.902 (k=1); public dev k=0
+  0.80, held-out k=1 / k=2 0.853 / 0.825 (một phần "sai" là paraphrase đã đổi nghĩa, mô hình cũng bị tính sai ở đó).
+- So với mô hình (v32, ngưỡng 0.75) trên cùng câu chờ, chính sách "luật trên câu viết lại trước, mô hình cho phần còn lại":
+  public dev k=0 net 54 → 54; held-out k=1 49 → 59, k=2 52 → 64; train held-out 584 → **706** / 1263 câu chờ.
+  Khi cả hai cùng trả lời mà khác nhau: luật đúng / mô hình sai 10 vs 7 (public), 32 vs 8 (train).
+- Toàn luồng (ước lượng từ v32 + chính sách trên; câu chờ của v32 không có bản viết lại tính như v32): train held-out
+  **0.780 → 0.801**; public held-out k=1,2 **0.584 → 0.600**; dev k=0 0.681 (không đổi). Stage 2 nhận ít câu hơn
+  (public 593 → ~417, train 1263 → ~537) → nhanh hơn.
+- Đạt tiêu chí CLAUDE.md (held-out ≥ ~85 % khi lấy câu khỏi stage 2): `predict_flow.py --canon` mặc định 1: stage 1.5 =
+  `canon_llm.py` → `canon_llm` ghi `<out>/restated/` (câu viết lại làm câu hỏi) → `rules_first.py` trên đó; đáp án của nó
+  là cuối cùng (sau đáp án stage 1); chỉ câu luật vẫn không đọc được sang stage 2, với câu gốc như trước (đúng như đã đo).
+  Lỗi stage 1.5 → stage 2 nhận mọi câu chờ như cũ. Test CPU mới `tests/test_canon_flow.py` (mô hình giả, câu viết lại thật
+  của v33). Câu train / public gốc không có câu chờ → không đổi (3000 / 3000, 1000 / 1000).

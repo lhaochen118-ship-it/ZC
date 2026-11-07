@@ -20,7 +20,7 @@ Kiểm tra tổng quát hoá (`S=<scratch> WORKERS=3 bash tests/eval_all.sh`, co
 | Câu không dấu / nhiễu chat (public) | 0.989 / 0.971–0.978 (0–2 sai; phần còn lại → LLM: toàn luồng 0.99) |
 | Paraphrase LLM, toàn luồng (luật + LLM, ngưỡng 0.75) | v32: public held-out 0.584, train held-out 0.780; + stage 1.5: public held-out **0.602** (đo trên GPU, v34), train held-out ~0.801 (ước lượng entry 26) |
 
-File nộp public: `submissions/v30/` (1000 / 1000). Routine tự tiếp tục: `trig_01Vrvp6RpbNVxYYfUB1YGeJW` (mỗi giờ, :42).
+File nộp public: `submissions/v30/` (1000 / 1000). Routine tự tiếp tục đã xoá 07/11 (việc GPU chờ quota đã xong).
 
 ## Kaggle
 

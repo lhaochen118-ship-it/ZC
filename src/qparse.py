@@ -132,13 +132,16 @@ def parse_period(text, today):
         mo = SPELLED_M[m.group(1)]; return dm.month_noyear(mo, today), f"month_noyear({mo}, TODAY)"
     m = re.search(r"quy (\d)\s*(?:/|-|nam |cua nam )\s*" + Y, t)
     if m: return dm.quarter(_y(m.group(2)), int(m.group(1))), f"quarter({_y(m.group(2))}, {int(m.group(1))})"
+    m = re.search(r"\b(?:nam )?(20\d\d)\b,? (?:(?!den |toi |tu |cho )\S+ ){0,3}?quy ([1-4])\b(?!\s*(?:/|-|nam )\s*\d)", t)
+    if m:                                                              # the year before its quarter: 'Năm 2026, quý 2', 'cuối năm 2025 tức quý 4'
+        return dm.quarter(int(m.group(1)), int(m.group(2))), f"quarter({int(m.group(1))}, {int(m.group(2))})"
     m = re.search(r"quy (\d)\b", t)
     if m: return dm.quarter_noyear(int(m.group(1)), today), f"quarter_noyear({int(m.group(1))}, TODAY)"
     m = re.search(r"(?:ngay )?(\d{1,2})/(\d{1,2})/(20\d\d)", t)
     if m: d = _date(*m.group(1, 2, 3)); return dm.day(d), f"day({_dc(d)})"
     m = re.search(r"\b" + MON + r"(\d{1,2})\s*(?:/|-|nam |cua nam )\s*" + Y + r"\b", t) or re.search(r"(?<![\d/])(\d{1,2})[/-](20\d\d|\d\d)\b(?![/\d])", t)
     if m: return dm.month(_y(m.group(2)), int(m.group(1))), f"month({_y(m.group(2))}, {int(m.group(1))})"
-    m = re.search(r"\bnam (20\d\d)\b,? (?:(?!den |toi |tu |cho )\S+ ){0,2}?(?:thang|thg|th) (\d{1,2})\b(?![/\d])", t)
+    m = re.search(r"\b(?:nam )?(20\d\d)\b,? (?:(?!den |toi |tu |cho )\S+ ){0,2}?(?:thang|thg|th) (\d{1,2})\b(?![/\d])", t)
     if m and 1 <= int(m.group(2)) <= 12:                               # the year before its month: 'năm 2025 tháng 5', 'Năm 2026, tháng 5'
         return dm.month(int(m.group(1)), int(m.group(2))), f"month({int(m.group(1))}, {int(m.group(2))})"
     m = re.search(r"\b(?:thang|thg|th)\s*(\d{1,2})\b(?!/)", t)

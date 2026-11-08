@@ -5,7 +5,8 @@
 - the prompt carries the compact sections (# BUSINESS, # HINTS, # QUESTION) and no rule program;
 - --dp 2 (two processes with claims) answers every question once;
 - a tiny --budget still writes a line for every question (abstain when out of time);
-- the <sql> escape (WP12) runs through precheck and DuckDB.
+- the <sql> escape (WP12) runs through precheck and DuckDB;
+- --review 1 (M11): a flagged result gets exactly one review turn and keeps a valid answer.
 Usage: test_flow_hybrid.py <train_split> <scratch>"""
 import os, sys, json, subprocess, shutil
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -86,6 +87,17 @@ def main():
     sm = [s for r in logs4 for s in r["samples"]["samples"]]
     assert sm and all(s["ok"] and s.get("escape") == "sql" and s["answer"]["type"] == "number" and s["answer"]["answer"] > 0 for s in sm), sm[:2]
     print(f"sql: {len(sm)} samples answered through DuckDB")
+    out5 = os.path.join(S, "o5"); run([split, out5] + base + ["--review", "1"])              # M11: suspicious result -> one review turn
+    _, logs5 = check(out5, n, "review")
+    sm = [s for r in logs5 for s in r["samples"]["samples"]]
+    rev = [s for s in sm if s.get("reviewed")]
+    assert rev, "no review turn although the fake answer (always a number) contradicts typed hints"
+    for s in rev:
+        t = [x for x in s["turns"] if x.get("review")]
+        assert len(t) == 1 and (t[0].get("post") or "Check before answering" in t[0]["review"]), t
+        assert s["ok"], "a reviewed sample lost its answer"
+        assert s["turns"].index(t[0]) < len(s["turns"]) - 1 or len(s["turns"]) > 2, "review turn not generated"
+    print(f"review: {len(rev)} of {len(sm)} samples re-read once")
     print("test_flow_hybrid PASS")
 
 

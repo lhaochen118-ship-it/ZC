@@ -864,3 +864,20 @@ code (`quynhtran35/zc-evalbase-1`, DP 4). quick400 chứa 150 câu pub_full, 150
   phải có giá trị ít nhất ngang D1 trên mỗi bản ghi.
 - **QĐ4 làm lại cho đúng:** Gemma 4 12B mới chỉ chạy prompt compact. Chạy Gemma prompt full (quick400 + pub_ho), Gemma compact
   pub_ho và Qwen full pub_ho trên đúng code WP3 (`bc7c1a3`, worktree `wt_v35`) sau preflight → so gốc với gốc cùng prompt tốt nhất.
+
+## Entry 39 — 2026-11-08: WP9 vòng 2 (log A1, dev) + đọc lại (M11 rút gọn); kiểm gợi ý trên paraphrase
+
+- Lỗi A1 trên dev (pub_full + pub_k0 trong quick400, 300 câu): đúng 81.3 %, **đồng thuận sai 10 %** (nhóm lớn nhất), bất đồng 6.3 %.
+  Một phần pub_k0 là paraphrase đổi nghĩa (vd. "tháng này" → "hôm nay" nhưng nhãn giữ của câu gốc): trần pub_k0 < 1, không sửa.
+  Lỗi tổng quát lặp lại: từ đơn vị (đã sửa gợi ý), câu chủ quan / không ghi nhận vẫn trả lời dù gợi ý `missing_data` đúng.
+- Độ chính xác gợi ý `missing_data`: dev 32 / 32 đúng (0 / 1,115 câu trả lời được bị gắn nhầm), train 20 / 20 (0 / 2,930); độ phủ
+  train 20 / 70 — phần còn lại toolkit tự `raise Unanswerable` (kỳ ngoài dữ liệu, không có nhập hàng / công nợ / giá vốn /
+  phương thức thanh toán / kênh), không cần gợi ý thêm.
+- **M11 rút gọn (`--review 1`, mặc định tắt đến khi đo A/B):** mẫu có kết quả đáng ngờ (trả lời dù gợi ý nói dữ liệu không ghi
+  nhận, hoặc cờ postcheck) được đọc lại đúng một lượt; mô hình tự quyết (viết lại chương trình hoặc `raise Unanswerable`); đáp án
+  cũ giữ nếu lượt đọc lại lỗi. Không có luật trả lời.
+- Tổng hợp pub_ho theo khuôn (chỉ số tổng, không xem câu): yếu nhất `unit_qty` (PA −0.60), `subjective` (−0.61), `top_item`
+  (A1 0.11), `share` (0.31), `n_debtors`; `revenue` (294 câu) chỉ 0.67 → độ bền với cách hỏi mới là chỗ mất điểm lớn nhất.
+- Gợi ý kỳ trên D2 (paraphrase câu train, nhãn đã kiểm): 3,412 khớp / 25 lệch (phần lớn tương đương: `between` cả tháng = `month`);
+  lỗi thật: năm đứng trước quý / tháng không có chữ "năm" ("Năm 2026, quý 2", "2025 tháng 8") → `quarter_noyear` / `month_noyear`
+  → sửa `qparse.parse_period`.

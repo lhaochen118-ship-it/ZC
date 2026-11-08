@@ -119,6 +119,11 @@ class HybridPipeline(pipeline.Pipeline):
             k_asked = top_k_asked(st["qkey"])
             flags = toolsmod.postcheck(r["answer"], st["hints"].get("answer_type"), None, st["qkey"], k_asked)
             turn["post"] = flags; smp.update(ok=True, answer=r["answer"], flags=flags, lp=turn.get("lp"), escape=turn.get("escape"))
+            rv = review_msg(st["hints"], r["answer"], flags) if int(getattr(a, "review", 0) or 0) and not smp.get("reviewed") else None
+            if rv:                                                     # M11: the model re-reads a suspicious result once (it decides;
+                smp["reviewed"] = True; turn["review"] = rv[:300]      # the answer above stands if the review turn fails)
+                self.stats["review"] += 1
+                return retry(rv)
             settle()
         def retry(msg):
             if len(smp["turns"]) <= int(getattr(a, "max_turns", 2)):
@@ -192,6 +197,19 @@ def repair_hint(err, spec):
         return "\nUse the exact data value (find(kind, text) lists matching values) or the right column (schema())."
     if "Unanswerable" in e: return ""
     return ""
+
+
+def review_msg(hints, answer, flags):
+    """the review turn of a suspicious result (M11, --review 1), or None: an answer although the hints say the data does not
+    record what the question needs (dev: 32 / 32 such hints were right), or postcheck flags."""
+    md = (hints or {}).get("missing_data") or []
+    if md and (answer or {}).get("type") != "unanswerable":
+        return ("Check before answering: the HINTS say the shop's data does not record " + "; ".join(map(str, md)) + ". If the question "
+                "needs that, write raise Unanswerable(\"<reason>\") instead of ANSWER; if it does not, write the same program again.")
+    if flags:
+        return ("The result " + json.dumps(answer, ensure_ascii=False, default=str)[:200] + " looks suspicious: " + "; ".join(flags) +
+                ". Check the program against the question (period, filters, function, answer type); if it is right, write the same program again.")
+    return None
 
 
 def sql_program(sql, expected_type=None):

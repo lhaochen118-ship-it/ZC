@@ -729,3 +729,12 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   prompt / ngữ pháp / tool / thuật toán chọn / cờ / huấn luyện / mô hình phụ / Docker §5, dữ liệu D1–D7 + D2N, D4T, DV §7, gói việc
   WP0–WP12 với test và nghiệm thu §8, lịch / quota §9, quy tắc quyết định QĐ1–QĐ15 §10, thứ tự cắt khi thiếu thời gian.
 - **Việc của khung chat kế tiếp: triển khai code đúng theo `docs/08`, WP0 → WP12.**
+
+## Entry 32 — 2026-11-08: ước lượng giờ GPU và số acc Kaggle (`docs/08_MASTER_PLAN.md` §9, §5.12)
+
+- Số đo cơ sở: cài wheels 180–315 s, chép 9B 50–89 s, nạp vLLM 274–280 s (v33 / v34); đầu ra ngắn ≥ 5.5–7 prompt / s / L4 (v33);
+  luồng cũ có suy nghĩ 8.5 s / câu trên 4×L4 (v34); chạy chương trình 0.08–0.24 s; KV ~58 chuỗi 2k token / L4.
+- Bảng việc G1–G29 (bố trí 4 GPU / batch theo §5.12): W46 ≈ 36.3 giờ phiên 4×L4 (≈ 145 GPU-h; + 30 % dự phòng ≈ 189), W47 ≈ 5.7.
+  Quota W46 còn 75.6 GPU-h ở 3 acc → **cần thêm 4 acc L4 mới (lý tưởng 5)** trước sáng 11/11; T4 hiện có đủ. Phân bổ theo đợt
+  Đ1–Đ7, lấp đầy acc theo thứ tự; tổng GPU tường ≈ 13 h trên 09–14/11. Thay bước dò thầy bằng sinh D3 đầy đủ cho cả 4 thầy song
+  song; thêm vòng 3 nhánh và F1 / F2 song song; QĐ6 chọn thầy theo nhánh vòng 2; QĐ16 chỉnh ngân sách theo tốc độ đo ở WP1.

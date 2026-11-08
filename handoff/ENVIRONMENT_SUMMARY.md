@@ -34,7 +34,7 @@ python3 src/ingest.py data/raw/public_test/public_test <S>/cache_pub 4
 | Dữ liệu | `nhatlong1103/zc-2026`; paraphrase / câu chờ: `<acc>/zc-para`, `<acc>/zc-pend` (private, mỗi acc một bản) |
 | Song song | `--dp 4` + `--pipeline` (work stealing theo DN) |
 | Đo được | ~200 token sinh / s / GPU; bận 84–94 %; KV ≈ 201k token / GPU (`--gpu-util 0.92`) |
-| Thời gian | LLM 1 lần chạy: public 1000 câu ≈ 55–75 phút, train 3000 câu ≈ 65–70 phút; luồng nộp v34 trên 2065 paraphrase: 3.1 h |
+| Thời gian | LLM 1 lần chạy: public 1000 câu ≈ 55–75 phút, train 3000 câu ≈ 65–70 phút; luồng nộp v34 trên 2065 paraphrase: 3.1 h; chi phí cố định mỗi phiên: cài wheels 180–315 s, chép 9B 50–89 s, nạp vLLM 274–280 s; đầu ra ngắn ≥ 5.5–7 prompt / s / L4 (v33) |
 | Giới hạn | 2 phiên GPU + 5 CPU đồng thời / acc; **30 giờ GPU / tuần / acc, tính theo GPU**; reset thứ Bảy 00:00 UTC |
 
 ### Tài khoản (08/11)
@@ -45,6 +45,7 @@ python3 src/ingest.py data/raw/public_test/public_test <S>/cache_pub 4
 | yuan1103 | L4 | đã dùng ~15 h (v33, v34) |
 | yeshenhi, mxuanquy | chỉ T4 (không chạy được Qwen3.5-9B FP8) | — |
 | nhatlong1103 | chỉ đăng dataset | — |
+| **N1–N4 (cần thêm, lý tưởng N5)** | L4 (đã accept rules `gemma-4-developer-agent`, đã xác minh số điện thoại) | cần trước sáng 11/11 — `docs/08_MASTER_PLAN.md` §9 |
 
 Acc dùng chung với dự án khác: chỉ thao tác kernel `zc-*`. `automation/accounts.json`: danh sách acc không có L4.
 

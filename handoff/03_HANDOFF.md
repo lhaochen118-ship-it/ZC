@@ -96,7 +96,8 @@ quy tắc quyết định §10, lịch / quota §9. Tóm tắt thứ tự:
 | WP11 | Docker + `submissions/vNN`; user build ngày 15/11, nộp trước 16/11 23:59 GMT+7 | 15–16/11 |
 | WP12 (P1) | nhánh thoát DuckDB SQL | 11–13/11 |
 
-Thứ tự cắt khi thiếu thời gian và những gói không được cắt: `docs/08_MASTER_PLAN.md` §8 (cuối).
+Thứ tự cắt khi thiếu thời gian và những gói không được cắt: `docs/08_MASTER_PLAN.md` §8 (cuối). Giờ GPU, số acc (cần thêm 4 acc
+L4 mới, lý tưởng 5) và phân bổ theo đợt: §9; bố trí GPU / batch: §5.12.
 
 ## 6. Rủi ro cần nhớ
 

@@ -20,8 +20,9 @@ gom vào WP1 với quy tắc quyết định viết sẵn — không còn câu h
 3. **Tìm cấu hình tốt nhất song song:** nhiều nhánh fine-tune cùng lúc (2 nhánh / phiên 4×L4, 2 phiên / acc), khác nhau về
    dữ liệu / mô hình thầy, cùng ngân sách token; đánh giá trên bộ nhanh 400 câu cố định; loại dần; nhánh thắng huấn luyện
    đầy đủ.
-4. **Quota:** tuần W46 còn ≈ 75.6 GPU-giờ (quynhtran35 30, phatle1578 30, yuan1103 ≈ 15.6); từ 14/11 07:00 GMT+7 thêm 90.
-   Kế hoạch dùng ≈ 70 (W46) + ≈ 45 (W47), dư phòng ≈ 50.
+4. **GPU / acc (§9):** kế hoạch ≈ 36.3 giờ phiên 4×L4 trong tuần W46 (≈ 145 GPU-h quota; + 30 % dự phòng ≈ 189) và ≈ 5.7 giờ
+   phiên tuần W47. Quota W46 còn 75.6 GPU-h ở 3 acc → **cần thêm 4 acc L4 mới (lý tưởng 5)**, có trước sáng 11/11. Mỗi phiên
+   dùng hết 4 GPU (DP 4 cho suy luận 9B, TP 2 × 2 / TP 4 cho thầy, 2 nhánh × FSDP 2 cho huấn luyện — §5.12).
 5. **Mục tiêu trung thực:** public = 1.0 là đích của vòng phát triển (public chỉ để phân tích lỗi, không train, không vào
    prompt). Ước lượng (chưa đo): 0.93–0.96 sau (a)+(b), 0.97–0.99 sau (c), 1.0 cần (e); không đánh đổi held-out.
 
@@ -310,6 +311,24 @@ Mặc định trước khi tinh chỉnh: `K_max = 8`, `v_fast = 0.8`, `max_turns
 → `src/predict_flow.py --config configs/flow_final.json`; `docker/README_SOLUTION.md`: mô hình + tham số, dataset ngoài, cách
 huấn luyện (`training/README.md`).
 
+### 5.12 Bố trí GPU và batch (dùng hết 4 GPU mỗi phiên; batch lớn nhất)
+
+| Loại việc | 4×L4 (96 GB, 4 GPU độc lập, không NVLink) | Batch / tham số |
+|---|---|---|
+| Suy luận Qwen3.5-9B FP8 (đánh giá, D3 tự viết, DV, lọc vòng lặp ngược) | **DP 4**: mỗi GPU một bản (~10 GB trọng số + KV); không TP (PCIe chậm) | `--max-model-len 4096` (prompt gọn), `max_num_seqs 128`, `max_num_batched_tokens 16384`, `gpu_memory_utilization 0.92`, prefix cache; gửi cả lô câu của một DN cùng lúc; GPU tự nhận DN tiếp theo (claim) |
+| Suy luận có suy nghĩ (G3) | DP 4 | `--max-model-len 16384`, `max_num_seqs 32` |
+| Thầy Qwen3.6-27B-FP8, Gemma 4 31B-it (fp8) | **TP 2 × 2 bản** | `max-model-len 4096`, `max_num_seqs 64` mỗi bản |
+| Thầy Qwen3.6-35B-A3B-FP8, gpt-oss-120b | **TP 4** | `max_num_seqs 128` |
+| gpt-oss-20b (dự phòng) | DP 4 | `max_num_seqs 128` |
+| SFT LoRA bf16 9B (nhánh) | **2 nhánh × FSDP 2 GPU** (`CUDA_VISIBLE_DEVICES=0,1` và `2,3`); nếu QĐ1 cho 1 GPU / nhánh → **4 nhánh × 1 GPU** | chuỗi 2,048; micro-batch / GPU lớn nhất vừa (thử 16 → 8 → 4 → 2, WP1 ghi lại), gradient checkpointing, tích luỹ tới batch hiệu dụng 64 |
+| SFT bản cuối | **FSDP 4 GPU** | như trên |
+| Bộ kiểm Qwen3.5-0.8B | **DDP 4** | micro-batch 32 × 512 token |
+| Embedding 0.6B (G23) | **T4 × 2: DP 2** (fp16) — hoặc trong phiên L4 | batch 256 |
+| Chạy chương trình / lọc thực thi | 48 CPU của phiên L4 | `ProcessPoolExecutor(max_workers = số CPU)` |
+
+**T4 × 2 (32 GB, không bf16 / FP8):** chỉ dùng cho mô hình nhỏ (embedding, PhoBERT, bộ kiểm suy luận fp16), DP 2, batch tối đa;
+không chạy Qwen3.5-9B hay mô hình thầy. **Phiên CPU (4 nhân):** D2N, D3 lấy mẫu + chạy (chia theo DN), D4T, chấm điểm.
+
 ## 6. Mô hình
 
 ### 6.1 Mô hình chính (≤ 15B lúc chạy)
@@ -358,11 +377,11 @@ Dùng logic luật (bộ sinh chương trình, toolkit) để **tạo dữ liệ
 cache; tải `<acc>/zc-para`; `tests/make_splits.py`; `pip download` bộ huấn luyện §5.9 → tạo dataset `<acc>/zc-train-wheels` ở
 3 acc L4. *Nghiệm thu:* `tests/eval_all.sh quick` 3000 / 3000, 1000 / 1000; file split đúng số câu.
 
-**WP1 — Chạy thử GPU (09/11, yuan1103, ~5 GPU-h).** `training/smoke.py`: (a) LoRA bf16 9B 30 bước trên 200 mẫu D1 — 1 GPU
-(Unsloth), FSDP 2, FSDP 4: VRAM đỉnh, tok/s, tên module LoRA; (b) gộp → vLLM `--quantization fp8` sinh 20 câu; adapter qua
+**WP1 — Chạy thử GPU (09/11, yuan1103, G1: 1 phiên ≈ 1.0 h).** `training/smoke.py`: (a) LoRA bf16 9B 30 bước trên 200 mẫu D1 — 1 GPU
+(Unsloth), FSDP 2, FSDP 4: VRAM đỉnh, tok/s, micro-batch lớn nhất vừa, tên module LoRA; (b) gộp → vLLM `--quantization fp8` sinh 20 câu; adapter qua
 `--lora` → so tốc độ; (c) nạp Qwen3.6-27B-FP8 (TP 2) và Gemma 4 31B-it (fp8 động, TP 2), sinh 50 câu mỗi thầy; (d) ngữ pháp
 mẫu qua `StructuredOutputsParams` trên 50 câu — đo chậm thêm. *Kiểm trước:* `--dry-run` trên CPU; review; `--no-preflight`.
-*Nghiệm thu:* số đo vào `EXPERIMENT_LOG.md`; áp QĐ1–QĐ3, QĐ12.
+*Nghiệm thu:* số đo vào `EXPERIMENT_LOG.md`; áp QĐ1–QĐ3, QĐ12, QĐ16.
 
 **WP2 — Luồng hybrid v1 (09–10/11, CPU) — P0.** `api_spec.py`, `grammar.py`, `hints.py`, `tools.py` (T1, T3, T7, T8),
 `precheck.py`, `prompting.py`, cờ §5.8 trong `agent.py`, `predict_flow.py` viết lại (§4.1, chưa có M4 / M11 / S1 / S3), `dm` trace.
@@ -373,29 +392,32 @@ chương trình đã kiểm), `test_flow_hybrid` (mô hình giả: mọi câu qu
 đáp án). Cập nhật `test_rules_first` / `test_canon_flow` thành test thư viện. *Nghiệm thu:* `tests/run_all.sh` ALL PASS;
 preflight OK cho `v35_e0.jobs`.
 
-**WP3 — Mốc E0 + chọn mô hình chính S0 + A/B (10/11, ~14 GPU-h).** E0 (yuan1103): luồng v1, Qwen3.5-9B, `quick400` + `pub_full`.
-S0 + A/B (quynhtran35): Gemma 4 12B-it trên `quick400`; prompt `compact` vs `full`; ngữ pháp bật / tắt; `pub_noind` (ẩn hàm ngành)
-với nhánh thoát pandas; `pub_noacc`. *Nghiệm thu:* bảng `tests/score_sets.py`; áp QĐ4, QĐ5, QĐ12.
+**WP3 — Mốc E0 + chọn mô hình chính S0 + A/B (10/11, G2–G5: 4 phiên song song, ≈ 2.5 giờ phiên).** E0 (G2, G3 — có / không
+suy nghĩ): luồng v1, Qwen3.5-9B, `quick400` + `pub_full`. S0 (G4): Gemma 4 12B-it trên `quick400`. A/B (G5): prompt `compact` vs
+`full`; ngữ pháp bật / tắt; `pub_noind` (ẩn hàm ngành) với nhánh thoát pandas; `pub_noacc`. *Nghiệm thu:* bảng `tests/score_sets.py`; áp QĐ4, QĐ5, QĐ12.
 
 **WP4 — Nhà máy dữ liệu (09–11/11, container + phiên CPU Kaggle).** Script §5.1 `training/data/*`; D1, D2, D2N, D3 (bước lấy
 mẫu + chạy), D4T; định dạng §5.2. *Test:* `test_data_factory` (mẫu chạy lại ra đúng nhãn; không id public / DN `dev_*` / DN
 `tr_ho`; phân bố kiểu đáp án lệch ≤ 5 điểm %; trùng < 1 %), `test_sft_format` (đúng prompt §5.3, nhãn chỉ ở assistant, khớp ngữ
 pháp). *Nghiệm thu:* `training/data/out/*.jsonl` + thống kê.
 
-**WP5 — Dò thầy (11/11, quynhtran35, ~5 GPU-h).** 1,000 chương trình D3 + 300 câu train cần paraphrase, giống nhau cho mọi thầy
-(§6.2). Đo tỉ lệ giữ sau lọc vòng lặp ngược, distinct-2, tỉ lệ câu tiếng Việt có dấu chuẩn, tok/s. *Nghiệm thu:* QĐ6.
+**WP5 — D3 theo từng thầy, chạy song song (11/11, G8–G11: 4 phiên, ≈ 7.1 giờ phiên; thay bước dò thầy để rút ngắn thời gian).**
+Cùng 15k chương trình D3 cho mọi thầy (§6.2), mỗi thầy viết 2 câu / chương trình + D5 lời giải cho 3k chương trình; lọc vòng lặp
+ngược bằng 9B trong cùng phiên. Ghi tỉ lệ giữ, distinct-2, tỉ lệ câu tiếng Việt có dấu chuẩn, tok/s. *Nghiệm thu:* 4 bộ D3 (theo
+thầy) + thống kê; chọn thầy theo QĐ6 (bằng kết quả nhánh vòng 2).
 
-**WP6 — Nhánh fine-tune (11–12/11).** Vòng 1 (phatle1578, 2 phiên song song, ~16 GPU-h): A1 = D1; A2 = D1 + D2 + D2N; A3 = A2 +
-D3 (câu do 9B viết); A4 = A3 + D4T + D6 (10 %). Vòng 2 (quynhtran35, ~8–16 GPU-h): hỗn hợp tốt nhất với D3 do thầy 1 / thầy 2 viết,
-± D5. Sau mỗi vòng: gộp 2–3 nhánh tốt nhất (linear / TIES / DARE) và thử multi-LoRA. Đánh giá `quick400` K = 1 rồi K = 4 cho 2
+**WP6 — Nhánh fine-tune (11–12/11).** Vòng 1 (G12–13: 2 phiên, 4 nhánh): A1 = D1; A2 = D1 + D2 + D2N; A3 = A2 + D3 (câu do 9B
+viết); A4 = A3 + D4T + D6 (10 %). Vòng 2 (G14–16: 3 phiên, 5 nhánh): hỗn hợp tốt nhất với D3 của từng thầy (4 nhánh) + D3 trộn
+các thầy. Vòng 3 (G17–18: 2 phiên, 4 nhánh): r 16 / 64 × ± D5. G19: gộp / multi-LoRA / K = 4. Sau mỗi vòng: gộp 2–3 nhánh tốt nhất (linear / TIES / DARE) và thử multi-LoRA. Đánh giá `quick400` K = 1 rồi K = 4 cho 2
 ứng viên đầu. *Nghiệm thu:* bảng nhánh trong `EXPERIMENT_LOG.md`; QĐ7–QĐ9.
 
-**WP7 — Huấn luyện đầy đủ + tích hợp (12–13/11, phatle1578, ~12 GPU-h).** Cấu hình thắng, dữ liệu đầy đủ, FSDP 4; gộp hoặc
+**WP7 — Huấn luyện đầy đủ + tích hợp (12–13/11, G20–G21: F1 1 epoch và F2 2 epoch chạy song song, ≈ 6.8 giờ phiên; lý tưởng
+thêm seed thứ hai để gộp).** Cấu hình thắng, dữ liệu đầy đủ, FSDP 4; chọn F1 / F2 / bản gộp bằng `quick400`; gộp hoặc
 adapter (QĐ3); cập nhật `src/model_hashes.json`; đăng trọng số / adapter vào dataset private. *Nghiệm thu:* `quick400` ≥ nhánh
 thắng; s / câu đo trên 4×L4; QĐ10.
 
 **WP8 — Tin cậy, bộ kiểm, truy hồi ngữ nghĩa, đọc kết quả (12–13/11) — P1.** `datacard.py` (M4), `review.py` (M11), tool T2 / T5
-/ T6 / T9 / T4, `rulebook.py` (M3); DV + `verifier_train.py` (S3, quynhtran35 ~2 GPU-h); `embed_bank.py` + `retrieval.py` mode
+/ T6 / T9 / T4, `rulebook.py` (M3); DV (G7) + `verifier_train.py` (S3, G22); `embed_bank.py` (G23, T4) + `retrieval.py` mode
 `embed` (S1); `confidence.py` (đặc trưng, logistic, θ, conformal). *Test:* `test_confidence` (đơn điệu, ngưỡng, hồi quy trên log
 có sẵn), `test_retrieval` (đánh giá offline: tỉ lệ top-4 cùng họ hàm), `test_verifier_format`. *Nghiệm thu:* QĐ11, QĐ13, QĐ14;
 token / câu giảm ≥ 30 % nhờ dừng sớm mà PA held-out không giảm.
@@ -406,7 +428,7 @@ postcheck → gợi ý / tool → dữ liệu huấn luyện / ví dụ tổng h
 Mỗi nhóm thêm test hồi quy từ train / tổng hợp. *Dừng khi:* câu sai còn lại chỉ sửa được bằng vá riêng câu hoặc là lỗi nhãn /
 câu mơ hồ (ghi danh sách vào log).
 
-**WP10 — Đánh giá cuối (14/11 sau 07:00 GMT+7, quota mới, ~25 GPU-h).** `pub_full` × 2 (tất định), `pub_ho`, `tr_ho`, `pub_noind`,
+**WP10 — Đánh giá cuối (14/11 sau 07:00 GMT+7, quota W47, G27–G29: ≈ 5.7 giờ phiên).** `pub_full` × 2 (tất định), `pub_ho`, `tr_ho`, `pub_noind`,
 `pub_noacc`, `robust`, thời gian 1000 câu; so với v34 / v28; ghi `configs/flow_final.json`. *Nghiệm thu:* QĐ15.
 
 **WP11 — Docker + nộp (15/11).** §5.11; `submissions/vNN/` + README; cập nhật `handoff/STATUS.md`. **User** build, chạy
@@ -419,20 +441,104 @@ trên bảng C + bảng thô (read-only), prompt nêu tên bảng / cột; đo t
 multi-LoRA → T9 / T4 / M3 LLM → S3 bộ kiểm → M4 data card → WP6 vòng 2. **Không bao giờ cắt:** WP2 (P0), WP3 E0, WP6 vòng 1,
 WP7, WP10, WP11.
 
-## 9. Lịch và quota
+## 9. Ước lượng giờ GPU, số acc Kaggle và lịch
 
-| Ngày (GMT+7) | Container / CPU | yuan1103 (≈15.6) | quynhtran35 (30) | phatle1578 (30) |
-|---|---|---|---|---|
-| T2 09/11 | WP0; WP2; WP4 (D1, D2, D2N) | WP1 smoke (5) | — | — |
-| T3 10/11 | WP2 xong + preflight; WP4 D3 lấy mẫu + chạy (CPU Kaggle) | WP3 E0 (8) | WP3 S0 + A/B (6) | — |
-| T4 11/11 | WP9 vòng 1; WP4 D3 câu do 9B, D4T; WP12 code | — | WP5 dò thầy (5) | WP6 vòng 1, 2 phiên (16) |
-| T5 12/11 | WP8 code; WP9 | — | D3 bằng thầy thắng (8); WP6 vòng 2 (8) | — |
-| T6 13/11 | WP8 hiệu chỉnh; WP9 | (dư ~2) | S3 bộ kiểm (2) | WP7 huấn luyện đầy đủ (12) |
-| T7 14/11 | WP9 vòng cuối | quota mới → WP10 (~25 tổng, chia 3 acc) | WP10 | WP10 |
-| CN 15/11 | WP11; user build Docker | dự phòng | dự phòng | dự phòng |
-| T2 16/11 | sửa sự cố; **user nộp trước 23:59** | — | — | — |
+*Nguyên tắc user (08/11): không tiết kiệm GPU / acc — ra kết quả chính xác nhất trong thời gian ngắn nhất; mỗi acc chạy cùng lúc
+2 phiên GPU + 5 phiên CPU; dùng hết slot của một acc rồi mới sang acc khác; mỗi phiên dùng hết 4 GPU (batch lớn nhất hoặc chia
+việc cho 4 GPU).*
 
-Tổng W46 ≈ 70 / 75.6 GPU-h; W47 ≈ 25–45 / 90. Phiên CPU Kaggle (5 / acc) dùng cho D3 bước chạy, lọc thực thi, chấm điểm.
+### 9.1 Số đo cơ sở (từ các lần chạy trước)
+
+| Đại lượng | Giá trị đo | Nguồn |
+|---|---|---|
+| Cài wheels vLLM trong kernel | 180–315 s | log v33 / v34 (`setup …s`) |
+| Chép Qwen3.5-9B (19.3 GB) từ `/kaggle/input` | 50–89 s (≈ 220–390 MB/s) | log v33 / v34 |
+| Nạp vLLM 9B FP8 (gồm CUDA graph) | 274–280 s | log v33 / v34 |
+| Sinh đầu ra ngắn (~50–80 token, prompt ~1.5k), 1 L4 | ≥ 5.5–7 prompt / s | v33: 615 prompt ≤ 112 s; 1,329 prompt ≤ 190 s |
+| Sinh có suy nghĩ dài (luồng cũ, K = 4, sửa 2 vòng) | 8.5 s / câu trên 4×L4; ~4.5k token / câu; 171 tok/s / GPU | v34 |
+| Chạy một chương trình toolkit | 0.08–0.24 s; phiên L4 có 48 CPU | log v34 |
+| Ingest + schema 14 DN public | 46 s | log v34 |
+| KV cache 9B FP8 / L4 | ~119k–215k token (≈ 58 chuỗi 2k token đồng thời ở `max_model_len 4096`) | log v33 |
+
+**Suy ra cho luồng mới (đầu ra ngắn, không suy nghĩ dài, ~3 lần gọi / câu):** ≈ 0.5 s / câu trên một phiên 4×L4 (ước bảo thủ:
+3 prompt / s / GPU × 4 GPU, cộng vòng 2 và ngữ pháp +15 %). **Chi phí cố định mỗi phiên suy luận ≈ 10 phút** (cài + chép + nạp);
+phiên huấn luyện ≈ 8 phút + 5 phút nạp vLLM để đánh giá. **Tốc độ huấn luyện LoRA bf16 9B (ước theo FLOP, ~40 % MFU):** ≈ 850
+tok/s / L4 → nhánh FSDP 2 GPU ≈ 1,700 tok/s, FSDP 4 GPU ≈ 3,400 tok/s — WP1 đo chính xác (QĐ16 chỉnh ngân sách).
+
+### 9.2 Bảng việc GPU (phiên = một phiên 4×L4; GPU-h quota = 4 × giờ phiên)
+
+| Mã | Gói | Việc | Bố trí 4 GPU (§5.12) | Khối lượng | Giờ / phiên | Số phiên | Giờ phiên |
+|---|---|---|---|---|---|---|---|
+| G1 | WP1 | chạy thử (LoRA 3 cấu hình, gộp / adapter, 2 thầy, ngữ pháp) | tuần tự trong phiên | — | 1.0 | 1 | 1.0 |
+| G2 | WP3 | E0 không suy nghĩ: `quick400` + `pub_full` | DP 4 | 1,400 câu | 0.5 | 1 | 0.5 |
+| G3 | WP3 | E0 có suy nghĩ: `quick400` | DP 4 | 400 câu × 8.5 s | 1.1 | 1 | 1.1 |
+| G4 | WP3 | S0 Gemma 4 12B-it: `quick400` | DP 4 | 400 câu | 0.3 | 1 | 0.3 |
+| G5 | WP3 | A/B: prompt đầy đủ, tắt ngữ pháp, `pub_noind`, `pub_noacc` | DP 4 | 1,912 câu | 0.6 | 1 | 0.6 |
+| G6 | WP4 | D3 câu do 9B viết + lọc vòng lặp ngược | DP 4 | 15k chương trình → 30k câu | 1.3 | 1 | 1.3 |
+| G7 | WP4 | DV dữ liệu bộ kiểm (8 mẫu / câu) | DP 4 | 8k câu × 8 | 0.95 | 2 | 1.9 |
+| G8 | WP5 | D3 do Qwen3.6-27B-FP8 viết (+ D5 lời giải) + lọc bằng 9B | TP 2 × 2 → DP 4 | 15k chương trình | 1.9 | 1 | 1.9 |
+| G9 | WP5 | D3 do Qwen3.6-35B-A3B-FP8 viết | TP 4 → DP 4 | 15k | 1.6 | 1 | 1.6 |
+| G10 | WP5 | D3 do Gemma 4 31B-it viết | TP 2 × 2 → DP 4 | 15k | 1.9 | 1 | 1.9 |
+| G11 | WP5 | D3 do gpt-oss-120b viết (lỗi → 20b, QĐ2) | TP 4 → DP 4 | 15k | 1.7 | 1 | 1.7 |
+| G12–13 | WP6 | vòng 1: A1–A4 | 2 nhánh × FSDP 2 | 6M token / nhánh | 1.3 | 2 | 2.6 |
+| G14–16 | WP6 | vòng 2: 4 thầy + 1 trộn | 2 nhánh × FSDP 2 | 6M / nhánh | 1.3 | 3 | 3.9 |
+| G17–18 | WP6 | vòng 3: r 16 / 64 × ± D5 | 2 nhánh × FSDP 2 | 6M / nhánh | 1.3 | 2 | 2.6 |
+| G19 | WP6 | gộp (linear / TIES / DARE), multi-LoRA, K = 4 cho ứng viên đầu | DP 4 | 6 cấu hình × 400 câu | 0.6 | 1 | 0.6 |
+| G20 | WP7 | huấn luyện đầy đủ F1: 1 epoch, r 64 | FSDP 4 | ~25M token | 2.4 | 1 | 2.4 |
+| G21 | WP7 | huấn luyện đầy đủ F2: 2 epoch, r 64 | FSDP 4 | ~50M token | 4.4 | 1 | 4.4 |
+| G22 | WP8 | huấn luyện bộ kiểm Qwen3.5-0.8B | DDP 4 | ~25M token | 0.4 | 1 | 0.4 |
+| G23 | WP8 | nhúng ngân hàng ví dụ (Qwen3-Embedding-0.6B) | **T4 × 2**, DP 2 | ~40k câu | 0.2 (T4) | 1 | (T4) |
+| G24 | WP8 | A/B: bộ kiểm, embedding, đọc kết quả, data card, DuckDB | DP 4 | 6 cấu hình × 400 câu | 0.6 | 1 | 0.6 |
+| G25 | WP9 | đo lại sau mỗi đợt sửa (× 4) | DP 4 | 1,400 câu / lần | 0.36 | 4 | 1.5 |
+| G26 | WP6 / WP7 | ReST một vòng (lấy mẫu 2 phiên + huấn luyện + đánh giá) — QĐ10 | DP 4 / FSDP 4 | 10k câu × 8; 10M token | — | 4 | 3.5 |
+| G27 | WP10 | đánh giá cuối: 3 ứng viên × mọi bộ (~6,000 câu), chia 2 phiên / ứng viên | DP 4 | 18k câu | 0.6 | 6 | 3.6 |
+| G28 | WP10 | tất định (`pub_full` × 2) + đo thời gian cấu hình Docker | DP 4 | 3,000 câu | 0.35 | 3 | 1.05 |
+| G29 | WP10 | dự phòng sửa + đo lại | DP 4 | — | 0.5 | 2 | 1.0 |
+
+### 9.3 Tổng và số acc cần
+
+| Tuần quota | Giờ phiên kế hoạch | + 30 % dự phòng (chạy lại, lỗi, seed thứ hai để gộp) | GPU-h quota | Đã có | Thiếu |
+|---|---|---|---|---|---|
+| W46 (đến 14/11 07:00 GMT+7): G1–G26 | 36.3 | 47.2 | 189 | yuan1103 15.6 + quynhtran35 30 + phatle1578 30 = 75.6 | **113.4 → 4 acc L4 mới** (4 × 30 = 120) |
+| W47 (14–16/11): G27–G29 | 5.7 | 7.4 | 30 | 3 acc cũ reset (90) + 4 acc mới reset (120) | 0 |
+
+- **Cần 4 acc L4 mới** (tổng 7 acc L4) — ràng buộc là quota tuần W46; slot đồng thời (cao nhất ~8 phiên / đợt) chỉ cần 4 acc.
+- **Lý tưởng 5 acc mới** (tổng 8): thêm seed thứ hai cho F1 / F2 để gộp (model soups) và nhánh dự phòng mà không phải chờ.
+- **T4:** 2 acc hiện có (yeshenhi, mxuanquy) đủ cho G23 và phiên CPU; không cần thêm.
+- **CPU:** 5 phiên / acc; dùng 5 phiên CPU của acc đầu tiên trước (D2N, D3 lấy mẫu + chạy chia theo DN, D4T, chấm điểm), rồi mới sang
+  acc kế tiếp. Việc chạy chương trình nặng đặt luôn trong phiên L4 (48 CPU).
+- Acc mới phải: xác minh số điện thoại (GPU), **accept rules `gemma-4-developer-agent`** trên web (điều kiện 4×L4), gửi token. Cần
+  có **trước sáng 11/11** (đợt 3); tốt nhất ngay đầu khung chat mới.
+
+### 9.4 Phân bổ theo đợt (lấp đầy acc theo thứ tự; số trong ngoặc = giờ phiên)
+
+| Đợt (GMT+7) | Việc → acc / slot | Quota đã dùng sau đợt (giờ phiên / 7.5) |
+|---|---|---|
+| Đ1 — 09/11 chiều (sau WP0, smoke script) | G1 (1.0) → yuan1103.s1 | yuan1103 1.0 / 3.9 |
+| Đ2 — 10/11 (sau WP2 + preflight) | G3 (1.1) → yuan1103.s1; G2 (0.5) → yuan1103.s2; G5 (0.6) → quynhtran35.s1; G4 (0.3) → quynhtran35.s2; tối: G6 (1.3) → quynhtran35.s2; G7 (2 × 0.95) → quynhtran35.s1 + phatle1578.s1 | yuan1103 2.6; quynhtran35 3.15; phatle1578 0.95 |
+| Đ3 — 11/11 sáng | G8 (1.9) → phatle1578.s2; G9 (1.6) → phatle1578.s1; G10 (1.9) → N1.s1; G11 (1.7) → N1.s2; G12–13 (2 × 1.3) → quynhtran35.s1 + s2 | quynhtran35 5.75; phatle1578 4.45; N1 3.6 |
+| Đ4 — 11/11 chiều tối | G14–16 (3 × 1.3) → phatle1578.s1 + s2, N1.s1; G17–18 (2 × 1.3) → N1.s2, N2.s1; G22 (0.4) → yuan1103.s1 | phatle1578 7.05; N1 6.2; N2 1.3; yuan1103 3.0 |
+| Đ5 — 12/11 | G19 (0.6) → N2.s2; G20 F1 (2.4) → N2.s1; G21 F2 (4.4) → N3.s1; G24 (0.6) → N2.s2; G25 (4 × 0.36) → yuan1103, quynhtran35 × 2, N1 | N2 4.9; N3 4.4; quynhtran35 6.5; N1 6.6; yuan1103 3.4 |
+| Đ6 — 12–13/11 | G26 ReST (3.5) → N4.s1 + s2; (lý tưởng: seed 2 của F1 / F2 → N3.s2 hoặc N5) | N4 3.5 |
+| Đ7 — 14/11 sau 07:00 (W47) | G27 (6 × 0.6) → quynhtran35.s1 + s2, phatle1578.s1 + s2, yuan1103.s1 + s2; G28–29 → N1 | đủ quota W47 |
+
+Dư W46 sau kế hoạch ≈ 12.6 giờ phiên (yuan1103 0.5, quynhtran35 1.0, phatle1578 0.45, N1 0.9, N2 2.6, N3 3.1, N4 4.0) — dùng cho
+chạy lại khi lỗi. N1–N4 = 4 acc L4 mới (N5 nếu có).
+
+### 9.5 Lịch tổng (code là đường găng; GPU chạy ngay khi code xong)
+
+| Ngày (GMT+7) | Code (container) | GPU (đợt) | Kết quả mong đợi |
+|---|---|---|---|
+| T2 09/11 | WP0; `training/smoke.py`; WP2 bắt đầu; WP4 D1 / D2 / D2N | Đ1 | số đo huấn luyện / thầy / ngữ pháp → QĐ1–QĐ3, QĐ12, QĐ16 |
+| T3 10/11 | WP2 xong + preflight; WP4 D3 lấy mẫu + chạy (CPU), D4T | Đ2 (~1.2 h tường) | E0, S0, A/B; D3-tự viết, DV |
+| T4 11/11 | WP9 vòng 1; WP12; `training/sft.py`, `merge.py`, `teacher_gen.py` (đã chạy thử ở Đ1) | Đ3 (~1.9 h) + Đ4 (~1.3 h) | D3 từ 4 thầy; nhánh vòng 1–3; bộ kiểm |
+| T5 12/11 | WP8 code; WP9 | Đ5 (F2 dài nhất ~4.4 h) | cấu hình thắng, F1 / F2, A/B WP8 |
+| T6 13/11 | WP8 hiệu chỉnh θ; WP9 vòng cuối; chuẩn bị Docker | Đ6 | ReST (nếu QĐ10), chọn ứng viên |
+| T7 14/11 | `configs/flow_final.json` | Đ7 (~0.7 h) | đánh giá cuối → QĐ15 |
+| CN 15/11 | WP11 | — | user build Docker, chạy thử |
+| T2 16/11 | sửa sự cố | — | **user nộp trước 23:59** |
+
+**Tổng thời gian GPU tường (nếu đủ acc):** ≈ 13 giờ chia trên 09–14/11; mỗi đợt ≤ 4.4 giờ.
 
 ## 10. Quy tắc quyết định (định sẵn)
 
@@ -443,7 +549,7 @@ Tổng W46 ≈ 70 / 75.6 GPU-h; W47 ≈ 25–45 / 90. Phiên CPU Kaggle (5 / acc
 | QĐ3 | WP1(b) | adapter qua `--lora` chậm hơn gộp ≤ 10 % → dùng adapter (gọn, cho phép multi-LoRA); ngược lại gộp + FP8 |
 | QĐ4 | WP3 | Gemma 4 12B-it thay Qwen3.5-9B chỉ khi `quick400` cao hơn ≥ 2.0 điểm **và** s / câu ≤ 1.5× |
 | QĐ5 | WP3 | prompt gọn giữ khi PA mô hình gốc giảm ≤ 1.0 điểm so với prompt đầy đủ |
-| QĐ6 | WP5 | 2 thầy có tỉ lệ giữ sau lọc cao nhất; hoà → tok/s cao hơn |
+| QĐ6 | WP6 vòng 2 | thầy (hoặc trộn thầy) cho nhánh vòng 2 tốt nhất trên `quick400`; hoà → tỉ lệ giữ sau lọc cao hơn |
 | QĐ7 | WP6 | nhánh được chọn khi hơn mô hình gốc ≥ 2.0 điểm trên `quick400` và không thua ở phần `tr_ho` / k=0; D6 giữ nếu A4 ≥ A3; D5 giữ nếu + ≥ 0.5 |
 | QĐ8 | WP6 | (dự phòng) không nhánh nào đạt QĐ7 → nộp hybrid với mô hình gốc; vẫn làm WP8 |
 | QĐ9 | WP6 | bản gộp (linear / TIES / DARE) hoặc multi-LoRA thay nhánh đơn khi ≥ +0.5 điểm `quick400` |
@@ -453,6 +559,7 @@ Tổng W46 ≈ 70 / 75.6 GPU-h; W47 ≈ 25–45 / 90. Phiên CPU Kaggle (5 / acc
 | QĐ13 | WP8 | bộ kiểm S3 giữ khi AUROC trên dev ≥ 0.75 và PA `quick400` tăng ≥ 0.5 |
 | QĐ14 | WP8 | θ_abstain = tối đa PA trên dev (train trừ `tr_ho` + `pub_full` + `pub_k0`); kiểm bằng conformal risk control: tỉ lệ sai trên câu trả lời ở held-out không vượt dev + 2 điểm; nếu vượt → nâng θ |
 | QĐ15 | WP10 | bản nộp = held-out (`pub_ho` + `tr_ho`) cao nhất, với `pub_full` ≥ bản tốt nhất trước, thời gian ≤ ngân sách, \|ΔPA\| ≤ 0.01 |
+| QĐ16 | WP1 | tốc độ huấn luyện đo được: nhánh FSDP 2 < 1,200 tok/s → ngân sách nhánh 4M token; > 2,500 tok/s → 8M token; bản cuối giữ ≤ 4.5 h / phiên |
 
 ## 11. Kiểm tra và chất lượng
 
@@ -480,8 +587,11 @@ Tổng W46 ≈ 70 / 75.6 GPU-h; W47 ≈ 25–45 / 90. Phiên CPU Kaggle (5 / acc
 
 ## 13. Việc của user
 
-Token Kaggle cho khung chat mới; `score_1.jsonl` nếu container mới không có; build + chạy thử Docker ngày 15/11; nộp trước
-16/11 23:59 GMT+7.
+- Token Kaggle cho khung chat mới (3 acc L4 hiện có + 2 acc T4).
+- **4 acc L4 mới (lý tưởng 5)**: xác minh số điện thoại, **accept rules `gemma-4-developer-agent`** trên web, gửi token — trước sáng
+  11/11 (tốt nhất ngay đầu khung chat mới).
+- `score_1.jsonl` nếu container mới không có.
+- Build + chạy thử Docker ngày 15/11; nộp trước 16/11 23:59 GMT+7.
 
 ## Nguồn
 

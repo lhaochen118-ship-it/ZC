@@ -31,6 +31,8 @@ File nộp: `submissions/v30/` (luật), `submissions/v28/` (LLM). Không có ro
 ## Kaggle
 
 L4: quynhtran35, phatle1578 (chưa dùng tuần W46), yuan1103 (~15 h đã dùng). T4: yeshenhi, mxuanquy. Token phải xin lại.
+**Cần thêm 4 acc L4 mới (lý tưởng 5) trước sáng 11/11** — kế hoạch ≈ 36.3 giờ phiên 4×L4 tuần W46 (≈ 189 GPU-h kể cả 30 % dự
+phòng) so với 75.6 GPU-h còn lại; bảng việc / phân bổ theo đợt: `docs/08_MASTER_PLAN.md` §9.
 
 ## Việc tiếp theo (user đã duyệt 08/11): triển khai code đúng `docs/08_MASTER_PLAN.md` §8 (WP0 → WP12), đặc tả §5, quy tắc §10
 

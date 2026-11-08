@@ -28,6 +28,7 @@ def skeleton(question, hints=None):
     """accent-free question with entity mentions -> <kind>, digits -> 0 (and the period words kept: they carry the method)."""
     t = " ".join(dm.key((hints or {}).get("clean") or question).split())
     for e in sorted((hints or {}).get("entities") or [], key=lambda e: -len(e.get("text") or "")):
+        if e.get("kind") in ("unit", "base_unit"): continue             # a unit of measure is part of the method ('bao nhiêu ly')
         x = e.get("text") or ""
         if len(x) >= 3: t = re.sub(r"(?<!\S)" + re.escape(x) + r"(?!\S)", f"<{e.get('kind', 'x')}>", t)
     return re.sub(r"\d+", "0", t)

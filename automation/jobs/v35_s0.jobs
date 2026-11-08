@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/s0_gemma12 --script eval_flow.py --sets quick400 --model google/gemma-4-12b-it --dp 4 --config configs/e0.json --cache /tmp/zc_cache

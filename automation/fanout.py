@@ -22,14 +22,8 @@ work, prefix, jobs = args[0], args[1], args[2]
 jobs = [j.strip() for j in (open(jobs).read().replace("\n", ";") if os.path.isfile(jobs) else jobs).split(";") if j.strip()]
 
 # pre-run gate (user rule 2026-11-02): no launch before automation/preflight.py passes for this exact code + job string
-import hashlib
-h = hashlib.sha256(";".join(jobs).encode())
-for f in sorted(f for f in glob.glob(os.path.join(ROOT, "src", "**", "*"), recursive=True) + glob.glob(os.path.join(ROOT, "automation", "*.py")) +
-                glob.glob(os.path.join(ROOT, "tests", "*")) + glob.glob(os.path.join(ROOT, "training", "**", "*.py"), recursive=True) +
-                glob.glob(os.path.join(ROOT, "training", "*.yaml")) + glob.glob(os.path.join(ROOT, "configs", "*"))
-                if os.path.isfile(f) and "__pycache__" not in f):
-    h.update(f.encode()); h.update(open(f, "rb").read())
-mark = os.path.expanduser(f"~/.cache/zc_preflight/{h.hexdigest()[:16]}")
+sys.path.insert(0, os.path.join(ROOT, "automation")); import codehash
+mark = codehash.mark_path(jobs)
 if "--no-preflight" in sys.argv: print("preflight: SKIPPED (--no-preflight)", flush=True)
 elif os.path.isfile(mark): print("preflight: already passed for this code + jobs", flush=True)
 else:

@@ -43,6 +43,8 @@ if os.path.isdir(os.path.join(ROOT, "training")):
         if os.path.isdir(src_d): shutil.copytree(src_d, os.path.join(stage, "training", "data", "out", d))
         else: sys.exit(f"--train-data {d}: no directory {src_d}")
 if os.path.isdir(os.path.join(ROOT, "configs")): shutil.copytree(os.path.join(ROOT, "configs"), os.path.join(stage, "configs"))
+if os.path.isdir(os.path.join(ROOT, "tests", "splits")):               # evaluation set ids (src/eval_flow.py reads refs/splits)
+    shutil.copytree(os.path.join(ROOT, "tests", "splits"), os.path.join(stage, "refs", "splits"), dirs_exist_ok=True)
 json.dump({"title": "zc-code", "id": CODE_DS, "licenses": [{"name": "CC0-1.0"}]}, open(os.path.join(stage, "dataset-metadata.json"), "w"))
 if "--no-upload" not in sys.argv:                                       # preflight.py builds the kernel files offline
     exists = subprocess.run(["kaggle", "datasets", "status", CODE_DS], capture_output=True, text=True).stdout.strip().lower() == "ready"

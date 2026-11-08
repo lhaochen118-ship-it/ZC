@@ -57,12 +57,47 @@ def records(paths, tok, max_len, max_tokens=0, seed=0):
     return out, skipped
 
 
+def ref_records(paths, tok, max_len, n):
+    """n records (the last ones of the first file) as (input_ids, labels) with the prompt masked: a loss that means the same
+    thing for every trainer (mean over the assistant tokens), measured before and after training."""
+    import torch
+    rows = [json.loads(l) for l in open(paths.split(",")[0], encoding="utf-8") if l.strip()][-n:]
+    out = []
+    for r in rows:
+        m = r["messages"]
+        p = tok.apply_chat_template(m[:2], tokenize=False, add_generation_prompt=True, enable_thinking=False)
+        pi = tok(p, add_special_tokens=False)["input_ids"]; ci = tok(m[2]["content"] + "<|im_end|>", add_special_tokens=False)["input_ids"]
+        ids = (pi + ci)[:max_len]; lab = ([-100] * len(pi) + ci)[:max_len]
+        out.append((torch.tensor([ids]), torch.tensor([lab])))
+    return out
+
+
+def ref_loss(model, recs):
+    """mean assistant-token loss of the reference records (no gradient), or None when the forward fails."""
+    import torch
+    try:
+        dev = next(p for p in model.parameters()).device
+        was = model.training; model.eval(); tot = 0.0
+        with torch.no_grad():
+            for ids, lab in recs:
+                out = model(input_ids=ids.to(dev), labels=lab.to(dev))
+                tot += float(out.loss)
+        if was: model.train()
+        return round(tot / max(1, len(recs)), 4)
+    except Exception as e:
+        print(f"[sft] reference loss unavailable: {type(e).__name__}: {str(e)[:200]}", flush=True); return None
+
+
 def main():
     a = parse()
     import torch
     from datasets import Dataset
     from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback
     from peft import LoraConfig
+    try:                                                                # an old torchao (the Kaggle image: 0.10) makes PEFT raise while
+        import peft.import_utils as _piu, peft.tuners.lora.torchao as _pto   # building LoRA layers; we never use torchao
+        _piu.is_torchao_available = lambda: False; _pto.is_torchao_available = lambda: False
+    except Exception: pass
     from trl import SFTTrainer, SFTConfig
     rank = int(os.environ.get("RANK", "0")); world = int(os.environ.get("WORLD_SIZE", "1")); local = int(os.environ.get("LOCAL_RANK", "0"))
     t0 = time.time()
@@ -119,8 +154,11 @@ def main():
             stats["lora_modules"] = len(names); stats["lora_kinds"] = kinds; stats["trainable_m"] = round(ntrain / 1e6, 1)
             stats["vision_or_mtp_targeted"] = any(("visual" in n or "mtp" in n or "lm_head" in n) for n in names)
     except Exception as e: print("[sft] module listing failed:", e, flush=True)
+    ref = ref_records(a.data, tok, a.max_len, 4)
+    lr0 = ref_loss(tr.model, ref) if world == 1 else None             # before FSDP wraps it the model is on CPU / meta: skipped
     t1 = time.time()
     res = tr.train()
+    lr1 = ref_loss(tr.model, ref) if rank == 0 or world > 1 else None
     dt = time.time() - t1
     steps = res.global_step
     tok_per_step = a.mb * ga * world * (ntok / max(1, len(recs)))
@@ -128,7 +166,7 @@ def main():
     m = {"ok": True, "world": world, "mb": a.mb, "ga": ga, "max_len": a.max_len, "records": len(recs), "tokens": ntok, "steps": steps,
          "train_s": round(dt, 1), "tok_per_s": round(tok_per_step * max(1, steps - 2) / max(steady, 1e-6), 1) if steps > 2 else None,
          "loss_first": stats["loss"][0] if stats["loss"] else None, "loss_last": stats["loss"][-1] if stats["loss"] else None,
-         "losses": stats["loss"][:200], "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2) if torch.cuda.is_available() else 0.0, **{k: v for k, v in stats.items() if k.startswith(("lora", "trainable", "vision"))}}
+         "losses": stats["loss"][:200], "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2) if torch.cuda.is_available() else 0.0, **{k: v for k, v in stats.items() if k.startswith(("lora", "trainable", "vision"))}}
     if world > 1:
         import torch.distributed as dist
         if dist.is_initialized():

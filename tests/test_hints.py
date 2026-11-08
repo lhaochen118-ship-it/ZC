@@ -51,14 +51,11 @@ def main():
     names = {e["name"] for e in api_spec.build_api_spec() if e["group"] in ("metric", "industry", "tool")}
     by = defaultdict(list)
     for r in ex: by[r["business_id"]].append(r)
-    cache = os.path.join(scratch, "cache"); os.makedirs(cache, exist_ok=True)
+    sys.path.insert(0, os.path.join(ROOT, "training", "data")); import common
+    cache, canon_dir = os.environ.get("CACHE") or os.path.join(scratch, "cache"), os.path.join(scratch, "canon")
     pn = pok = en = eok = 0; leaks = []; misses = []; t0 = time.time()
     for b in sorted(by):
-        pc = os.path.join(cache, b + ".canon.pkl")
-        if os.path.isfile(pc): biz, C, de = pickle.load(open(pc, "rb"))
-        else:
-            biz = ingest.load_business(os.path.join(split, "data", b)); C, _, _ = automap.build(biz)
-            de = automap.parse_readme(biz.readme)["data_end"]; pickle.dump((biz, C, de), open(pc, "wb"), protocol=4)
+        biz, C, _, de = common.canon(split, cache, canon_dir, b)
         nz = qnorm.Normalizer.for_split(split, exclude_business=b, extra_texts=qnorm.Normalizer.entity_texts(biz))
         voc = None
         for r in by[b]:

@@ -115,7 +115,7 @@ def main():
         import threading
         res = {}
         def th(key, fn): res[key] = fn()
-        ts = [threading.Thread(target=th, args=("sft_1gpu", lambda: sweep(r, "sft_1gpu", "0", [8, 4, 2, 1], one_gpu("sft_1gpu", 0), 1500))),
+        ts = [threading.Thread(target=th, args=("sft_1gpu", lambda: sweep(r, "sft_1gpu", "0", [4, 2, 1], one_gpu("sft_1gpu", 0), 1500))),
               threading.Thread(target=th, args=("unsloth", lambda: unsloth_sweep(r, a, tr, tmp, S))),
               threading.Thread(target=th, args=("sft_fsdp2", lambda: fsdp_sweep(r, a, tr, tmp, S, "2,3", 2, [8, 4, 2, 1], 29512)))]
         for t in ts: t.start()
@@ -123,16 +123,20 @@ def main():
         R.update(res); r.save()
         R["sft_fsdp4"] = fsdp_sweep(r, a, tr, tmp, S, "0,1,2,3", 4, [8, 4, 2], 29513); r.save()
         # C: main 30-step run with the best 2-GPU setting (1 GPU when it fits: 4 branches per session, QĐ1)
-        one = R.get("sft_1gpu", {}); two = R.get("sft_fsdp2", {})
+        one = R.get("sft_1gpu", {}); two = R.get("sft_fsdp2", {}); uns = R.get("unsloth", {})
         if two.get("best_mb"):
             cfg = two.get("config") or "training/fsdp2.yaml"
             cmd = sft_cmd(a.model, tr, f"{tmp}/adapter", two["best_mb"], 30, 16, (cfg, 2, 29514), "causal")
             gpus = "0,1"
         elif one.get("best_mb"):
             cmd = sft_cmd(a.model, tr, f"{tmp}/adapter", one["best_mb"], 30, 16, None, "causal"); gpus = "0"
+        elif uns.get("best_mb"):                                         # Unsloth (1 GPU) when plain HF / FSDP failed
+            cmd = [PY, "training/sft_unsloth.py", "--model", a.model, "--data", tr, "--mb", str(uns["best_mb"]), "--max-steps", "30",
+                   "--eff-batch", "16", "--out", f"{tmp}/adapter"]; gpus = "0"
         else: cmd = None
         if cmd:
-            rc, txt = r.wait([r.start("sft_main", cmd, gpus, 3600)])["sft_main"]
+            env = {"PYTHONPATH": "/tmp/uns_env" + os.pathsep + os.environ.get("PYTHONPATH", "")} if "sft_unsloth.py" in " ".join(cmd) else None
+            rc, txt = r.wait([r.start("sft_main", cmd, gpus, 3600, env)])["sft_main"]
             R["sft_main"] = {"rc": rc, "metrics": metrics_of(txt, "[sft] METRICS"), "tail": txt[-2000:] if rc else ""}
             r.save()
             ok_ad = os.path.isfile(f"{tmp}/adapter/adapter_config.json")
@@ -190,9 +194,10 @@ def unsloth_sweep(r, a, tr, tmp, S):
         if p.returncode != 0: return {"skipped": "pip --target failed: " + (p.stdout + p.stderr)[-600:]}
     env = {"PYTHONPATH": env_dir + os.pathsep + os.environ.get("PYTHONPATH", "")}
     tried = []
-    for mb in (8, 4, 2, 1):
+    for mb in (4, 2):
         name = f"unsloth_mb{mb}"
-        cmd = [PY, "training/sft_unsloth.py", "--model", a.model, "--data", tr, "--mb", str(mb), "--max-steps", str(S), "--eff-batch", str(mb * 4)]
+        cmd = [PY, "training/sft_unsloth.py", "--model", a.model, "--data", tr, "--mb", str(mb), "--max-steps", str(S), "--eff-batch", str(mb * 4),
+               "--out", f"{tmp}/unsloth_adapter"]
         j = r.start(name, cmd, "1", 1500, env)
         rc, txt = r.wait([j])[name]
         m = metrics_of(txt, "[sft] METRICS"); tried.append({"mb": mb, "rc": rc, "oom": oom(txt), "metrics": m, "tail": txt[-1200:] if rc else ""})

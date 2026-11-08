@@ -738,3 +738,22 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   Quota W46 còn 75.6 GPU-h ở 3 acc → **cần thêm 4 acc L4 mới (lý tưởng 5)** trước sáng 11/11; T4 hiện có đủ. Phân bổ theo đợt
   Đ1–Đ7, lấp đầy acc theo thứ tự; tổng GPU tường ≈ 13 h trên 09–14/11. Thay bước dò thầy bằng sinh D3 đầy đủ cho cả 4 thầy song
   song; thêm vòng 3 nhánh và F1 / F2 song song; QĐ6 chọn thầy theo nhánh vòng 2; QĐ16 chỉnh ngân sách theo tốc độ đo ở WP1.
+
+## Entry 33 — 2026-11-08: WP0 xong; WP2 module P0 (CPU); WP1 smoke vòng 1 (yuan1103, 4×L4)
+
+- WP0: 9 token (8 acc có 4×L4, probe `zc-probe`); `score_1.jsonl` → `data/raw/public_gt.jsonl` (v30 1000 / 1000, v28 921 đúng,
+  PA 0.852); `tests/splits/` (pub_full 1000, pub_k0 692, pub_ho 1373, tr_ho 1826, quick400 400, pub_noind 112, pub_noacc 1000);
+  `eval_all.sh quick` train 3000 / 3000, public 1000 / 1000. Wheels huấn luyện = output kernel public `yeshenhi/zc-train-wheels`
+  (ảnh GPU Kaggle: python 3.13.16; sau wheels vLLM 0.32: torch 2.13.0, transformers 5.19.0, peft 0.21.2, accelerate 1.15.0,
+  datasets 4.8.5, xgrammar 0.2.8, duckdb 1.3.2; tải thêm transformers 5.17.0, trl 1.15.0, flash-linear-attention 0.6.0 + fla-core;
+  `wheels_unsloth/`: unsloth 2026.11.3 + unsloth_zoo, bitsandbytes 0.50.2, xformers 0.0.35, torchao 0.18.0, cut-cross-entropy).
+- WP2 (CPU, đều có test): ngữ pháp nhận 2681 / 2681 chương trình đã kiểm theo DN (dựng < 0.01 s, biên dịch xgrammar CPU
+  0.2–1.9 s / DN), từ chối hàm / tham số / thực thể bịa; gợi ý: kỳ 171 / 171, thực thể 50 / 50 (200 câu train có nhãn), không lộ
+  tên hàm; precheck: 0 báo nhầm trên 2681 chương trình, 14 cảnh báo kiểu (0.5 %), bắt đủ 9 loại sai; prompt compact: system 1043
+  token (full 1649), card ≤ ~700 token; D1 compact 2119 bản ghi (trung vị 2174 token, tối đa 2662; bỏ 562 câu `tr_ho`).
+- WP1 smoke vòng 1 (`zc-smoke35-1`, 22 phút): **Unsloth 1 GPU chạy được**: micro-batch 8 hết bộ nhớ, **mb 4 vừa: đỉnh 18.84 GB
+  (≤ 21.5 GB → QĐ1: 4 nhánh / phiên 4×L4), 844 tok/s / L4** (chuỗi ~2.2k token, 8 bước). Đường HF + PEFT (1 GPU, FSDP2, FSDP4)
+  **hỏng**: ảnh Kaggle có torchao 0.10.0, PEFT 0.21 ném ImportError khi dựng lớp LoRA (không phải lỗi bộ nhớ) → sửa: gỡ torchao
+  trong job huấn luyện + vá kiểm tra của PEFT trong `training/sft.py`. Loss của Unsloth (0.028 → 0.0005) nghi chuẩn hoá khác
+  TRL → thêm loss tham chiếu (trung bình trên token đáp án, đo thủ công trước / sau) ở cả hai trainer (CPU: = loss TRL).
+  Vòng 2 (`zc-smoke35b`) đo HF 1 GPU / FSDP2 / FSDP4, gộp + phục vụ LoRA; phần suy luận (`zc-smoke35i`: ngữ pháp, 2 thầy) đang chạy.

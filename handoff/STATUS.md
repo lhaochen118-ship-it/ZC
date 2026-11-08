@@ -39,8 +39,8 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP | Trạng thái | Kết quả / commit / kernel |
 |---|---|---|
 | WP0 chuẩn bị | **xong** 08/11 | token 9 acc (8 có 4×L4: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99, yuan1103, synchan5704, anderson1202, loinguyentran; yeshenhi chỉ T4) — probe `zc-probe`; `score_1.jsonl` của user → `data/raw/public_gt.jsonl` (v30 1000/1000, v28 921 đúng / PA 0.852); cache ingest; `tests/splits/` (pub_full 1000, pub_k0 692, pub_ho 1373, tr_ho 1826, quick400 400, pub_noind 112, pub_noacc 1000); `eval_all.sh quick` train 3000/3000, public 1000/1000; wheels huấn luyện = output kernel public `yeshenhi/zc-train-wheels` (`wheels_train/`: transformers 5.17.0, trl 1.15.0; ảnh GPU Kaggle + vLLM 0.32 đã có torch 2.13.0, peft 0.21.2, accelerate 1.15.0, datasets 4.8.5, xgrammar 0.2.8, duckdb 1.3.2, python 3.13; `wheels_unsloth/` tuỳ chọn) |
-| WP1 chạy thử GPU (G1) | chưa | |
-| WP2 luồng hybrid v1 | chưa | |
+| WP1 chạy thử GPU (G1) | **đang** | vòng 1 `yuan1103/zc-smoke35-1`: Unsloth 1 GPU mb 4 đỉnh 18.84 GB, 844 tok/s/L4 (QĐ1 → 4 nhánh/phiên); HF/FSDP hỏng vì torchao 0.10 (đã sửa); vòng 2 `zc-smoke35b-1` + suy luận `zc-smoke35i-1` (ngữ pháp, thầy) đang chạy — kết quả: `<scratch>/runs/smoke35*/…_out/results/smoke*/results.json` |
+| WP2 luồng hybrid v1 | **đang** | module + test CPU xong (commit 804a43c và sau): api_spec, grammar, hints, prompting, retrieval, shopctx, tools, precheck, hybrid (`agent.py --flow hybrid`), predict_flow mới, eval_flow, score_sets; preflight 7 job WP3 đang chạy |
 | WP3 E0 / S0 / A/B (G2–G5) | chưa | |
 | WP4 nhà máy dữ liệu (+ G6, G7) | chưa | |
 | WP5 D3 theo thầy (G8–G11) | chưa | |

@@ -40,6 +40,8 @@ TRAIN = "--train" in sys.argv                                          # trainin
 if TRAIN and not NO_VLLM:
     wt = next(iter(sorted(glob.glob("/kaggle/input/**/wheels_train", recursive=True))), None)
     whv = next((d for d in glob.glob("/kaggle/input/**/wheels", recursive=True) if glob.glob(d + "/vllm-*.whl")), None)
+    r = subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchao"], capture_output=True, text=True)   # the image's
+    print("pip uninstall torchao (0.10 of the image makes PEFT 0.21 raise when it builds LoRA layers):", r.returncode, flush=True)   # torchao
     for pk in ("transformers==5.17.0", "trl==1.15.0", "einops", "flash-linear-attention"):   # one by one: a missing wheel never blocks the rest
         r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "--no-index"] + (["--find-links", wt] if wt else []) +
                            (["--find-links", whv] if whv else []) + [pk], capture_output=True, text=True)
@@ -77,6 +79,9 @@ if "--model" in args:                                                 # weights 
         if hj.get("repo") == args[i]: hashes = hj["files"]
     except Exception: pass
     cands = glob.glob(f"/kaggle/input/**/models/{want}/config.json", recursive=True)
+    if not cands and not hashes:                                       # a Kaggle Model named like the repo (google/gemma-4 ... gemma-4-12b-it/2)
+        cands = sorted(c for c in glob.glob("/kaggle/input/**/config.json", recursive=True)
+                       if f"/{want.lower()}/" in c.lower() and glob.glob(os.path.join(os.path.dirname(c), "*.safetensors")))
     if not cands and hashes:                                           # a Kaggle Model (--ms): the directory holding every hashed file
         cands = [c for c in glob.glob("/kaggle/input/**/config.json", recursive=True)
                  if all(os.path.isfile(os.path.join(os.path.dirname(c), f)) for f in hashes)]

@@ -9,6 +9,8 @@ fi
 SPLIT=data/raw/train/train
 CACHE=${CACHE:-$S/cache_train}
 [ -d "$CACHE" ] || python3 src/ingest.py $SPLIT $CACHE 4 > /dev/null
+export CACHE
+[ -d "$S/canon" ] || python3 tests/build_canon.py $SPLIT $CACHE $S/canon 3 > /dev/null 2>&1   # automap tables, shared by the hybrid tests
 run() {                                     # run <name> <timeout s> <command...>
     local name=$1 t=$2; shift 2
     local out; out=$(timeout "$t" "$@" 2>&1); local rc=$?
@@ -29,4 +31,12 @@ run test_vote 120 python3 tests/test_vote.py $S/t_vote
 run test_rules_first 1800 python3 tests/test_rules_first.py $SPLIT $S/t_rules
 run test_canon_flow 1500 python3 tests/test_canon_flow.py $SPLIT $S/t_canon
 run test_pipeline 3600 python3 tests/test_pipeline.py $SPLIT $S/t_pipe
+# hybrid flow (docs/08 WP2): scratch dirs share the automap tables ($S/canon)
+for d in t_spec t_gram t_hint t_tool t_pre; do mkdir -p $S/$d; ln -sfn $S/canon $S/$d/canon; done
+run test_api_spec 600 python3 tests/test_api_spec.py $SPLIT $S/t_spec
+run test_grammar 1800 python3 tests/test_grammar.py $SPLIT $S/t_gram
+run test_hints 1800 python3 tests/test_hints.py $SPLIT $S/t_hint
+run test_tools 600 python3 tests/test_tools.py $SPLIT $S/t_tool
+run test_precheck 1800 python3 tests/test_precheck.py $SPLIT $S/t_pre
+run test_flow_hybrid 2400 python3 tests/test_flow_hybrid.py $SPLIT $S/t_flow
 echo "ALL PASS"

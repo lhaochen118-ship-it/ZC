@@ -5,7 +5,7 @@ Usage: sft_unsloth.py --model DIR --data a.jsonl --mb 4 --max-steps 8 [--eff-bat
 import os, sys, json, time, math, argparse
 import unsloth                                                           # before transformers / trl (it patches them)
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
-from sft import records
+from sft import records, ref_records, ref_loss
 
 
 def main():
@@ -14,6 +14,7 @@ def main():
     ap.add_argument("--mb", type=int, default=4); ap.add_argument("--max-steps", type=int, default=8); ap.add_argument("--eff-batch", type=int, default=16)
     ap.add_argument("--max-len", type=int, default=3072); ap.add_argument("--r", type=int, default=32); ap.add_argument("--alpha", type=int, default=64)
     ap.add_argument("--lr", type=float, default=2e-4); ap.add_argument("--seed", type=int, default=20261108)
+    ap.add_argument("--no-save", action="store_true")
     a = ap.parse_args()
     import torch
     from datasets import Dataset
@@ -45,13 +46,16 @@ def main():
                 warmup_steps=1, lr_scheduler_type="cosine", dataset_num_proc=1)
     fields = {f.name for f in dataclasses.fields(SFTConfig)}
     tr = SFTTrainer(model=model, args=SFTConfig(**{k: v for k, v in want.items() if k in fields}), train_dataset=ds, processing_class=tok, callbacks=[Meter()])
+    ref = ref_records(a.data, tok, a.max_len, 4); lr0 = ref_loss(model, ref)
     t1 = time.time(); res = tr.train(); dt = time.time() - t1
+    lr1 = ref_loss(model, ref)
+    if a.out and not getattr(a, "no_save", False): model.save_pretrained(a.out); tok.save_pretrained(a.out)
     steady = time.time() - stats.get("t2", t1); steps = res.global_step
     tps = a.mb * ga * (ntok / max(1, len(recs)))
     m = {"ok": True, "unsloth": True, "mb": a.mb, "ga": ga, "steps": steps, "train_s": round(dt, 1),
          "tok_per_s": round(tps * max(1, steps - 2) / max(steady, 1e-6), 1) if steps > 2 else None,
          "loss_first": stats["loss"][0] if stats["loss"] else None, "loss_last": stats["loss"][-1] if stats["loss"] else None,
-         "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2)}
+         "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2)}
     print("[sft] METRICS " + json.dumps(m), flush=True)
 
 

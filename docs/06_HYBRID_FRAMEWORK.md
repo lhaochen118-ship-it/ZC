@@ -52,6 +52,27 @@ Q1 `qnorm.py` + phần đọc kỳ / thực thể của `qparse.py` (`parse_peri
 `vote.py --min-conf`; Q8 `merge_sub.py`. **Còn thiếu:** S4 data card, Q1 gói gợi ý cho prompt (thay vì đáp án), Q4
 module kiểm tra trước khi chạy thống nhất, Q6 bước Agent đọc kết quả, Q7 điểm tin cậy kết hợp + sinh lại có điều kiện.
 
+## 2b. Hiện trạng (08/11): so khớp và schema trong code hiện có
+
+**So khớp thực thể (tên hàng / khách / thợ / NCC trong câu ↔ giá trị trong data)** — nhiều tầng, fuzzy chỉ ở tầng cuối:
+1. Khớp chính xác sau chuẩn hoá (bỏ dấu, hoa / thường, dấu câu): `dm.Shop._match`.
+2. Quy tắc tổng quát: tên dòng máy = tiền tố của tên đầy đủ (`_item_keys`), từ địa phương (`regional_key`: 'cá tràu' =
+   'cá lóc'), tên người gọi tắt / kèm SĐT (`_match_person`, chỉ khi duy nhất một ứng viên), tên viết tắt theo bảng tra
+   (`canon.resolve_short_names`, difflib ≥ 0.6).
+3. Fuzzy (`difflib`) khi không tầng nào khớp: **không tự chọn**, mà ném `LookupError` kèm 5 tên gần nhất để Agent sửa
+   chương trình (tránh trả 0 cho tên gõ sai).
+Làm sạch câu (`qnorm`): sửa lỗi gõ theo từ điển âm tiết + tên trong data, không fuzzy tự do. Truy hồi ví dụ (`agent.py`):
+khớp chính xác → chuỗi con → `difflib.get_close_matches` (cutoff 0.5).
+**Chấm đáp án** (`src/score.py`, như BTC): **không fuzzy** — chuỗi so sau chuẩn hoá (NFC, chữ thường, bỏ dấu câu, *giữ
+dấu thanh*) với đáp án + alias; số làm tròn 2 chữ số; ngày so đúng chuỗi.
+
+**Schema cho Qwen đọc trước khi sinh code — có, nhưng do code sinh, chưa có phần Agent tự mô tả:**
+- System prompt: `dm.CANON_DOC` (mô tả mọi bảng / cột chuẩn C và hàm toolkit).
+- User prompt mỗi DN (phần chung, đặt trước để dùng prefix cache): rulebook của split + README của DN + **card của
+  schema chuẩn C đã ánh xạ** (`canon.card` → `ingest.table_card`: tên bảng, số dòng, từng cột với kiểu, tỉ lệ có giá trị,
+  4 giá trị ví dụ) + card các **bảng thô không vào C** (`pipeline.unused_card`).
+- Không ghi ra file riêng (nằm trong prompt và log). **Thiếu:** data card bằng lời do Agent viết (S4) và gói gợi ý (Q1).
+
 ## 3. Tham khảo: các hệ đang hiệu quả nhất (đọc paper, không đọc code repo người khác — nguyên tắc user)
 
 | Hệ / paper | Ý chính | Áp dụng cho DataMate |
@@ -158,6 +179,11 @@ thời gian. Trọng số phải public trước 01/10/2026 và giấy phép cho
 | E5 | (tuỳ) mô hình phụ / tool / chưng cất (§4.6–4.8) | như trên | held-out tăng rõ, đủ thời gian |
 
 Mốc so sánh: v34 (rule-first) held-out public 0.602; v28 (LLM có luật bỏ phiếu) public gốc 0.921.
+
+## 8. Dataset ngoài
+
+Quy tắc + bảng 35 dataset (citation, hạng hội nghị, truy cập) + thứ tự ưu tiên: `docs/07_DATASETS.md`. Ưu tiên dataset
+public tải ngay, không cần xin phép.
 
 ## Nguồn
 

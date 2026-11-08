@@ -679,3 +679,19 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   chạy (trong luồng nộp chỉ chuyển câu sang mô hình) → `qparse.parse` nay trả None. Thử "tháng trước / tháng vừa qua" đứng
   một mình = tháng liền trước: 0 đúng / 3 sai trên public (cả ba là paraphrase đổi kỳ) → không có bằng chứng, bỏ.
   Train / public gốc vẫn 3000 / 3000, 1000 / 1000.
+
+## Entry 28 — 2026-11-08: quyết định hybrid framework; tổng quan tài liệu; thống kê dataset (không chạy GPU)
+
+- **User chốt:** hybrid = Agent sinh code cho mọi câu + luật tổng quát hỗ trợ (ý định, schema, toolkit, làm sạch câu,
+  few-shot, kiểm tra); cấm luật sinh thẳng code / đáp án. Thiết kế + kế hoạch E0–E5: `docs/06_HYBRID_FRAMEWORK.md`.
+- **Điểm hiện có của đường mô hình:** v28 public 0.921 (vẫn có luật bỏ phiếu `--qw 4`, `--confirm 1`, câu làm sạch bằng
+  `qnorm`); bản mô hình sinh code mọi câu (`--qw 0`, không `--confirm`) **chưa từng đo** → E0.
+- **Tổng quan tài liệu** (DS-STAR, ReFoRCE, CHASE-SQL, XiYan-SQL, CHESS, OmniSQL, Arctic-Text2SQL-R1, chưng cất CoT,
+  TrustSQL, selective prediction, ViText2SQL): bài học — ngữ cảnh dữ liệu giàu (mô tả do agent viết), nhiều ứng viên +
+  chọn, tự sửa theo thực thi, dữ liệu tổng hợp có kiểm thực thi + fine-tune / RL, tín hiệu tin cậy kết hợp cho abstain.
+- **Dataset:** quy tắc user (public là dùng được; chỉ dataset uy tín; ưu tiên loại không cần xin phép; không bao giờ dùng
+  test của cuộc thi) + bảng 35 dataset (citation Semantic Scholar 08/11, hạng CORE, truy cập): `docs/07_DATASETS.md`.
+- **Hiện trạng so khớp / schema** (trả lời user): so khớp thực thể nhiều tầng (chính xác sau chuẩn hoá → quy tắc tổng
+  quát → fuzzy chỉ để gợi ý tên gần nhất, không tự chọn); chấm đáp án không fuzzy. Qwen đọc schema trước khi sinh code:
+  `CANON_DOC` + card schema chuẩn C (kiểu, ví dụ giá trị) + README + rulebook + bảng thô ngoài C; chưa có data card bằng
+  lời do Agent viết. Chi tiết `docs/06_HYBRID_FRAMEWORK.md` §2b.

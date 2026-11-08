@@ -60,7 +60,16 @@ sánh tương đối). Hạng hội nghị theo CORE (A* / A / B / C). Dùng cho
 | **DABstep** | 54 | arXiv 2025 | 450 tác vụ nhiều bước, nhiều file | Public (dev có nhãn; test chấm qua leaderboard) | **Gần DataMate nhất** (dữ liệu doanh nghiệp, nhiều file, quy tắc nghiệp vụ trong tài liệu); chưa bình duyệt nhưng > 50 citation |
 | **Text2Analysis** | 52 | AAAI 2024 (A*) | 2,249 câu | Public | Phân tích nâng cao, câu mơ hồ |
 
-## 4. Gợi ý lựa chọn (để user cân nhắc)
+## 4. Ưu tiên (user chốt 08/11)
+
+**Ưu tiên dùng các dataset trong bảng trên tải được ngay, không cần xin phép / đăng ký** (cột "Truy cập" = Public):
+Spider, BIRD (train / dev), WikiSQL, SynSQL-2.5M, SParC / CoSQL (train / dev), Spider-Realistic / Syn / DK, Dr.Spider,
+KaggleDBQA, SEDE, SQUALL, AmbiQT, CSpider, CHASE, ViText2SQL, MultiSpider, Finegan-Dollak (ATIS, GeoQuery, …),
+WikiTableQuestions, DS-1000, TableBench, InfiAgent-DABench, DSBench, ARCADE, DataBench, DABstep (dev), Text2Analysis.
+Dataset cần xin quyền / đăng ký (EHRSQL — PhysioNet; DuSQL — tài khoản Baidu; Spider 2.0 Snow / BigQuery — tài khoản
+cloud) chỉ dùng khi các dataset trên không đủ cho một nhu cầu cụ thể.
+
+## 5. Gợi ý lựa chọn (để user cân nhắc)
 
 - **Cho chưng cất kỹ năng sinh truy vấn chung:** SynSQL-2.5M (lớn, có CoT, Apache-2.0) + BIRD train (dữ liệu bẩn, có
   tri thức nghiệp vụ) + Spider train. Cần chuyển sang dạng "chương trình trên toolkit / pandas" hoặc giữ SQL làm kỹ

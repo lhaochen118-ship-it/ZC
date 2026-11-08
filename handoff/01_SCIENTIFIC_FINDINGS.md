@@ -105,7 +105,23 @@ Stage 1.5: luật đọc câu viết lại đúng 90 % (train) / 84 % (public he
   chương trình trên cùng câu — gợi ý cho LLM-first: LLM viết lại câu + truy hồi ví dụ đã kiểm có thể tăng độ chính xác.
 - Bất biến rulebook là cách tổng quát phát hiện ánh xạ sai không cần nhãn.
 
-## 6. Điều kiện kiểm chứng
+## 6. Tổng quan tài liệu và dataset (08/11; chi tiết `docs/06_HYBRID_FRAMEWORK.md` §3, `docs/07_DATASETS.md`)
+
+- **Hệ gần bài toán nhất: DS-STAR** (agent khoa học dữ liệu trên nhiều file khác định dạng, đứng đầu DABStep): mô tả dữ
+  liệu do agent viết + Planner → Coder → Verifier lặp; bỏ mô tả dữ liệu thì bài khó tụt mạnh. → thiếu ở ta: data card.
+- **Text-to-SQL mạnh nhất** (ReFoRCE, CHASE-SQL, XiYan-SQL, CHESS): ngữ cảnh schema / giá trị giàu, nhiều ứng viên đa
+  dạng + chọn, tự sửa theo lỗi thực thi, bỏ phiếu. Ta đã có bỏ phiếu + sửa; thiếu đa dạng prompt và chọn có lý do.
+- **Mô hình nhỏ đạt mức lớn nhờ dữ liệu + huấn luyện:** OmniSQL (SynSQL-2.5M, 7B / 14B fine-tune), Arctic-Text2SQL-R1
+  (RL thưởng chỉ theo đúng khi thực thi; 7B 68.5 BIRD test), chưng cất CoT có kiểm thực thi (rejection sampling).
+- **Abstain:** TrustSQL (chấm có phạt như PA: nhiều phương pháp không vượt "luôn từ chối" khi phạt nặng); selective
+  prediction: self-consistency một mình không đủ, cần kết hợp tín hiệu + hiệu chỉnh.
+- **Tiếng Việt:** ViText2SQL (VinAI; PhoBERT > XLM-R, tách từ giúp ích).
+- **Dataset:** 35 dataset uy tín (text-to-SQL + pandas / phân tích dữ liệu) đã thống kê; ưu tiên loại public không cần xin
+  phép. Gần DataMate nhất: InfiAgent-DABench, DABstep, TableBench, DataBench; lớn nhất cho chưng cất: SynSQL-2.5M.
+- **Lưu ý thước đo:** benchmark công khai có nhiều lỗi nhãn (CIDR 2026) → số leaderboard chỉ tham khảo; với ta, thước
+  đo quyết định là held-out paraphrase.
+
+## 7. Điều kiện kiểm chứng
 
 | Kết luận | Lệnh | Điều kiện |
 |---|---|---|

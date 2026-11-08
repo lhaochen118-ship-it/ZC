@@ -24,10 +24,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split"); ap.add_argument("out"); ap.add_argument("--model", required=True); ap.add_argument("--adapters", required=True)
     ap.add_argument("--weights", default=""); ap.add_argument("--sets", default="quick400,pub_ho"); ap.add_argument("--eval-config", default="configs/e0.json")
-    ap.add_argument("--search", default="/kaggle/input"); ap.add_argument("--dp", type=int, default=4); ap.add_argument("--tmp", default="/tmp/soup")
+    ap.add_argument("--search", default="/kaggle/input"); ap.add_argument("--dp", type=int, default=4); ap.add_argument("--tmp", default="")
     ap.add_argument("--fake-responder", default=""); ap.add_argument("--subset", type=int, default=0)
     a = ap.parse_args()
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
+    a.tmp = a.tmp or "/tmp/soup_" + os.path.basename(os.path.normpath(a.out))      # one folder per job (two soups in a kernel)
     names = [x for x in a.adapters.split(",") if x]
     dirs = [find_adapter(n, a.search) for n in names]
     miss = [n for n, d in zip(names, dirs) if d is None]
@@ -50,6 +51,7 @@ def main():
         p = os.path.join(ev, "run", f)
         if os.path.isfile(p): shutil.copy(p, a.out)
     res.update(eval_rc=rc, eval_s=round(time.time() - t1))
+    shutil.rmtree(f"{a.tmp}/merged", ignore_errors=True)                # 19 GB: the next soup of the kernel needs the space
     json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1)
     print(f"[soup] eval rc {rc} in {res['eval_s']}s; total {time.time() - t0:.0f}s", flush=True)
 

@@ -29,7 +29,7 @@ def main():
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)
     data = ",".join(os.path.join(D, f) for f in a.files.split(","))
-    tmp = "/tmp/full"; os.makedirs(tmp, exist_ok=True)
+    tmp = "/tmp/full_" + os.path.basename(os.path.normpath(a.out)); os.makedirs(tmp, exist_ok=True)   # one folder per job
     cfg = os.path.join(HERE, f"fsdp{a.gpus}.yaml")
     cmd = [PY, "-m", "accelerate.commands.launch", "--config_file", cfg, "--num_processes", str(a.gpus), "--main_process_port", "29531",
            os.path.join(HERE, "sft.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),

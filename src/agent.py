@@ -1301,11 +1301,13 @@ def run_dp(a):
         print(f"[dp] ingested {len(todo)} businesses in {time.time() - t0:.0f}s", flush=True)
         claims = os.path.join(a.out, "claims"); import shutil; shutil.rmtree(claims, ignore_errors=True); os.makedirs(claims)
     procs = []
-    for g in range(n):
+    vis = [x.strip() for x in os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",") if x.strip()]
+    devs = vis if vis else [str(g) for g in range(n)]                  # the parent's GPUs (CUDA_VISIBLE_DEVICES ids are physical:
+    for g in range(n):                                                 # a shard set to '0' under a parent on GPU 1 ran on GPU 0)
         args = [sys.executable, os.path.abspath(__file__), a.split, os.path.join(a.out, f"shard{g}")] + argv[2:] + \
                (["--claim-dir", claims, "--claim-procs", str(n)] if pipe else ["--shard", f"{g}/{n}"]) + ["--cache", cache, "--tp", "1", "--workers", nw] + \
                (["--deadline", f"{t0 + a.budget:.0f}"] if a.budget else [])
-        procs.append(subprocess.Popen(args, env=dict(os.environ, CUDA_VISIBLE_DEVICES=str(g)),
+        procs.append(subprocess.Popen(args, env=dict(os.environ, CUDA_VISIBLE_DEVICES=devs[g % len(devs)]),
                                       stdout=open(os.path.join(a.out, f"shard{g}.log"), "w"), stderr=subprocess.STDOUT))
     def merge(files=("submission.jsonl",)):                           # atomic merge of the shards' (partial) outputs
         for f in files:

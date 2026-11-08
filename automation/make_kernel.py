@@ -67,13 +67,17 @@ try:
     import torch; NGPU = torch.cuda.device_count(); names = [torch.cuda.get_device_name(i) for i in range(NGPU)]
 except Exception: NGPU, names = 0, []
 print("data:", DATA, "| cpus", os.cpu_count(), "| gpus", names, flush=True)
-NW = max(1, min(len(JOBS), NGPU if NGPU else (os.cpu_count() or 4) - 1))
+def gpus_of(j):                                                     # GPUs one job uses: --dp N, or every GPU for the
+    if any(x in " ".join(j) for x in ("arms_job", "full_job", "soup_job", "d3_job", "training/smoke")): return max(1, NGPU)   # training
+    return int(j[j.index("--dp") + 1]) if "--dp" in j else 1
+MULTI = NGPU and sum(gpus_of(j) for j in JOBS) > NGPU                  # jobs that each need several GPUs run one after another
+NW = 1 if MULTI else max(1, min(len(JOBS), NGPU if NGPU else (os.cpu_count() or 4) - 1))
 TH = str(max(1, (os.cpu_count() or 4) // NW))                        # BLAS threads per job (no oversubscription)
 SUB = {"DATA": DATA, "INPUT": "/kaggle/input", "OUT": R}
 def run(ij):
     i, j = ij
     env = dict(os.environ, OMP_NUM_THREADS=TH, MKL_NUM_THREADS=TH, OPENBLAS_NUM_THREADS=TH, ZC_OUT=R, ZC_DATA=DATA, **ENV)
-    if NGPU and len(JOBS) > 1: env["CUDA_VISIBLE_DEVICES"] = str(i %% NGPU)
+    if NGPU and len(JOBS) > 1 and not MULTI: env["CUDA_VISIBLE_DEVICES"] = str(i %% NGPU)
     def sub(x):                                                        # OUT, OUT/train, DATA/..., INPUT/... (prefix tokens)
         for k, v in SUB.items():
             if x == k or x.startswith(k + "/"): return v + x[len(k):]
@@ -82,7 +86,7 @@ def run(ij):
     t = time.time(); log = os.path.join(L, "_".join(j).replace(".py", "").replace("/", "-")[:120] + ".log")
     r = subprocess.run(cmd, cwd=C, stdout=open(log, "w"), stderr=subprocess.STDOUT, env=env)
     print(f"done {' '.join(j)} rc={r.returncode} {time.time()-t:.0f}s", flush=True); return r.returncode
-print("parallel jobs", NW, "| threads/job", TH, flush=True)
+print("parallel jobs", NW, "| threads/job", TH, "| sequential (multi-GPU jobs)" if MULTI else "", flush=True)
 with ThreadPoolExecutor(NW) as ex: rcs = list(ex.map(run, enumerate(JOBS)))
 shutil.rmtree(C, ignore_errors=True)
 print("EVAL_DONE", rcs, f"{time.time()-t0:.0f}s", flush=True)

@@ -881,3 +881,12 @@ code (`quynhtran35/zc-evalbase-1`, DP 4). quick400 chứa 150 câu pub_full, 150
 - Gợi ý kỳ trên D2 (paraphrase câu train, nhãn đã kiểm): 3,412 khớp / 25 lệch (phần lớn tương đương: `between` cả tháng = `month`);
   lỗi thật: năm đứng trước quý / tháng không có chữ "năm" ("Năm 2026, quý 2", "2025 tháng 8") → `quarter_noyear` / `month_noyear`
   → sửa `qparse.parse_period`.
+
+## Entry 40 — 2026-11-08: WP7 chạy thử đầu-cuối (`nguyenhoa99/zc-fullsmoke-1`)
+
+- `training/full_job.py` (FSDP4 trên 4×L4, LoRA r 64): 142 bản ghi D1 (300k token, 3 bước) trong 333 s, **1,889 tok/s**, VRAM đỉnh
+  17.7 GB, 200 module LoRA (không chạm vision / MTP); lưu adapter dưới FSDP (FULL_STATE_DICT) OK (642 MB); `merge.py merge` 200
+  tensor trong 28 s; đánh giá mô hình gộp qua luồng hybrid (FP8, DP 4): 20 câu, 17 đúng / 1 sai / 2 bỏ; tổng 1,015 s.
+- Ngân sách bản cuối (QĐ16: ≤ 4.5 h / phiên): ≈ 30M token / phiên ở tốc độ này (F1 1 epoch ~25M token ≈ 3.7 h).
+- Lỗi preflight QĐ4 (job chỉ có `pub_ho`: smoke CPU không có văn bản paraphrase → 0 câu → ZeroDivisionError) → sửa
+  `eval_flow` (`$ZC_PARA_DIR`, thoát rõ khi 0 câu), `select_subset`; job QĐ4 chạy `quick400,pub_ho` (lặp quick400 để đo nhiễu).

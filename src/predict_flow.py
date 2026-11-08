@@ -71,6 +71,7 @@ def main():
     log(f"split: {a.split}  start: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}")
     if os.environ.get("ZC_SMOKE") == "1":
         a.split = smoke_split(a.split, os.path.join(a.work, "smoke_split")); log(f"smoke: split reduced to {a.split}")
+    if a.config and not os.path.isfile(a.config): log(f"config {a.config} not found: defaults"); a.config = ""
     cfg = a.config or next((p for p in (os.path.join(os.path.dirname(HERE), "configs", "flow_final.json"), os.path.join(HERE, "configs", "flow_final.json"))
                             if os.path.isfile(p)), "")
     merge_sub.merge(a.split, final, [], quiet=True)                  # a complete (abstain) file from the first second

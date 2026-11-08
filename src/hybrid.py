@@ -89,9 +89,9 @@ class HybridPipeline(pipeline.Pipeline):
         a, q, ctx = self.a, st["q"], st["ctx"]
         conv = list(st["msgs"][variant]); smp = {"j": j, "variant": variant, "temp": temp, "turns": [], "ok": False}
         st["samples"].append(smp); st["pending"] += 1
-        think = bool(getattr(a, "think", False))
-        grammar = ctx.grammar(int(getattr(a, "max_enum", 5000))) if getattr(a, "grammar", 1) and not think else None
-        mt = int(a.max_tokens)
+        think = bool(getattr(a, "think", False)) or variant == "think"     # 'think' variant: round-2 samples reason first (the
+        grammar = ctx.grammar(int(getattr(a, "max_enum", 5000))) if getattr(a, "grammar", 1) and not think else None   # hard ~15 %)
+        mt = int(getattr(a, "think_tokens", 0) or a.max_tokens) if variant == "think" else int(a.max_tokens)
         def launch():
             seed = 1000 * len(smp["turns"]) + 17 * j + 1 + 7919 * int(getattr(a, "seed_base", 0) or 0)
             self.gen2(conv, temp, seed, mt, on_text, think, st["prio"], grammar)

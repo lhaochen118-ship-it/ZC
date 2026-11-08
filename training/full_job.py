@@ -23,6 +23,7 @@ def main():
     ap.add_argument("--epochs", type=float, default=1.0); ap.add_argument("--budget", type=float, default=0)
     ap.add_argument("--mb", type=int, default=8); ap.add_argument("--eff-batch", type=int, default=64); ap.add_argument("--gpus", type=int, default=4)
     ap.add_argument("--sets", default="quick400,pub_full"); ap.add_argument("--eval-config", default="configs/e0.json")
+    ap.add_argument("--max-len", type=int, default=3072); ap.add_argument("--seed", type=int, default=20261108)
     ap.add_argument("--no-eval", action="store_true"); ap.add_argument("--subset", type=int, default=0, help="evaluation: first N questions per shop")
     a = ap.parse_args()
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
@@ -33,7 +34,7 @@ def main():
     cmd = [PY, "-m", "accelerate.commands.launch", "--config_file", cfg, "--num_processes", str(a.gpus), "--main_process_port", "29531",
            os.path.join(HERE, "sft.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
            "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--max-tokens", str(a.budget),
-           "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10"]
+           "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed)]
     rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "train.log"), "w"), stderr=subprocess.STDOUT).returncode
     print(f"[full] training rc {rc} in {time.time() - t0:.0f}s", flush=True)
     if rc != 0 or not os.path.isfile(f"{tmp}/adapter/adapter_config.json"):

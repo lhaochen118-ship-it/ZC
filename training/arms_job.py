@@ -35,7 +35,8 @@ def branch(i, name, files, a, D, base_env):
     env = dict(os.environ, CUDA_VISIBLE_DEVICES=str(i), PYTHONUNBUFFERED="1", TOKENIZERS_PARALLELISM="false")
     if a.fake_responder: env.pop("CUDA_VISIBLE_DEVICES")
     data = ",".join(os.path.join(D, f) for f in files.split(","))
-    res = {"name": name, "data": files, "gpu": i, "r": a.r, "alpha": a.alpha, "lr": a.lr, "epochs": a.epochs, "budget": a.budget}
+    res = {"name": name, "data": files, "gpu": i, "r": a.r, "alpha": a.alpha, "lr": a.lr, "epochs": a.epochs, "budget": a.budget,
+           "max_len": a.max_len, "seed": a.seed, "mb": a.mb, "eval_config": a.eval_config}
     t0 = time.time()
     if name.upper().startswith("BASE"):                                  # the base model, no adapter (reference of the same sets)
         res["train_s"] = 0; ad = None
@@ -47,11 +48,13 @@ def branch(i, name, files, a, D, base_env):
     else:
         if a.hf:
             cmd = [PY, os.path.join(HERE, "sft.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
-                   "--max-tokens", str(a.budget), "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--metrics", f"{out}/train_metrics.json"]
+                   "--max-tokens", str(a.budget), "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--metrics", f"{out}/train_metrics.json",
+                   "--max-len", str(a.max_len), "--seed", str(a.seed)]
         else:
             env.update(base_env)
             cmd = [PY, os.path.join(HERE, "sft_unsloth.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
-                   "--max-tokens", str(a.budget), "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs)]
+                   "--max-tokens", str(a.budget), "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs),
+                   "--max-len", str(a.max_len), "--seed", str(a.seed)]
         rc = subprocess.run(cmd, env=env, stdout=open(f"{out}/train.log", "w"), stderr=subprocess.STDOUT).returncode
         txt = open(f"{out}/train.log", errors="ignore").read()
         m = [l for l in txt.splitlines() if l.startswith("[sft] METRICS ")]
@@ -109,6 +112,8 @@ def main():
     ap.add_argument("--fake-responder", default="", help="CPU test: evaluation with a fake model (no vLLM)"); ap.add_argument("--subset", type=int, default=0)
     ap.add_argument("--adapters-dir", default="", help="evaluation only: <dir>/<branch>/adapter trained earlier (a mounted dataset)")
     ap.add_argument("--eval-dp", type=int, default=1, help="GPUs per branch evaluation (a single BASE branch: 4)")
+    ap.add_argument("--max-len", type=int, default=3072, help="training sequence length (full-prompt records: 5120 with --mb 2)")
+    ap.add_argument("--seed", type=int, default=20261108, help="training seed (record sample and order)")
     a = ap.parse_args()
     os.chdir(ROOT)
     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)

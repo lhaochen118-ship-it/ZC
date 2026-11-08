@@ -36,6 +36,7 @@ OUTPUT_SQL = """- Or <sql> ... </sql>: one DuckDB SELECT over the canonical tabl
 
 VARIANT = {
     "direct": "",
+    "think": "",                                                       # same prompt; the model reasons first (thinking mode)
     "rephrase": "\n# TASK\nFirst restate the question in plain standard Vietnamese inside <plan> (quantity | period | filters), then write the program.",
     "explore": "\n# TASK\nYou may first explore the data: write <code> with print(...) calls of the tools (find, values, schema, peek, has_data, help, "
                "period, rule); you will see their output, then write the final program.",

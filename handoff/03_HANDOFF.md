@@ -75,41 +75,28 @@ Luồng: câu hỏi → mô hình → code truy vấn → chạy → mô hình n
 | Nhật ký số liệu | `EXPERIMENT_LOG.md` (entry 0–27; LLM: 0–19, luật: 20–27) |
 | Trạng thái sống | `handoff/STATUS.md` |
 
-## 5. Các bước tiếp theo (theo thứ tự)
+## 5. Các bước tiếp theo (user đã duyệt 08/11)
 
-Kế hoạch đầy đủ và lộ trình theo ngày (08–16/11), phân bổ quota, nhánh fine-tune song song: **`docs/08_MASTER_PLAN.md`**
-(thay cho phần lộ trình dưới đây khi khác nhau).
+**Việc của khung chat kế tiếp: triển khai code đúng theo `docs/08_MASTER_PLAN.md`** — gói việc §8 theo thứ tự, đặc tả §5,
+quy tắc quyết định §10, lịch / quota §9. Tóm tắt thứ tự:
 
-**Bước 1.** **Xin token Kaggle** (acc L4: quynhtran35, yuan1103, phatle1578; T4: yeshenhi, mxuanquy) → `~/.kaggle/tok_<acc>` (600).
-Tải dữ liệu, ingest cache (lệnh: `environment_summary.pdf` §1).
+| WP | Nội dung | Ngày |
+|---|---|---|
+| WP0 | chuẩn bị: token, dữ liệu, cache, `tests/splits/`, dataset wheels huấn luyện | 09/11 |
+| WP1 | chạy thử GPU: bộ nhớ / tốc độ LoRA, gộp vs adapter, nạp thầy FP8, ngữ pháp → QĐ1–QĐ3, QĐ12 | 09/11 |
+| WP2 (P0) | luồng hybrid v1: `api_spec`, `grammar`, `hints`, `tools` (find / period / check / help), `precheck`, `prompting`, `predict_flow` mới | 09–10/11 |
+| WP3 | mốc E0, chọn mô hình chính (Qwen3.5-9B vs Gemma 4 12B-it), A/B prompt / ngữ pháp, `pub_noind`, `pub_noacc` | 10/11 |
+| WP4 | nhà máy dữ liệu D1, D2, D2N, D3, D4T, DV | 09–11/11 |
+| WP5 | dò thầy (Qwen3.6-27B / 35B-A3B, Gemma 4 31B, gpt-oss) | 11/11 |
+| WP6 | nhánh fine-tune song song (vòng 1 dữ liệu, vòng 2 thầy) + gộp nhánh / multi-LoRA | 11–12/11 |
+| WP7 | huấn luyện đầy đủ + tích hợp | 12–13/11 |
+| WP8 (P1) | data card, đọc kết quả, tool còn lại, rulebook, bộ kiểm 0.8B, truy hồi embedding 0.6B, tin cậy + ngưỡng | 12–13/11 |
+| WP9 | vòng sửa lỗi tới public = 1.0 (chỉ cơ chế chung) | 10–14/11 |
+| WP10 | đánh giá cuối (quota mới 14/11) → `configs/flow_final.json` | 14/11 |
+| WP11 | Docker + `submissions/vNN`; user build ngày 15/11, nộp trước 16/11 23:59 GMT+7 | 15–16/11 |
+| WP12 (P1) | nhánh thoát DuckDB SQL | 11–13/11 |
 
-**Bước 2.** **Đo nền trên held-out trước khi sửa** (chưa từng đo): `agent.py` với `--prefer-map fmt:automap`, `--qw 0`,
-không `--confirm` (mô hình sinh code cho mọi câu, schema từ automap) trên `para_pub.jsonl` + public gốc + train; ghi PA,
-thời gian / câu, tỉ lệ abstain. So với luồng hiện tại (held-out public 0.602) và v28 (public 0.921).
-
-**Bước 3.** **Viết `src/predict_flow.py` mới (hybrid)** theo bảng §2.1; thiết kế chi tiết, tham khảo paper và kế hoạch
-thí nghiệm E0–E5: `docs/06_HYBRID_FRAMEWORK.md`. Tóm tắt:
-
-- Ánh xạ schema (được phép dùng luật, §2.1): `automap` (code) dựng schema chuẩn trước, kiểm bằng `canon.secondary_checks`;
-  LLM viết ánh xạ / mô tả schema khi automap cảnh báo nặng hoặc thiếu; đồng thuận ánh xạ (`consensus.py`).
-- Hiểu câu (luật hỗ trợ + LLM): `qnorm` làm sạch; trích ý định / kỳ thời gian / thực thể bằng luật tổng quát (tách từ
-  `qparse` thành phần "hint", không sinh đáp án) → đưa vào prompt cùng câu gốc.
-- Sinh code (LLM, bắt buộc): Agent viết chương trình trên toolkit `dm` / `industry` cho **mọi** câu; few-shot truy hồi
-  các cặp (câu train, chương trình đã kiểm) (`src/fewshot.py`); chương trình `qparse` (nếu có) chỉ là gợi ý trong prompt.
-  Bỏ đường stage 1 trả lời thẳng và `--confirm` dựa trên luật; luật không được là phiếu tự quyết (`--qw` chỉ dùng để kiểm
-  chéo, không vượt phiếu mô hình — đo cả hai biến thể).
-- Rulebook: đưa rulebook của split vào prompt (đã có); toolkit là rule engine cho định nghĩa đã kiểm.
-- Kiểm tra: bỏ phiếu K chương trình + kiểm kiểu đáp án + kiểm grounding (tên / mã trong câu); câu bất đồng → LLM
-  xem lại kết quả (bước "mô hình nhận kết quả").
-- Abstain: tỉ lệ phiếu < ngưỡng (0.75 hiện tại) + điểm tin cậy; chọn ngưỡng trên k=0, kiểm trên held-out.
-
-**Bước 4.** Cập nhật tests (`tests/test_rules_first.py`, `test_canon_flow.py` gắn với luồng cũ), preflight, chạy Kaggle:
-public gốc + paraphrase public + train. Giữ bản mới khi held-out ≥ luồng cũ và thời gian ước lượng ≤ 6 h trên 2×5090.
-
-**Bước 5.** Tạo file nộp mới (`automation/make_submission.py` → `submissions/vNN/`), push, cập nhật `docker/predict.sh`,
-`docker/README_SOLUTION.md`.
-
-**Bước 6.** **User**: build Docker (`docker/SETUP_DOCKER.md`), chạy public, gửi dòng cuối `run.log` + thời gian; nộp trước 16/11.
+Thứ tự cắt khi thiếu thời gian và những gói không được cắt: `docs/08_MASTER_PLAN.md` §8 (cuối).
 
 ## 6. Rủi ro cần nhớ
 

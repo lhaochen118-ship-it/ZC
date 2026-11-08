@@ -722,3 +722,10 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   có tool, nhánh thoát DuckDB SQL. Bộ đánh giá mới: `pub_noind` (ẩn hàm ngành, 112 câu public), `rb_shift`, `pub_noacc`.
 - Đã kiểm: Qwen3.6 và Qwen3.5 dùng chung tokenizer (vocab 248,044, cùng merges, cùng 26 token đặc biệt) → chưng cất on-policy
   mức token khả thi (P2). Tổng tham số lúc chạy với S1 + S3: 11.12B.
+
+## Entry 31 — 2026-11-08: kế hoạch + đặc tả triển khai được duyệt (`docs/08_MASTER_PLAN.md`)
+
+- User đồng ý toàn bộ (docs/08 + docs/09 P0 / P1). `docs/08` viết lại thành đặc tả triển khai: luồng §4, file / hàm / định dạng /
+  prompt / ngữ pháp / tool / thuật toán chọn / cờ / huấn luyện / mô hình phụ / Docker §5, dữ liệu D1–D7 + D2N, D4T, DV §7, gói việc
+  WP0–WP12 với test và nghiệm thu §8, lịch / quota §9, quy tắc quyết định QĐ1–QĐ15 §10, thứ tự cắt khi thiếu thời gian.
+- **Việc của khung chat kế tiếp: triển khai code đúng theo `docs/08`, WP0 → WP12.**

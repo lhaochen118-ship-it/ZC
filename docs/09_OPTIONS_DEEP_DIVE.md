@@ -2,7 +2,7 @@
 
 *Lập 08/11/2026 theo yêu cầu user. Mỗi phương án gắn với một **lỗi đo được** của hệ hiện tại (§0), có bằng chứng (paper /
 repo; citation Semantic Scholar, stars GitHub tra 08/11/2026), chi phí, cách thử và quy tắc giữ / bỏ. Phần được chọn đã
-đưa vào `docs/08_MASTER_PLAN.md` §13.*
+đưa vào `docs/08_MASTER_PLAN.md` (§5 đặc tả, §8 gói việc, §10 quy tắc quyết định).*
 
 ## 0. Căn cứ: mô hình đang sai ở đâu (log v34, 3 lần chạy × 422 câu khó, Qwen3.5-9B chưa fine-tune)
 

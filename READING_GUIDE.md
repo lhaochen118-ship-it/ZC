@@ -7,9 +7,9 @@ Cho Agent (hoặc người) nhận dự án ở khung chat mới. Đọc theo th
 | # | File | Để biết |
 |---|---|---|
 | 1 | `CLAUDE.md` | Nguyên tắc user đã chốt, cổng kiểm tra trước khi chạy, playbook GPU |
-| 2 | `handoff/STATUS.md` | Trạng thái sống, quyết định mới nhất (08/11: chuyển sang LLM-first) |
+| 2 | `handoff/STATUS.md` | Trạng thái sống, quyết định mới nhất (08/11: hybrid framework; việc tiếp theo = triển khai `docs/08`) |
 | 3 | `handoff/03_HANDOFF.pdf` | Mục tiêu, quyết định, vị trí code / dữ liệu / kết quả, **các bước tiếp theo** |
-| 4 | `docs/08_MASTER_PLAN.md` | **Kế hoạch chính**: mục tiêu public = 1.0, tham khảo paper / repo (citation, stars), kiến trúc đích, fine-tune / chưng cất với nhánh song song, lộ trình 08–16/11, quota |
+| 4 | `docs/08_MASTER_PLAN.md` | **Kế hoạch + đặc tả triển khai (user đã duyệt; việc của khung chat mới là làm đúng theo nó)**: luồng, file / hàm, định dạng, ngữ pháp, tool, thuật toán chọn, cờ, huấn luyện, gói việc WP0–WP12, lịch / quota, quy tắc quyết định |
 | 4a | `docs/09_OPTIONS_DEEP_DIVE.md` | Phương án đào sâu: tool cho Agent (T1–T9), ngữ pháp DSL, mô hình phụ (embedding, bộ kiểm), chưng cất (gộp nhánh, on-policy), ưu tiên P0–P2, căn cứ từ log lỗi |
 | 4b | `docs/06_HYBRID_FRAMEWORK.md` | **Thiết kế hybrid framework**: ranh giới được / cấm, luồng 8 bước, tham khảo paper, hướng cải tiến, giao thức khi trả lời sai, kế hoạch E0–E5 |
 | 5 | `handoff/environment_summary.pdf` | Container, Kaggle (máy, acc, quota), máy chấm / Docker |
@@ -53,13 +53,12 @@ Các `handoff/*.md` và `docs/03_WORKFLOW.md` là nguồn của PDF cùng tên: 
 `automation/run_kernel.py` (`--attach`), `automation/jobs/` (job chuẩn), `docker/` (bài nộp), `submissions/` (v28 LLM,
 v30 luật), `goldkey/devset.py` (37 câu đã kiểm, chỉ chấm).
 
-## 4. Việc tiếp theo (chi tiết `handoff/03_HANDOFF.pdf` §5)
+## 4. Việc tiếp theo (user đã duyệt 08/11)
 
-1. Xin token Kaggle; tải dữ liệu + ingest; nhận `public_gt.jsonl` (`score_1.jsonl`) từ user nếu mất.
-2. Đo nền LLM-only trên paraphrase held-out (chưa từng đo).
-3. Viết luồng hybrid mới theo `handoff/03_HANDOFF.md` §2.1 (Agent sinh code mọi câu, luật chỉ làm ngữ cảnh); test, preflight, chạy Kaggle; giữ khi held-out ≥ v34 (0.602) và
-   thời gian ≤ 6 h trên 2×5090.
-4. File nộp + Docker; user build và nộp trước 16/11/2026 23:59 GMT+7.
+**Triển khai code đúng theo `docs/08_MASTER_PLAN.md`**: gói việc §8 theo thứ tự WP0 → WP12 (bảng tóm tắt ở
+`handoff/03_HANDOFF.pdf` §5), đặc tả kỹ thuật §5 (file, hàm, định dạng, prompt, ngữ pháp, tool, thuật toán chọn, cờ CLI,
+huấn luyện, Docker), quy tắc quyết định §10, lịch / quota §9, thứ tự cắt khi thiếu thời gian ở cuối §8. Sau mỗi gói việc:
+cập nhật `handoff/STATUS.md` + `EXPERIMENT_LOG.md`, commit + push.
 
 ## 5. Không được làm
 

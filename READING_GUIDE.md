@@ -2,53 +2,64 @@
 
 Cho Agent (hoặc người) nhận dự án ở khung chat mới. Đọc theo thứ tự, dừng khi đủ cho việc đang làm.
 
-## 1. Đọc trong 15 phút (bắt buộc)
+## 1. Bắt buộc (≈ 15 phút)
 
 | # | File | Để biết |
 |---|---|---|
-| 1 | `CLAUDE.md` | Nguyên tắc user đã chốt, playbook GPU, cổng kiểm tra trước khi chạy |
-| 2 | `handoff/STATUS.md` | Trạng thái sống (05/11: kiến trúc rule-first, điểm, Kaggle, việc tiếp theo) |
-| 3 | `EXPERIMENT_LOG.md` entry 20–22 | Khung tất định (automap + qnorm + qparse), kiểm tra tổng quát hoá (paraphrase, nhiễu, README trắng), Kaggle v30 |
+| 1 | `CLAUDE.md` | Nguyên tắc user đã chốt, cổng kiểm tra trước khi chạy, playbook GPU |
+| 2 | `handoff/STATUS.md` | Trạng thái sống, quyết định mới nhất (08/11: chuyển sang LLM-first) |
+| 3 | `handoff/03_HANDOFF.pdf` | Mục tiêu, quyết định, vị trí code / dữ liệu / kết quả, **các bước tiếp theo** |
 | 4 | `handoff/environment_summary.pdf` | Container, Kaggle (máy, acc, quota), máy chấm / Docker |
-| 5 | `handoff/04_SESSION_0411.pdf` | **Mới nhất (03–05/11)**: điểm v22–v28, đồng thuận ánh xạ, kiểm tra mới, sai lầm cần tránh, việc dở |
 
 ## 2. Khi cần hiểu sâu
 
 | File | Khi nào đọc |
 |---|---|
-| `handoff/01_SCIENTIFIC_FINDINGS.pdf` | Trước khi đề xuất hướng mới: cái gì đã hiệu quả, cái gì thất bại, bằng chứng |
+| `handoff/01_SCIENTIFIC_FINDINGS.pdf` | Trước khi đề xuất hướng mới: cái gì hiệu quả, cái gì thất bại, bằng chứng |
 | `handoff/02_ENGINEERING_OPS_LESSONS.pdf` | Trước khi sửa code / chạy Kaggle: lỗi đã gặp và cách tránh |
-| `docs/03_WORKFLOW.md` (PDF: `docs/RESEARCH_WORKFLOW.pdf`) | Quy trình làm việc; §5 vòng lặp hiện tại |
-| `docs/04_DECISION_V3.md` | Vì sao kiến trúc v3, các phương án đã bỏ |
-| `docs/00_TASK.md`, `docs/ZAIC_REQUIREMENTS.md` | Đề bài, luật chấm, yêu cầu user |
+| `docs/03_WORKFLOW.md` (PDF: `docs/RESEARCH_WORKFLOW.pdf`) | Quy trình làm việc; §5 vòng lặp LLM-first |
+| `docs/00_TASK.md`, `docs/ZAIC_REQUIREMENTS.md` (gốc `ZAIC.docx`) | Đề bài, luật chấm, yêu cầu user |
+| `docs/04_DECISION_V3.md` | Thiết kế đường LLM (ánh xạ theo DN + toolkit) — nền của LLM-first |
 | `docs/02_KAGGLE_OPS.md`, `docs/05_GPU_OPTIMIZATION.md` | Vận hành Kaggle, tối ưu GPU |
-| `EXPERIMENT_LOG.md` | Số liệu từng bản (entry 0–13); entry 13 = phân tích điểm public |
-| `data/raw/public_test/public_test/rulebook.md` | Định nghĩa nghiệp vụ của public (khác train ở mục ngành) |
+| `EXPERIMENT_LOG.md` | Số liệu từng bản: entry 0–19 đường LLM, 20–27 đường luật + paraphrase |
+| `tests/README.md` | Bộ test CPU và lệnh đánh giá |
 
-Các file `handoff/*.md` là nguồn của PDF cùng tên (sửa `.md`, rồi `python3 automation/md2pdf.py <in.md> <out.pdf>`).
+Các `handoff/*.md` và `docs/03_WORKFLOW.md` là nguồn của PDF cùng tên: sửa `.md` rồi
+`python3 automation/md2pdf.py <in.md> <out.pdf>` (cần `pip install markdown xhtml2pdf`).
 
-## 3. Bản đồ mã nguồn (đọc theo luồng dữ liệu)
+## 3. Bản đồ mã nguồn
 
-1. `src/ingest.py` — đọc file thô (CSV / Excel / SQLite) → bảng thô + card mô tả.
-2. `src/agent.py` — CLI (`build_parser`), prompt, engine vLLM; `src/pipeline.py` — StepLLM (budget forcing), ánh xạ
-   theo DN, chọn ánh xạ, bỏ phiếu theo câu, dự phòng ánh xạ.
-3. `src/canon.py` — chạy chương trình ánh xạ an toàn, `secondary_checks` (kiểm tra nội dung), `warning_penalty`.
-4. `src/dm.py` — toolkit `Shop` (mọi định nghĩa rulebook), `finalize`, `CANON_DOC` (mô tả bảng chuẩn cho prompt).
-5. `src/qparse.py` — luật đọc câu → chương trình 1 dòng; `src/qnorm.py` — làm sạch câu.
-6. `src/vote.py` — bỏ phiếu nhiều lần chạy (+ tie-break theo ánh xạ); `src/report.py`, `src/score.py` — chấm.
-7. `automation/` — Kaggle (`fanout.py` là cửa vào), `automation/jobs/` — job chuẩn + công cụ phân tích log.
-8. `tests/` — `run_all.sh` (bộ CPU), `eval_lib.py` (oracle), `test_plausibility.py`, `test_mapping_fixes.py`.
-9. `docker/` — bài nộp cuối.
+**Đường LLM (giữ, là nền của luồng mới)**
+1. `src/ingest.py` — đọc file thô (CSV / Excel / SQLite) → bảng thô + card mô tả; cache theo DN.
+2. `src/agent.py` — CLI (`build_parser`), prompt, engine vLLM; `src/pipeline.py` — ánh xạ theo DN, sinh K chương trình,
+   bỏ phiếu, sửa lỗi, work stealing; `src/fewshot.py` — truy hồi ví dụ train đã kiểm.
+3. `src/canon.py` — chạy chương trình ánh xạ an toàn, `secondary_checks`, `warning_penalty`; `src/consensus.py` — đồng
+   thuận ánh xạ giữa các lần chạy.
+4. `src/dm.py`, `src/industry.py` — toolkit nghiệp vụ (mọi định nghĩa rulebook), `CANON_DOC` cho prompt.
+5. `src/vote.py` — bỏ phiếu nhiều lần chạy + ngưỡng tin cậy; `src/score.py`, `src/report.py` — chấm.
 
-## 4. Việc tiếp theo (chi tiết: `handoff/04_SESSION_0411.pdf` §6, `handoff/STATUS.md`)
+**Đường luật (sẽ bỏ khỏi luồng sinh đáp án; dùng làm ví dụ / gợi ý)**
+`src/rules_first.py` (stage 1), `src/automap.py` (ánh xạ theo luật), `src/qnorm.py` (làm sạch câu), `src/qparse.py`
+(mẫu câu → chương trình), `src/canon_llm.py` (stage 1.5), `src/predict_flow.py` (luồng nộp hiện tại), `src/merge_sub.py`.
 
-1. Xin token Kaggle (tải lại kết quả v25 / v28 hoặc chạy mới).
-2. Lấy điểm portal v28 từ user → nếu tốt hơn v25 (0.825): bật `CONSENSUS=1` mặc định trong `docker/predict.sh`.
-3. Tìm câu sai còn lại (G1–G5, train v28); dev set `goldkey/devset.py`; sửa bằng quy tắc chung.
-4. Docker cuối trước 16/11/2026 23:59 GMT+7.
+**Đánh giá tổng quát hoá**: `src/paraphrase_llm.py`, `src/perturb.py`, `src/stress_flow.py`, `tests/eval_split.py`,
+`tests/eval_all.sh`.
 
-## 5. Ba điều không được làm
+**Vận hành**: `src/run_kaggle.py` (chạy trong kernel), `automation/fanout.py` (cửa vào Kaggle), `automation/preflight.py`,
+`automation/run_kernel.py` (`--attach`), `automation/jobs/` (job chuẩn), `docker/` (bài nộp), `submissions/` (v28 LLM,
+v30 luật), `goldkey/devset.py` (37 câu đã kiểm, chỉ chấm).
 
-- Không fix theo id DN / câu, không đưa đáp án public (kể cả `goldkey/devset.py`) vào `src/` hay prompt, không train trên test.
+## 4. Việc tiếp theo (chi tiết `handoff/03_HANDOFF.pdf` §5)
+
+1. Xin token Kaggle; tải dữ liệu + ingest; nhận `public_gt.jsonl` (`score_1.jsonl`) từ user nếu mất.
+2. Đo nền LLM-only trên paraphrase held-out (chưa từng đo).
+3. Viết luồng LLM-first mới theo bảng khung của user; test, preflight, chạy Kaggle; giữ khi held-out ≥ v34 (0.602) và
+   thời gian ≤ 6 h trên 2×5090.
+4. File nộp + Docker; user build và nộp trước 16/11/2026 23:59 GMT+7.
+
+## 5. Không được làm
+
+- Không luật if / else sinh code / đáp án mà không qua mô hình (user, 08/11).
+- Không fix theo id DN / câu; không đưa đáp án public (kể cả `goldkey/devset.py`) vào `src/` hay prompt; không train trên test.
 - Không đưa token vào code, commit, prompt hay báo cáo; không đụng kernel không phải `zc-*`.
-- Không đẩy kernel khi preflight chưa `PREFLIGHT OK`; không `pkill -f` theo mẫu có trong chính lệnh.
+- Không đẩy kernel khi chưa `PREFLIGHT OK`; không `pkill -f` theo mẫu có trong chính lệnh.

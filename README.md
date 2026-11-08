@@ -9,20 +9,13 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 - Phương án cũ còn nguyên ở branch `claude/peaceful-carson-0dny90` (v1: LLM tự viết chương trình pandas cho từng câu) và
   `claude/funny-euler-ceut3o` (v2: toolkit nghiệp vụ, chưa chạy với LLM).
 
-## Trạng thái 05/11/2026: kiến trúc rule-first
+## Trạng thái 08/11/2026
 
-Luồng nộp (`docker/predict.sh` → `src/predict_flow.py`): **stage 1 luật** (`src/rules_first.py` = `automap` ánh xạ bảng thô
-từ README + giá trị, `qnorm` làm sạch câu, `qparse` đọc câu thành chương trình trên toolkit `dm` / `industry`; mọi đáp án
-luật là cuối cùng) → **stage 2 Qwen3.5-9B** (`agent.py`) chỉ cho câu luật bỏ lại. Train 3000 / 3000, public 1000 / 1000
-(`submissions/v30/`); câu biến đổi (không dấu / nhiễu chat): luật + LLM 0.989–0.996; paraphrase bằng LLM: xem
-`EXPERIMENT_LOG.md` entry 20–22. Trạng thái sống: `handoff/STATUS.md`.
-
-## Bàn giao trước đó (03/11/2026)
-
-`READING_GUIDE.md` (cách đọc repo + việc tiếp theo) → `handoff/STATUS.md` → `handoff/04_SESSION_0411.pdf`.
-Kết quả khoa học: `handoff/01_SCIENTIFIC_FINDINGS.pdf`; kinh nghiệm kỹ thuật / vận hành:
-`handoff/02_ENGINEERING_OPS_LESSONS.pdf`; môi trường: `handoff/environment_summary.pdf`; quy trình:
-`docs/RESEARCH_WORKFLOW.pdf` (nguồn `docs/03_WORKFLOW.md`). Điểm portal tốt nhất: v19 = 0.687.
+- Hai đường đã xây: **đường LLM** (`src/agent.py`: Qwen3.5-9B ánh xạ dữ liệu theo DN + sinh chương trình trên toolkit
+  `dm` / `industry`, bỏ phiếu, đồng thuận ánh xạ; v28 public 0.921) và **đường luật** (`src/rules_first.py`; public
+  1000 / 1000 trong mẫu, yếu trên cách hỏi mới). Luồng nộp hiện tại `src/predict_flow.py` là rule-first.
+- **User chốt 08/11: chuyển sang LLM-first** (không luật sinh code mà không qua mô hình). Việc tiếp theo:
+  `handoff/03_HANDOFF.pdf`; trạng thái sống: `handoff/STATUS.md`; cách đọc repo: `READING_GUIDE.md`.
 
 ## Đọc theo thứ tự
 
@@ -34,7 +27,7 @@ Kết quả khoa học: `handoff/01_SCIENTIFIC_FINDINGS.pdf`; kinh nghiệm kỹ
 | 4 | `docs/03_WORKFLOW.md` | Quy trình làm việc + nguyên tắc user đã chốt |
 | 5 | `docs/02_KAGGLE_OPS.md` | Vận hành Kaggle (GPU L4, dataset, lệnh) |
 | 6 | `docs/05_GPU_OPTIMIZATION.md` (tóm tắt trong `CLAUDE.md`) | Playbook tốc độ GPU: đo, data parallel, prefix cache, pipeline, work stealing |
-| — | `EXPERIMENT_LOG.md` | Nhật ký thí nghiệm v3 |
+| — | `EXPERIMENT_LOG.md` | Nhật ký thí nghiệm (entry 0–27) |
 
 ## Cấu trúc
 
@@ -42,5 +35,7 @@ Kết quả khoa học: `handoff/01_SCIENTIFIC_FINDINGS.pdf`; kinh nghiệm kỹ
 |---|---|
 | `docs/` | Đề bài, yêu cầu, quyết định, quy trình, vận hành |
 | `automation/` | Chạy Kaggle: `fanout.py`, `make_kernel.py`, `run_kernel.py`, `watch_done.py`, `pull_kernels.py`, … |
-| `src/`, `tests/` | Pipeline v3 (thêm dần, mỗi thành phần kèm test) |
+| `src/`, `tests/` | Mã nguồn + test CPU (bản đồ: `READING_GUIDE.md` §3) |
+| `handoff/` | Bàn giao: `STATUS.md`, PDF 1–3, `environment_summary.pdf` |
+| `submissions/` | `v28/` (đường LLM, 0.921), `v30/` (luật, 1000 / 1000) |
 | `data/` | `data/raw/` (không commit) = Kaggle `nhatlong1103/zc-2026` |

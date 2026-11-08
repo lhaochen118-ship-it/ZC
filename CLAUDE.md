@@ -1,16 +1,15 @@
 # CLAUDE.md — bộ nhớ dự án (Claude Code tự đọc file này mỗi phiên)
 
 Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3-0dny90`** (repo `lhaochen118-ship-it/ZC`).
-**Khung chat mới: đọc `READING_GUIDE.md` trước** (bàn giao: `handoff/STATUS.md`, `handoff/0[1-4]_*.pdf` — PDF 4 = khung
-03–05/11 mới nhất, `handoff/environment_summary.pdf`). Dev set 37 câu đã kiểm `goldkey/devset.py` chỉ để chấm offline. Đọc theo thứ tự: `README.md` → `docs/ZAIC_REQUIREMENTS.md` (yêu cầu user) → `docs/00_TASK.md` (đề) →
-`docs/04_DECISION_V3.md` (kiến trúc v3) → `docs/03_WORKFLOW.md` (quy trình, acc Kaggle) → `docs/05_GPU_OPTIMIZATION.md`
-→ `EXPERIMENT_LOG.md`.
+**Khung chat mới: đọc `READING_GUIDE.md` trước** (bàn giao: `handoff/STATUS.md`, `handoff/03_HANDOFF.pdf`,
+`handoff/01_SCIENTIFIC_FINDINGS.pdf`, `handoff/02_ENGINEERING_OPS_LESSONS.pdf`, `handoff/environment_summary.pdf`).
 
-**Kiến trúc hiện tại (05/11): rule-first** — `src/rules_first.py` (automap + qnorm + qparse + toolkit, CPU) trả lời trước,
-mọi đáp án luật là cuối cùng; `agent.py` (Qwen3.5-9B) chỉ cho câu còn lại (`src/predict_flow.py`, `docker/predict.sh`).
-Kiểm tra: `S=<scratch> WORKERS=4 bash tests/eval_all.sh` (train 3000 / 3000, public 1000 / 1000 phải giữ). Tổng quát
-hoá đo bằng paraphrase LLM (`src/paraphrase_llm.py`, `eval_split.py --perturb-q para:`): chỉ phân tích lỗi biến thể k=0
-public; k=1,2 và train là held-out. Một luật mới chỉ được lấy câu khỏi stage 2 khi độ chính xác held-out ≥ ~85 %.
+**Quyết định mới nhất (user, 08/11): LLM-first.** LLM hiểu câu, phân tích schema (+ code), diễn giải rulebook (+ toolkit),
+sinh SQL / Python; code tính toán và kiểm tra; abstain theo logic + độ tin cậy. **Tuyệt đối không luật if / else viết sẵn
+sinh code / đáp án mà không dùng mô hình.** Luồng nộp hiện tại (`src/predict_flow.py`, rule-first: `rules_first.py` →
+`canon_llm.py` → `agent.py`) phải được thay. Đo bằng held-out: paraphrase public k=1,2 và paraphrase train
+(`src/paraphrase_llm.py`, `eval_split.py --perturb-q para:`, `stress_flow.py --modes para:`); chỉ phân tích lỗi trên
+k=0 public và train. Mốc so sánh: v34 held-out public 0.602; v28 (LLM) public gốc 0.921.
 
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 

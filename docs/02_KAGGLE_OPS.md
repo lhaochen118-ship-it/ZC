@@ -20,7 +20,7 @@
 ## 2. Tài khoản
 
 Token: `~/.kaggle/tok_<username>` (chmod 600), `~/.kaggle/access_token` = `nhatlong1103` (chỉ đăng dataset). Không commit
-token. Danh sách acc hiện tại: `docs/03_WORKFLOW.md` §1b; bài học quota: `handoff/04_SESSION_0411.pdf` §4 (bảng acc của dự án
+token. Danh sách acc hiện tại: `docs/03_WORKFLOW.md` §1b; bài học quota: `handoff/02_ENGINEERING_OPS_LESSONS.pdf` §3 (bảng acc của dự án
 trước đã bỏ vì lỗi thời).
 
 **GPU L4×4:** kernel-metadata `"machine_shape": "NvidiaL4"`, `"competition_sources": ["gemma-4-developer-agent"]`
@@ -75,4 +75,4 @@ Giới hạn metadata: title 6–50 ký tự, subtitle 20–80. Upload khoảng 
 
 ## 6. Container và bài học khác
 
-Bài học vận hành: `handoff/02_ENGINEERING_OPS_LESSONS.pdf`, `handoff/04_SESSION_0411.pdf` §4.
+Bài học vận hành: `handoff/02_ENGINEERING_OPS_LESSONS.pdf`.

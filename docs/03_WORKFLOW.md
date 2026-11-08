@@ -1,6 +1,6 @@
 # 03 — Quy trình làm việc
 
-*Cập nhật 03/11/2026 14:30 UTC (thêm §5–§7 từ khung chat 03/11). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
+*Cập nhật 08/11/2026 (§5 thay bằng vòng lặp LLM-first + held-out; §1b acc mới). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
 tối đa trên private test, trong 6 giờ, tái lập được".*
 
 ## 1. Nguyên tắc chung
@@ -28,18 +28,15 @@ và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
 
 - Dùng **tất cả** acc được cấp. Token chỉ ở `~/.kaggle/tok_<username>` (quyền 600), không đưa vào code, prompt, GitHub
   hay báo cáo; kiểm tra kết nối bằng `kaggle competitions list`. Khung chat mới phải xin lại token.
-- Acc (username Kaggle, 03/11): L4 ở `lelynhan`, `linhmai24`, `thnliu`, `duylnng`, `caotienminh1`, `nguynduylm`,
-  `phuongnehe`, `hai1108`, `mucnokieu`, `huyenco`; `mxuanquy` chỉ T4; `nguyenmanh0404` chưa accept rules
-  `gemma-4-developer-agent`. **Quota 30 giờ GPU / tuần / acc** (caotienminh1 hết 03/11 14:02); một bản thử đầy đủ
-  (train + 3 public) ≈ 8 giờ GPU. Trạng thái acc mới nhất: `handoff/ENVIRONMENT_SUMMARY.md`. Các acc này **dùng chung
-  với dự án khác** (kernel `e27*`, `e32*`, `nclt-*`…): không đụng vào kernel không phải `zc-*`. Không có token
-  `nhatlong1103` cho kernel (chỉ đăng dataset).
+- Acc và quota mới nhất: `handoff/ENVIRONMENT_SUMMARY.md` §2 (08/11: L4 quynhtran35, yuan1103, phatle1578; T4
+  yeshenhi, mxuanquy). **Quota 30 giờ GPU / tuần / acc, tính theo GPU** (phiên 4×L4 = 4 h quota / giờ), reset thứ Bảy
+  00:00 UTC. Acc dùng chung với dự án khác: không đụng kernel không phải `zc-*`.
 - **Dồn luồng lên một acc**: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU cùng lúc; hết slot mới sang acc khác.
   Mỗi phiên GPU = 4×L4 (24 GB/GPU, 96 GB phân tán, không phải một GPU 96 GB); không có L4 → 2×T4.
 - **Kẹt hàng đợi:** không có đầu ra sau ~8 phút (L4 / CPU) hoặc ~10 phút (T4) → kiểm trạng thái; L4 kẹt hàng đợi → ngắt,
   tạo phiên mới, tối đa 5 lần; vẫn hỏng → xem lỗi code / logic, sửa rồi chạy lại; không phải lỗi code → chuyển 2×T4.
   Vẫn hỏng → xem log, quota, cấu hình.
-- Tận dụng hết GPU trong phiên: inference `--dp <số GPU>` (mỗi GPU một bản mô hình, chia DN cân bằng theo số câu,
+- Tận dụng hết GPU trong phiên: inference `--dp <N>` (N = số GPU) (mỗi GPU một bản mô hình, chia DN cân bằng theo số câu,
   prefix caching theo DN); mô hình không vừa 1 GPU thì `--tp`. Fine-tune: DDP mọi GPU, bf16 (L4) / fp16 (T4),
   gradient accumulation, gradient checkpointing chống OOM.
 - Hết GPU: việc rất nhẹ chạy CPU, việc nặng đợi GPU. Định kỳ dọn tiến trình treo (kernel Kaggle và tiến trình nền cục bộ);
@@ -75,22 +72,18 @@ và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
 - Kết quả mới để file mới (`results/<run>/…`), không ghi đè kết quả cũ.
 - Không commit token, dữ liệu sinh ra lớn, cache (`.gitignore`).
 
-## 5. Vòng lặp hiện tại (từ khi có điểm portal, 03/11)
+## 5. Vòng lặp hiện tại (từ 08/11: LLM-first, đo bằng held-out)
 
-Train LOO (0.98–0.99) **không còn dự báo** điểm public (0.63–0.69). Vòng lặp đổi thành:
+User chốt (08/11): không luật if / else sinh code mà không qua mô hình; LLM hiểu câu, phân tích schema, sinh code; code
+tính toán và kiểm tra; abstain theo logic + độ tin cậy (`handoff/03_HANDOFF.md` §2). Vòng lặp:
 
-1. **Tìm lỗi chung không cần nhãn** trên log public của bản gần nhất (công cụ: `automation/jobs/`):
-   luật vs LLM bất đồng hoàn toàn (`rule_vs_llm.py`); ánh xạ hạng 1 vs hạng 2 cho đáp án khác (`alt_diff.py`);
-   đồng thuận 3 lần chạy theo DN (`agree_biz.py`); đáp án 0 bất thường; đối chiếu bảng chuẩn với README / rulebook
-   (`two_maps.py`, `scan_maps.py`). Không gán nhãn tay đáp án public.
-2. **Sửa bằng quy tắc tổng quát** (luật đọc câu, kiểm tra nội dung ánh xạ, toolkit) + test; kiểm **oracle train
-   2967 / 1 / 32** và **0 flagged** trên ánh xạ tham chiếu (`tests/eval_lib.py`, `tests/test_plausibility.py`).
-3. **Gộp các sửa thành một đợt**, preflight một lần (mỗi lần sửa sau preflight phải chạy lại ~10–12 phút), chạy bản
-   mới (train + 3 public) trên 2 acc; khi chờ thì làm bước 1 cho lỗi tiếp theo.
-4. **Đánh giá bản mới bằng so sánh câu-theo-câu với bản đã có điểm portal** (giống / đổi / thêm abstain / bớt abstain
-   theo DN) — không chỉ bằng điểm train. Bản thêm nhiều abstain ở DN lớn thường tụt điểm (v20).
-5. File nộp: `automation/map_penalties.py` → `src/vote.py` (tie-break theo ánh xạ) → `automation/make_submission.py`
-   → `submissions/vNN/` + README → **push ngay** → gửi user; user nộp portal và báo điểm → ghi `EXPERIMENT_LOG.md`.
+1. **Thước đo cố định trước khi sửa**: public gốc (`public_gt.jsonl`), train, paraphrase public k=0 (dev) / k=1,2
+   (held-out), paraphrase train (held-out), biến đổi dữ liệu (đổi tên cột, README trắng). Chấm bằng `src/score.py`.
+2. **Phân tích lỗi chỉ trên dev** (train + paraphrase k=0 public), theo nhóm (ánh xạ, đọc câu, toolkit, abstain).
+3. **Sửa bằng cơ chế chung** (prompt, ví dụ truy hồi, kiểm tra, toolkit đã kiểm) + test; không mẫu theo câu / DN.
+4. Ước lượng offline trên đầu ra đã có khi được; preflight; chạy Kaggle; **giữ khi held-out cải thiện** và thời gian
+   ước lượng trên 2×5090 ≤ 6 h; ghi `EXPERIMENT_LOG.md` (kể cả kết quả âm).
+5. File nộp: `automation/make_submission.py` → `submissions/vNN/` + README → push → báo user.
 
 ## 6. Nhiễu của điểm public
 
@@ -101,6 +94,6 @@ Train LOO (0.98–0.99) **không còn dự báo** điểm public (0.63–0.69). 
 ## 7. Chuyển khung chat
 
 - Trước khi đóng: commit + push mọi thứ; chép job / script khỏi scratch vào repo (`automation/jobs/`); cập nhật
-  `handoff/STATUS.md`, `EXPERIMENT_LOG.md`, ba PDF bàn giao (`handoff/0[1-3]_*.pdf`), `handoff/environment_summary.pdf`;
+  `handoff/STATUS.md`, `EXPERIMENT_LOG.md`, ba PDF bàn giao (`handoff/01_*.pdf`, `02_*.pdf`, `03_HANDOFF.pdf`), `handoff/environment_summary.pdf`;
   tắt routine tự chạy.
 - Khung mới: đọc `READING_GUIDE.md` → `CLAUDE.md` → `handoff/STATUS.md`; xin token; tải lại output kernel đang chạy.

@@ -645,6 +645,7 @@ def load_biz(cache_dir, split_dir, bid):
 def select_subset(qs, subset):
     byb = defaultdict(list)
     for q in sorted(qs, key=lambda q: q["id"]): byb[q["business_id"]].append(q)
+    if not byb: return []
     per = max(1, subset // len(byb)); return [q for b in sorted(byb) for q in byb[b][:per]]
 
 

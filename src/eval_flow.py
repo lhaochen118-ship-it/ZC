@@ -6,7 +6,7 @@ one), the shared calendar; then agent.py --flow hybrid on it. Scoring is offline
 against its original question's reference answer).
 
 Usage: eval_flow.py <split: public_test|train dir> <out> --sets quick400[,pub_full,...] [--para DIR] [-- agent flags...]
-  --para DIR: holds para_pub.jsonl / para_train.jsonl (src/paraphrase_llm.py; Kaggle: <acc>/zc-para)"""
+  --para DIR: holds para_pub.jsonl / para_train.jsonl (src/paraphrase_llm.py; Kaggle: <acc>/zc-para; else $ZC_PARA_DIR)"""
 import os, sys, json, glob, random, shutil, subprocess
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -38,7 +38,8 @@ def build(sets, out_split, split_hint, para_dir):
             if l.strip(): q = json.loads(l); Q[q["id"]] = q; src[q["business_id"]] = sp
     para = {}
     for f in ("para_pub.jsonl", "para_train.jsonl"):
-        p = os.path.join(para_dir, f) if para_dir else ""
+        d = para_dir or os.environ.get("ZC_PARA_DIR", "")                # local runs (preflight smoke): ZC_PARA_DIR
+        p = os.path.join(d, f) if d else ""
         if not (p and os.path.isfile(p)):
             p = next(iter(sorted(glob.glob("/kaggle/input/**/" + f, recursive=True))), "")
         if p:
@@ -82,6 +83,7 @@ def main():
     rest = [x for j, x in enumerate(argv[2:]) if x not in ("--sets", "--para") and (j == 0 or argv[2:][j - 1] not in ("--sets", "--para"))]
     sp = os.path.join(out, "eval_split")
     n = build(sets, sp, split, para)
+    if not n: sys.exit(f"eval_flow: no question of {sets} has a text here (paraphrase sets need --para / $ZC_PARA_DIR / a zc-para dataset)")
     if os.environ.get("ZC_SMOKE") == "1" and "--subset" not in extra: extra += ["--subset", "16"]
     cmd = [sys.executable, os.path.join(HERE, "agent.py"), sp, os.path.join(out, "run")] + rest + extra
     rc = subprocess.run(cmd).returncode

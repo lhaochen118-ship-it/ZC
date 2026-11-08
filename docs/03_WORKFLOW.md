@@ -74,7 +74,8 @@ và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
 
 ## 5. Vòng lặp hiện tại (từ 08/11: LLM-first, đo bằng held-out)
 
-User chốt (08/11): không luật if / else sinh code mà không qua mô hình; LLM hiểu câu, phân tích schema, sinh code; code
+User chốt (08/11): hybrid — cấm luật sinh thẳng code / đáp án không qua mô hình; được dùng luật tổng quát (ý định, schema,
+làm sạch câu, toolkit, kiểm tra) làm ngữ cảnh cho Agent; LLM hiểu câu, phân tích schema, sinh code; code
 tính toán và kiểm tra; abstain theo logic + độ tin cậy (`handoff/03_HANDOFF.md` §2). Vòng lặp:
 
 1. **Thước đo cố định trước khi sửa**: public gốc (`public_gt.jsonl`), train, paraphrase public k=0 (dev) / k=1,2

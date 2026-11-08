@@ -99,6 +99,6 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 **Thất bại / cần tránh**
 
 - **Tối ưu trên tập trong mẫu**: viết luật tới 100 % public mà không có thước đo held-out sớm → hệ khớp public, yếu trên
-  cách hỏi mới. User đã yêu cầu bỏ luật sinh code (PDF 3 §2.1).
+  cách hỏi mới. User yêu cầu: luật không sinh thẳng đáp án, chỉ hỗ trợ Agent (PDF 3 §2.1).
 - Tin điểm train / một lần nộp portal để chọn bản (portal nhiễu ±0.03, đáp án portal từng đổi).
 - Trả lời user dài và quá lạc quan: user cần câu trả lời ngắn, trung thực về giới hạn (ví dụ "100 % là trong mẫu").

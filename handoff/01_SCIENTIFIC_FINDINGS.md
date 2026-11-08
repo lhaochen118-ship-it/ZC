@@ -74,7 +74,7 @@ Stage 1.5: luật đọc câu viết lại đúng 90 % (train) / 84 % (public he
 
 1. **Điểm 1.000 của đường luật là trong mẫu.** Các mẫu `qparse` / `automap` được viết từ lỗi trên train và public. Trên
    cách hỏi mới, luật một mình chỉ ~0.67 (train) và ~0.51 (public). Đây là lý do user quyết định chuyển sang LLM-first
-   (PDF 3 §2.1): luật if / else không tổng quát cho private.
+   (PDF 3 §2.1): luật trả lời thẳng không tổng quát cho private; luật chỉ còn hỗ trợ Agent.
 2. **Train không dự báo public** ở đường LLM (0.99 vs 0.63–0.69 trên portal ở v13–v20): ngành mới, quy ước dữ liệu mới,
    từ địa phương. Sau khi có toolkit ngành + kiểm tra mới: 0.92.
 3. **Điểm portal không so được giữa các đợt**: v23 = 0.87 rồi file lai X2 (v23 + 6 câu) = 0.756 → đáp án / tập chấm portal

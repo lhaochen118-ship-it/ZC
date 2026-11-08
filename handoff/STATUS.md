@@ -5,9 +5,10 @@
 
 ## Quyết định mới nhất (user, 08/11)
 
-**Chuyển sang LLM-first**: mọi câu đi qua mô hình (hiểu câu → sinh code → chạy → kiểm tra → trả lời / abstain). Không
-luật if / else sinh code mà không dùng mô hình. Chấp nhận public giảm (~0.92–0.95) để tổng quát hơn. Chi tiết:
-`handoff/03_HANDOFF.md` §2, §5.
+**Hybrid framework**: mọi câu đi qua mô hình (hiểu câu → sinh code → chạy → kiểm tra → trả lời / abstain). Cấm luật
+sinh thẳng code / đáp án không qua mô hình; **được** dùng luật tổng quát để nhận diện ý định, đọc data, dựng schema
+(`automap`), làm sạch câu, toolkit, few-shot, kiểm tra — làm ngữ cảnh / gợi ý cho Agent. Chấp nhận public giảm
+(~0.92–0.95) để tổng quát hơn. Chi tiết: `handoff/03_HANDOFF.md` §2.1, §5.
 
 ## Hiện có
 
@@ -16,7 +17,7 @@ luật if / else sinh code mà không dùng mô hình. Chấp nhận public gi�
 | Luồng nộp hiện tại `src/predict_flow.py` | rule-first (luật → stage 1.5 → LLM) — **sẽ thay** |
 | Đường LLM `src/agent.py` + `pipeline.py` + `consensus.py` | v28: public 0.921, train 0.9897 |
 | Toolkit `src/dm.py`, `src/industry.py`; kiểm tra `src/canon.py` | giữ (phần "tính toán" + "kiểm tra" của khung mới) |
-| Luật `src/rules_first.py`, `qparse.py`, `automap.py`, `qnorm.py` | train 3000 / 3000, public 1000 / 1000 trong mẫu; paraphrase held-out yếu → chỉ còn làm ví dụ / gợi ý |
+| Luật `src/rules_first.py`, `qparse.py`, `automap.py`, `qnorm.py` | train 3000 / 3000, public 1000 / 1000 trong mẫu; paraphrase held-out yếu → không trả lời thẳng nữa; `automap`, `qnorm`, phần nhận diện ý định của `qparse` giữ làm ngữ cảnh / gợi ý cho Agent |
 
 | Đo | Kết quả |
 |---|---|
@@ -34,5 +35,5 @@ L4: quynhtran35, phatle1578 (chưa dùng tuần W46), yuan1103 (~15 h đã dùng
 ## Việc tiếp theo
 
 1. Đo nền LLM-only trên held-out (paraphrase public / train) — `03_HANDOFF.md` §5.2.
-2. Viết luồng LLM-first mới, test, preflight, chạy Kaggle, so held-out với v34.
+2. Viết luồng hybrid mới (Agent sinh code mọi câu, luật làm ngữ cảnh), test, preflight, chạy Kaggle, so held-out với v34.
 3. File nộp + Docker mới; **user** build và nộp trước **16/11/2026 23:59 GMT+7**.

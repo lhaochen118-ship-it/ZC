@@ -38,7 +38,7 @@ Các `handoff/*.md` và `docs/03_WORKFLOW.md` là nguồn của PDF cùng tên: 
 4. `src/dm.py`, `src/industry.py` — toolkit nghiệp vụ (mọi định nghĩa rulebook), `CANON_DOC` cho prompt.
 5. `src/vote.py` — bỏ phiếu nhiều lần chạy + ngưỡng tin cậy; `src/score.py`, `src/report.py` — chấm.
 
-**Đường luật (sẽ bỏ khỏi luồng sinh đáp án; dùng làm ví dụ / gợi ý)**
+**Đường luật (không trả lời thẳng nữa; `automap`, `qnorm`, nhận diện ý định giữ làm ngữ cảnh cho Agent)**
 `src/rules_first.py` (stage 1), `src/automap.py` (ánh xạ theo luật), `src/qnorm.py` (làm sạch câu), `src/qparse.py`
 (mẫu câu → chương trình), `src/canon_llm.py` (stage 1.5), `src/predict_flow.py` (luồng nộp hiện tại), `src/merge_sub.py`.
 
@@ -53,13 +53,14 @@ v30 luật), `goldkey/devset.py` (37 câu đã kiểm, chỉ chấm).
 
 1. Xin token Kaggle; tải dữ liệu + ingest; nhận `public_gt.jsonl` (`score_1.jsonl`) từ user nếu mất.
 2. Đo nền LLM-only trên paraphrase held-out (chưa từng đo).
-3. Viết luồng LLM-first mới theo bảng khung của user; test, preflight, chạy Kaggle; giữ khi held-out ≥ v34 (0.602) và
+3. Viết luồng hybrid mới theo `handoff/03_HANDOFF.md` §2.1 (Agent sinh code mọi câu, luật chỉ làm ngữ cảnh); test, preflight, chạy Kaggle; giữ khi held-out ≥ v34 (0.602) và
    thời gian ≤ 6 h trên 2×5090.
 4. File nộp + Docker; user build và nộp trước 16/11/2026 23:59 GMT+7.
 
 ## 5. Không được làm
 
-- Không luật if / else sinh code / đáp án mà không qua mô hình (user, 08/11).
+- Không luật sinh thẳng code / đáp án mà không qua mô hình (user, 08/11). Luật tổng quát làm ngữ cảnh / gợi ý (ý định,
+  schema, làm sạch câu, toolkit, kiểm tra) thì **được** — `handoff/03_HANDOFF.md` §2.1.
 - Không fix theo id DN / câu; không đưa đáp án public (kể cả `goldkey/devset.py`) vào `src/` hay prompt; không train trên test.
 - Không đưa token vào code, commit, prompt hay báo cáo; không đụng kernel không phải `zc-*`.
 - Không đẩy kernel khi chưa `PREFLIGHT OK`; không `pkill -f` theo mẫu có trong chính lệnh.

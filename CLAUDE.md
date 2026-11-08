@@ -4,10 +4,13 @@ Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3
 **Khung chat mới: đọc `READING_GUIDE.md` trước** (bàn giao: `handoff/STATUS.md`, `handoff/03_HANDOFF.pdf`,
 `handoff/01_SCIENTIFIC_FINDINGS.pdf`, `handoff/02_ENGINEERING_OPS_LESSONS.pdf`, `handoff/environment_summary.pdf`).
 
-**Quyết định mới nhất (user, 08/11): LLM-first.** LLM hiểu câu, phân tích schema (+ code), diễn giải rulebook (+ toolkit),
-sinh SQL / Python; code tính toán và kiểm tra; abstain theo logic + độ tin cậy. **Tuyệt đối không luật if / else viết sẵn
-sinh code / đáp án mà không dùng mô hình.** Luồng nộp hiện tại (`src/predict_flow.py`, rule-first: `rules_first.py` →
-`canon_llm.py` → `agent.py`) phải được thay. Đo bằng held-out: paraphrase public k=1,2 và paraphrase train
+**Quyết định mới nhất (user, 08/11): hybrid framework = AI Agent sinh code + luật tổng quát hỗ trợ.** Cấm hard code
+**answer**: luật sinh thẳng code Python / đáp án 100 % mà không qua mô hình. Được hard code **logic**: quy tắc tổng quát
+nhận diện ý định câu hỏi, đọc data, viết schema (`ingest`, `automap`; Agent viết thêm mô tả schema khi cần), toolkit
+nghiệp vụ (`dm`, `industry`), làm sạch câu, ví dụ few-shot, kiểm tra bằng code — để Agent sinh code nhanh / chính xác hơn.
+Code trả lời của **mọi** câu do mô hình sinh; chương trình luật (`qparse`) chỉ là gợi ý / kiểm chéo. Chi tiết:
+`handoff/03_HANDOFF.md` §2.1. Luồng nộp hiện tại (`src/predict_flow.py`, stage 1 luật trả lời thẳng → `canon_llm.py` →
+`agent.py`) phải được thay. Đo bằng held-out: paraphrase public k=1,2 và paraphrase train
 (`src/paraphrase_llm.py`, `eval_split.py --perturb-q para:`, `stress_flow.py --modes para:`); chỉ phân tích lỗi trên
 k=0 public và train. Mốc so sánh: v34 held-out public 0.602; v28 (LLM) public gốc 0.921.
 

@@ -14,7 +14,8 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 - Hai đường đã xây: **đường LLM** (`src/agent.py`: Qwen3.5-9B ánh xạ dữ liệu theo DN + sinh chương trình trên toolkit
   `dm` / `industry`, bỏ phiếu, đồng thuận ánh xạ; v28 public 0.921) và **đường luật** (`src/rules_first.py`; public
   1000 / 1000 trong mẫu, yếu trên cách hỏi mới). Luồng nộp hiện tại `src/predict_flow.py` là rule-first.
-- **User chốt 08/11: chuyển sang LLM-first** (không luật sinh code mà không qua mô hình). Việc tiếp theo:
+- **User chốt 08/11: hybrid framework** — Agent sinh code cho mọi câu; luật tổng quát chỉ hỗ trợ (ý định, schema,
+  toolkit, kiểm tra), không sinh thẳng đáp án. Việc tiếp theo:
   `handoff/03_HANDOFF.pdf`; trạng thái sống: `handoff/STATUS.md`; cách đọc repo: `READING_GUIDE.md`.
 
 ## Đọc theo thứ tự

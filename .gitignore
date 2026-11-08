@@ -26,3 +26,4 @@ handoff/fonts/
 training/data/out/*.jsonl
 training/data/out/d3/
 training/data/out/sft/
+training/data/out/r[0-9]*/

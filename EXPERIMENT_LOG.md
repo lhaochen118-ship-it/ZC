@@ -890,3 +890,34 @@ code (`quynhtran35/zc-evalbase-1`, DP 4). quick400 chứa 150 câu pub_full, 150
 - Ngân sách bản cuối (QĐ16: ≤ 4.5 h / phiên): ≈ 30M token / phiên ở tốc độ này (F1 1 epoch ~25M token ≈ 3.7 h).
 - Lỗi preflight QĐ4 (job chỉ có `pub_ho`: smoke CPU không có văn bản paraphrase → 0 câu → ZeroDivisionError) → sửa
   `eval_flow` (`$ZC_PARA_DIR`, thoát rõ khi 0 câu), `select_subset`; job QĐ4 chạy `quick400,pub_ho` (lặp quick400 để đo nhiễu).
+
+## Entry 41 — 2026-11-08: WP6 vòng 2 → QĐ6 (D3 không giúp ở ngân sách cố định); nhiễu đo lớn; QĐ4 nửa đầu; lỗi chia GPU
+
+Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi chú; code / cấu hình đánh giá như vòng 1):
+
+| Nhánh | quick400 | pub_full (150) | pub_k0 (150) | **pub_ho (1373)** | tr_ho (100) |
+|---|---|---|---|---|---|
+| A1 (vòng 1, D1) | **0.7775** | 0.840 | **0.600** | 0.531 | 0.95 |
+| B3S (self) | 0.755 | 0.820 | 0.567 | 0.528 | 0.94 |
+| B3Q35 | 0.7225 | 0.780 | 0.553 | 0.4975 | 0.89 |
+| B3OSS | 0.7525 | 0.800 | 0.580 | 0.515 | 0.94 |
+| B3G31 | 0.7475 | 0.833 | 0.527 | 0.527 | 0.95 |
+| B3Q27 | 0.720 | 0.760 | 0.547 | 0.530 | 0.92 |
+| B3MIX (5 thầy) | 0.745 | 0.773 | 0.580 | 0.538 | 0.95 |
+| A1R64 (D1, r 64) | 0.7175 | 0.787 | 0.520 | 0.530 | 0.91 |
+| B3MIX64 | 0.700 | 0.713 | 0.533 | 0.493 | 0.93 |
+| *Qwen gốc, prompt full (QĐ4 job)* | 0.740 | 0.833 | 0.533 | **0.541** | 0.91 |
+
+- **QĐ6:** không nhánh D3 nào hơn A1 (D1 thuần) → thay một nửa D1 bằng câu tổng hợp làm giảm 2–5 điểm ở cùng ngân sách; trong các
+  thầy, self / OSS / mix tốt nhất trên quick400, mix tốt nhất trên pub_ho. D3 không dùng ở tỉ lệ 50 %.
+- **Nhiễu:** A1R64 (≈ A1, chỉ khác r) thấp hơn A1 6 điểm quick400; cùng mô hình gốc đo hai lần lệch ~1.5–2 điểm (0.755 / 0.740;
+  0.720 / 0.700). Trên pub_ho (1373 câu, ổn định hơn) mọi nhánh fine-tune 0.49–0.54, **ngang mô hình gốc với prompt full 0.541**:
+  fine-tune 4M token trên prompt compact chưa cho lợi ích held-out chắc chắn; điểm quick400 0.7775 của A1 một phần là may.
+- Prompt full cho mô hình gốc: pub_ho 0.541 vs compact 0.516 (+2.5) → vòng 3 thử fine-tune trên prompt full.
+- **Vòng 3 (`synchan5704/zc-armsr3-1`, code chính + dữ liệu v2):** C1 / C1S (D1 v2, hai seed: đo phương sai huấn luyện), F1 (D1 v2
+  prompt full, max_len 4608, mb 2, đánh giá `configs/e0_full.json`), C1E2 (2 epoch). **QĐ9:** súp tuyến tính top-4 / top-8 nhánh
+  theo quick400 (`training/soup_job.py`, `nguyenhoa99/zc-soupr2b-1`).
+- **Lỗi tìm thấy (sửa `fd2b876`):** kernel nhiều job `--dp 4` chạy song song, mỗi job một GPU, và shard DP đặt
+  `CUDA_VISIBLE_DEVICES=0` tuyệt đối → job 2 cũng chạy trên GPU 0; hai súp dùng chung `/tmp/soup` (job sau xoá mô hình gộp của
+  job trước). Job đầu của `qd4gemma` vẫn hợp lệ (chạy 1 GPU).
+- Thêm biến thể `think` cho vòng 2 (`--variants direct,think`): mẫu vòng 2 (câu khó, ~15 %) suy nghĩ trước; chưa đo.

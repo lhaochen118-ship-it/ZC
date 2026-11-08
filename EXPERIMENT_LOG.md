@@ -780,3 +780,23 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   thử 108 → giữ 42 (2 DN, 22 họ hàm); bản 15k đang chạy. D3 bước 2: prompt thầy (`d3_teacher_prompts.py`, kèm kỳ đã quy ra
   ngày); job GPU `training/d3_job.py` (thầy viết câu → học trò đọc lại bằng luồng hybrid, 1 mẫu tham lam → giữ câu cùng đáp án).
 - WP8 bắt đầu: `src/confidence.py` (đặc trưng từ log, logistic numpy, ngưỡng θ tối đa PA chính xác, kiểm conformal), test PASS.
+
+## Entry 36 — 2026-11-08: WP1 smoke vòng 2 (`yuan1103/zc-smoke35b-1`) → QĐ1, QĐ3, QĐ16; WP1 xong
+
+| Cấu hình (chuỗi ~2.2k token, LoRA r 32 trên mô hình ngôn ngữ: 200 module, 10 loại, 80.2M tham số học) | micro-batch lớn nhất | VRAM đỉnh / GPU | tok/s |
+|---|---|---|---|
+| HF + PEFT, 1 GPU (gỡ torchao 0.10) | 1 (mb 2, 4 hết bộ nhớ) | 21.07 GB | 587 |
+| Unsloth, 1 GPU | 4 | 18.84 GB | 801–844 |
+| FSDP2 (2 GPU) | 4 (mb 8 hết bộ nhớ) | 18.12 GB | 904–945 |
+| FSDP4 (4 GPU) | 8 | 18.04 GB | 2,023 |
+
+- **QĐ1:** Unsloth 1 GPU ≤ 21.5 GB → **4 nhánh / phiên** (3.2k tok/s mỗi phiên, hơn 2 × FSDP2 ≈ 1.9k). Bản cuối (WP7): FSDP4 mb 8.
+- **QĐ16:** nhánh < 1,200 tok/s → **ngân sách nhánh 4M token** (~80 phút / nhánh).
+- **QĐ3:** vLLM FP8, 50 câu: gộp 16.3 s (3.06 câu / s, nạp 279 s, KV 239,712), `--lora` 19.2 s (2.6 câu / s, nạp 346 s, KV 213,312)
+  → LoRA chậm 18 % > 10 % → **gộp trọng số + FP8** (`training/merge.py`: 200 tensor trong 23 s). Cả ba (gốc / gộp / LoRA) 50 / 50 trùng
+  nhãn trên câu train (dễ); loss tham chiếu (token đáp án) của mô hình gốc trên 4 bản ghi 0.150 → 0.093 sau 8 bước Unsloth,
+  → 0.0085 sau 30 bước FSDP2 (loss TRL in ra 0.029 là chuẩn hoá khác, không dùng).
+- Khởi chạy (17:20–17:34 UTC, code chốt `bc7c1a3` cho WP3 qua preflight; job huấn luyện / D3 không qua preflight theo §11, đã
+  chạy thử CPU): WP3 `e0` (quick400 + pub_full), `e0think`, `s0` (Gemma 4 12B), `abfull`, `abgram`, `abnoind`, `abnoacc`; D3
+  `d3self` (9B tự viết), `d3qwen27`, `d3gemma31`, `d3qwen35a3b`, `d3gptoss`; WP6 vòng 1 `armsr1a` (A1 = D1, A2 = D1 + D2 + D2N,
+  A2T = A2 + D4T, A2T64 = A2T với r 64; 4M token / nhánh).

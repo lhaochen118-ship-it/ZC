@@ -39,17 +39,17 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP | Trạng thái | Kết quả / commit / kernel |
 |---|---|---|
 | WP0 chuẩn bị | **xong** 08/11 | token 9 acc (8 có 4×L4: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99, yuan1103, synchan5704, anderson1202, loinguyentran; yeshenhi chỉ T4) — probe `zc-probe`; `score_1.jsonl` của user → `data/raw/public_gt.jsonl` (v30 1000/1000, v28 921 đúng / PA 0.852); cache ingest; `tests/splits/` (pub_full 1000, pub_k0 692, pub_ho 1373, tr_ho 1826, quick400 400, pub_noind 112, pub_noacc 1000); `eval_all.sh quick` train 3000/3000, public 1000/1000; wheels huấn luyện = output kernel public `yeshenhi/zc-train-wheels` (`wheels_train/`: transformers 5.17.0, trl 1.15.0; ảnh GPU Kaggle + vLLM 0.32 đã có torch 2.13.0, peft 0.21.2, accelerate 1.15.0, datasets 4.8.5, xgrammar 0.2.8, duckdb 1.3.2, python 3.13; `wheels_unsloth/` tuỳ chọn) |
-| WP1 chạy thử GPU (G1) | **đang** | vòng 1 `yuan1103/zc-smoke35-1`: Unsloth 1 GPU mb 4 đỉnh 18.84 GB, 844 tok/s/L4 (QĐ1 → 4 nhánh/phiên); HF/FSDP hỏng vì torchao 0.10 (đã sửa); vòng 2 `zc-smoke35b-1` + suy luận `zc-smoke35i-1` (ngữ pháp, thầy) đang chạy — kết quả: `<scratch>/runs/smoke35*/…_out/results/smoke*/results.json` |
-| WP2 luồng hybrid v1 | **đang** | module + test CPU xong (commit 804a43c và sau): api_spec, grammar, hints, prompting, retrieval, shopctx, tools, precheck, hybrid (`agent.py --flow hybrid`), predict_flow mới, eval_flow, score_sets; preflight 7 job WP3 đang chạy |
-| WP3 E0 / S0 / A/B (G2–G5) | chưa | |
-| WP4 nhà máy dữ liệu (+ G6, G7) | chưa | |
-| WP5 D3 theo thầy (G8–G11) | chưa | |
-| WP6 nhánh fine-tune (G12–G19) | chưa | |
+| WP1 chạy thử GPU (G1) | **xong** 08/11 | QĐ1 Unsloth 1 GPU (mb 4, 18.84 GB, ~0.8k tok/s) → 4 nhánh/phiên; QĐ2 thầy Qwen3.6-27B-FP8 / Gemma 4 31B fp8 chạy TP2; QĐ3 gộp + FP8 (LoRA chậm 18 %); QĐ12 tắt ngữ pháp (chậm 32×); QĐ16 nhánh 4M token; FSDP4 mb 8 2,023 tok/s cho bản cuối — entry 34, 36 |
+| WP2 luồng hybrid v1 | **xong** 08/11 | module + test CPU; preflight OK cho 7 job WP3 (code chốt `bc7c1a3`, worktree `<scratch>/wt_v35`) |
+| WP3 E0 / S0 / A/B (G2–G5) | **đang** | kernel 17:22 UTC: quynhtran35/zc-e0-1, zc-e0think-1; quynhle07/zc-s0-1, zc-abfull-1; nguyenhoa99/zc-abgram-1, zc-abnoind-1; synchan5704/zc-abnoacc-1 — chấm: `tests/score_sets.py <out>/results/<job>/run` |
+| WP4 nhà máy dữ liệu (+ G6, G7) | **đang** | D1 2119, D2 3816, D2N 5418, D4T 2000, D3 15k chương trình + prompt (dữ liệu ngoài git: `training/data/out/`, tái tạo bằng `training/data/*.py`); G6 `yuan1103/zc-d3self-1` đang chạy; DV chưa |
+| WP5 D3 theo thầy (G8–G11) | **đang** | anderson1202/zc-d3qwen27-1, zc-d3gemma31-1; loinguyentran/zc-d3qwen35a3b-1, zc-d3gptoss-1 |
+| WP6 nhánh fine-tune (G12–G19) | **đang** | vòng 1a synchan5704/zc-armsr1a-1 (A1, A2, A2T, A2T64; Unsloth 4M token, gộp, quick400) |
 | WP7 huấn luyện đầy đủ (G20–G21) | chưa | |
-| WP8 tin cậy / bộ kiểm / embedding (G22–G24) | chưa | |
+| WP8 tin cậy / bộ kiểm / embedding (G22–G24) | **đang** | `src/confidence.py` + test (chưa hiệu chỉnh: chờ log E0) |
 | WP9 sửa lỗi tới public = 1.0 (G25) | chưa | |
 | WP10 đánh giá cuối (G27–G29) | chưa | |
-| WP11 Docker + nộp | chưa | |
+| WP11 Docker + nộp | **đang** | `docker/predict.sh`, `Dockerfile` đã chuyển sang luồng hybrid (`configs/flow_final.json` chưa có) |
 | WP12 DuckDB | chưa | |
 
 ## Kaggle

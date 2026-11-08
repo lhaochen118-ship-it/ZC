@@ -1056,6 +1056,10 @@ class Shop(industry.IndustryMetrics):
     def debt_aging(self, d, bins=((0, 7), (8, 15), (16, None))):
         f = self._debt_frame(d); s = f["owed"]; age = (_ts(d) - pd.to_datetime(f["order_date"])).dt.days.values
         out = []
+        if bins and all(isinstance(b, (int, float)) for b in bins):      # flat edges: [7, 15] (upper bounds) or [0, 8, 16] (lower)
+            e = [int(b) for b in bins]
+            lows = e if e[0] == 0 else [0] + [x + 1 for x in e]
+            bins = [(lo, (lows[i + 1] - 1) if i + 1 < len(lows) else None) for i, lo in enumerate(lows)]
         for lo, hi in bins:
             m = (age >= lo) & ((age <= hi) if hi is not None else True); out.append(money(s.values[m].sum()))
         return out

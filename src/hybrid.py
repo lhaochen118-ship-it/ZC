@@ -100,13 +100,14 @@ class HybridPipeline(pipeline.Pipeline):
             out = prompting.parse_output(text)
             turn = {"text": text[-1200:], "ntok": ntok, "lp": lp, "code": out["code"], "escape": out["escape"], "plan": out["plan"]}
             smp["turns"].append(turn); conv.append({"role": "assistant", "content": text})
-            iss = pre.precheck(out["code"], self.spec, st["hints"], ctx.entity_values, out["escape"], q["as_of_date"])
+            code = out["code"]
+            if out["escape"] == "sql" and code is not None:          # the query becomes a program first (a SQL text is no Python)
+                code = sql_program(code, (st["hints"] or {}).get("answer_type"))
+            iss = pre.precheck(code, self.spec, st["hints"], ctx.entity_values, out["escape"], q["as_of_date"])
             turn["precheck"] = [f"{i['level']}:{i['rule']}:{i['msg'][:120]}" for i in iss]
             if pre.errors(iss):
                 self.stats["precheck_error"] += 1
                 return retry("The program has problems:\n" + pre.message(iss))
-            code = out["code"]
-            if out["escape"] == "sql": code = sql_program(code)
             key = (q["id"], f"{j}.{len(smp['turns'])}")
             self.cpu.submit(agent.run_code, (key, st["b"], q["as_of_date"], code, a.timeout, st["can"]["path"]), a.timeout, on_exec)
         def on_exec(r):
@@ -193,6 +194,7 @@ def repair_hint(err, spec):
     return ""
 
 
-def sql_program(sql):
-    """the <sql> escape (WP12): a DuckDB query over the canonical tables as a program."""
-    return "ANSWER = sql_answer(" + json.dumps(sql) + ")"
+def sql_program(sql, expected_type=None):
+    """the <sql> escape (WP12): a DuckDB query over the canonical tables as a program (src/sqlesc.py); the hints' answer type
+    is the default type of the result (the query's answer column named after a type overrides it)."""
+    return "ANSWER = sql_answer(" + json.dumps(sql, ensure_ascii=False) + (", " + json.dumps(expected_type) if expected_type else "") + ")"

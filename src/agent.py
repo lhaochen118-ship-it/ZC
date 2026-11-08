@@ -342,6 +342,8 @@ def _namespace(bid, as_of=None, canon_path=None):
                 import tools
                 g.update(tools.bind_tools(shop, as_of, _CTX.get("rulebook", ""), can.get("data_end")))
             except Exception as e: print(f"[tools] unavailable: {type(e).__name__}: {e}", flush=True)
+            import sqlesc                                              # the <sql> escape (WP12): DuckDB over C + raw tables, read-only
+            g["sql_answer"] = sqlesc.make_sql_answer(can["C"], biz.tables)
         else: g["C"] = {k: v.copy() for k, v in can["C"].items()}
         g["NOTES"] = can.get("notes", "")
     dm._TOOLKIT_NS.clear(); dm._TOOLKIT_NS.update(g)                  # `import datamate` in a program -> this namespace

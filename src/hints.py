@@ -49,6 +49,17 @@ class ShopVocab:
         has_pm = "payment_method" in O.columns and O["payment_method"].notna().any()
         self.tables["channel"] = {k: v for k, v in qparse.CHAN_WORDS} if has_ch else {}
         self.tables["payment"] = {k: v for k, v in qparse.PAY_WORDS} if has_pm else {}
+        # units of measure of the shop's data (lines / items / conversions): base units first ('gói', 'ly', 'đĩa', 'kg')
+        base, units = set(), set()
+        for tab, cols in (("lines", ("base_unit", "unit")), ("items", ("base_unit", "unit")), ("conversions", ("base_unit", "unit"))):
+            T = shop.C.get(tab)
+            if T is None: continue
+            for c in cols:
+                if c in T.columns:
+                    vals = {str(x).strip() for x in T[c].dropna().unique() if str(x).strip() and len(str(x)) <= 20}
+                    (base if c == "base_unit" else units).update(vals)
+        self.base_units = {_k(x) for x in base}
+        self.tables["unit"] = {_k(x): x for x in sorted(units | base) if _k(x)}
 
 
 def _spans(tk, table, min_len=3):
@@ -76,6 +87,11 @@ def link_entities(text, vocab, raw=None):
             how = "exact" if str(v).lower() in raw_l else ("no_accent" if k in raw_k else "cleaned")
             add(s, e, kind, v, how)
     for s, e, k, v in _spans(tk, vocab.codes, 4): add(s, e, "item", v, "code")
+    # a unit of measure counted by the question ('bán được mấy gói', 'bao nhiêu ly', 'tính theo thùng'): only after a counting word
+    for s, e, k, v in _spans(tk, getattr(vocab, "tables", {}).get("unit") or {}, 2):
+        if re.search(r"(?:bao nhieu|bnhiu|\bbn|\bmay|\bso|\btheo|\bbang|tong cong|tat ca)(?: \S+)? $", tk[:s]):
+            kd = "base_unit" if k in getattr(vocab, "base_units", set()) else "unit"
+            if not any(x["kind"] == kd and x["data_value"] == v for x in ents): add(s, e, kd, v, "word")
     for s, e, k, v in _spans(dm.regional_key(text), vocab.items_reg, 4):        # regional words ('cá tràu' = 'cá lóc')
         if not any(x["data_value"] == v for x in ents): add(s, e, "item", v, "regional")
     # model lines / name prefixes: 'iPhone 16' names every 'iPhone 16 ... GB' item

@@ -800,3 +800,38 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   chạy thử CPU): WP3 `e0` (quick400 + pub_full), `e0think`, `s0` (Gemma 4 12B), `abfull`, `abgram`, `abnoind`, `abnoacc`; D3
   `d3self` (9B tự viết), `d3qwen27`, `d3gemma31`, `d3qwen35a3b`, `d3gptoss`; WP6 vòng 1 `armsr1a` (A1 = D1, A2 = D1 + D2 + D2N,
   A2T = A2 + D4T, A2T64 = A2T với r 64; 4M token / nhánh).
+
+## Entry 37 — 2026-11-08: WP3 kết quả (E0 / S0 / A/B), QĐ5, QĐ11, QĐ12; D3 hai thầy đầu; WP6 vòng 1 huấn luyện xong
+
+Luồng hybrid, mô hình gốc, cùng code `bc7c1a3` (qua preflight), 4×L4 DP 4. PA theo tập (`tests/score_sets.py`; quick400 là
+mốc chính, các tập khác là phần giao với các câu đã chạy):
+
+| Run | quick400 | pub_full | pub_k0 | tr_ho | pub_noind | ghi chú |
+|---|---|---|---|---|---|---|
+| E0 Qwen3.5-9B, prompt compact | 0.720 | 0.864 (1000 câu: 898 / 34 / 68) | 0.493 | 0.940 | 0.679 | v28 public gốc 0.852 |
+| E0 think | 0.765 | 0.893 (150) | 0.540 | 0.910 | — | chậm ~1.9× |
+| A/B prompt full | **0.755** | 0.887 (150) | 0.520 | 0.910 | — | |
+| S0 Gemma 4 12B-it, compact | **0.7675** | 0.873 (150) | 0.553 | 0.930 | — | KV 75k token |
+| A/B `pub_noacc` (câu bỏ dấu) | — | 0.824 (1000) | | | | |
+| A/B `pub_noind` (ẩn hàm ngành) | — | | | | **−0.0625** (26 / 33 / 53) | gần như không dùng nhánh `<python>` |
+| A/B ngữ pháp nhẹ | huỷ sau 2.6 h | | | | | quá chậm (QĐ12) |
+
+- **QĐ5:** prompt compact thua full 3.5 điểm > 1.0 → với mô hình gốc dùng **full**. Mô hình fine-tune học đúng prompt nó
+  được huấn luyện (dữ liệu SFT đang ở compact); quyết định lại sau WP6 vòng 1.
+- **QĐ4 (chờ):** Gemma compact hơn Qwen compact 4.75 điểm nhưng chỉ hơn Qwen full 1.25 (< 2.0). Gemma 12B bf16 (24 GB) không
+  vừa 1 L4 khi LoRA → FSDP 2 GPU (2 nhánh / phiên) và chậm hơn ~1.3× mỗi token; giữ Qwen nếu bản fine-tune vòng 1 vượt Gemma gốc rõ.
+- **QĐ11:** truy hồi embedding (Qwen3-Embedding-0.6B) kém n-gram (public hit@4 0.729 vs 0.846; k=0 0.702 vs 0.818) → giữ n-gram.
+- **QĐ12:** ngữ pháp tắt (WP1: chậm 32×; bản nhẹ chạy > 2.6 h cho quick400 → huỷ).
+- Phân tích lỗi E0 (dev = pub_full + pub_k0, 1150 câu; `tests/analyze_run.py`): đúng 86.8 %, top sai do mẫu bất đồng 4.5 %,
+  đồng thuận sai 4.3 %, đúng nhưng bỏ (conf < 0.5) 4.1 %. Nhóm lỗi lặp: "bán được bao nhiêu gói / ly / đĩa" quên
+  `base_unit=` (13 / 16 sai: gợi ý không liên kết từ đơn vị), câu chủ quan / không ghi nhận vẫn trả lời dù gợi ý
+  `missing_data` đúng (mô hình gốc bỏ qua gợi ý), `debt_aging(..., bins=[7, 15])` lỗi kiểu (toolkit chỉ nhận cặp).
+- **D3:** 15k chương trình × 2 câu / thầy, lọc vòng lặp ngược bằng 9B. Tự viết (9B): giữ 17,882 / 34,505 (51.8 %);
+  Qwen3.6-35B-A3B: giữ 19,607 / 30,445 (64.4 %) — tỉ lệ giữ cao hơn ở mọi kiểu đáp án. Loại thêm chương trình suy biến (cùng
+  phần tử hai lần trong một list, vd. `increasing([month(2026, 6), month(2026, 6), ...])`: câu không thể nói đúng; boolean
+  vòng lặp ngược khớp ngẫu nhiên 50 %): còn 17,670 / 19,345 bản ghi. Qwen3.6-27B, Gemma 4 31B, gpt-oss-120b đang chạy.
+- **WP6 vòng 1 huấn luyện** (`synchan5704/zc-armsr1a-1`, Unsloth 1 GPU / nhánh, 4M token ≈ 1.87k bản ghi ≈ 30 bước batch 64,
+  ~80 phút, 876–915 tok/s, VRAM 18.9–19.8 GB): A1 = D1, A2 = D1 + D2 + D2N, A2T = A2 + D4T, A2T64 = A2T r 64 / α 128;
+  loss tham chiếu (token đáp án) 0.22 → 0.0003–0.0014. Đánh giá trong kernel hỏng (4 bản gộp 19 GB làm /tmp chỉ đọc) → đánh giá
+  lại bằng vLLM `--lora` (`nguyenhoa99/zc-evalr1-1`: thư mục dataset tìm sai một cấp → sửa `adapters_root`, thử trên cây
+  /kaggle/input giả; chạy lại `zc-evalr1b-1`) + mốc gốc cùng cấu hình (`quynhtran35/zc-evalbase-1`, nhánh BASE, `--eval-dp 4`).

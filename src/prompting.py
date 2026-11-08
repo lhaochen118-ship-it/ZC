@@ -30,8 +30,9 @@ ANSWER = {"type": "<number|percent|string|date|boolean|list|table|unanswerable>"
 - If the toolkit cannot express the question, write <python> ... </python> instead of <code>: pandas over C (canonical
   tables) and T (raw tables) with the toolkit, ending with ANSWER = {...}."""
 
-OUTPUT_SQL = """- Or <sql> ... </sql>: one DuckDB SELECT over the canonical tables (orders, lines, items, purchases, ...) and the raw
-  tables; its first row / column is the answer."""
+OUTPUT_SQL = """- Or <sql> ... </sql>: one DuckDB SELECT over the canonical tables of # BUSINESS (orders, lines, ...; valid = completed
+  orders) and the raw tables (raw_<name>); its first column is the answer: name it after the answer type (AS number, AS percent,
+  AS date, AS string, AS list); several columns = a table."""
 
 VARIANT = {
     "direct": "",

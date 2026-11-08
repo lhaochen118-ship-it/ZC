@@ -4,7 +4,8 @@
 - a program that fails the precheck gets a repair turn and the repaired program is the one that runs;
 - the prompt carries the compact sections (# BUSINESS, # HINTS, # QUESTION) and no rule program;
 - --dp 2 (two processes with claims) answers every question once;
-- a tiny --budget still writes a line for every question (abstain when out of time).
+- a tiny --budget still writes a line for every question (abstain when out of time);
+- the <sql> escape (WP12) runs through precheck and DuckDB.
 Usage: test_flow_hybrid.py <train_split> <scratch>"""
 import os, sys, json, subprocess, shutil
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,6 +24,14 @@ def responder(conv):
     if h % 3 == 0:                                                      # an unknown function: precheck error -> repair turn
         return "<plan>x</plan>\n<code>\nANSWER = {\"type\": \"number\", \"answer\": revenu(month(2025, 1))}\n</code>"
     return "<plan>orders | month | -</plan>\n<code>\nANSWER = {\"type\": \"number\", \"answer\": 7}\n</code>"
+'''
+
+FAKE_SQL = r'''
+def responder(conv):
+    assert "<sql>" in conv[0]["content"], "the <sql> escape is not described in the system prompt"
+    if "The program has problems" in conv[-1]["content"] or "The program failed" in conv[-1]["content"]:
+        raise AssertionError("the SQL program was refused: " + conv[-1]["content"][:300])
+    return "<plan>orders | all | -</plan>\n<sql>\nSELECT COUNT(*) AS number FROM orders WHERE valid\n</sql>"
 '''
 
 
@@ -71,6 +80,12 @@ def main():
     check(out2, n, "dp2"); print("dp2: every question answered once")
     out3 = os.path.join(S, "o3"); run([split, out3] + base + ["--budget", "20"])
     check(out3, n, "budget"); print("budget: every question has a line")
+    fs = os.path.join(S, "fake_sql.py"); open(fs, "w").write(FAKE_SQL)              # WP12: <sql> -> precheck -> DuckDB -> answer
+    out4 = os.path.join(S, "o4"); run([split, out4] + [x if x != fake else fs for x in base] + ["--escape", "python,sql", "--subset", "6"])
+    _, logs4 = check(out4, len(agent.select_subset(qs, 6)), "sql")
+    sm = [s for r in logs4 for s in r["samples"]["samples"]]
+    assert sm and all(s["ok"] and s.get("escape") == "sql" and s["answer"]["type"] == "number" and s["answer"]["answer"] > 0 for s in sm), sm[:2]
+    print(f"sql: {len(sm)} samples answered through DuckDB")
     print("test_flow_hybrid PASS")
 
 

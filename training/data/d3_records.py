@@ -8,6 +8,19 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common
 
 
+def degenerate(program):
+    """a list literal holding the same element twice (e.g. increasing([month(2026, 6), month(2026, 6), ...])): the question
+    cannot say what the program computes, and a boolean round trip agrees by chance half of the time."""
+    import ast
+    try: tree = ast.parse(program)
+    except SyntaxError: return True
+    for n in ast.walk(tree):
+        if isinstance(n, (ast.List, ast.Tuple, ast.Set)):
+            d = [ast.dump(e) for e in n.elts]
+            if len(d) != len(set(d)): return True
+    return False
+
+
 def shop_records(args):
     split, cache, canon, bid, rows = args
     import retrieval
@@ -28,7 +41,7 @@ def main():
     a = ap.parse_args()
     from concurrent.futures import ProcessPoolExecutor
     t0 = time.time(); rows = []
-    for p in a.inputs.split(","): rows += [r for r in common.jl(p) if r.get("kept") and r["business_id"] not in common.TR_HO]
+    for p in a.inputs.split(","): rows += [r for r in common.jl(p) if r.get("kept") and r["business_id"] not in common.TR_HO and not degenerate(r["program"])]
     rng = random.Random(a.seed); rng.shuffle(rows)
     if a.max: rows = rows[:a.max]
     by = {}

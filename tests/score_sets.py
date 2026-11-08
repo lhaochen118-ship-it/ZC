@@ -40,7 +40,8 @@ def main():
         res, _ = score.score(ref, {i: sub[i] for i in ref}, by="type")
         secs = [logs[i].get("elapsed_s", 0) for i in ref if i in logs]
         stops = Counter((logs[i].get("samples") or {}).get("stop", "?") for i in ref if i in logs and isinstance(logs[i].get("samples"), dict))
-        table[s] = {"n": res["n"], "PA": round(res["PA"], 4), "correct": res["correct"], "wrong": res["wrong"], "abstain": res.get("abstain", 0),
+        table[s] = {"n": res.get("n", len(ref)), "PA": round(res.get("PA", 0.0), 4), "correct": res.get("correct", 0), "wrong": res.get("wrong", 0),
+                    "abstain": res.get("abstain", 0),
                     "s_per_q": round(sum(secs) / max(1, len(secs)), 2), "stops": dict(stops)}
     print(f"{'set':10s} {'n':>5s} {'PA':>7s} {'right':>6s} {'wrong':>6s} {'abst':>5s} {'s/q':>6s}  stops")
     for s, t in table.items():

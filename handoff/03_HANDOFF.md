@@ -84,7 +84,8 @@ Tải dữ liệu, ingest cache (lệnh: `environment_summary.pdf` §1).
 không `--confirm` (mô hình sinh code cho mọi câu, schema từ automap) trên `para_pub.jsonl` + public gốc + train; ghi PA,
 thời gian / câu, tỉ lệ abstain. So với luồng hiện tại (held-out public 0.602) và v28 (public 0.921).
 
-**Bước 3.** **Viết `src/predict_flow.py` mới (hybrid)** theo bảng §2.1:
+**Bước 3.** **Viết `src/predict_flow.py` mới (hybrid)** theo bảng §2.1; thiết kế chi tiết, tham khảo paper và kế hoạch
+thí nghiệm E0–E5: `docs/06_HYBRID_FRAMEWORK.md`. Tóm tắt:
 
 - Ánh xạ schema (được phép dùng luật, §2.1): `automap` (code) dựng schema chuẩn trước, kiểm bằng `canon.secondary_checks`;
   LLM viết ánh xạ / mô tả schema khi automap cảnh báo nặng hoặc thiếu; đồng thuận ánh xạ (`consensus.py`).

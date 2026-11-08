@@ -9,7 +9,8 @@ Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3
 nhận diện ý định câu hỏi, đọc data, viết schema (`ingest`, `automap`; Agent viết thêm mô tả schema khi cần), toolkit
 nghiệp vụ (`dm`, `industry`), làm sạch câu, ví dụ few-shot, kiểm tra bằng code — để Agent sinh code nhanh / chính xác hơn.
 Code trả lời của **mọi** câu do mô hình sinh; chương trình luật (`qparse`) chỉ là gợi ý / kiểm chéo. Chi tiết:
-`handoff/03_HANDOFF.md` §2.1. Luồng nộp hiện tại (`src/predict_flow.py`, stage 1 luật trả lời thẳng → `canon_llm.py` →
+`handoff/03_HANDOFF.md` §2.1; **thiết kế + tổng quan tài liệu + kế hoạch thí nghiệm: `docs/06_HYBRID_FRAMEWORK.md`**
+(luồng 8 bước, giao thức xử lý câu sai, điểm tin cậy + sinh lại, precheck, tool, mô hình phụ, chưng cất). Luồng nộp hiện tại (`src/predict_flow.py`, stage 1 luật trả lời thẳng → `canon_llm.py` →
 `agent.py`) phải được thay. Đo bằng held-out: paraphrase public k=1,2 và paraphrase train
 (`src/paraphrase_llm.py`, `eval_split.py --perturb-q para:`, `stress_flow.py --modes para:`); chỉ phân tích lỗi trên
 k=0 public và train. Mốc so sánh: v34 held-out public 0.602; v28 (LLM) public gốc 0.921.

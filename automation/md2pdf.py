@@ -30,9 +30,9 @@ p  { margin: 4px 0; }
 em { color: #444; }
 strong { color: #0b2c4a; }
 code { font-family: DejaVuMono, Courier, monospace; font-size: 8.3pt; background: #eef2f6; color: #9b1d1d; padding: 0 2px; }
-pre { font-family: DejaVuMono, Courier, monospace; font-size: 7.9pt; background: #f4f6f8; border: 1px solid #d5dde4;
+pre { font-family: DejaVu, Helvetica, sans-serif; font-size: 7.9pt; background: #f4f6f8; border: 1px solid #d5dde4;
       padding: 6px 8px; margin: 5px 0; -pdf-keep-with-next: false; }
-pre code { background: transparent; color: #12303f; padding: 0; }
+pre code { font-family: DejaVu, Helvetica, sans-serif; background: transparent; color: #12303f; padding: 0; }
 table { border-collapse: collapse; margin: 6px 0; width: 100%; }
 th { background: #0b3d6b; color: #ffffff; font-size: 8.4pt; padding: 4px 6px; border: 1px solid #0b3d6b; text-align: left; }
 td { font-size: 8.4pt; padding: 3px 6px; border: 1px solid #c3ccd4; vertical-align: top; }

@@ -695,3 +695,18 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   quát → fuzzy chỉ để gợi ý tên gần nhất, không tự chọn); chấm đáp án không fuzzy. Qwen đọc schema trước khi sinh code:
   `CANON_DOC` + card schema chuẩn C (kiểu, ví dụ giá trị) + README + rulebook + bảng thô ngoài C; chưa có data card bằng
   lời do Agent viết. Chi tiết `docs/06_HYBRID_FRAMEWORK.md` §2b.
+
+## Entry 29 — 2026-11-08: kiểm tra mọi giả định của kế hoạch (không GPU) — chi tiết `docs/08_MASTER_PLAN.md` §1
+
+- Mô hình (HF API + Kaggle API, đối chiếu tên + kích thước file): Qwen3.5-9B 9.65B (24 lớp linear attention + 8 full);
+  Gemma 4 12B-it 11.96B (vLLM 0.32 chạy, không LoRA serving); thầy Qwen3.6-27B-FP8 (`nsalzman/...`, 66/66 file),
+  Qwen3.6-35B-A3B-FP8 (`zerabytex/...`, 42/42), Gemma 4 31B-it (Google chính thức trên Kaggle), gpt-oss-120b / 20b
+  (`danielhanchen/...`); tất cả Apache-2.0, public trước 01/10/2026. Loại Qwen3.5-122B-GPTQ (thiếu VRAM KV trên 4×L4).
+- Thư viện: vLLM 0.32.0 (18/10/2026) cần torch 2.13.0, transformers [5.16.1, 5.20); bộ huấn luyện tương thích:
+  transformers 5.17.0, peft 0.21.2, trl 1.15.0, accelerate 1.15.0, datasets 4.x, (unsloth 2026.11.3). Qwen3.5: không nên
+  QLoRA 4-bit; LoRA bf16 9B ~22 GB (sát L4 22.5 GB) → FSDP 2 GPU / nhánh mặc định. vLLM 0.32: LoRA có cho Qwen3.5 /
+  Gemma 4 / GPT-OSS; FP8, GPTQ, AWQ, Marlin (gồm MXFP4) chạy trên Ada.
+- Kernel L4 không có internet → wheels huấn luyện vào dataset; thầy từ Kaggle Models.
+- Số đo dùng để lập lịch: v34 stage 2 ~8.5 s / câu khó / lần chạy trên 4×L4, ~4.5k token / câu, 171 tok/s / GPU.
+- Ba điều chỉ đo được trên GPU (bộ nhớ / tốc độ huấn luyện, nạp thầy FP8 trên L4, tốc độ LoRA vs gộp) → WP1 với quy tắc
+  quyết định QĐ1–QĐ3 viết sẵn.

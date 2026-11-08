@@ -32,8 +32,11 @@ File nộp: `submissions/v30/` (luật), `submissions/v28/` (LLM). Không có ro
 
 L4: quynhtran35, phatle1578 (chưa dùng tuần W46), yuan1103 (~15 h đã dùng). T4: yeshenhi, mxuanquy. Token phải xin lại.
 
-## Việc tiếp theo
+## Việc tiếp theo (chi tiết: `docs/08_MASTER_PLAN.md` §7–§9)
 
-1. Đo nền LLM-only trên held-out (paraphrase public / train) — `03_HANDOFF.md` §5.2.
-2. Viết luồng hybrid mới (Agent sinh code mọi câu, luật làm ngữ cảnh), test, preflight, chạy Kaggle, so held-out với v34.
-3. File nộp + Docker mới; **user** build và nộp trước **16/11/2026 23:59 GMT+7**.
+1. WP0 chuẩn bị (token, dữ liệu, cache, `tests/splits/`) → WP1 chạy thử GPU (huấn luyện LoRA, gộp / adapter, nạp thầy) trên
+   yuan1103 → áp quy tắc QĐ1–QĐ3.
+2. WP2 luồng hybrid v1 (`hints.py`, `precheck.py`, prompt gọn, bỏ stage 1 trả lời thẳng) + test + preflight.
+3. WP3 mốc E0 + chọn mô hình chính (Qwen3.5-9B vs Gemma 4 12B-it) → WP4–WP7 dữ liệu, dò thầy, nhánh fine-tune, huấn luyện
+   đầy đủ → WP8 tin cậy / dừng sớm → WP9 sửa lỗi tới public = 1.0 → WP10 đánh giá cuối (14/11) → WP11 Docker (15/11).
+4. **User** build Docker ngày 15/11 và nộp trước **16/11/2026 23:59 GMT+7**.

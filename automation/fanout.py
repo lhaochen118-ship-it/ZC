@@ -14,6 +14,7 @@ DSARG = ["--ds", sys.argv[sys.argv.index("--ds") + 1]] if "--ds" in sys.argv els
 DSARG += (["--ks", sys.argv[sys.argv.index("--ks") + 1]] if "--ks" in sys.argv else []) + (["--internet"] if "--internet" in sys.argv else [])
 DSARG += ["--env", sys.argv[sys.argv.index("--env") + 1]] if "--env" in sys.argv else []
 DSARG += ["--ms", sys.argv[sys.argv.index("--ms") + 1]] if "--ms" in sys.argv else []
+DSARG += ["--train-data", sys.argv[sys.argv.index("--train-data") + 1]] if "--train-data" in sys.argv else []
 L4 = "--l4" in sys.argv                                                   # 4x L4 sessions (competition grant)
 args = [a for a in sys.argv[1:] if not a.startswith("--") and a not in DSARG]
 if "--accounts" in sys.argv: ACCOUNTS = sys.argv[sys.argv.index("--accounts") + 1].split(","); args = [a for a in args if a != ",".join(ACCOUNTS)]
@@ -24,7 +25,9 @@ jobs = [j.strip() for j in (open(jobs).read().replace("\n", ";") if os.path.isfi
 import hashlib
 h = hashlib.sha256(";".join(jobs).encode())
 for f in sorted(f for f in glob.glob(os.path.join(ROOT, "src", "**", "*"), recursive=True) + glob.glob(os.path.join(ROOT, "automation", "*.py")) +
-                glob.glob(os.path.join(ROOT, "tests", "*")) if os.path.isfile(f) and "__pycache__" not in f):
+                glob.glob(os.path.join(ROOT, "tests", "*")) + glob.glob(os.path.join(ROOT, "training", "**", "*.py"), recursive=True) +
+                glob.glob(os.path.join(ROOT, "training", "*.yaml")) + glob.glob(os.path.join(ROOT, "configs", "*"))
+                if os.path.isfile(f) and "__pycache__" not in f):
     h.update(f.encode()); h.update(open(f, "rb").read())
 mark = os.path.expanduser(f"~/.cache/zc_preflight/{h.hexdigest()[:16]}")
 if "--no-preflight" in sys.argv: print("preflight: SKIPPED (--no-preflight)", flush=True)

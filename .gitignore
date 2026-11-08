@@ -21,3 +21,6 @@ models/
 results/*.json
 handoff/fonts/
 /pos.sqlite
+
+# generated training data (regenerate with training/data/*.py; large sets live in Kaggle datasets)
+training/data/out/*.jsonl

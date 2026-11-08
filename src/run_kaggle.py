@@ -36,11 +36,19 @@ elif not NO_VLLM:
     subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)
     cal = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["python-calamine"]
     subprocess.run(cal, capture_output=True)                         # offline L4 sessions: calamine from the wheels too
+TRAIN = "--train" in sys.argv                                          # training jobs: the training wheels too (offline)
+if TRAIN and not NO_VLLM:
+    wt = next(iter(sorted(glob.glob("/kaggle/input/**/wheels_train", recursive=True))), None)
+    whv = next((d for d in glob.glob("/kaggle/input/**/wheels", recursive=True) if glob.glob(d + "/vllm-*.whl")), None)
+    for pk in ("transformers==5.17.0", "trl==1.15.0", "einops", "flash-linear-attention"):   # one by one: a missing wheel never blocks the rest
+        r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "--no-index"] + (["--find-links", wt] if wt else []) +
+                           (["--find-links", whv] if whv else []) + [pk], capture_output=True, text=True)
+        print("pip (train)", pk, "->", r.returncode, (r.stdout + r.stderr).strip()[-200:], flush=True)
 print(f"setup {time.time() - t:.0f}s", flush=True)
 data = os.environ["ZC_DATA"]
 split = next(d for d in glob.glob(os.path.join(data, "**", sys.argv[1]), recursive=True) if os.path.isfile(os.path.join(d, "questions.jsonl")))
 out = sys.argv[2]
-args = sys.argv[3:]
+args = [x for x in sys.argv[3:] if x != "--train"]
 def copy_verified(src, dst, hashes):
     """copy a model directory; every file listed in hashes (model_hashes.json: the sha256 Hugging Face publishes) is hashed
     while it is copied and must match, else the job stops (no run on weights that are not the official ones)."""

@@ -27,13 +27,22 @@ KS = sys.argv[sys.argv.index("--ks") + 1].split(",") if "--ks" in sys.argv else 
 MS = sys.argv[sys.argv.index("--ms") + 1].split(",") if "--ms" in sys.argv else []   # Kaggle Models, e.g. qwen-lm/qwen-3/transformers/14b/1
 NET = "--internet" in sys.argv and not L4                                  # L4 grant sessions refuse internet
 ENV = dict(kv.split("=", 1) for kv in sys.argv[sys.argv.index("--env") + 1].split(",")) if "--env" in sys.argv else {}
-VALUED = ("--owner", "--ds", "--env", "--ks", "--ms")
+VALUED = ("--owner", "--ds", "--env", "--ks", "--ms", "--train-data")
 argv = [a for i, a in enumerate(sys.argv) if a not in ("--gpu", "--l4", "--internet", "--no-upload") + VALUED and sys.argv[i - 1] not in VALUED]
 kdir, slug, jobs = argv[1], argv[2], [j.split() for j in argv[3].split(";") if j.strip()]
 
 # --- 1. code dataset
 stage = os.path.join(kdir, "_code"); shutil.rmtree(stage, ignore_errors=True)
 shutil.copytree(os.path.join(ROOT, "src"), stage, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "cache"))
+# training code (+ configs) go with it (docs/08 §5.1); training data only for the subfolders of training/data/out named by --train-data
+TRAIN_DATA = sys.argv[sys.argv.index("--train-data") + 1].split(",") if "--train-data" in sys.argv else []
+if os.path.isdir(os.path.join(ROOT, "training")):
+    shutil.copytree(os.path.join(ROOT, "training"), os.path.join(stage, "training"), ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "out"))
+    for d in TRAIN_DATA:
+        src_d = os.path.join(ROOT, "training", "data", "out", d)
+        if os.path.isdir(src_d): shutil.copytree(src_d, os.path.join(stage, "training", "data", "out", d))
+        else: sys.exit(f"--train-data {d}: no directory {src_d}")
+if os.path.isdir(os.path.join(ROOT, "configs")): shutil.copytree(os.path.join(ROOT, "configs"), os.path.join(stage, "configs"))
 json.dump({"title": "zc-code", "id": CODE_DS, "licenses": [{"name": "CC0-1.0"}]}, open(os.path.join(stage, "dataset-metadata.json"), "w"))
 if "--no-upload" not in sys.argv:                                       # preflight.py builds the kernel files offline
     exists = subprocess.run(["kaggle", "datasets", "status", CODE_DS], capture_output=True, text=True).stdout.strip().lower() == "ready"

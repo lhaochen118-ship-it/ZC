@@ -1,0 +1,1 @@
+run_kaggle.py train OUT/smoke --script training/smoke.py --model Qwen/Qwen3.5-9B --part train --train

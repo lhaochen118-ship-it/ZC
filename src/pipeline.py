@@ -39,6 +39,7 @@ class StepLLM:
     def __init__(self, engine, think_cap=0):
         from vllm import SamplingParams
         self.e, self.SP, self.n, self.pending, self.unfinished = engine, SamplingParams, 0, {}, 0
+        self.lp = {}                                                    # rid -> cumulative log-probability of the output (when requested)
         # budget forcing (s1, Muennighoff et al. 2025): a thinking request stops at think_cap tokens; when it is still
         # reasoning then (21 % of the first mapping attempts looped 'Wait, ...' to the token limit without code), the end
         # of the reasoning is appended and the same request continues with the rest of its budget for the program
@@ -64,11 +65,19 @@ class StepLLM:
             if len(seen[k]) >= reps: return "\n".join(lines[:seen[k][1]])
         return text
 
-    def _sp(self, temp, seed, max_tokens, think=False):
+    def _sp(self, temp, seed, max_tokens, think=False, grammar=None):
         kw = dict(temperature=temp, top_p=1.0 if temp == 0 else 0.95, max_tokens=max_tokens, seed=seed)
         if think:                                                       # Qwen3.5 thinking: no greedy decoding (it loops),
             kw.update(temperature=temp if temp > 0 else 0.6, top_p=0.95, top_k=20)   # top-k 20 (model card); seeded
         if self.final_only is not None and self.core is not None: kw["output_kind"] = self.final_only
+        if grammar:                                                     # constrained decoding (src/grammar.py, xgrammar EBNF)
+            kw["logprobs"] = 0                                          # the sampled tokens' log-probabilities (confidence feature)
+            try:
+                from vllm.sampling_params import StructuredOutputsParams
+                kw["structured_outputs"] = StructuredOutputsParams(grammar=grammar)
+            except ImportError:
+                from vllm.sampling_params import GuidedDecodingParams
+                kw["guided_decoding"] = GuidedDecodingParams(grammar=grammar)
         return self.SP(**kw)
 
     def _add_core(self, rid, prompt, sp, priority):
@@ -81,12 +90,12 @@ class StepLLM:
                 self.prio_ok = False
         self.core.add_request(rid, prompt, sp, **kw); self.unfinished += 1
 
-    def add(self, conv, temp, seed, max_tokens, think=None, priority=0):
+    def add(self, conv, temp, seed, max_tokens, think=None, priority=0, grammar=None):
         prompt, mt = self.e.fit(conv, max_tokens, think)
         self.n += 1; rid = f"r{self.n}"
         if prompt is None: self.pending[rid] = None; return rid        # too long: finishes empty at the next step
         cap = self.think_cap if think and self.think_cap and self.core is not None and mt >= self.think_cap + 1024 else 0
-        sp = self._sp(temp, seed, cap or mt, bool(think))
+        sp = self._sp(temp, seed, cap or mt, bool(think), None if think else grammar)
         if self.core is None: self.pending[rid] = (prompt, sp); return rid
         if cap: self.req[rid] = (prompt, temp, seed, mt, priority)
         self._add_core(rid, prompt, sp, priority)
@@ -102,6 +111,7 @@ class StepLLM:
                 rids = list(self.pending); outs = self.e.llm.generate([self.pending[r][0] for r in rids], [self.pending[r][1] for r in rids],
                                                                     use_tqdm=False, lora_request=self.e.lora)
                 done += [(r, o.outputs[0].text, len(o.outputs[0].token_ids)) for r, o in zip(rids, outs)]; self.pending.clear()
+                for r, o in zip(rids, outs): self.lp[r] = getattr(o.outputs[0], "cumulative_logprob", None)
             return done
         if self.unfinished:
             for o in self.core.step():
@@ -115,6 +125,7 @@ class StepLLM:
                     head = text if self.THINK_END in text else self.cut_loop(text) + self.FORCE   # end it first) with the rest
                     self.cont[rid + "c"] = (rid, head, n)
                     self._add_core(rid + "c", prompt + head, self._sp(temp, seed + 1, mt - n, True), prio); continue
+                self.lp[rid] = getattr(out, "cumulative_logprob", None)
                 done.append((rid, text, n))
         return done
 
@@ -122,7 +133,7 @@ class StepLLM:
 class FakeStepLLM:
     """tests without a GPU: responder(conv) -> text; requests finish one step after they are added."""
     def __init__(self, responder): self.r, self.n, self.q = responder, 0, []
-    def add(self, conv, temp, seed, max_tokens, think=None, priority=0):
+    def add(self, conv, temp, seed, max_tokens, think=None, priority=0, grammar=None):
         self.n += 1; rid = f"r{self.n}"; self.q.append((rid, conv)); return rid
     def busy(self): return len(self.q)
     def step(self):

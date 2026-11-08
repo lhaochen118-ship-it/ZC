@@ -307,6 +307,8 @@ _BIZ, _CAN, _CTX = {}, {}, {}
 
 def _init_worker(cache_dir, split_dir):
     _CTX["cache"], _CTX["split"] = cache_dir, split_dir
+    try: _CTX["rulebook"] = open(os.path.join(split_dir, "rulebook.md"), encoding="utf-8").read()   # tools.rule (T4)
+    except OSError: _CTX["rulebook"] = ""
     cal = pd.read_csv(os.path.join(split_dir, "calendar.csv"))
     cal["date"] = pd.to_datetime(cal["date"]); _CTX["cal"] = cal; dm.set_calendar(cal)
 
@@ -336,6 +338,10 @@ def _namespace(bid, as_of=None, canon_path=None):
         if can.get("v2"):                                              # toolkit programs: metrics bound to this shop + day
             shop = dm.Shop(can["C"], as_of, {"data_end": can.get("data_end")})
             g.update(dm.api(shop, as_of if as_of is not None else shop.last)); g["T"] = {k: v.copy() for k, v in biz.tables.items()}
+            try:                                                       # agent tools T1-T9 (src/tools.py), callable in programs
+                import tools
+                g.update(tools.bind_tools(shop, as_of, _CTX.get("rulebook", ""), can.get("data_end")))
+            except Exception as e: print(f"[tools] unavailable: {type(e).__name__}: {e}", flush=True)
         else: g["C"] = {k: v.copy() for k, v in can["C"].items()}
         g["NOTES"] = can.get("notes", "")
     dm._TOOLKIT_NS.clear(); dm._TOOLKIT_NS.update(g)                  # `import datamate` in a program -> this namespace
@@ -890,12 +896,42 @@ def build_parser():
     ap.add_argument("--prefer-map", default="", help="pipeline: regex of a mapping source (e.g. 'fmt:automap') chosen whenever it runs "
                     "without a heavy warning (the deterministic mapper of the rule-first stage: train 3000 / 3000, public 1000 / 1000)")
     ap.add_argument("--fake-responder", default="", help="tests: python file defining responder(conv) -> text; no model is loaded")
+    # ---- hybrid flow (docs/08_MASTER_PLAN.md §5.8): every question answered by a model-written program (src/hybrid.py)
+    ap.add_argument("--flow", default="legacy", choices=["legacy", "hybrid"], help="hybrid: src/hybrid.py (rules only prepare context / check)")
+    ap.add_argument("--prompt", default="compact", choices=["compact", "full"], help="hybrid: compact API signatures | full API_DOC")
+    ap.add_argument("--hints", type=int, default=1, help="hybrid: the # HINTS block (src/hints.py)")
+    ap.add_argument("--grammar", type=int, default=1, help="hybrid: grammar-constrained decoding (src/grammar.py)")
+    ap.add_argument("--max-enum", type=int, default=5000, help="hybrid: entity values enumerated in the grammar per kind (more: free string)")
+    ap.add_argument("--escape", default="python", help="hybrid: escape blocks allowed (python | python,sql | none)")
+    ap.add_argument("--tools", default="find,period,check,help", help="hybrid: tools named in the prompt (all are bound in programs)")
+    ap.add_argument("--explore-turns", type=int, default=2, help="hybrid: tool exploration turns of the explore variant")
+    ap.add_argument("--variants", default="direct,rephrase", help="hybrid: prompt variants of round 2 (direct, rephrase, explore)")
+    ap.add_argument("--k-fast", type=int, default=2, help="hybrid: samples of round 1"); ap.add_argument("--k-max", type=int, default=8, help="hybrid: samples in all")
+    ap.add_argument("--early-stop", type=int, default=1, help="hybrid: stop after round 1 when its samples agree without flags")
+    ap.add_argument("--max-turns", type=int, default=2, help="hybrid: repair turns of a sample (precheck / execution errors)")
+    ap.add_argument("--review", type=int, default=0, help="hybrid: model reads suspicious results (M11, WP8)")
+    ap.add_argument("--retriever", default="ngram", choices=["ngram", "embed"]); ap.add_argument("--embed-model", default="")
+    ap.add_argument("--verifier", default=""); ap.add_argument("--verifier-weight", type=float, default=0.0)
+    ap.add_argument("--calibrator", default=""); ap.add_argument("--theta-abstain", type=float, default=0.5, help="hybrid: answer when conf >= this")
+    ap.add_argument("--exclude-bids", default="", help="hybrid: shops whose examples are never retrieved (held-out evaluation)")
+    ap.add_argument("--hide-api", default="", help="hybrid: hidden API names, 'industry' = every industry function (pub_noind)")
+    ap.add_argument("--bank-holdout", type=int, default=0, help="hybrid: the held-out shops' checked examples in the bank (final model only)")
+    ap.add_argument("--config", default="", help="JSON file of default flag values (configs/<name>.json); command-line flags override")
     return ap
+
+
+def parse_with_config(ap, argv=None):
+    """flags with --config defaults: the JSON's keys are flag names (dashes or underscores), the command line wins."""
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if "--config" in argv:
+        cfg = json.load(open(argv[argv.index("--config") + 1], encoding="utf-8"))
+        ap.set_defaults(**{k.lstrip("-").replace("-", "_"): v for k, v in cfg.items() if not k.startswith("_")})
+    return ap.parse_args(argv)
 
 
 def main():
     ap = build_parser()
-    a = ap.parse_args()
+    a = parse_with_config(ap)
     if a.dp > 1 and not a.shard and not a.claim_dir: return run_dp(a)
     if a.fake_responder:
         g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
@@ -950,7 +986,10 @@ def run(a, engine=None):
         import pipeline
         pipeline.bind(sys.modules[__name__])                           # the module that holds CARDS / worker context
         llm = engine if hasattr(engine, "add") and hasattr(engine, "step") else pipeline.StepLLM(engine, getattr(a, "think_budget", 0))
-        pipeline.Pipeline(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, a.claim_dir).run()
+        if getattr(a, "flow", "legacy") == "hybrid":
+            import hybrid
+            hybrid.HybridPipeline(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, a.claim_dir).run()
+        else: pipeline.Pipeline(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, a.claim_dir).run()
         pool.close(); sub.close(); logf.close(); clog.close()
         print(f"DONE {len(qs)} questions in {time.time() - t_start:.0f}s", flush=True)
         if not a.claim_dir: score_if_possible(a, qs)

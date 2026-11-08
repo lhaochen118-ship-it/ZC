@@ -698,6 +698,7 @@ class Shop(industry.IndustryMetrics):
 
     def __init__(self, C, today=None, meta=None):
         self.C = C; self.today = _ts(today) if today is not None else None; self.meta = meta or {}
+        self.trace = None                                               # a list: every filter step is recorded (tools.explain, T6)
         self.O = C["orders"]; self.L = C.get("lines")
         d = self.O["order_date"].dropna(); self.first, self.last = (d.min(), d.max()) if len(d) else (None, None)
 
@@ -736,18 +737,31 @@ class Shop(industry.IndustryMetrics):
                               (staff, ("staff",), "staff"), (channel, ("channel",), "sales channels"), (payment, ("payment_method",), "payment methods"),
                               (shift, ("order_time",), "the time of day")):
             if v is not None: self._need(df, cols, what)
-        if item is not None: df = df[self._match(df, ("item_code", "item_name"), self._item_keys(item))]   # every code / spelling
+        tr = self.trace
+        if tr is not None: tr.append(f"selection: {len(df)} rows")
+        if item is not None:
+            df = df[self._match(df, ("item_code", "item_name"), self._item_keys(item))]   # every code / spelling
+            if tr is not None: tr.append(f"item={item!r} -> {len(df)} rows")
         if group is not None: df = df[self._match(df, ("item_group",), group)]
+        if group is not None and tr is not None: tr.append(f"group={group!r} -> {len(df)} rows")
         if customer is not None: df = df[self._match_person(df, ("customer_id", "customer_name"), customer)]
+        if customer is not None and tr is not None: tr.append(f"customer={customer!r} -> {len(df)} rows")
         if customer_group is not None: df = df[self._match(df, ("customer_group",), customer_group)]
+        if customer_group is not None and tr is not None: tr.append(f"customer_group={customer_group!r} -> {len(df)} rows")
         if staff is not None: df = df[self._match_person(df, ("staff",), staff)]
+        if staff is not None and tr is not None: tr.append(f"staff={staff!r} -> {len(df)} rows")
         if channel is not None: df = df[self._match(df, ("channel",), canon_channel(channel) if isinstance(channel, str) else channel)]
+        if channel is not None and tr is not None: tr.append(f"channel={channel!r} -> {len(df)} rows")
         if payment is not None: df = df[self._match(df, ("payment_method",), canon_payment(payment) if isinstance(payment, str) else payment)]
+        if payment is not None and tr is not None: tr.append(f"payment={payment!r} -> {len(df)} rows")
         if status is not None: df = df[df["status"].eq(status)]
+        if status is not None and tr is not None: tr.append(f"status={status!r} -> {len(df)} rows")
         if shift is not None:
             _timed(df["order_time"]); h = pd.to_datetime(df["order_time"]).dt.hour
             df = df[(h >= 6) & (h <= 13)] if key(shift).startswith("sang") else df[(h >= 14) & (h <= 21)]
-        if where is not None: df = df[where(df)]
+        if where is not None:
+            df = df[where(df)]
+            if tr is not None: tr.append(f"where=lambda -> {len(df)} rows")
         for c, v in extra.items():                                      # prescription=True, base_unit="hộp": a column of the frame
             if c not in df.columns: raise TypeError(f"unknown filter {c}= (no column {c!r}; use where=lambda d: ...)")
             if isinstance(v, (bool, np.bool_)): df = df[df[c].fillna(False).astype(bool) == bool(v)]

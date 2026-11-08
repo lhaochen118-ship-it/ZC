@@ -38,7 +38,7 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 
 | WP | Trạng thái | Kết quả / commit / kernel |
 |---|---|---|
-| WP0 chuẩn bị | chưa | |
+| WP0 chuẩn bị | **xong** 08/11 | token 9 acc (8 có 4×L4: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99, yuan1103, synchan5704, anderson1202, loinguyentran; yeshenhi chỉ T4) — probe `zc-probe`; `score_1.jsonl` của user → `data/raw/public_gt.jsonl` (v30 1000/1000, v28 921 đúng / PA 0.852); cache ingest; `tests/splits/` (pub_full 1000, pub_k0 692, pub_ho 1373, tr_ho 1826, quick400 400, pub_noind 112, pub_noacc 1000); `eval_all.sh quick` train 3000/3000, public 1000/1000; wheels huấn luyện = output kernel public `yeshenhi/zc-train-wheels` (`wheels_train/`: transformers 5.17.0, trl 1.15.0; ảnh GPU Kaggle + vLLM 0.32 đã có torch 2.13.0, peft 0.21.2, accelerate 1.15.0, datasets 4.8.5, xgrammar 0.2.8, duckdb 1.3.2, python 3.13; `wheels_unsloth/` tuỳ chọn) |
 | WP1 chạy thử GPU (G1) | chưa | |
 | WP2 luồng hybrid v1 | chưa | |
 | WP3 E0 / S0 / A/B (G2–G5) | chưa | |
@@ -54,9 +54,9 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 
 ## Kaggle
 
-L4: quynhtran35, phatle1578 (chưa dùng tuần W46), yuan1103 (~15 h đã dùng). T4: yeshenhi, mxuanquy. Token phải xin lại.
-**Cần thêm 4 acc L4 mới (lý tưởng 5) trước sáng 11/11** — kế hoạch ≈ 36.3 giờ phiên 4×L4 tuần W46 (≈ 189 GPU-h kể cả 30 % dự
-phòng) so với 75.6 GPU-h còn lại; bảng việc / phân bổ theo đợt: `docs/08_MASTER_PLAN.md` §9.
+08/11: user cấp 9 token (`~/.kaggle/tok_<acc>`); probe 4×L4 OK trên 8 acc: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99,
+yuan1103 (~15 h W46 đã dùng), synchan5704, anderson1202, loinguyentran (quota W46 của các acc mới chưa rõ: acc dùng chung dự án
+khác). yeshenhi: chỉ T4 (dùng cho kernel wheels / T4). Đủ 8 acc L4 mà kế hoạch §9 cần (7, lý tưởng 8).
 
 ## Việc tiếp theo (user đã duyệt 08/11): triển khai code đúng `docs/08_MASTER_PLAN.md` §8 (WP0 → WP12), đặc tả §5, quy tắc §10
 

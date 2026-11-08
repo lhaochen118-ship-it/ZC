@@ -6,7 +6,8 @@ OUT/: adapter/ (published for the Docker build: docker/fetch_assets.sh merges it
 
 Usage (Kaggle job): run_kaggle.py public_test OUT/full --script training/full_job.py --model Qwen/Qwen3.5-9B --train
         --files d1.jsonl,d2.jsonl,... [--data sft] [--r 64 --alpha 128 --lr 1e-4 --epochs 1 --budget 0] [--mb 8 --eff-batch 64]
-        [--sets quick400,pub_full] [--eval-config configs/e0.json] [--init-adapter DIR]"""
+        [--sets quick400,pub_full] [--eval-config configs/e0.json] [--subset N] [--no-eval]
+       (smoke: --budget 3e5 --subset 40 checks FSDP save -> merge -> evaluation end to end)"""
 import os, sys, json, time, glob, shutil, argparse, subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
@@ -22,7 +23,7 @@ def main():
     ap.add_argument("--epochs", type=float, default=1.0); ap.add_argument("--budget", type=float, default=0)
     ap.add_argument("--mb", type=int, default=8); ap.add_argument("--eff-batch", type=int, default=64); ap.add_argument("--gpus", type=int, default=4)
     ap.add_argument("--sets", default="quick400,pub_full"); ap.add_argument("--eval-config", default="configs/e0.json")
-    ap.add_argument("--no-eval", action="store_true")
+    ap.add_argument("--no-eval", action="store_true"); ap.add_argument("--subset", type=int, default=0, help="evaluation: first N questions per shop")
     a = ap.parse_args()
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)
@@ -46,7 +47,7 @@ def main():
     if rc != 0: sys.exit(2)
     t2 = time.time(); ev = f"{tmp}/eval"
     cmd = [PY, os.path.join(SRC, "eval_flow.py"), a.split, ev, "--sets", a.sets, "--model", f"{tmp}/merged", "--dp", str(a.gpus),
-           "--config", a.eval_config, "--cache", "/tmp/zc_cache"]
+           "--config", a.eval_config, "--cache", "/tmp/zc_cache"] + (["--", "--subset", str(a.subset)] if a.subset else [])
     rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "eval.log"), "w"), stderr=subprocess.STDOUT).returncode
     for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"):
         p = os.path.join(ev, "run", f)

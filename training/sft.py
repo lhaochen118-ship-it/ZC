@@ -41,9 +41,9 @@ def records(paths, tok, max_len, max_tokens=0, seed=0):
             if l.strip(): rows.append(json.loads(l))
     out, skipped = [], 0
     for r in rows:
-        m = r["messages"]
-        prompt = tok.apply_chat_template(m[:2], tokenize=False, add_generation_prompt=True, enable_thinking=False)
-        comp = m[2]["content"] + "<|im_end|>"
+        m = r["messages"]                                               # [system, user, (assistant, user)*, assistant]: loss on the last turn
+        prompt = tok.apply_chat_template(m[:-1], tokenize=False, add_generation_prompt=True, enable_thinking=False)
+        comp = m[-1]["content"] + "<|im_end|>"
         n = len(tok(prompt + comp, add_special_tokens=False)["input_ids"])
         if n > max_len: skipped += 1; continue
         out.append({"prompt": prompt, "completion": comp, "n": n})
@@ -65,8 +65,8 @@ def ref_records(paths, tok, max_len, n):
     out = []
     for r in rows:
         m = r["messages"]
-        p = tok.apply_chat_template(m[:2], tokenize=False, add_generation_prompt=True, enable_thinking=False)
-        pi = tok(p, add_special_tokens=False)["input_ids"]; ci = tok(m[2]["content"] + "<|im_end|>", add_special_tokens=False)["input_ids"]
+        p = tok.apply_chat_template(m[:-1], tokenize=False, add_generation_prompt=True, enable_thinking=False)
+        pi = tok(p, add_special_tokens=False)["input_ids"]; ci = tok(m[-1]["content"] + "<|im_end|>", add_special_tokens=False)["input_ids"]
         ids = (pi + ci)[:max_len]; lab = ([-100] * len(pi) + ci)[:max_len]
         out.append((torch.tensor([ids]), torch.tensor([lab])))
     return out
@@ -88,9 +88,25 @@ def ref_loss(model, recs):
         print(f"[sft] reference loss unavailable: {type(e).__name__}: {str(e)[:200]}", flush=True); return None
 
 
+class TorchLogProb:
+    """TRL's fused LM-head loss (a Triton kernel, GPU only) computed with plain torch: CPU tests only (ZC_TORCH_LOGPROB=1)."""
+    @staticmethod
+    def apply(hidden, weight, bias, targets, temperature, chunk, softcap, scale, outputs):
+        import torch
+        logits = (hidden.float() @ weight.float().t()) * scale / temperature
+        if bias is not None: logits = logits + bias.float()
+        lsm = torch.log_softmax(logits, -1)
+        lp = lsm.gather(-1, targets[:, None]).squeeze(-1)
+        ent = -(lsm.exp() * lsm).sum(-1) if "entropy" in outputs else None
+        top1 = (logits.argmax(-1) == targets) if "is_top1" in outputs else None
+        return lp, ent, None, None, top1
+
+
 def main():
     a = parse()
     import torch
+    if os.environ.get("ZC_TORCH_LOGPROB") == "1":
+        import trl.trainer.utils as _tu; _tu._ChunkedLogProbFunction = TorchLogProb
     from datasets import Dataset
     from transformers import AutoTokenizer, AutoModelForCausalLM, TrainerCallback
     from peft import LoraConfig

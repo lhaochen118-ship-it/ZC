@@ -1,0 +1,1 @@
+run_kaggle.py train OUT/d3_gemma31 --script training/d3_job.py --model Qwen/Qwen3.5-9B --teacher gemma-4-31b-it --tp 2 --instances 2 --quant fp8 --data d3 --rt-config configs/e0.json --tag gemma31

@@ -76,7 +76,7 @@ class HybridPipeline(pipeline.Pipeline):
             st.update(hints={}, examples=[], error="no canonical tables"); return self.finish(st)
         h = ctx.hints(q["question"], q["as_of_date"])
         st["hints"] = h
-        excl = set(self.excl) | ({b} if self.exclude_own else set())
+        excl = set(self.excl) | {b}                                     # never the shop's own checked examples (honest on train shops)
         exs = self.bank.retrieve(q["question"], h, k=int(a.shots), exclude_bids=excl, exclude_ids={q["id"]})
         st["examples"] = [e.get("id") for e in exs]
         shown = h if getattr(a, "hints", 1) else None
@@ -162,6 +162,7 @@ class HybridPipeline(pipeline.Pipeline):
         self.stats["answered" if final.get("type") != "abstain" else "abstained"] += 1
         self.stats[f"stop_{st.get('stop', 'round2')}"] += 1
         log = {"hints": st.get("hints"), "examples": st.get("examples"), "stop": st.get("stop", "round2"), "error": st.get("error"),
+               "best": rep[top] if votes else None,
                "samples": [{k: v for k, v in s.items()} for s in st["samples"]]}
         agent.write_answer(self.sub, self.logf, a, q, final, conf, votes, log, {}, time.time() - st["t"])
         self.sub.flush(); self.logf.flush(); self.n_answered += 1; self.written.add(q["id"])

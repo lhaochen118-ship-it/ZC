@@ -769,3 +769,14 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   `--quantization fp8` TP 2 nạp 415 s, KV 44,992 token. Câu do thầy viết (50 chương trình D1): tiếng Việt tự nhiên, có văn chat
   / viết tắt; lỗi gặp: kỳ tương đối sai ("tháng 4 năm ngoái" cho tháng 4 của năm hiện tại), lộ tên cột ("đơn valid") → lọc
   vòng lặp ngược + lọc từ mã.
+
+## Entry 35 — 2026-11-08: WP4 nhà máy dữ liệu (CPU)
+
+- D1 2119 (trung vị 2174 token), **D2 3816** (paraphrase câu train có chương trình; loại 205 câu đổi kỳ theo `parse_period`),
+  **D2N 5418** (nhiễu: chat 3972, không dấu 1374, từ địa phương 72), **D4T 2000** quỹ đạo sửa lỗi (tên hàm 666, by= 639, thực thể
+  348, tham số 347; thông điệp sửa = đúng chữ của luồng hybrid). `test_data_factory` (nhãn chạy lại ra đúng đáp án, không id
+  public / DN dev_* / DN tr_ho, lệch kiểu ≤ 0.5 điểm, trùng < 1 %) và `test_sft_format` (thứ tự khối §5.3, nhãn khớp ngữ pháp DN): PASS.
+- D3 bước 1 (`d3_sample_programs.py`): đột biến chương trình đã kiểm sang DN / ngày / kỳ / thực thể / k khác, chạy bằng toolkit;
+  thử 108 → giữ 42 (2 DN, 22 họ hàm); bản 15k đang chạy. D3 bước 2: prompt thầy (`d3_teacher_prompts.py`, kèm kỳ đã quy ra
+  ngày); job GPU `training/d3_job.py` (thầy viết câu → học trò đọc lại bằng luồng hybrid, 1 mẫu tham lam → giữ câu cùng đáp án).
+- WP8 bắt đầu: `src/confidence.py` (đặc trưng từ log, logistic numpy, ngưỡng θ tối đa PA chính xác, kiểm conformal), test PASS.

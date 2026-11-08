@@ -28,6 +28,29 @@ sinh thẳng code / đáp án không qua mô hình; **được** dùng luật t�
 
 File nộp: `submissions/v30/` (luật), `submissions/v28/` (LLM). Không có routine tự chạy.
 
+## Chế độ chạy tự động (user, 08/11)
+
+Chạy tự động đến khi xong toàn bộ `docs/08_MASTER_PLAN.md`; không dừng, không hỏi; hết quota thì chờ reset rồi chạy tiếp; không chạy
+lại bước đã xong (theo bảng dưới). Đầu khung chat mới: tạo routine tự tiếp tục mỗi giờ.
+
+## Tiến độ WP (cập nhật sau mỗi bước — nguồn duy nhất để biết làm tiếp từ đâu)
+
+| WP | Trạng thái | Kết quả / commit / kernel |
+|---|---|---|
+| WP0 chuẩn bị | chưa | |
+| WP1 chạy thử GPU (G1) | chưa | |
+| WP2 luồng hybrid v1 | chưa | |
+| WP3 E0 / S0 / A/B (G2–G5) | chưa | |
+| WP4 nhà máy dữ liệu (+ G6, G7) | chưa | |
+| WP5 D3 theo thầy (G8–G11) | chưa | |
+| WP6 nhánh fine-tune (G12–G19) | chưa | |
+| WP7 huấn luyện đầy đủ (G20–G21) | chưa | |
+| WP8 tin cậy / bộ kiểm / embedding (G22–G24) | chưa | |
+| WP9 sửa lỗi tới public = 1.0 (G25) | chưa | |
+| WP10 đánh giá cuối (G27–G29) | chưa | |
+| WP11 Docker + nộp | chưa | |
+| WP12 DuckDB | chưa | |
+
 ## Kaggle
 
 L4: quynhtran35, phatle1578 (chưa dùng tuần W46), yuan1103 (~15 h đã dùng). T4: yeshenhi, mxuanquy. Token phải xin lại.

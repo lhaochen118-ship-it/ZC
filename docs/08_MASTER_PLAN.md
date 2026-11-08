@@ -6,6 +6,19 @@ Lý do từng lựa chọn: `docs/09_OPTIONS_DEEP_DIVE.md` (căn cứ từ log l
 dataset ngoài: `docs/07_DATASETS.md`. Mọi giả định kiểm được không cần GPU đã kiểm ngày 08/11 (§1); điểm chỉ đo được trên GPU
 gom vào WP1 với quy tắc quyết định viết sẵn — không còn câu hỏi mở.*
 
+## Chế độ chạy tự động (user, 08/11 — bắt buộc)
+
+- Claude Code **chạy tự động cho đến khi thực thi xong toàn bộ kế hoạch** (WP0 → WP12, gồm Docker WP11). Không dừng, không hỏi
+  user; chỉ xin thứ chỉ user làm được (token, acc L4 mới, build / nộp Docker).
+- **Hết quota GPU giữa chừng:** tạm dừng phần GPU, tiếp tục phần code / CPU; khi quota reset (thứ Bảy 00:00 UTC, hoặc acc mới được
+  cấp) thì tự động chạy tiếp đúng đợt đang dở (§9.4).
+- **Không chạy lại bước đã xong:** bảng "Tiến độ WP" trong `handoff/STATUS.md` (WP, trạng thái chưa / đang / xong, kết quả, commit,
+  kernel) cập nhật sau mỗi bước; mỗi lần tiếp tục (routine, container khởi động lại, khung chat mới) đọc bảng này và bắt đầu từ
+  bước chưa xong đầu tiên; kernel đang chạy thì gắn lại (`run_kernel.py --attach`), không đẩy lại.
+- **Routine tự tiếp tục:** đầu khung chat mới tạo routine mỗi giờ (`create_trigger`, tiếp tục vào chính phiên) với lời nhắc: "Đọc
+  handoff/STATUS.md; làm tiếp bước chưa xong đầu tiên của docs/08_MASTER_PLAN.md; kernel đang chạy thì attach; hết quota thì làm
+  phần CPU và chờ reset; không chạy lại bước đã xong." Chỉ xoá routine khi toàn bộ kế hoạch đã xong.
+
 ## 0. Tóm tắt
 
 1. **Hệ đích:** Agent (mô hình chính ≤ 15B, fine-tune LoRA) sinh code cho **mọi** câu. Luật tổng quát chỉ chuẩn bị ngữ cảnh

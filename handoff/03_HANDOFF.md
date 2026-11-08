@@ -77,6 +77,10 @@ Luồng: câu hỏi → mô hình → code truy vấn → chạy → mô hình n
 
 ## 5. Các bước tiếp theo (user đã duyệt 08/11)
 
+**Chạy tự động** đến khi thực thi xong toàn bộ kế hoạch: không dừng, không hỏi user; hết quota thì tạm dừng phần GPU và tự chạy
+tiếp khi reset; không chạy lại bước đã xong (bảng "Tiến độ WP" trong `handoff/STATUS.md`); tạo routine tự tiếp tục mỗi giờ ngay
+đầu khung chat mới.
+
 **Việc của khung chat kế tiếp: triển khai code đúng theo `docs/08_MASTER_PLAN.md`** — gói việc §8 theo thứ tự, đặc tả §5,
 quy tắc quyết định §10, lịch / quota §9. Tóm tắt thứ tự:
 

@@ -3,7 +3,7 @@
 kept = True). Each kept question gets the inference prompt of its shop (src/shopctx.py: hints read from the question,
 examples retrieved from the checked bank, never the same shop) and the program as the label. Parallel by shop.
 Usage: d3_records.py <train_split> <ingest_cache> <canon_dir> <out.jsonl> <d3_tag.jsonl>[,...] [--workers 4] [--max N] [--seed 20261108]"""
-import os, sys, json, time, random, argparse
+import os, sys, re, json, time, random, argparse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common
 
@@ -19,6 +19,26 @@ def degenerate(program):
             d = [ast.dump(e) for e in n.elts]
             if len(d) != len(set(d)): return True
     return False
+
+
+_CODEY = re.compile(r"[A-Za-z_]\w*\(|\bANSWER\b|\bunanswerable\b|\bquestions?\b|[{}]|[a-z]_[a-z]", re.I)
+_SCRIPT = re.compile(r"[\u0400-\u04ff\u0e00-\u0e7f\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]")
+
+
+def junk(question):
+    """a teacher output that is no shop owner's question: too short, code / placeholder words, another script."""
+    q = str(question or "").strip()
+    return len(q.split()) < 4 or bool(_CODEY.search(q)) or bool(_SCRIPT.search(q))
+
+
+def cap_same(rows, n=3):
+    """at most n records per question text (accent-insensitive): a common phrasing must not dominate the mix."""
+    seen, out = {}, []
+    for r in rows:
+        k = " ".join(re.sub(r"[^\w\s]", " ", str(r["question"]).lower()).split())
+        if seen.get(k, 0) >= n: continue
+        seen[k] = seen.get(k, 0) + 1; out.append(r)
+    return out
 
 
 def shop_records(args):
@@ -42,7 +62,9 @@ def main():
     from concurrent.futures import ProcessPoolExecutor
     t0 = time.time(); rows = []
     for p in a.inputs.split(","): rows += [r for r in common.jl(p) if r.get("kept") and r["business_id"] not in common.TR_HO and not degenerate(r["program"])]
+    n0 = len(rows); rows = [r for r in rows if not junk(r["question"])]
     rng = random.Random(a.seed); rng.shuffle(rows)
+    rows = cap_same(rows); print(f"question filter: {n0} -> {len(rows)} (junk, > 3 copies)", flush=True)
     if a.max: rows = rows[:a.max]
     by = {}
     for r in rows: by.setdefault(r["business_id"], []).append(r)

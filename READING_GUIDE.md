@@ -53,7 +53,7 @@ Các `handoff/*.md` và `docs/03_WORKFLOW.md` là nguồn của PDF cùng tên: 
 `automation/run_kernel.py` (`--attach`), `automation/jobs/` (job chuẩn), `docker/` (bài nộp), `submissions/` (v28 LLM,
 v30 luật), `goldkey/devset.py` (37 câu đã kiểm, chỉ chấm).
 
-## 4. Việc tiếp theo (user đã duyệt 08/11) — chạy tự động đến khi xong, không dừng, không hỏi, không chạy lại bước đã xong (`CLAUDE.md`)
+## 4. Việc tiếp theo (user đã duyệt 08/11) — chạy tự động đến khi xong, không dừng, không hỏi; hết hạn mức Claude (5 giờ) thì tạm dừng và tự chạy tiếp khi reset (`CLAUDE.md`)
 
 **Triển khai code đúng theo `docs/08_MASTER_PLAN.md`**: gói việc §8 theo thứ tự WP0 → WP12 (bảng tóm tắt ở
 `handoff/03_HANDOFF.pdf` §5), đặc tả kỹ thuật §5 (file, hàm, định dạng, prompt, ngữ pháp, tool, thuật toán chọn, cờ CLI,

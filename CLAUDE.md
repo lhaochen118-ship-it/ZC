@@ -19,12 +19,13 @@ kế tiếp: triển khai code đúng theo tài liệu này (gói việc §8 the
 huấn luyện; được phân tích lỗi trên public gốc, k=0 public và train (không xem từng câu held-out). Mốc so sánh: v34 held-out public 0.602; v28 (LLM) public gốc 0.921.
 
 **CHẾ ĐỘ CHẠY TỰ ĐỘNG (user, 08/11 — bắt buộc):** Claude Code chạy tự động cho đến khi thực thi xong **toàn bộ** kế hoạch
-`docs/08_MASTER_PLAN.md` (WP0 → WP12). Không dừng lại, không hỏi ý kiến user (chỉ xin những thứ chỉ user làm được: token, acc
-mới, nộp portal). Hết quota GPU giữa chừng → tạm dừng phần GPU (vẫn làm phần CPU / code), khi quota reset thì tự động chạy tiếp.
-**Không chạy lại** bước đã xong: tiến độ ghi ở `handoff/STATUS.md` (bảng "Tiến độ WP"), mỗi lần tiếp tục bắt đầu từ bước chưa
-xong đầu tiên. Ngay đầu khung chat mới: tạo routine tự tiếp tục mỗi giờ (`create_trigger`, tiếp tục vào chính phiên này) với
-lời nhắc "đọc handoff/STATUS.md, làm tiếp bước chưa xong đầu tiên của docs/08; hết quota thì chờ reset"; chỉ xoá routine khi
-toàn bộ kế hoạch đã xong.
+`docs/08_MASTER_PLAN.md` (WP0 → WP12). **Không được dừng lại** trước khi xong; không hỏi ý kiến user (chỉ xin những thứ chỉ user
+làm được: token, acc mới, nộp portal). **Hết hạn mức sử dụng của Claude (phiên 5 giờ)** giữa chừng → tạm dừng; khi hạn mức reset
+thì tự động chạy tiếp từ chỗ dở. (Hết quota GPU Kaggle → làm phần code / CPU, chạy tiếp phần GPU khi quota reset hoặc có acc mới.)
+Tiếp tục đúng chỗ dở nhờ bảng "Tiến độ WP" trong `handoff/STATUS.md` (cập nhật sau mỗi bước; không làm lại bước đã xong; kernel
+đang chạy thì attach). Ngay đầu khung chat mới: tạo routine tự tiếp tục mỗi giờ (`create_trigger`, tiếp tục vào chính phiên này)
+với lời nhắc "đọc handoff/STATUS.md, làm tiếp bước chưa xong đầu tiên của docs/08; không dừng đến khi xong toàn bộ kế hoạch" —
+routine là cơ chế đánh thức lại sau khi hạn mức Claude reset; chỉ xoá routine khi toàn bộ kế hoạch đã xong.
 
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 

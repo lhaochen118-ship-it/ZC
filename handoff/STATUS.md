@@ -30,8 +30,9 @@ File nộp: `submissions/v30/` (luật), `submissions/v28/` (LLM). Không có ro
 
 ## Chế độ chạy tự động (user, 08/11)
 
-Chạy tự động đến khi xong toàn bộ `docs/08_MASTER_PLAN.md`; không dừng, không hỏi; hết quota thì chờ reset rồi chạy tiếp; không chạy
-lại bước đã xong (theo bảng dưới). Đầu khung chat mới: tạo routine tự tiếp tục mỗi giờ.
+Chạy tự động đến khi xong toàn bộ `docs/08_MASTER_PLAN.md`; không dừng, không hỏi. Hết hạn mức Claude (phiên 5 giờ) → tạm dừng,
+reset thì tự chạy tiếp (routine mỗi giờ tạo đầu khung chat mới). Tiếp tục từ bước chưa xong đầu tiên theo bảng dưới. Hết quota GPU
+Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 
 ## Tiến độ WP (cập nhật sau mỗi bước — nguồn duy nhất để biết làm tiếp từ đâu)
 

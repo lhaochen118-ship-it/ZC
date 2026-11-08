@@ -835,3 +835,32 @@ mốc chính, các tập khác là phần giao với các câu đã chạy):
   loss tham chiếu (token đáp án) 0.22 → 0.0003–0.0014. Đánh giá trong kernel hỏng (4 bản gộp 19 GB làm /tmp chỉ đọc) → đánh giá
   lại bằng vLLM `--lora` (`nguyenhoa99/zc-evalr1-1`: thư mục dataset tìm sai một cấp → sửa `adapters_root`, thử trên cây
   /kaggle/input giả; chạy lại `zc-evalr1b-1`) + mốc gốc cùng cấu hình (`quynhtran35/zc-evalbase-1`, nhánh BASE, `--eval-dp 4`).
+
+## Entry 38 — 2026-11-08: WP6 vòng 1 đánh giá → QĐ7 (A1 = D1 thắng); WP5 xong; vòng 2 khởi chạy
+
+Đánh giá LoRA qua vLLM (`nguyenhoa99/zc-evalr1b-1`, 1 GPU / nhánh, code `dbec142`, `configs/e0.json` compact) và mốc gốc cùng
+code (`quynhtran35/zc-evalbase-1`, DP 4). quick400 chứa 150 câu pub_full, 150 pub_k0, 100 tr_ho:
+
+| Nhánh (4M token, r 32 trừ ghi chú) | quick400 | pub_full (150) | pub_k0 (150) | **pub_ho (1373)** | tr_ho (100) | sai / bỏ (quick400) |
+|---|---|---|---|---|---|---|
+| BASE (Qwen3.5-9B gốc) | 0.700 | 0.767 | 0.473 | 0.516 | 0.94 | 40 / 40 |
+| A1 = D1 | **0.7775** | 0.840 | **0.600** | 0.531 | 0.95 | 29 / 31 |
+| A2 = D1 + D2 + D2N | 0.7275 | 0.740 | 0.560 | 0.532 | 0.96 | 46 / 17 |
+| A2T = A2 + D4T | 0.7075 | 0.753 | 0.493 | 0.516 | 0.96 | 52 / 13 |
+| A2T64 = A2T, r 64 / α 128 | 0.750 | 0.793 | 0.567 | **0.540** | 0.96 | 40 / 20 |
+
+- **QĐ7:** A1 hơn gốc 7.75 điểm quick400, không thua tr_ho / k=0 → **hỗn hợp thắng = D1**. Với ngân sách cố định (≈ 1.87k bản ghi),
+  thêm D2 / D2N / D4T làm loãng D1 (A2 chỉ còn ~350 bản ghi D1) và tăng câu trả lời sai (mô hình bớt bỏ, sai nhiều hơn). r 64
+  tốt hơn r 32 trên cùng dữ liệu (+4.25 quick400, +2.5 pub_ho) → thử ở vòng 2 / 3.
+- Held-out pub_ho (paraphrase k = 1, 2) chỉ tăng 1.5–2.4 điểm: fine-tune vòng 1 chủ yếu sửa câu cùng cách hỏi với train; bền
+  với cách hỏi mới là điểm yếu chính (mốc v34 held-out 0.602).
+- Đánh giá 1 GPU / nhánh (LoRA): 1,773 câu trong 1,850–2,250 s; mốc gốc DP 4: 1,225 s.
+- **WP5 xong** — bản ghi D3 sau lọc: qwen27 21,019 (giữ 73.6 %), qwen35a3b 18,146 (64.4 %), gemma31 17,043 (69.5 %; câu theo khuôn,
+  nhiều bản trùng bị chặn ở 3), self 16,688 (51.8 %), gptoss 10,079 (31.9 %; ~1.5k câu rác "unanswerable" / "questions" / code được
+  vòng lặp ngược giữ — đã lọc).
+- **Vòng 2 (khởi chạy 21:10 UTC, worktree `dbec142` = code đánh giá vòng 1):** D1 (2,119) + 2,119 bản ghi D3 của một thầy (50 %
+  theo bản ghi, `training/data/mix.py`), 4M token, quick400 + pub_ho. `synchan5704/zc-armsr2a-1`: B3S (self), B3Q35, B3OSS, B3G31;
+  `quynhle07/zc-armsr2b-1`: B3Q27, B3MIX (5 thầy, ~424 mỗi thầy), A1R64 (D1, r 64), B3MIX64 (r 64). So với A1 ở cùng ngân sách: D3
+  phải có giá trị ít nhất ngang D1 trên mỗi bản ghi.
+- **QĐ4 làm lại cho đúng:** Gemma 4 12B mới chỉ chạy prompt compact. Chạy Gemma prompt full (quick400 + pub_ho), Gemma compact
+  pub_ho và Qwen full pub_ho trên đúng code WP3 (`bc7c1a3`, worktree `wt_v35`) sau preflight → so gốc với gốc cùng prompt tốt nhất.

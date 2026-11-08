@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/qwen_full_ho --script eval_flow.py --sets pub_ho --model Qwen/Qwen3.5-9B --dp 4 --config configs/e0.json --cache /tmp/zc_cache --prompt full

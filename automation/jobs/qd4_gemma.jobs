@@ -1,0 +1,2 @@
+run_kaggle.py public_test OUT/s0_full --script eval_flow.py --sets quick400,pub_ho --model google/gemma-4-12b-it --dp 4 --config configs/e0.json --cache /tmp/zc_cache --prompt full
+run_kaggle.py public_test OUT/s0_compact_ho --script eval_flow.py --sets pub_ho --model google/gemma-4-12b-it --dp 4 --config configs/e0.json --cache /tmp/zc_cache

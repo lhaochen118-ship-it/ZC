@@ -1,5 +1,7 @@
 #!/bin/bash
-# Download the model weights into ./models/ (run once, from the repo root, needs internet; ~19.3 GB for Qwen3.5-9B).
+# Download the model weights into ./models/ (run once, from the repo root, needs internet; ~19.3 GB for Qwen3.5-9B) and the
+# fine-tuned LoRA adapter (WP7, ~0.6 GB) into ./models/adapter/ from the project's Kaggle dataset named in docker/assets.env
+# (needs the kaggle CLI and a token in ~/.kaggle/kaggle.json); docker/Dockerfile merges it into the base weights at build time.
 set -euo pipefail
 MODEL_ID=${1:-Qwen/Qwen3.5-9B}
 NAME=$(basename "$MODEL_ID")
@@ -25,3 +27,19 @@ for f, ref in h["files"].items():
 print("sha256 check:", "OK" if not bad else f"MISMATCH {bad}"); sys.exit(1 if bad else 0)
 PY
 du -sh "models/$NAME"
+
+# --- fine-tuned adapter (docker/assets.env: ADAPTER_DS=<owner>/<dataset>, empty = base model only)
+ADAPTER_DS=$(sed -n 's/^ADAPTER_DS=//p' docker/assets.env 2>/dev/null | head -1)
+rm -rf models/adapter; mkdir -p models/adapter
+if [ -z "$ADAPTER_DS" ]; then echo "no adapter in docker/assets.env: the image serves the base weights"; touch models/adapter/NONE; exit 0; fi
+python3 -m pip install -q -U kaggle
+kaggle datasets download -d "$ADAPTER_DS" -p models/_adapter_dl --unzip -q
+SRC=$(dirname "$(find models/_adapter_dl -name adapter_config.json | head -1)")
+cp "$SRC"/adapter_config.json "$SRC"/adapter_model.safetensors models/adapter/ && rm -rf models/_adapter_dl
+python3 - <<'PY'
+import json, hashlib
+ref = json.load(open("src/adapter_hashes.json"))
+bad = [f for f, h in ref["files"].items() if hashlib.sha256(open("models/adapter/" + f, "rb").read()).hexdigest() != h]
+print("adapter sha256 check:", "OK" if not bad else f"MISMATCH {bad}"); raise SystemExit(1 if bad else 0)
+PY
+du -sh models/adapter

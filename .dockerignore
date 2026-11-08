@@ -1,4 +1,4 @@
-# keep the build context small: only src/, docker/ and models/ are needed
+# keep the build context small: src/, configs/, docker/, models/ and training/merge.py are needed (never answer keys)
 .git
 data
 results
@@ -8,3 +8,9 @@ docs
 *.md
 !docker/*.md
 **/__pycache__
+training/data
+goldkey
+handoff
+submissions
+question_cleaning
+ZAIC.docx

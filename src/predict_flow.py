@@ -17,7 +17,7 @@ sys.path.insert(0, HERE)
 import merge_sub
 
 DEFAULTS = ("--flow hybrid --pipeline --quant fp8 --prefer-map fmt:automap --adj-rows move --qw 0 --kc 8 --think-map --compile-tokens 6144 "
-            "--max-len 8192 --max-tokens 512 --k-fast 2 --k-max 8 --repairs 2 --max-turns 2 --shots 3 --prompt compact").split()
+            "--max-len 8192 --max-tokens 512 --k-fast 2 --k-max 8 --repairs 2 --max-turns 2 --shots 3 --prompt compact --grammar 0").split()
 
 
 def n_gpus():

@@ -757,3 +757,15 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
   trong job huấn luyện + vá kiểm tra của PEFT trong `training/sft.py`. Loss của Unsloth (0.028 → 0.0005) nghi chuẩn hoá khác
   TRL → thêm loss tham chiếu (trung bình trên token đáp án, đo thủ công trước / sau) ở cả hai trainer (CPU: = loss TRL).
   Vòng 2 (`zc-smoke35b`) đo HF 1 GPU / FSDP2 / FSDP4, gộp + phục vụ LoRA; phần suy luận (`zc-smoke35i`: ngữ pháp, 2 thầy) đang chạy.
+
+## Entry 34 — 2026-11-08: WP1 smoke phần suy luận (`yuan1103/zc-smoke35i-1`): ngữ pháp, 2 thầy → QĐ2, QĐ12
+
+- Qwen3.5-9B gốc (FP8, 1 L4), 50 bản ghi D1 (prompt compact, ví dụ truy hồi từ DN khác, gợi ý): **50 / 50 chương trình hợp lệ
+  và trùng nhãn** cả khi có / không ngữ pháp (câu train có khuôn lặp giữa các DN → trong mẫu; held-out mới là thước đo). Không
+  ngữ pháp: 15.6 s cho 50 câu (3.2 câu / s / L4, 169 tok/s), nạp 266 s, KV 239,712 token. **Có ngữ pháp xgrammar theo DN
+  (liệt kê thực thể): 507 s (chậm 32×), không tăng độ hợp lệ → QĐ12: tắt ngữ pháp** (mặc định `--grammar 0`; A/B G5 thử
+  ngữ pháp nhẹ `--max-enum 0`, không liệt kê thực thể).
+- Thầy trên 4×L4 (QĐ2: chạy được, không cần dự phòng): Qwen3.6-27B-FP8 TP 2 nạp 308 s, KV 160,720 token; Gemma 4 31B-it
+  `--quantization fp8` TP 2 nạp 415 s, KV 44,992 token. Câu do thầy viết (50 chương trình D1): tiếng Việt tự nhiên, có văn chat
+  / viết tắt; lỗi gặp: kỳ tương đối sai ("tháng 4 năm ngoái" cho tháng 4 của năm hiện tại), lộ tên cột ("đơn valid") → lọc
+  vòng lặp ngược + lọc từ mã.

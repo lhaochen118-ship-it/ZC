@@ -900,7 +900,7 @@ def build_parser():
     ap.add_argument("--flow", default="legacy", choices=["legacy", "hybrid"], help="hybrid: src/hybrid.py (rules only prepare context / check)")
     ap.add_argument("--prompt", default="compact", choices=["compact", "full"], help="hybrid: compact API signatures | full API_DOC")
     ap.add_argument("--hints", type=int, default=1, help="hybrid: the # HINTS block (src/hints.py)")
-    ap.add_argument("--grammar", type=int, default=1, help="hybrid: grammar-constrained decoding (src/grammar.py)")
+    ap.add_argument("--grammar", type=int, default=0, help="hybrid: grammar-constrained decoding (src/grammar.py); off by QĐ12 (WP1: 32x slower)")
     ap.add_argument("--max-enum", type=int, default=5000, help="hybrid: entity values enumerated in the grammar per kind (more: free string)")
     ap.add_argument("--escape", default="python", help="hybrid: escape blocks allowed (python | python,sql | none)")
     ap.add_argument("--tools", default="find,period,check,help", help="hybrid: tools named in the prompt (all are bound in programs)")

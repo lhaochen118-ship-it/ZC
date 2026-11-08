@@ -921,3 +921,8 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   `CUDA_VISIBLE_DEVICES=0` tuyệt đối → job 2 cũng chạy trên GPU 0; hai súp dùng chung `/tmp/soup` (job sau xoá mô hình gộp của
   job trước). Job đầu của `qd4gemma` vẫn hợp lệ (chạy 1 GPU).
 - Thêm biến thể `think` cho vòng 2 (`--variants direct,think`): mẫu vòng 2 (câu khó, ~15 %) suy nghĩ trước; chưa đo.
+- **QĐ4 (xong):** Gemma 4 12B prompt full (`quynhle07/zc-qd4gemma-1`, job 1 chạy trên 1 GPU do lỗi chia GPU, kết quả vẫn hợp lệ):
+  quick400 0.7675, pub_k0 0.547, **pub_ho 0.521** (999 / 284 / 90) vs Qwen full quick400 0.740 / 0.755, **pub_ho 0.541** (971 / 228 /
+  174). Hơn quick400 +2.0 so với trung bình hai lần đo Qwen = đúng ngưỡng nhưng trong nhiễu đo (±2); held-out lớn hơn 3.4× nghiêng
+  về Qwen 2 điểm (Gemma trả lời nhiều hơn, sai nhiều hơn); Gemma bf16 24 GB không vừa 1 L4 để LoRA → **giữ Qwen3.5-9B**. Job 2
+  (Gemma compact pub_ho) không ra kết quả (lỗi chia GPU) — không cần cho quyết định.

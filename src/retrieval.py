@@ -14,7 +14,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 EX_PATH = os.path.join(HERE, "refs", "bank", "examples.jsonl")      # training/data/d1_train_pairs.py (skeletons computed)
 if not os.path.isfile(EX_PATH): EX_PATH = os.path.join(HERE, "refs", "answer_examples.jsonl")
 TR_HO = ("biz_105", "biz_109", "biz_114", "biz_123", "biz_127", "biz_130")
-PERIOD_RX = re.compile(r"\b(?:thang|thg|th|quy|q|nam|tuan|ngay|hom|bua|tet)\s*(?:nay|qua|truoc|roi|sau|toi|0+(?:\s*0+)*)?\b")
 
 
 def family(code):
@@ -35,18 +34,37 @@ def skeleton(question, hints=None):
 
 
 class Bank:
-    def __init__(self, ex, mode="ngram"):
+    def __init__(self, ex, mode="ngram", embedder=None, vectors=None):
         self.ex = ex; self.mode = mode
         for e in self.ex: e.setdefault("family", family(e.get("code")))
         self.index = fewshot.Index([e.get("skeleton") or skeleton(e["question"], e.get("hints")) for e in ex]) if ex else None
+        self.emb, self.vec = embedder, vectors                          # mode "embed": src/embedder.py + bank vectors (row i = ex[i])
+
+    def ranked(self, question, hints, n=80):
+        """(score, index) of the n bank examples most similar to the question's skeleton."""
+        sk = skeleton(question, hints)
+        if self.mode == "embed" and self.emb is not None and self.vec is not None:
+            import numpy as np
+            q = self.emb.encode([sk], query=True)[0]; sc = self.vec @ q
+            top = np.argsort(-sc)[:n]
+            return [(float(sc[i]), int(i)) for i in top]
+        return self.index.search(sk, n)
 
     @classmethod
-    def load(cls, path=None, exclude_bids=TR_HO, include_holdout=False, mode="ngram", extra=()):
+    def load(cls, path=None, exclude_bids=TR_HO, include_holdout=False, mode="ngram", extra=(), embed_model="", vectors=""):
         rows = []
         for p in [path or EX_PATH] + list(extra):
             if p and os.path.isfile(p): rows += [json.loads(l) for l in open(p, encoding="utf-8") if l.strip()]
-        ex = [r for r in rows if include_holdout or r.get("business_id") not in set(exclude_bids or ())]
-        return cls(ex, mode)
+        keep = [i for i, r in enumerate(rows) if include_holdout or r.get("business_id") not in set(exclude_bids or ())]
+        ex = [rows[i] for i in keep]
+        emb = vec = None
+        if mode == "embed":
+            import numpy as np, embedder
+            vp = vectors or os.path.join(os.path.dirname(path or EX_PATH), "embeddings.npy")
+            V = np.load(vp)
+            if len(V) != len(rows): raise ValueError(f"{vp}: {len(V)} vectors for {len(rows)} bank rows")
+            vec = V[keep]; emb = embedder.Embedder(embed_model)
+        return cls(ex, mode, emb, vec)
 
     def retrieve(self, question, hints=None, k=4, exclude_bids=(), exclude_ids=(), per_family=1):
         """k examples, most similar first, at most per_family per function family; never one of exclude_bids / exclude_ids
@@ -54,7 +72,7 @@ class Bank:
         if not self.index or k <= 0: return []
         base_ids = {str(i).split("~")[0] for i in exclude_ids}
         out, used = [], Counter()
-        for s, i in self.index.search(skeleton(question, hints), 80):
+        for s, i in self.ranked(question, hints, 80):
             e = self.ex[i]
             if e.get("business_id") in exclude_bids or str(e.get("id", "")).split("~")[0] in base_ids: continue
             if used[e["family"]] >= per_family: continue

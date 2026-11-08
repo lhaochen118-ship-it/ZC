@@ -167,7 +167,7 @@ thời gian. Trọng số phải public trước 01/10/2026 và giấy phép cho
 - Ước lượng thời gian: đường LLM 4×L4 ~55–75 phút / lần chạy cho 1000 câu public (≈ 3.3–4.5 s / câu / lần chạy với 4 GPU).
   Mỗi bước thêm (Q6, sinh lại, tool) phải đo lại thời gian.
 
-## 7. Kế hoạch thí nghiệm (khung chat kế tiếp)
+## 7. Kế hoạch thí nghiệm (đã thay bằng `docs/08_MASTER_PLAN.md` §4–§6)
 
 | # | Thí nghiệm | Thước đo | Giữ khi |
 |---|---|---|---|

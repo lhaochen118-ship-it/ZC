@@ -77,6 +77,9 @@ Luồng: câu hỏi → mô hình → code truy vấn → chạy → mô hình n
 
 ## 5. Các bước tiếp theo (theo thứ tự)
 
+Kế hoạch đầy đủ và lộ trình theo ngày (08–16/11), phân bổ quota, nhánh fine-tune song song: **`docs/08_MASTER_PLAN.md`**
+(thay cho phần lộ trình dưới đây khi khác nhau).
+
 **Bước 1.** **Xin token Kaggle** (acc L4: quynhtran35, yuan1103, phatle1578; T4: yeshenhi, mxuanquy) → `~/.kaggle/tok_<acc>` (600).
 Tải dữ liệu, ingest cache (lệnh: `environment_summary.pdf` §1).
 

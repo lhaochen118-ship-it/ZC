@@ -9,7 +9,8 @@ Cho Agent (hoặc người) nhận dự án ở khung chat mới. Đọc theo th
 | 1 | `CLAUDE.md` | Nguyên tắc user đã chốt, cổng kiểm tra trước khi chạy, playbook GPU |
 | 2 | `handoff/STATUS.md` | Trạng thái sống, quyết định mới nhất (08/11: chuyển sang LLM-first) |
 | 3 | `handoff/03_HANDOFF.pdf` | Mục tiêu, quyết định, vị trí code / dữ liệu / kết quả, **các bước tiếp theo** |
-| 4 | `docs/06_HYBRID_FRAMEWORK.md` | **Thiết kế hybrid framework**: ranh giới được / cấm, luồng 8 bước, tham khảo paper, hướng cải tiến, giao thức khi trả lời sai, kế hoạch E0–E5 |
+| 4 | `docs/08_MASTER_PLAN.md` | **Kế hoạch chính**: mục tiêu public = 1.0, tham khảo paper / repo (citation, stars), kiến trúc đích, fine-tune / chưng cất với nhánh song song, lộ trình 08–16/11, quota |
+| 4b | `docs/06_HYBRID_FRAMEWORK.md` | **Thiết kế hybrid framework**: ranh giới được / cấm, luồng 8 bước, tham khảo paper, hướng cải tiến, giao thức khi trả lời sai, kế hoạch E0–E5 |
 | 5 | `handoff/environment_summary.pdf` | Container, Kaggle (máy, acc, quota), máy chấm / Docker |
 
 ## 2. Khi cần hiểu sâu

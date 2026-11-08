@@ -10,10 +10,11 @@ nhận diện ý định câu hỏi, đọc data, viết schema (`ingest`, `auto
 nghiệp vụ (`dm`, `industry`), làm sạch câu, ví dụ few-shot, kiểm tra bằng code — để Agent sinh code nhanh / chính xác hơn.
 Code trả lời của **mọi** câu do mô hình sinh; chương trình luật (`qparse`) chỉ là gợi ý / kiểm chéo. Chi tiết:
 `handoff/03_HANDOFF.md` §2.1; **thiết kế + tổng quan tài liệu + kế hoạch thí nghiệm: `docs/06_HYBRID_FRAMEWORK.md`**
-(luồng 8 bước, giao thức xử lý câu sai, điểm tin cậy + sinh lại, precheck, tool, mô hình phụ, chưng cất). Luồng nộp hiện tại (`src/predict_flow.py`, stage 1 luật trả lời thẳng → `canon_llm.py` →
+(luồng 8 bước, giao thức xử lý câu sai, điểm tin cậy + sinh lại, precheck, tool, mô hình phụ, chưng cất);
+**kế hoạch chính + lộ trình 08–16/11: `docs/08_MASTER_PLAN.md`** (mục tiêu public = 1.0, nhánh fine-tune song song, quota). Luồng nộp hiện tại (`src/predict_flow.py`, stage 1 luật trả lời thẳng → `canon_llm.py` →
 `agent.py`) phải được thay. Đo bằng held-out: paraphrase public k=1,2 và paraphrase train
-(`src/paraphrase_llm.py`, `eval_split.py --perturb-q para:`, `stress_flow.py --modes para:`); chỉ phân tích lỗi trên
-k=0 public và train. Mốc so sánh: v34 held-out public 0.602; v28 (LLM) public gốc 0.921.
+(`src/paraphrase_llm.py`, `eval_split.py --perturb-q para:`, `stress_flow.py --modes para:`) và 6 DN train giữ ngoài
+huấn luyện; được phân tích lỗi trên public gốc, k=0 public và train (không xem từng câu held-out). Mốc so sánh: v34 held-out public 0.602; v28 (LLM) public gốc 0.921.
 
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 

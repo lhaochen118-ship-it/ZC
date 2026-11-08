@@ -348,3 +348,23 @@ Repos: vanna-ai/vanna, Canner/WrenAI, sinaptik-ai/pandas-ai, eosphoros-ai/DB-GPT
 XGenerationLab/XiYan-SQL, RUCKBReasoning/OmniSQL, ShayanTalaei/CHESS, BeachWang/DAIL-SQL, Snowflake-Labs/ReFoRCE,
 snowflakedb/ArcticTraining, xlang-ai/Binder, hiyouga/LlamaFactory, unslothai/unsloth, huggingface/trl, verl-project/verl,
 vllm-project/vllm, VinAIResearch/PhoBERT.
+
+## 13. Bổ sung từ `docs/09_OPTIONS_DEEP_DIVE.md` (08/11) — đưa vào các gói việc
+
+Căn cứ: log v34 — 35 % mẫu chương trình của mô hình gốc không chạy (TypeError 1,019; AttributeError 670; thiếu khối code
+626; LookupError 394; ImportError / NameError / ModuleNotFound 572; SyntaxError 183); 118 / 422 câu sai do mẫu bất đồng,
+63 câu sai dù mọi mẫu đồng ý.
+
+| Gói việc | Thêm (mức P0 / P1 của docs/09 §8) | Nghiệm thu thêm |
+|---|---|---|
+| WP2 | P0: ngữ pháp DSL cho `StructuredOutputsParams(grammar=...)` (tên hàm / tham số thật, literal thực thể của DN, nhánh thoát `<python>`); tool dạng hàm T1 `find`, T3 `period`, T7 `check` (postcheck), T8 `help` + tài liệu API gọn. P1: T2 `values`, T5 `schema` / `peek`, T6 `explain`, T9 `has_data`; tối đa 2 lượt khám phá kiểu CodeAct | `tests/test_grammar.py`: 2,681 chương trình đã kiểm đều khớp ngữ pháp; `tests/test_tools.py`: đầu ra ≤ 300 token, tất định; tỉ lệ mẫu chạy được tăng (đo E1) |
+| WP3 | bộ `pub_noind` (ẩn hàm ngành), `rb_shift` (đổi định nghĩa rulebook), `pub_noacc` (bỏ dấu); A/B: ngữ pháp bật / tắt, I5 viết lại câu, nhánh thoát pandas vs DuckDB | bảng PA theo bộ |
+| WP4 | P0: H2 tăng cường nhiễu; P1: H4 quỹ đạo dùng tool; dữ liệu cho bộ kiểm (mẫu đúng / sai có nhãn thực thi) | `test_data_factory` kiểm thêm nhãn bộ kiểm |
+| WP6 | P1: H7 gộp các nhánh thắng (PEFT `add_weighted_adapter`: linear / TIES / DARE) + H8 nhiều LoRA cùng phục vụ | chọn giữa nhánh đơn / gộp / nhiều LoRA bằng `quick400` |
+| WP8 | P1: S1 truy hồi bằng Qwen3-Embedding-0.6B (khung câu đã che); S3 bộ kiểm Qwen3.5-0.8B (H11) cho Best-of-N (I2) + đặc trưng tin cậy; I3 tự phê bình có tool cho câu nghi ngờ; I7 kiểm ngưỡng bằng conformal risk control | đánh giá truy hồi offline (top-4 cùng họ hàm); AUROC bộ kiểm trên dev; PA held-out không giảm |
+| WP12 (mới, P1) | nhánh thoát DuckDB SQL trên bảng C + bảng thô cho ngành / khái niệm chưa có hàm | thắng pandas trên `pub_noind` → giữ |
+
+**Tham số lúc chạy:** Qwen3.5-9B 9.65B + Qwen3-Embedding-0.6B 0.60B + Qwen3.5-0.8B (bộ kiểm) 0.87B = 11.12B ≤ 15B (nguồn
+trọng số kiểm như §1). **GPU thêm:** huấn luyện bộ kiểm ~2 GPU-h, nhúng trước ví dụ ~0.5 GPU-h, A/B trong WP3 ~4 GPU-h —
+nằm trong phần dư W46 / W47. P2 (JSON IR, chưng cất on-policy, DSPy, PhoBERT, khôi phục dấu, EAGLE) chỉ làm khi còn thời
+gian; RL sau 16/11.

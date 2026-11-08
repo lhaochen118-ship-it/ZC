@@ -29,7 +29,7 @@ h3 { font-size: 11pt; color: #14517f; margin: 10px 0 4px; }
 p  { margin: 4px 0; }
 em { color: #444; }
 strong { color: #0b2c4a; }
-code { font-family: DejaVuMono, Courier, monospace; font-size: 8.3pt; background: #eef2f6; color: #9b1d1d; padding: 0 2px; }
+code { font-family: DejaVu, Helvetica, sans-serif; font-size: 8.3pt; background: #eef2f6; color: #9b1d1d; padding: 0 2px; }
 pre { font-family: DejaVu, Helvetica, sans-serif; font-size: 7.9pt; background: #f4f6f8; border: 1px solid #d5dde4;
       padding: 6px 8px; margin: 5px 0; -pdf-keep-with-next: false; }
 pre code { font-family: DejaVu, Helvetica, sans-serif; background: transparent; color: #12303f; padding: 0; }

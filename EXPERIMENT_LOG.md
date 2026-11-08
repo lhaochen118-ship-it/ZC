@@ -710,3 +710,15 @@ README does not name it (dev_010; no train shop detected). Train oracle 2967 / 1
 - Số đo dùng để lập lịch: v34 stage 2 ~8.5 s / câu khó / lần chạy trên 4×L4, ~4.5k token / câu, 171 tok/s / GPU.
 - Ba điều chỉ đo được trên GPU (bộ nhớ / tốc độ huấn luyện, nạp thầy FP8 trên L4, tốc độ LoRA vs gộp) → WP1 với quy tắc
   quyết định QĐ1–QĐ3 viết sẵn.
+
+## Entry 30 — 2026-11-08: phương án đào sâu (tool, ràng buộc ngữ pháp, mô hình phụ, chưng cất) — `docs/09_OPTIONS_DEEP_DIVE.md`
+
+- Căn cứ đo từ log v34 (3 × 422 câu khó, Qwen3.5-9B gốc): 35 % mẫu chương trình không chạy — TypeError 1,019, AttributeError
+  670, thiếu khối code 626, LookupError 394, ImportError 230, NameError 216, SyntaxError 183, ModuleNotFound 126, không gán
+  ANSWER 104, KeyError 269; lần chạy 1: đúng 188, sai do bất đồng 118, sai dù đồng ý 63, abstain 53.
+- Đề xuất P0: ngữ pháp DSL qua `StructuredOutputsParams(grammar=...)` (vLLM 0.32, xgrammar), tool dạng hàm `find` / `period`
+  / `check` / `help`, postcheck bất biến, tăng cường nhiễu khi huấn luyện. P1: truy hồi bằng Qwen3-Embedding-0.6B, bộ kiểm
+  Qwen3.5-0.8B (Best-of-N + tin cậy), gộp nhánh LoRA (TIES / DARE) và nhiều LoRA cùng phục vụ, quỹ đạo dùng tool, tự phê bình
+  có tool, nhánh thoát DuckDB SQL. Bộ đánh giá mới: `pub_noind` (ẩn hàm ngành, 112 câu public), `rb_shift`, `pub_noacc`.
+- Đã kiểm: Qwen3.6 và Qwen3.5 dùng chung tokenizer (vocab 248,044, cùng merges, cùng 26 token đặc biệt) → chưng cất on-policy
+  mức token khả thi (P2). Tổng tham số lúc chạy với S1 + S3: 11.12B.

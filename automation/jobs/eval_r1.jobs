@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/eval_r1 --script training/arms_job.py --model Qwen/Qwen3.5-9B --arms A1=x+A2=x+A2T=x+A2T64=x --adapters-dir /kaggle/input/zc-adapters-r1 --sets quick400,pub_ho

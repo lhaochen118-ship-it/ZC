@@ -65,7 +65,7 @@ module kiểm tra trước khi chạy thống nhất, Q6 bước Agent đọc k�
 | Chưng cất CoT có kiểm thực thi (ví dụ Qwen3.5-2B distill từ 27B, SQuaD-SQL arXiv 2607.08161) | thầy lớn sinh lời giải, **chỉ giữ lời giải chạy ra đúng** (rejection sampling), LoRA cho học trò | §5.1: thầy lớn trên Kaggle sinh chương trình toolkit cho câu train + câu tổng hợp |
 | **TrustSQL** (arXiv 2403.15879) — chấm có phạt, như PA | mô hình phải trả lời hoặc **từ chối**; nhiều phương pháp không vượt baseline "luôn từ chối" khi phạt nặng | Abstain là một năng lực riêng, phải đo bằng PA, không chỉ độ chính xác |
 | Selective prediction cho text-to-SQL (arXiv 2607.06799) | tín hiệu dự báo đúng / sai: **self-consistency một mình không cho tập rủi ro thấp đáng tin**; verifier / kết hợp tín hiệu tốt hơn (AUROC 0.82, ECE 0.03) | Q7: kết hợp nhiều tín hiệu (§4.3), hiệu chỉnh trên dev |
-| **ViText2SQL** (VinAI, EMNLP Findings 2020) | Spider dịch sang tiếng Việt (~10k cặp); PhoBERT > XLM-R; tách từ giúp ích | Nguồn câu tiếng Việt cho tổng hợp / huấn luyện mô hình phụ (giấy phép chỉ nghiên cứu / giáo dục → **hỏi user** trước khi dùng) |
+| **ViText2SQL** (VinAI, EMNLP Findings 2020) | Spider dịch sang tiếng Việt (~10k cặp); PhoBERT > XLM-R; tách từ giúp ích | Nguồn câu tiếng Việt cho tổng hợp / huấn luyện mô hình phụ (giấy phép nghiên cứu / giáo dục — **dùng được**, quy tắc dataset: `docs/07_DATASETS.md` §1) |
 
 Bài học chung từ các hệ trên: (1) **ngữ cảnh dữ liệu giàu** (mô tả file, giá trị thật) là đòn bẩy lớn nhất; (2) **nhiều
 ứng viên + chọn / bỏ phiếu**; (3) **tự sửa theo phản hồi thực thi**; (4) mô hình nhỏ đạt mức mô hình lớn nhờ **dữ liệu
@@ -111,6 +111,8 @@ Chỉ đáng làm khi đo được lợi trên held-out so với dùng chính Qw
 thời gian. Trọng số phải public trước 01/10/2026 và giấy phép cho phép (luật BTC §2); khai báo trong README nộp.
 
 ### 4.8 Chưng cất / fine-tune (tốn nhất, cân nhắc sau 4.1–4.5)
+- **Dữ liệu ngoài:** chọn theo quy tắc + bảng thống kê ở `docs/07_DATASETS.md` (dataset public là dùng được; chỉ dataset
+  uy tín: hội nghị / tạp chí có hạng hoặc nhiều citation).
 - **Dữ liệu:** câu train (3000, có đáp án) + **câu tổng hợp** trên dữ liệu train (sinh câu theo mẫu ý định × thực thể ×
   kỳ, đáp án tính bằng toolkit — luật được dùng để *tạo dữ liệu huấn luyện*, không để trả lời lúc chạy) + paraphrase của
   câu train (`src/paraphrase_llm.py`). **Không** dùng câu / đáp án / paraphrase của public test để train (luật BTC §6).

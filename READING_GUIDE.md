@@ -22,6 +22,7 @@ Cho Agent (hoặc người) nhận dự án ở khung chat mới. Đọc theo th
 | `docs/00_TASK.md`, `docs/ZAIC_REQUIREMENTS.md` (gốc `ZAIC.docx`) | Đề bài, luật chấm, yêu cầu user |
 | `docs/04_DECISION_V3.md` | Thiết kế đường LLM (ánh xạ theo DN + toolkit) — nền của LLM-first |
 | `docs/02_KAGGLE_OPS.md`, `docs/05_GPU_OPTIMIZATION.md` | Vận hành Kaggle, tối ưu GPU |
+| `docs/07_DATASETS.md` | Quy tắc dùng dataset ngoài + bảng 35 dataset (citation, hội nghị, truy cập) |
 | `EXPERIMENT_LOG.md` | Số liệu từng bản: entry 0–19 đường LLM, 20–27 đường luật + paraphrase |
 | `tests/README.md` | Bộ test CPU và lệnh đánh giá |
 

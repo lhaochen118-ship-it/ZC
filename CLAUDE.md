@@ -21,6 +21,9 @@ k=0 public và train. Mốc so sánh: v34 held-out public 0.602; v28 (LLM) publi
 - Mục tiêu: PA cao nhất trên private test **và nhanh nhất có thể**; tổng tham số mô hình ≤ 15B, offline, ≤ 6 giờ trên
   2×RTX 5090. Tổng quát, không vá theo DN / câu của tập test. Chỉ tạo file nộp khi kết quả tốt.
 - Token Kaggle chỉ ở `~/.kaggle/tok_<username>` (600); container mất khi sang khung chat mới → xin lại user.
+- **Dataset ngoài (user, 08/11):** dataset public là dùng được (kể cả giấy phép nghiên cứu / giáo dục), không cần hỏi;
+  chỉ dùng dataset uy tín (hội nghị / tạp chí có hạng hoặc nhiều citation); không bao giờ dùng public / private test của
+  cuộc thi để train. Bảng thống kê: `docs/07_DATASETS.md`.
 - Theo dõi kernel bằng watcher nền, không poll; tìm tài liệu: đọc văn bản / paper, không đọc code repo người khác.
 
 ## Playbook tốc độ GPU (user yêu cầu ghi nhớ, 2026-11-02) — chi tiết: `docs/05_GPU_OPTIMIZATION.md`

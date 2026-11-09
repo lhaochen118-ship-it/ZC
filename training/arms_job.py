@@ -64,6 +64,9 @@ def branch(i, name, files, a, D, base_env):
             res["error"] = "training failed"; json.dump(res, open(f"{out}/result.json", "w"), indent=1); return res
         shutil.copytree(f"{tmp}/adapter", f"{out}/adapter", dirs_exist_ok=True)
         ad = f"{tmp}/adapter"
+        if a.no_eval:                                                    # soup members (WP7): adapters only, evaluated merged
+            res["merge_s"] = res["eval_s"] = 0; json.dump(res, open(f"{out}/result.json", "w"), indent=1)
+            print(f"[arms] {name}: train {res['train_s']}s (no evaluation)", flush=True); return res
     # evaluation with the adapter served by vLLM (--lora): no merged copy is written (4 merged 19 GB copies at once turned
     # /tmp read-only on Kaggle in round 1); merging is for the final model only (QĐ3)
     t1 = time.time()
@@ -114,6 +117,7 @@ def main():
     ap.add_argument("--eval-dp", type=int, default=1, help="GPUs per branch evaluation (a single BASE branch: 4)")
     ap.add_argument("--max-len", type=int, default=3072, help="training sequence length (full-prompt records: 5120 with --mb 2)")
     ap.add_argument("--seed", type=int, default=20261108, help="training seed (record sample and order)")
+    ap.add_argument("--no-eval", action="store_true", help="train and save the adapters only (soup members: training/soup_job.py)")
     a = ap.parse_args()
     os.chdir(ROOT)
     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)

@@ -65,6 +65,7 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP-P2-03 định dạng + cờ kỳ lệch | CPU xong | | | |
 | WP-P2-04 review thiếu dữ liệu | chờ GPU (`p2_c`) | | | |
 | Vòng 1: **p2_c** (= b + review thiếu dữ liệu) | **xong — tốt nhất** | **0.972** (981 / 9 / 10) | **0.601 / 0.874** (gộp **0.757**) | giữ |
+| Vòng 2: **p2_d** (= c + gợi ý `counted` / `thresholds`) | xong | **0.975** (985 / 10 / 5) | 0.600 / 0.868 (gộp 0.753 vs c 0.757: −0.38, trong nhiễu) | chưa quyết: sửa 7 câu của c ("mấy bữa", cùng kỳ năm trước…), thêm 3; lặp seed ở vòng 3 |
 | Vòng 2: **p2_e** (d nhưng prefill `<plan>`, trần 512) | xong — **loại** | 0.898 (939 / 41 / 20) | 0.575 / 0.874 | ép bắt đầu bằng `<plan>` bỏ phần lập luận tự do của súp → sai tăng; giữ cách sửa bằng trần 1536 |
 | Vòng 1: p2_a (sửa gợi ý / làm sạch / định dạng / cờ kỳ, trần 512) | xong | 0.965 (976 / 11 / 13) | 0.603 / 0.871 (gộp 0.756) | phần lớn mức tăng đến từ sửa gợi ý; train dev `tr_dev500` 0.992 (498 / 2 / 0: "lời gộp" đọc thành lãi ròng, tăng trưởng cùng kỳ năm trước so với tháng trước → sửa vòng 3) |
 | Vòng 1 GPU (`p2_a/b/c`) | **xong cả 3** | **p2_b 0.967** (979 / 12 / 9; mốc 0.934 tb 5 lần, tốt nhất 0.939) | **0.603 / 0.866** (mốc 0.592 / 0.873; gộp 0.753 vs 0.752: không giảm → **giữ**) | p2_b = sửa gợi ý / làm sạch / định dạng / cờ kỳ + trần 1536 token; 1,000 + 3,199 câu trong 4,488 s (merge 792 s), GPU 70–78 %; 21 câu còn sai (15 cũ, 6 mới) |

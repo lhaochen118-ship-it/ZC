@@ -1049,3 +1049,6 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   Think vòng 2 trên public gốc: gốc +1.8 (0.906 → 0.924), súp WC +1.3 (0.913 → 0.926) — chủ yếu đổi câu bỏ thành câu đúng.
 | Súp WC1–4 α 0.35 (compact), không think (`huyenco/zc-pfwc035-1`) | 0.913 | 930 / 17 / 53 | |
 | Súp top-4 cũ (v1) α 0.35, không think (`phatle1578/zc-pfs4035-1`) | 0.921 | 936 / 15 / 49 | |
+| Súp WC α 0.5 + think **mọi mẫu** (6144 token, k 2 → 4; `mucnokieu/zc-pfwc05allthink-1`) | 0.921 | 951 / **30** / 19 | 2,284 s |
+
+  Think mọi mẫu: đúng nhiều nhất (951) nhưng sai tăng (30 vs 19), gấp đôi thời gian → **không dùng**; think chỉ ở vòng 2 tốt hơn và nhanh hơn.

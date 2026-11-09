@@ -153,6 +153,17 @@ class HybridPipeline(pipeline.Pipeline):
             return
         self.finish(st)
 
+    def calibrator(self):
+        """the logistic calibrator of --calibrator (tests/calibrate.py --out), loaded once; None = vote share."""
+        if not hasattr(self, "_cal"):
+            path = getattr(self.a, "calibrator", "") or ""
+            if path and not os.path.isabs(path) and not os.path.isfile(path):
+                path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), path)
+            import confidence
+            self._cal = confidence.Calibrator.load(path) if path and os.path.isfile(path) else None
+            if path and self._cal is None: print(f"[hybrid] calibrator {path} not found: vote share", flush=True)
+        return self._cal
+
     def finish(self, st):
         a, q = self.a, st["q"]
         if q["id"] in self.written: return st["done"]()
@@ -161,15 +172,20 @@ class HybridPipeline(pipeline.Pipeline):
             if not s.get("ok"): continue
             c = agent.canon_of(s["answer"]); votes[c] += 0.5 if s.get("flags") else 1.0; rep.setdefault(c, s["answer"])
         n = max(1, len(st["samples"]))
+        top = votes.most_common(1)[0][0] if votes else None
+        log = {"hints": st.get("hints"), "examples": st.get("examples"), "stop": st.get("stop", "round2"), "error": st.get("error"),
+               "best": rep[top] if votes else None,
+               "samples": [{k: v for k, v in s.items()} for s in st["samples"]]}
         if votes:
-            top, w = votes.most_common(1)[0]; conf = w / n
+            conf = votes[top] / n; log["conf_vote"] = conf
+            cal = self.calibrator()
+            if cal is not None:                                         # QĐ14: calibrated probability of the top answer (WP8)
+                import confidence
+                conf = float(cal.predict(confidence.matrix([{"samples": log}]))[0]); log["conf_cal"] = conf
             final = rep[top] if conf >= float(getattr(a, "theta_abstain", 0.5)) else {"type": "abstain"}
         else: conf, final = 0.0, {"type": "abstain"}
         self.stats["answered" if final.get("type") != "abstain" else "abstained"] += 1
         self.stats[f"stop_{st.get('stop', 'round2')}"] += 1
-        log = {"hints": st.get("hints"), "examples": st.get("examples"), "stop": st.get("stop", "round2"), "error": st.get("error"),
-               "best": rep[top] if votes else None,
-               "samples": [{k: v for k, v in s.items()} for s in st["samples"]]}
         agent.write_answer(self.sub, self.logf, a, q, final, conf, votes, log, {}, time.time() - st["t"])
         self.sub.flush(); self.logf.flush(); self.n_answered += 1; self.written.add(q["id"])
         st["done"]()

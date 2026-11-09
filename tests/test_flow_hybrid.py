@@ -6,7 +6,8 @@
 - --dp 2 (two processes with claims) answers every question once;
 - a tiny --budget still writes a line for every question (abstain when out of time);
 - the <sql> escape (WP12) runs through precheck and DuckDB;
-- --review 1 (M11): a flagged result gets exactly one review turn and keeps a valid answer.
+- --review 1 (M11): a flagged result gets exactly one review turn and keeps a valid answer;
+- --calibrator (QĐ14): the online abstain decision equals confidence.decide on the same log.
 Usage: test_flow_hybrid.py <train_split> <scratch>"""
 import os, sys, json, subprocess, shutil
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -98,6 +99,17 @@ def main():
         assert s["ok"], "a reviewed sample lost its answer"
         assert s["turns"].index(t[0]) < len(s["turns"]) - 1 or len(s["turns"]) > 2, "review turn not generated"
     print(f"review: {len(rev)} of {len(sm)} samples re-read once")
+    import confidence as C                                              # WP8 / QĐ14: --calibrator decides online like offline
+    X = C.matrix(logs); y = [float((r["final"] or {}).get("answer") == 7) for r in logs]
+    cp = os.path.join(S, "cal.json"); C.Calibrator().fit(X, y).save(cp)
+    out6 = os.path.join(S, "o6"); run([split, out6] + base + ["--calibrator", cp, "--theta-abstain", "0.5"])
+    _, logs6 = check(out6, n, "calibrator"); cal = C.Calibrator.load(cp); m = 0
+    for r in logs6:
+        if r["samples"].get("best") is None: continue
+        fin, p = C.decide(r, cal, 0.5); m += 1
+        assert abs(p - r["samples"]["conf_cal"]) < 1e-9 and (fin.get("type") == "abstain") == (r["final"].get("type") == "abstain"), r["id"]
+    assert m, "no calibrated decision"
+    print(f"calibrator: {m} decisions equal to confidence.decide")
     print("test_flow_hybrid PASS")
 
 

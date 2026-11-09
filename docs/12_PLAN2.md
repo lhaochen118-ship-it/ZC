@@ -97,15 +97,20 @@ Code `c49da84` (+ gợi ý `counted` / `thresholds` khi `--hint-counts 1`, prefi
 
 d sửa 7 câu của c (2 câu "mấy bữa", cùng kỳ năm trước, "cháy hàng"…), thêm 3 (size sữa "số 4", đơn vị "gói", lô).
 
-## Vòng 3 (09/11, đang chạy)
+## Vòng 3–4 (09/11) — kết quả (lặp seed để đo nhiễu)
 
-Code `3131884` / `c918ff2`: + thực thể **việc sửa xe** (qua bảng việc của toolkit, chỉ cụm sau động từ) và **size** danh mục ("số 4", "size M"),
-đồng nghĩa lời = lãi, precheck `named_periods` (cờ `--named-periods-flag`: mẫu không dùng đủ các kỳ câu nêu đúng 85 / 106).
-Lặp seed để đo nhiễu: `p2_g` (= d + named-periods), `p2_g_s1`, `p2_d` (code mới), `p2_c_s1`.
+| Cấu hình | Public gốc (seed 0 / seed 1) | Held-out gộp (seed 0 / seed 1) | Trung bình public / held-out |
+|---|---|---|---|
+| `p2_c` | 0.972 / 0.973 | 0.757 / 0.753 | 0.9725 / 0.755 |
+| `p2_d` (code vòng 2 / vòng 3) | 0.975 / 0.968 | 0.753 / 0.749 | 0.9715 / 0.751 |
+| `p2_g` = d + cờ named-periods (code vòng 3) | **0.980** / 0.972 | 0.755 / 0.757 | **0.976** / 0.756 |
+| `p2_h` = d + cờ ngưỡng (code vòng 4: + hạn dùng N ngày) | 0.971 / **0.980** | 0.755 / **0.760** | 0.9755 / **0.758** |
 
-## Vòng 4 (code sẵn, chờ vòng 3)
+Nhiễu một lần chạy: public ±0.4, held-out gộp ±0.3. g và h ngang nhau và hơn c ~0.3 public; vòng 5 gộp: `p2_j` = g + cờ ngưỡng + kiểm
+tra lỗi size / unit (chỉ chạm mẫu sai trên mọi log: size 54 + 114, unit 71 + 104), `p2_i` = c + size / unit.
+Câu còn sai ở g (22 ở ≥ 1 seed, 10 ổn định): đếm đơn vị ("bao nhiêu ly / lon / gói"), ≥ N đơn, hạn dùng N ngày, size bỉm, "uy tín"
+(review không đổi được), bảng hoa hồng (phiếu tách), "nhóm máy mới" (lọc thêm `payment`), lượt xe trung bình thứ Tư.
 
-Code `6bf3b19`: toolkit `lots_expiring` / `items_expiring` nhận **N ngày** ("hết hạn trong N ngày tới" — 3 câu sai ở mọi lần chạy vì
-`TODAY + 120` lỗi kiểu / tự tính ngày); precheck `threshold` + `--threshold-flag` (ngưỡng câu đặt không có trong chương trình: mẫu đúng
-13 / 19 vs 0.96; phát lại +0.001 public, +0.0015 pub_ho). Câu ổn định còn sai (sau d): đếm mặt hàng có mặt trong ≥ N đơn (quên lọc ngưỡng),
-lô hết hạn trong N ngày, đơn vị đếm ("bao nhiêu ly / gói" chọn `size_qty`), tỉ trọng máy theo số lượng, size bỉm, nhập theo viên.
+## Vòng 5 (09–10/11, đang chạy)
+
+Code `89243a8` (+ precheck lỗi `size`, `unit`), review 3 (`0b154ac`, chưa chạy). `p2_i`, `p2_i_s1`, `p2_j`, `p2_j_s1`.

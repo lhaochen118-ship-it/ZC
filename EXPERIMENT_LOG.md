@@ -1076,3 +1076,7 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   **0.752** (α 0.5: 0.748) → hai α độc lập cùng 0.939: súp WF (prompt full) + think vòng 2 ổn định; α 0.35 nhỉnh hơn ở held-out.
 - Lặp seed súp WF α 0.5 + think (`quynhle07/zc-pfwf05thinks1-1`): pub_full **0.930** (951 / 21 / 28; lần 1 0.939), pub_ho 0.586, tr_ho 0.868 →
   nhiễu public gốc ≈ ±0.5–1 điểm; trung bình 3 lần súp WF + think ≈ **0.936** (dẫn đầu mọi ứng viên).
+- **Lỗi hạ tầng:** `huyenco/zc-pfwc05thinks1-1` chạy **code cũ** (config `configs/e0_think_s1.json` thêm sau lần tải code trước không có trong
+  dataset được gắn: kernel được đẩy khi phiên bản code mới chưa sống; `fanout` chỉ chờ trạng thái "ready" — có thể là phiên bản trước).
+  Sửa: `make_kernel` ghi mã phiên bản ngẫu nhiên vào `ZC_CODE_MARKER` và vào runner; runner so khớp khi khởi động, lệch → dừng ngay
+  "STALE CODE" (không bao giờ chạy code cũ âm thầm). Lần lặp WC + think không đo được (WF dẫn đầu nên không chạy lại).

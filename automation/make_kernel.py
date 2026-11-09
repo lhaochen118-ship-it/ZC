@@ -45,6 +45,12 @@ if os.path.isdir(os.path.join(ROOT, "training")):
 if os.path.isdir(os.path.join(ROOT, "configs")): shutil.copytree(os.path.join(ROOT, "configs"), os.path.join(stage, "configs"))
 if os.path.isdir(os.path.join(ROOT, "tests", "splits")):               # evaluation set ids (src/eval_flow.py reads refs/splits)
     shutil.copytree(os.path.join(ROOT, "tests", "splits"), os.path.join(stage, "refs", "splits"), dirs_exist_ok=True)
+# version token: the runner refuses a mounted code dataset whose marker differs (a kernel pushed before the new dataset version
+# was live ran the previous code once: huyenco/zc-pfwc05thinks1-1 did not find a config added in between)
+import uuid
+CODE_TOKEN = uuid.uuid4().hex[:16]
+open(os.path.join(stage, "ZC_CODE_MARKER"), "w").write(CODE_TOKEN + "\n")
+print("code version:", CODE_TOKEN, flush=True)
 json.dump({"title": "zc-code", "id": CODE_DS, "licenses": [{"name": "CC0-1.0"}]}, open(os.path.join(stage, "dataset-metadata.json"), "w"))
 if "--no-upload" not in sys.argv:                                       # preflight.py builds the kernel files offline
     exists = subprocess.run(["kaggle", "datasets", "status", CODE_DS], capture_output=True, text=True).stdout.strip().lower() == "ready"
@@ -60,6 +66,9 @@ ENV = %s
 t0 = time.time()
 W = "/kaggle/working"; C = os.path.join(W, "code")
 code = [d for d, _, fs in os.walk("/kaggle/input") if "ZC_CODE_MARKER" in fs][0]
+_tok = open(os.path.join(code, "ZC_CODE_MARKER")).read().strip()
+if _tok != "%s":
+    print("STALE CODE: the mounted code dataset is version", _tok, "but this kernel was built for %s; relaunch", flush=True); sys.exit(3)
 shutil.copytree(code, C, dirs_exist_ok=True)
 R = os.path.join(W, "results"); L = os.path.join(W, "logs"); os.makedirs(R, exist_ok=True); os.makedirs(L, exist_ok=True)
 DATA = next((d for d, _, _ in os.walk("/kaggle/input") if os.path.basename(d) == "%s"), "")
@@ -90,7 +99,7 @@ print("parallel jobs", NW, "| threads/job", TH, "| sequential (multi-GPU jobs)" 
 with ThreadPoolExecutor(NW) as ex: rcs = list(ex.map(run, enumerate(JOBS)))
 shutil.rmtree(C, ignore_errors=True)
 print("EVAL_DONE", rcs, f"{time.time()-t0:.0f}s", flush=True)
-''' % (json.dumps(jobs), json.dumps(ENV), DATA_DS.split("/")[1])
+''' % (json.dumps(jobs), json.dumps(ENV), CODE_TOKEN, CODE_TOKEN, DATA_DS.split("/")[1])
 os.makedirs(kdir, exist_ok=True); open(os.path.join(kdir, "run.py"), "w").write(runner)
 meta = {"id": f"{OWNER}/{slug}", "title": slug, "code_file": "run.py", "language": "python", "kernel_type": "script",
         "is_private": True, "enable_gpu": GPU, "enable_tpu": False, "enable_internet": NET,

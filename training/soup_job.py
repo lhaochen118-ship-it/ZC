@@ -5,7 +5,7 @@
 datasets (<root>/<name>/adapter/adapter_config.json) or given as directories.
 
 Usage (Kaggle job): run_kaggle.py public_test OUT/soup --script training/soup_job.py --model Qwen/Qwen3.5-9B
-        --adapters A1,A2T64,B3MIX[,...] [--weights 0.4,0.3,0.3] [--sets quick400,pub_ho] [--eval-config configs/e0.json]
+        --adapters A1,A2T64,B3MIX[,...] | NONE (the base) [--weights 0.4,0.3,0.3] (WiSE-FT: weights summing to alpha < 1) [--sets quick400,pub_ho] [--eval-config configs/e0.json]
         [--search /kaggle/input] [--fake-responder F --subset N] (CPU test)"""
 import os, sys, glob, json, time, shutil, argparse, subprocess
 
@@ -30,6 +30,8 @@ def main():
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     a.tmp = a.tmp or "/tmp/soup_" + os.path.basename(os.path.normpath(a.out))      # one folder per job (two soups in a kernel)
     names = [x for x in a.adapters.split(",") if x]
+    if names == ["NONE"]:                                               # the base model on the same sets (no merge)
+        os.makedirs(a.tmp, exist_ok=True); return evaluate(a, a.model, {"adapters": "NONE", "merge_rc": 0, "merge_s": 0}, t0)
     dirs = [find_adapter(n, a.search) for n in names]
     miss = [n for n, d in zip(names, dirs) if d is None]
     if miss: sys.exit(f"[soup] adapters not found under {a.search}: {miss}")
@@ -41,8 +43,12 @@ def main():
     res = {"adapters": dict(zip(names, dirs)), "weights": w, "merge_rc": rc, "merge_s": round(time.time() - t0)}
     print(f"[soup] merge rc {rc} in {res['merge_s']}s: {names} x {w}", flush=True)
     if rc != 0: json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1); sys.exit(2)
+    evaluate(a, f"{a.tmp}/merged", res, t0)
+
+
+def evaluate(a, model, res, t0):
     t1 = time.time(); ev = f"{a.tmp}/eval"
-    cmd = [PY, os.path.join(SRC, "eval_flow.py"), a.split, ev, "--sets", a.sets, "--model", f"{a.tmp}/merged", "--dp", str(a.dp),
+    cmd = [PY, os.path.join(SRC, "eval_flow.py"), a.split, ev, "--sets", a.sets, "--model", model, "--dp", str(a.dp),
            "--config", a.eval_config, "--cache", f"{a.tmp}/cache"]
     if a.fake_responder: cmd += ["--", "--fake-responder", a.fake_responder]
     if a.subset: cmd += ([] if a.fake_responder else ["--"]) + ["--subset", str(a.subset)]
@@ -51,7 +57,7 @@ def main():
         p = os.path.join(ev, "run", f)
         if os.path.isfile(p): shutil.copy(p, a.out)
     res.update(eval_rc=rc, eval_s=round(time.time() - t1))
-    shutil.rmtree(f"{a.tmp}/merged", ignore_errors=True)                # 19 GB: the next soup of the kernel needs the space
+    if model != a.model: shutil.rmtree(model, ignore_errors=True)       # 19 GB merged copy: the next soup of the kernel needs the space
     json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1)
     print(f"[soup] eval rc {rc} in {res['eval_s']}s; total {time.time() - t0:.0f}s", flush=True)
 

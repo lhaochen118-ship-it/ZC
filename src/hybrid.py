@@ -125,9 +125,14 @@ class HybridPipeline(pipeline.Pipeline):
                 self.stats["exec_error"] += 1
                 return retry(f"The program failed:\n{str(r.get('error'))[:700]}" + repair_hint(r.get("error"), self.spec))
             k_asked = top_k_asked(st["qkey"])
+            if int(getattr(a, "fmt_fix", 0) or 0):                     # P2: the wrapping of the hinted answer type ([5] -> 5)
+                fixed = fmt_fix(r["answer"], st["hints"].get("answer_type"))
+                if fixed is not r["answer"]: turn["fmt_fix"] = True; r = dict(r, answer=fixed)
             flags = toolsmod.postcheck(r["answer"], st["hints"].get("answer_type"), None, st["qkey"], k_asked)
+            if int(getattr(a, "period_flag", 0) or 0) and any(str(p).startswith("warn:period") for p in turn.get("precheck") or []):
+                flags = list(flags) + ["the program's period differs from the question's"]   # P2: such samples were right 2 / 23
             turn["post"] = flags; smp.update(ok=True, answer=r["answer"], flags=flags, lp=turn.get("lp"), escape=turn.get("escape"))
-            rv = review_msg(st["hints"], r["answer"], flags) if int(getattr(a, "review", 0) or 0) and not smp.get("reviewed") else None
+            rv = review_msg(st["hints"], r["answer"], flags, int(getattr(a, "review", 0) or 0)) if int(getattr(a, "review", 0) or 0) and not smp.get("reviewed") else None
             if rv:                                                     # M11: the model re-reads a suspicious result once (it decides;
                 smp["reviewed"] = True; turn["review"] = rv[:300]      # the answer above stands if the review turn fails)
                 self.stats["review"] += 1
@@ -206,6 +211,22 @@ class HybridPipeline(pipeline.Pipeline):
 _TOPK = re.compile(r"\btop\s*(\d{1,2})\b|(?<![/\d.,])\b(\d{1,2})\s+(?:mat hang|mon|san pham|sp|khach(?: hang)?|nha cung cap|ncc|nhan vien|tho|dong (?:may|xe)|xe|hang)\b(?![/\d])")
 
 
+_ISO = re.compile(r"^\d{4}-\d{2}(?:-\d{2})?$")
+
+
+def fmt_fix(ans, hint_type):
+    """the answer in the format of the hinted answer type, when only the wrapping differs (rulebook 'format'): a one-number list
+    for a 'number' question -> the number; an ISO date / month string for a 'date' question -> type 'date'. The value is
+    never changed; any other answer is returned as it is."""
+    if not isinstance(ans, dict) or not hint_type: return ans
+    t, v = ans.get("type"), ans.get("answer")
+    if hint_type == "number" and t == "list" and isinstance(v, list) and len(v) == 1 and isinstance(v[0], (int, float)) and not isinstance(v[0], bool):
+        return {"type": "number", "answer": v[0]}
+    if hint_type == "date" and t == "string" and isinstance(v, str) and _ISO.match(v.strip()):
+        return {"type": "date", "answer": v.strip()}
+    return ans
+
+
 def top_k_asked(qkey):
     m = _TOPK.search(qkey or "")
     if m and re.search(r"\b(?:nao|nhat|nhut|top|chay)\b", qkey): return int(m.group(1) or m.group(2))
@@ -223,14 +244,15 @@ def repair_hint(err, spec):
     return ""
 
 
-def review_msg(hints, answer, flags):
-    """the review turn of a suspicious result (M11, --review 1), or None: an answer although the hints say the data does not
-    record what the question needs (dev: 32 / 32 such hints were right), or postcheck flags."""
+def review_msg(hints, answer, flags, mode=1):
+    """the review turn of a suspicious result, or None. mode 1 (M11, --review 1): an answer although the hints say the data does
+    not record what the question needs (dev: 32 / 32 such hints were right), or postcheck flags; mode 2 (--review 2): the
+    missing-data case only (postcheck flags made the model change right answers: M11 A/B -2.5 on quick400)."""
     md = (hints or {}).get("missing_data") or []
     if md and (answer or {}).get("type") != "unanswerable":
         return ("Check before answering: the HINTS say the shop's data does not record " + "; ".join(map(str, md)) + ". If the question "
                 "needs that, write raise Unanswerable(\"<reason>\") instead of ANSWER; if it does not, write the same program again.")
-    if flags:
+    if flags and mode == 1:
         return ("The result " + json.dumps(answer, ensure_ascii=False, default=str)[:200] + " looks suspicious: " + "; ".join(flags) +
                 ". Check the program against the question (period, filters, function, answer type); if it is right, write the same program again.")
     return None

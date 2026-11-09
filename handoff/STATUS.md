@@ -52,15 +52,19 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP11 Docker + nộp | **đang** | `docker/predict.sh`, `Dockerfile` đã chuyển sang luồng hybrid (`configs/flow_final.json` chưa có) |
 | WP12 DuckDB | **xong** | QĐ12: **không giữ** (mô hình không viết `<sql>` trên pub_noind; code giữ, tắt) — entry 42 |
 
-## Tiến độ P2 (sau kế hoạch 1 — `docs/13_TASK_AFTER_PLAN1.md`; dừng khi public gốc = 100 % và held-out không giảm)
+## Tiến độ P2 (sau kế hoạch 1 — `docs/13_TASK_AFTER_PLAN1.md`; kế hoạch: **`docs/12_PLAN2.md`**; dừng khi public gốc = 100 % và held-out không giảm)
 
 | Bước / gói | Trạng thái | Public gốc | Held-out (pub_ho / tr_ho) | Ghi chú |
 |---|---|---|---|---|
-| B1 hoàn tất kế hoạch 1 + liệt kê câu sai | đang (WP10 chạy) | 0.939 (súp WF + think) | 0.59 / 0.87 | |
-| B2 phân tích lỗi → `docs/10_ERROR_ANALYSIS.md` | chưa | | | |
-| B3 tài liệu ngoài → `docs/11_LITERATURE.md` | chưa | | | |
-| B4 kế hoạch 2 → `docs/12_PLAN2.md` | chưa | | | |
-| B5 triển khai WP-P2-xx (vòng 1…) | chưa | | | |
+| B1 hoàn tất kế hoạch 1 + liệt kê câu sai | xong phần public (WP10 final_a/b/stress đang chạy) | 0.939 (956/17/27); đường container `final_predict` 0.938 (955/17/28, 1423 s / 1000 câu, 4×L4) | 0.592 / ~0.87 | `tests/list_wrong.py`: 44 câu sai lần tốt nhất, 63 hợp 3 lần, 29 ổn định |
+| B2 phân tích lỗi → `docs/10_ERROR_ANALYSIS.md` | xong (public); train dev chờ tr_dev500 | | | 7 nhóm: bị cắt / không chạy 27 %, ý định 23 %, nghiệp vụ 16 %, chọn 14 %, định dạng 9 %, câu bẩn 9 %, linking 2 %; nguyên nhân gốc F1–F8 |
+| B3 tài liệu ngoài → `docs/11_LITERATURE.md` | xong | | | |
+| B4 kế hoạch 2 → `docs/12_PLAN2.md` | xong | | | WP-P2-01…10, lưới thí nghiệm, quy tắc giữ / bỏ |
+| WP-P2-01 gợi ý + làm sạch câu | CPU xong | phát lại +0.9–1.1 | | kiểu gợi ý đúng 0.967 → 0.999 |
+| WP-P2-02 trần 1536 token | chờ GPU (`p2_b`) | | | |
+| WP-P2-03 định dạng + cờ kỳ lệch | CPU xong | | | |
+| WP-P2-04 review thiếu dữ liệu | chờ GPU (`p2_c`) | | | |
+| Vòng 1 GPU (`p2_a/b/c`) | sắp chạy | | | `automation/jobs/p2r1{a,b,c}.jobs` |
 
 ## Quyết định của user (09/11)
 

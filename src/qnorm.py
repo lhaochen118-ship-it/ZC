@@ -30,7 +30,7 @@ ABBR = {
     "ko": "không", "kh": "không", "hok": "không", "hông": "không", "kô": "không", "k0": "không", "khg": "không", "hem": "không",
     "trc": "trước", "vs": "với", "z": "vậy", "zậy": "vậy", "dzậy": "vậy", "dzay": "vậy", "zay": "vậy",
     "sp": "sản phẩm", "đh": "đơn hàng", "dh": "đơn hàng", "ntn": "như thế nào", "nhứt": "nhất",
-    "kòn": "còn", "kả": "cả", "wán": "quán", "mik": "mình", "mk": "mình", "cko": "cho", "xố": "số", "kó": "có", "mí": "mấy",
+    "nhut": "nhất", "kòn": "còn", "kả": "cả", "wán": "quán", "mik": "mình", "mk": "mình", "cko": "cho", "xố": "số", "kó": "có", "mí": "mấy",
     "trog": "trong", "jum": "giùm", "júp": "giúp", "zô": "vô", "zo": "vô", "tíh": "tính", "từg": "từng", "ngừi": "người",
     "tỉ nệ": "tỉ lệ", "nượt": "lượt", "lựơt": "lượt", "xửa": "sửa", "cũa": "của", "nheiu": "nhiêu", "ddown": "đơn",
     "ck": "chuyển khoản", "tm": "tiền mặt", "ncc": "nhà cung cấp", "kh lẻ": "khách lẻ",
@@ -134,6 +134,9 @@ MONTHS = [
 ]
 
 
+MIXED_MAX = 0.9       # a question with 15-90 % of its words accented is restored word by word (plain words only)
+_TITLES = {"khách", "anh", "chị", "em", "bạn", "cô", "chú", "ông", "bà", "thợ", "viên", "sếp", "cậu", "dì", "bác", "bình", "binh", "hải",
+           "hai", "sơn", "son", "minh", "đức", "duc", "anh"}
 _QWORDS = re.compile(r"\b(nhất|hơn|hay ít|ít hay|nào|gì|mấy|bao nhiêu|bao lâu|ai|sao|đâu|không|chưa|top|liệt kê|xếp hạng|"
                      r"có phải|so với|so sánh|nhiêu)\b")
 
@@ -427,7 +430,7 @@ class Normalizer:
     def for_split(cls, split_dir, train_questions=None, exclude_business=None, extra_texts=(), extra_weight=2):
         """vocabulary = the split's rulebook + accented training questions (never test answers) + extra texts (the
         business's own entity names, weighted: they decide the accents of product / customer names)."""
-        texts = [open(os.path.join(split_dir, "rulebook.md"), encoding="utf-8").read()] + [t for t in extra_texts if not t.isascii() for _ in range(extra_weight)]
+        texts = [open(os.path.join(split_dir, "rulebook.md"), encoding="utf-8").read()]
         ph = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qnorm_phrases.txt")
         if os.path.isfile(ph):                                         # general shop phrasing (weight 3), see the file
             texts += [l for l in open(ph, encoding="utf-8").read().replace(";", "\n").splitlines() if l.strip() and not l.startswith("#")] * 3
@@ -436,7 +439,25 @@ class Normalizer:
             for l in open(tq, encoding="utf-8"):
                 b, _, q = l.rstrip("\n").partition("\t")
                 if b != exclude_business: texts.append(q)
-        nz = cls(texts); nz.set_entities(extra_texts); return nz
+        nz = cls(texts); nz.add_names([t for t in extra_texts if not t.isascii()], extra_weight); nz.set_entities(extra_texts); return nz
+
+    def add_names(self, names, weight=2, cap=6):
+        """the business's names in the bigram model: every bigram of a name x weight (a name's own accents), but a word's
+        unigram count from names capped at `cap`: 48 customers named '... Quân' must not turn every 'quan' ('doanh thu
+        của quán') into the name."""
+        tally = Counter()
+        for t in names:
+            for line in re.split(r"[\n.;:!?()|]+", unicodedata.normalize("NFC", t)):
+                ws = [w.lower() for w in WORD.findall(line)]
+                if not ws or sum(not w.isascii() for w in ws) < 0.5 * len(ws): continue
+                for i, w in enumerate(ws):
+                    tally[w] += weight
+                    if i: self.bi[(ws[i - 1], w)] += weight
+        for w, k in tally.items():
+            if w in ABBR or (w.isascii() and any(x != w and x in self.uni for x in telex_all(w))): continue
+            self.uni[w] += min(k, cap); self.forms[strip_accents(w)][w] += min(k, cap)
+        self.N = sum(self.uni.values()) or 1
+        self.vocab = {w for w in self.uni}
 
     # -- accent restoration
     def _lp(self, prev, w):
@@ -480,8 +501,19 @@ class Normalizer:
         for i, w in enumerate(low):
             nxt = " ".join(low[i + 1:i + 4]); prv = low[i - 1] if i else ""
             if protect and protect[i]: continue
-            if w == "nhiêu" and prv != "bao" and re.search(r"\b(nhất|hơn|hay ít)\b", nxt): out[i] = _case_like(out[i], "nhiều")
+            if w == "nhiêu" and prv != "bao" and (re.search(r"\b(nhất|nhứt|nhat|nhut|hơn|hay ít)\b", nxt)
+                                                  or "nào" in low[max(0, i - 3):i]): out[i] = _case_like(out[i], "nhiều")
+            # ^ 'ncc nào nhiu tiền nhứt' = 'nhiều': a selection ('nào ... nhất'), not 'bao nhiêu'
+            elif w == "mấy" and typed[i].isascii() and (prv.endswith("nhiêu") or prv in ("chiếc", "cái")
+                                                       or i + 1 < n and typed[i + 1].lower() in ("cu", "moi", "cũ", "mới")):
+                out[i] = _case_like(out[i], "máy")    # 'bao nhiêu may Samsung', 'may cu': a phone ('máy'), never 'bao nhiêu mấy'
+                if i + 1 < n and typed[i + 1].lower() in ("cu", "moi"): out[i + 1] = _case_like(typed[i + 1], "cũ" if typed[i + 1].lower() == "cu" else "mới")
             elif w == "nhiêu" and prv != "bao": out[i] = _case_like(out[i], "bao nhiêu")   # colloquial 'nhiêu' = 'bao nhiêu'
+            elif w == "nay" and typed[i] == "nay" and prv in ("tháng", "th", "tuần", "quý", "kỳ", "đợt"):
+                out[i] = "này"    # 'th nay' -> 'tháng này' ('năm nay', 'hôm nay' are right as they are)
+            elif w == "quân" and restored and typed[i] == "quan" and prv not in _TITLES:
+                out[i] = "quán"   # a lone lowercase 'quan' ('doanh thu của quan', 'năm 2025 quan có') is the shop; a name keeps
+                                  # its neighbours ('Tạ Sơn Quân' is protected), a title ('khách quân') or 'bình quân'
             elif w in ("hà", "ha") and i == n - 1 and typed[i][:1].islower(): out[i] = "hả"   # final question particle, not a name
             elif w == "lệ" and restored and prv not in ("tỉ", "tỷ") and typed[i].isascii(): out[i] = _case_like(out[i], "lẻ")
             elif w == "j" and i > 0 and typed[i] == "j": out[i] = "gì"           # lowercase only: 'Vitamin K', 'Galaxy J'
@@ -573,8 +605,15 @@ class Normalizer:
         typed = [w for w in words if w.lower() not in ABBR and w.lower() not in ("đ", "đồng")]   # as typed: abbreviations and
                                                                            # the currency sign ('35.000đ') are no evidence of accents
         accented = sum(1 for w in typed if not w.isascii()) / max(1, len(typed))
+        mixed = flat and 0.15 <= accented < MIXED_MAX
         if flat and accented < 0.15:                                       # typed without accents: restore them
             rest = self.restore(flat)
+        elif mixed:                                                        # half typed with accents ('tien khach kòn nợ'): the
+            rest = self.restore(flat)                                      # accented words stay, the plain ones get theirs, but
+            def sure(i, w, r):                                             # only when the accented form clearly dominates and
+                if r == w or not w.isascii() or w not in self.forms or self.forms[w].get(r, 0) < 3 * self.forms[w].get(w, 0): return False
+                return (i > 0 and self.bi.get((rest[i - 1], r), 0) >= 1) or (i + 1 < len(rest) and self.bi.get((r, rest[i + 1]), 0) >= 1)
+            rest = [r if sure(i, w, r) else w for i, (w, r) in enumerate(zip(flat, rest))]   # a neighbour supports it ('nha' stays)
         else: rest = flat
         k = 0; final = []
         for i, w in enumerate(outw):
@@ -584,7 +623,7 @@ class Normalizer:
             fixed = " ".join(_case_like(o, x) for o, x in zip(orig, new))
             if fixed != w: changes.append([w, fixed, "accent"])
             final.append(fixed)
-        final = self._context_fixes(final, [w for w in outw], restored=flat and accented < 0.15, seps=parts[0::2],
+        final = self._context_fixes(final, [w for w in outw], restored=bool(flat) and (accented < 0.15 or bool(mixed)), seps=parts[0::2],
                                     protect=[a or b for a, b in zip(prot, glued)])
         for w0, w1 in zip(outw, final):
             if w0 != w1 and not any(c[1] == w1 for c in changes): changes.append([w0, w1, "context"])

@@ -8,7 +8,7 @@ template name, no program; the model still writes every program.
        "entities": [{"text", "kind", "data_value", "how", "candidates"}], "answer_type": ... | None,
        "rule_terms": [{"term", "definition"}], "missing_data": [...], "measure_words": [...]}
 'code' of a period is a period expression of the toolkit (month(2025, 7), last_week(TODAY), ...): the plan allows it."""
-import re, difflib
+import re, difflib, unicodedata
 import dm, qparse, industry
 
 KINDS = ("item", "group", "customer", "staff", "supplier", "customer_group", "ingredient", "channel", "payment", "vehicle")
@@ -120,13 +120,32 @@ _NOUN = r"(?:mat hang|mon|san pham|sp|khach(?: hang)?|nha cung cap|ncc|nhan vien
 _SEL = r"\b(?:nao|nhat|nhut|top|chay|ai)\b"
 
 
-def answer_type(t):
-    """the kind of answer the question asks (accent-free key of the cleaned question), or None."""
-    asks_n = re.search(r"\bbao nhieu\b|\bmay\b|\bbnhiu\b|\bbn\b", t)
+_DEVICE_MAY = re.compile(r"\b(?:chiec|cai|ban|nhom|luot|dong|cac|nhung|so|loai|mua|thu|sua|doi|tra|gia|hang|tien)\s+may\b|\bmay\s+(?:cu|moi|dien thoai|tinh|anh|ban|lanh|giat|in|nay|do|kia|samsung|iphone|oppo|xiaomi|vivo|realme)\b")
+
+
+def n_asks(t, clean=None):
+    """how many quantities the question asks ('bao nhiêu', 'mấy'): 'mấy' and 'máy' (a phone) are both 'may' without accents,
+    so the accented question is read when it has accents, else 'may' next to a device word is not counted."""
+    n = len(re.findall(r"\bbao nhieu\b|\bbnhiu\b|\bbn\b", t))
+    c = unicodedata.normalize("NFC", str(clean or "")).lower()
+    if c and c != dm.strip_accents(c):
+        m = len(re.findall(r"(?<!\w)mấy(?!\w)", c))
+        if n and re.match(r"\W*mấy\s+(?:lô|đơn|mặt hàng|món|khách|máy|xe|phiếu)\b", c): m -= 1   # 'Mấy lô còn tồn ... đọng bao nhiêu
+        return n + m                                                                        # tiền': the subject, one question
+    return n + len(re.findall(r"\bmay\b", t)) - len(_DEVICE_MAY.findall(t))
+
+
+def answer_type(t, clean=None):
+    """the kind of answer the question asks (accent-free key t of the cleaned question; clean: the cleaned question itself,
+    read for 'mấy' / 'máy'), or None."""
+    na = n_asks(t, clean)
+    asks_n = na > 0 or re.search(r"\bbao nhieu\b|\bbnhiu\b|\bbn\b", t)
+    total = re.search(r"\bca\s+(?!sang|chieu|toi|dem|trua|hai\b)(?:\w+\s+){1,4}(?:lan|voi)\s+\w+|\bgop (?:ca|chung|lai|het)\b|\btinh ca\b|\bcong (?:lai|chung)\b", t)
+    # ^ one total over several groups ('cả máy mới lẫn máy cũ', 'gộp cả', 'tính cả'): a number, not a list
     if re.search(r"\b(?:co|lieu)\b.*\b(?:khong|ko|hong|chua|phai khong|dung khong)\s*\??$", t) and not asks_n and not re.search(r"\bnao\b|\bai\b", t): return "boolean"
-    if re.search(r"\bngay nao\b|\bhom nao\b|\bbua nao\b|\bkhi nao\b|\bngay may\b|\bthang nao\b", t) and not re.search(r"\b\d{1,2} (?:ngay|thang) nao\b", t): return "date"
+    if re.search(r"\bngay (?:nao|mo)\b|\bhom (?:nao|mo)\b|\bbua (?:nao|mo)\b|\bkhi nao\b|\bngay may\b|\bthang (?:nao|mo)\b", t) and not re.search(r"(?<![/\d])\b\d{1,2} (?:ngay|thang) nao\b", t): return "date"
     if re.search(r"\bphan tram\b|\bti le\b|\bty le\b|\btang truong\b|\b(?:bao nhieu|may|bn)\s*%|\bchiem bao nhieu\b", t): return "percent"
-    if len(re.findall(r"\bbao nhieu\b|\bmay\b", t)) >= 2 or re.search(r"\b(?:moi|tung) ben\b|\bca hai\b|\blan luot\b", t): return "list"
+    if (na >= 2 and not total) or re.search(r"\b(?:moi|tung) ben\b|\bca hai\b|\blan luot\b", t): return "list"
     each = re.search(r"\bbang\b|\bkem (?:theo )?(?:so|tien|doanh thu)\b|\bcung (?:voi )?so\b", t) or re.search(r"\b(?:moi|tung)\s+(?:nguoi|khach|mat hang|mon|san pham|nha cung cap|nhan vien|tho|ncc)\b.*\bbao nhieu\b|\bva (?:so|tien|doanh thu)\b.*\b(?:cua )?(?:tung|moi)\b", t)
     m = re.search(r"\btop\s*(\d{1,2})\b|(?<![/\d.,])\b(\d{1,2}|hai|ba|bon|sau|bay|tam|chin|muoi)\s+" + _NOUN + r"\b(?![/\d])", t)
     if m and re.search(_SEL, t):
@@ -134,7 +153,7 @@ def answer_type(t):
         if n >= 2: return "table" if each else "list"
     if re.search(r"\b(?:moi|tung|lan luot|theo)\s+(?:thang|ngay|tuan|quy)\b", t) and asks_n: return "list"
     # several groups asked at once ('chia theo tuổi nợ 0-7, 8-15, trên 15 ngày, mỗi nhóm bao nhiêu'; 'từng loại / mỗi kênh có bao nhiêu')
-    if asks_n and re.search(r"\b(?:moi|tung)\s+(?:nhom|loai|kenh|hinh thuc|ca|khung|muc|phan|khoang)\b|\bchia (?:theo|thanh|ra)\b", t): return "list"
+    if asks_n and not total and re.search(r"\b(?:moi|tung)\s+(?:nhom|loai|kenh|hinh thuc|ca|khung|muc|phan|khoang)\b|\bchia (?:theo|thanh|ra)\b", t): return "list"
     if re.search(r"\bnhung\b|\bcac (?:mat hang|mon|san pham|khach|nha cung cap)\b|\bliet ke\b|\bdanh sach\b", t) and re.search(r"\bnao\b|\bgi\b|\bliet ke\b|\bdanh sach\b", t):
         return "table" if each else "list"
     if re.search(r"\b" + _NOUN + r"\s+(?:\w+\s+){0,3}nao\b|\bla ai\b|\bai\b.*\bnhat\b|\bten (?:gi|la gi)\b|\bla gi\b", t) and not asks_n: return "string"
@@ -142,16 +161,67 @@ def answer_type(t):
     return None
 
 
-def rule_terms_of(question, rulebook_rows):
-    """rulebook rows (term -> definition) whose term's content words all occur in the question."""
-    w = set(_k(question).split()); out = []
+_GENERIC = {"mat", "hang", "san", "pham", "mon", "khach", "don", "nguoi"}
+_UNIT_KINDS = ("unit", "base_unit")
+# general Vietnamese shop words that say the same as a rulebook word ('bữa' = 'ngày', 'củ' = 'triệu', 'cháy hàng' = 'hết hàng')
+_SYNONYMS = [(r"\bbữa\b", "ngày"), (r"\bcủ\b", "triệu"), (r"\bcháy hàng\b", "hết hàng"), (r"\bnhứt\b", "nhất"), (r"\bmô\b", "nào"),
+             (r"\bthằng\b", "người"), (r"\bsp\b", "sản phẩm"), (r"\bncc\b", "nhà cung cấp"), (r"\bxịn\b", "sộp")]
+
+
+def _toks(text):
+    """(accented lowercase word, accent-free key) of every word of a text."""
+    t = unicodedata.normalize("NFC", str(text)).lower()
+    return [(w, " ".join(dm.key(w).split())) for w in re.findall(r"[^\W_]+", t)]
+
+
+_PLAIN = {}
+
+
+def _plain_words(rows):
+    """accent-free words the rulebook itself writes without accents ('nay', 'trong', 'ghi'): real words, never a typing slip."""
+    k = id(rows)
+    if k not in _PLAIN:
+        txt = " ".join(f"{a} {b}" for a, b in rows.values())
+        _PLAIN[k] = {w for w, kk in _toks(txt) if w == kk and not w.isdigit()}
+    return _PLAIN[k]
+
+
+def rule_terms_of(question, rulebook_rows, entities=None):
+    """rulebook rows (term -> definition) whose term the question uses, most specific first (at most 4).
+    A term matches when its distinctive words all occur in the question: generic nouns ('mặt hàng', 'khách', 'đơn') are not
+    required when the term has another word; a placeholder '<đơn vị>' matches a unit linked in the question. Words are
+    compared with their accents when the question has them (accent-free 'mấy' / 'máy', 'đồng' / 'dòng' differ), else
+    without; shop-chat synonyms count ('bữa' = 'ngày')."""
+    q = unicodedata.normalize("NFC", str(question)).lower()
+    for rx, rep in _SYNONYMS: q = re.sub(rx, lambda m: m.group(0) + " " + rep, q)
+    qt = _toks(q)
+    acc = {w for w, k in qt if w != k}; plain = {k for w, k in qt if w == k}; keys = {k for _, k in qt}
+    accented = bool(acc)
+    has_unit = any((e or {}).get("kind") in _UNIT_KINDS for e in (entities or ()))
+    known = _plain_words(rulebook_rows)
+    def has(w, k):
+        if not accented: return k in keys
+        if w in acc or (w == k and k in plain): return True           # the same accents ('nay' of 'hôm nay' is not 'này')
+        return k in plain and k not in known and len(k) >= 2          # a word left without accents in a mixed question
+                                                                      # ('luot xe'), unless it is a real accent-free word
+    out = []; seen = set()
     for term, (shown, definition) in rulebook_rows.items():
-        cw = [x for x in term.split() if len(x) > 1 and x not in _STOP]
-        if len(cw) >= 2 and all(x in w for x in cw): out.append({"term": shown, "definition": definition[:240]})
-    return out[:3]
+        ph = re.findall(r"<[^>]*>", shown)
+        if ph and not has_unit: continue
+        words = [(w, k) for w, k in _toks(re.sub(r"<[^>]*>", " ", shown)) if (len(k) > 1 or w != k) and w not in _STOP_ACC
+                 and not (w == k and k in _STOP)]
+        req = list(words)                                              # a leading generic head noun is optional when two
+        while req and req[0][1] in _GENERIC: req = req[1:]              # other words remain ('Mặt hàng được ưa chuộng nhất'
+        if len(req) < 2: req = words                                    # = 'hàng nào được khách ưa chuộng nhất')
+        if (len(words) + len(ph) >= 2 or (len(req) == 1 and words != req)) and req and all(has(w, k) for w, k in req):
+            if definition in seen: continue
+            seen.add(definition); out.append((len(req) + len(ph), {"term": shown, "definition": definition[:240]}))
+    out.sort(key=lambda x: -x[0])
+    return [x[1] for x in out[:4]]
 
 
 _STOP = set("va hoac cua cho la mot cac nhung trong ky theo khi thi bang ve tu den de duoc co khong nhat".split())
+_STOP_ACC = set("và hoặc của cho là một các những trong kỳ kì theo khi thì bằng về từ đến để được có không nhất".split())
 
 
 def rulebook_rows(text):
@@ -193,8 +263,8 @@ def build_hints(question, as_of, shop, normalizer=None, rule_rows=None, vocab=No
     if vocab is not None:
         try: h["entities"] = link_entities(clean, vocab, raw)
         except Exception: h["entities"] = []
-    h["answer_type"] = answer_type(t)
-    if rule_rows: h["rule_terms"] = rule_terms_of(clean, rule_rows)
+    h["answer_type"] = answer_type(t, clean)
+    if rule_rows: h["rule_terms"] = rule_terms_of(clean, rule_rows, h["entities"])
     try:
         if qparse.subjective(t): h["missing_data"].append("a quality no column records (subjective)")
         why = qparse.missing_info(clean, t, shop) if shop is not None else None

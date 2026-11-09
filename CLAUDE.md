@@ -32,7 +32,8 @@ với `data/raw/public_gt.jsonl` (= `score 1.jsonl`, chỉ để chấm) và li�
 đạt bằng cải tiến tổng quát mà **không giảm held-out** (pub_ho, paraphrase train, tr_ho; cải tiến tăng public mà giảm held-out → loại; báo
 cả hai số ở mọi mốc). Chưa đạt → vòng Phân tích lỗi (`docs/10_ERROR_ANALYSIS.md`, taxonomy 7 nhóm) → Tài liệu ngoài
 (`docs/11_LITERATURE.md`) → Kế hoạch 2 (`docs/12_PLAN2.md`, gói WP-P2-xx, lưới thí nghiệm song song) → Triển khai → Đo, lặp lại
-("Vòng n" trong `docs/12_PLAN2.md`); bảng "Tiến độ P2" trong `handoff/STATUS.md`. Kaggle: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU,
+("Vòng n" trong `docs/12_PLAN2.md`); bảng "Tiến độ P2" trong `handoff/STATUS.md`. **Kế hoạch 1 đã chạy hết; việc hiện tại = kế hoạch 2
+`docs/12_PLAN2.md` (gói WP-P2-01…10, quy tắc giữ / bỏ §4)**; công cụ: `tests/list_wrong.py`, `tests/hint_audit.py`, `tests/replay_vote.py`. Kaggle: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU,
 dùng hết slot một acc rồi mới sang acc khác; việc không cần GPU đưa lên phiên CPU.
 
 ## Nguyên tắc user (đã chốt, không hỏi lại)

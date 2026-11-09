@@ -26,6 +26,8 @@ def main():
     ap.add_argument("--weights", default=""); ap.add_argument("--sets", default="quick400,pub_ho"); ap.add_argument("--eval-config", default="configs/e0.json")
     ap.add_argument("--search", default="/kaggle/input"); ap.add_argument("--dp", type=int, default=4); ap.add_argument("--tmp", default="")
     ap.add_argument("--fake-responder", default=""); ap.add_argument("--subset", type=int, default=0)
+    ap.add_argument("--eval-configs", default="", help="several configs evaluated one after the other on the SAME merged model "
+                    "(one merge for an A/B; results in <out>/<config name>/)")
     ap.add_argument("--runner", default="eval", choices=["eval", "predict"],
                     help="predict: the submission path (src/predict_flow.py --config, whole split) instead of eval_flow's sets")
     a = ap.parse_args()
@@ -33,7 +35,7 @@ def main():
     a.tmp = a.tmp or "/tmp/soup_" + os.path.basename(os.path.normpath(a.out))      # one folder per job (two soups in a kernel)
     names = [x for x in a.adapters.split(",") if x]
     if names == ["NONE"]:                                               # the base model on the same sets (no merge)
-        os.makedirs(a.tmp, exist_ok=True); return evaluate(a, a.model, {"adapters": "NONE", "merge_rc": 0, "merge_s": 0}, t0)
+        os.makedirs(a.tmp, exist_ok=True); return evaluate_all(a, a.model, {"adapters": "NONE", "merge_rc": 0, "merge_s": 0}, t0)
     dirs = [find_adapter(n, a.search) for n in names]
     miss = [n for n, d in zip(names, dirs) if d is None]
     if miss: sys.exit(f"[soup] adapters not found under {a.search}: {miss}")
@@ -45,30 +47,41 @@ def main():
     res = {"adapters": dict(zip(names, dirs)), "weights": w, "merge_rc": rc, "merge_s": round(time.time() - t0)}
     print(f"[soup] merge rc {rc} in {res['merge_s']}s: {names} x {w}", flush=True)
     if rc != 0: json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1); sys.exit(2)
-    evaluate(a, f"{a.tmp}/merged", res, t0)
+    evaluate_all(a, f"{a.tmp}/merged", res, t0)
 
 
-def evaluate(a, model, res, t0):
-    t1 = time.time(); ev = f"{a.tmp}/eval"
+def evaluate_all(a, model, res, t0):
+    """one evaluation (--eval-config) or several on the same merged model (--eval-configs), then the merged copy removed."""
+    cfgs = [c for c in a.eval_configs.split(",") if c] if a.eval_configs else []
+    if not cfgs:
+        evaluate(a, model, res, t0, a.out, a.eval_config)
+    else:
+        for c in cfgs:
+            name = os.path.splitext(os.path.basename(c))[0]; out = os.path.join(a.out, name); os.makedirs(out, exist_ok=True)
+            evaluate(a, model, dict(res, config=c), t0, out, c, tag=name)
+    if model != a.model: shutil.rmtree(model, ignore_errors=True)       # 19 GB merged copy: the next soup of the kernel needs the space
+
+
+def evaluate(a, model, res, t0, out_dir, eval_config, tag="eval"):
+    t1 = time.time(); ev = f"{a.tmp}/{tag}"
     if a.runner == "predict":                                          # the container's entry point on the whole split
-        cmd = [PY, os.path.join(SRC, "predict_flow.py"), a.split, ev, "--model", model, "--dp", str(a.dp), "--config", a.eval_config,
-               "--runs", "1", "--work", f"{a.tmp}/work"]
+        cmd = [PY, os.path.join(SRC, "predict_flow.py"), a.split, ev, "--model", model, "--dp", str(a.dp), "--config", eval_config,
+               "--runs", "1", "--work", f"{a.tmp}/work_{tag}"]
         if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]   # predict_flow's own flag (tests)
         if a.subset: cmd += ["--", "--subset", str(a.subset)]
     else:
         cmd = [PY, os.path.join(SRC, "eval_flow.py"), a.split, ev, "--sets", a.sets, "--model", model, "--dp", str(a.dp),
-               "--config", a.eval_config, "--cache", f"{a.tmp}/cache"]
+               "--config", eval_config, "--cache", f"{a.tmp}/cache"]
         if a.fake_responder: cmd += ["--", "--fake-responder", a.fake_responder]
         if a.subset: cmd += ([] if a.fake_responder else ["--"]) + ["--subset", str(a.subset)]
-    rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "eval.log"), "w"), stderr=subprocess.STDOUT).returncode
+    rc = subprocess.run(cmd, stdout=open(os.path.join(out_dir, "eval.log"), "w"), stderr=subprocess.STDOUT).returncode
     for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"):
         for p in (os.path.join(ev, "run", f), os.path.join(ev, f)):
-            if os.path.isfile(p): shutil.copy(p, a.out); break
+            if os.path.isfile(p): shutil.copy(p, out_dir); break
     if a.runner == "predict" and os.path.isdir(os.path.join(ev, "logs")):
-        shutil.copytree(os.path.join(ev, "logs"), os.path.join(a.out, "logs"), dirs_exist_ok=True)
+        shutil.copytree(os.path.join(ev, "logs"), os.path.join(out_dir, "logs"), dirs_exist_ok=True)
     res.update(eval_rc=rc, eval_s=round(time.time() - t1))
-    if model != a.model: shutil.rmtree(model, ignore_errors=True)       # 19 GB merged copy: the next soup of the kernel needs the space
-    json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1)
+    json.dump(res, open(os.path.join(out_dir, "result.json"), "w"), indent=1)
     print(f"[soup] eval rc {rc} in {res['eval_s']}s; total {time.time() - t0:.0f}s", flush=True)
 
 

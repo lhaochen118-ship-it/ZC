@@ -1093,3 +1093,20 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   `eval_flow` chỉ với `--config` nên không bị ảnh hưởng). Sửa: bỏ khỏi DEFAULTS mọi cờ mà config đặt; `tests/test_predict_args.py` (31 giá trị
   config giữ nguyên). `configs/flow_final.json` = cấu hình WP7 (prompt full, `direct,think`, think 3072, θ 0.5, không rescue);
   `docker/README_SOLUTION.md` viết lại cho luồng hybrid; adapter cuối `nhatlong1103/zc-final-adapter` (riêng tư) + `src/adapter_hashes.json`.
+
+## Entry 47 — 2026-11-09: WP10 đánh giá cuối (một phần) + bắt đầu kế hoạch 2
+
+- **Đường container** (`nhatlong1103/zc-finalpredict-1`: `soup_job --runner predict` = `predict_flow.py --config configs/flow_final.json`,
+  merge trong kernel 2,260 s do đĩa Kaggle chậm — trong Docker merge ở lúc build): public gốc **955 / 17 / 28, PA 0.938**, 1,423 s cho 1,000
+  câu kể cả nạp mô hình (4×L4, GPU bận 24–29 % — phần chờ CPU / độ trễ lớn) → đường nộp tái lập đúng số của eval (0.939).
+- `final_a` (`phatle1578/zc-finala-1`, cùng cấu hình qua eval_flow): pub_full **0.934** (953 / 19 / 28), pub_k0 0.590 → 4 lần đo cấu hình cuối:
+  0.939 / 0.930 / 0.938 / 0.934 (trung bình 0.935).
+- **Hiệu chỉnh θ (QĐ14):** trên dev (pub_full + pub_k0) θ tốt nhất 0.31 (PA dev 0.805 vs 0.793 ở 0.5); trên một mình pub_full 0.375 (0.947 vs
+  0.939) nhưng pub_ho ở θ 0.375 **giảm** (0.588 vs 0.592) và kiểm tra conformal đẩy θ về 0.495 → **giữ θ 0.5, không dùng calibrator**
+  (calibrator CV không hơn vote share).
+- `final_b`, `final_stress` (pub_noind, pub_noacc) còn chạy.
+- **Kế hoạch 2** (`docs/13_TASK_AFTER_PLAN1.md`): phân tích lỗi `docs/10_ERROR_ANALYSIS.md`, tài liệu `docs/11_LITERATURE.md`, kế hoạch
+  `docs/12_PLAN2.md`. Phát hiện chính (đo): 10.7 % lượt sinh của súp bị cắt ở 512 token không có code (gốc 0.7 %); gợi ý kiểu "list" sai ở
+  27 câu public (máy / mấy) làm postcheck nửa phiếu → 9 câu bỏ dù đa số mẫu đúng; định nghĩa rulebook không khớp (`<đơn vị>`, có dấu); mẫu có
+  kỳ lệch kỳ của câu đúng 2 / 23. Sửa CPU vòng 1 (WP-P2-01/03): kiểu gợi ý đúng 0.967 → 0.999; phát lại 3 lần chạy với gợi ý mới: public
+  0.939 → 0.950, 0.939 → 0.948, 0.930 → 0.939. GPU vòng 1: `configs/p2_a/b/c.json`.

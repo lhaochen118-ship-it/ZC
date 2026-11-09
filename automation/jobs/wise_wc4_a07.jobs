@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/wise_wc4_a07 --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WC1,WC2,WC3,WC4 --weights 0.175,0.175,0.175,0.175 --sets quick400,pub_ho,tr_ho

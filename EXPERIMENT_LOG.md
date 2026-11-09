@@ -1072,3 +1072,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   tr_ho 0.876 → think không giúp ổn định trên mọi mô hình; chờ hai lần lặp seed (WC + think, WF + think) để đo nhiễu public gốc trước khi chọn.
 - Súp 8 thành viên v2 α 0.5, không think (`huyenco/zc-soup8v2a05-1`): pub_full 0.899 (924 / 25 / 51), pub_ho 0.581, tr_ho 0.878 (α 0.35: 0.913) →
   không hơn súp 4 thành viên.
+- **Súp WF α 0.35 + think** (`quynhle07/zc-pfwf035think-1`): pub_full **0.939** (956 / 17 / 27) = α 0.5; pub_ho 0.592, tr_ho 0.873 → held-out gộp
+  **0.752** (α 0.5: 0.748) → hai α độc lập cùng 0.939: súp WF (prompt full) + think vòng 2 ổn định; α 0.35 nhỉnh hơn ở held-out.

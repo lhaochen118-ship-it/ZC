@@ -72,7 +72,40 @@ Quy trình: nhánh train 1 epoch (Unsloth, ~1.5 h / nhánh / L4) → đo nhanh `
 | 14/11 | Chốt cấu hình, đo đường container, cập nhật Docker assets + README + STATUS |
 | 15/11 | User build Docker, chạy `run_public_test.sh`, nộp |
 
-## Vòng 1 (09/11)
+## Vòng 1 (09/11) — kết quả
 
-Cấu hình: `p2_a` = flow_final + P2-01 + P2-03 (fmt_fix, period_flag); `p2_b` = p2_a + trần 1536; `p2_c` = p2_b + review 2.
-Job: `automation/jobs/p2r1{a,b,c}.jobs` (sets pub_full, pub_ho, tr_ho; p2_a thêm tr_dev500). Kết quả: (điền khi xong).
+Code `1d759c8`. Cùng súp WF1–4 α 0.35, mỗi cấu hình một phiên 4×L4 (merge trong kernel + eval 4,199 câu ≈ 1.5 h).
+
+| Cấu hình | Public gốc PA (đúng / sai / bỏ) | pub_ho | tr_ho | Held-out gộp | Quyết định |
+|---|---|---|---|---|---|
+| Mốc (flow_final, 5 lần) | 0.934 tb (0.930–0.939) | 0.592 | 0.873 | 0.752 | — |
+| `p2_a` = WP-P2-01 + 03 (gợi ý, làm sạch, định dạng, cờ kỳ), trần 512 | 0.965 (976 / 11 / 13) | 0.603 | 0.871 | 0.756 | giữ |
+| `p2_b` = a + trần 1536 (P2-02) | 0.967 (979 / 12 / 9) | 0.603 | 0.866 | 0.753 | giữ |
+| `p2_c` = b + review thiếu dữ liệu (P2-04) | **0.972** (981 / 9 / 10) | 0.601 | 0.874 | **0.757** | **giữ (tốt nhất vòng 1)** |
+
+Train dev (`tr_dev500`, p2_a): 0.992 (498 / 2 / 0) — "lời gộp" đọc thành lãi ròng; tăng trưởng cùng kỳ năm trước tính so với tháng trước.
+
+## Vòng 2 (09/11) — kết quả
+
+Code `c49da84` (+ gợi ý `counted` / `thresholds` khi `--hint-counts 1`, prefill `<plan>`, đồng nghĩa % / chênh).
+
+| Cấu hình | Public gốc | pub_ho | tr_ho | Gộp | Quyết định |
+|---|---|---|---|---|---|
+| `p2_d` = c + gợi ý đếm | **0.975** (985 / 10 / 5) | 0.600 | 0.868 | 0.753 | chưa quyết (public +0.3, held-out −0.4: trong nhiễu) → lặp seed vòng 3 |
+| `p2_e` = d với prefill `<plan>`, trần 512 | 0.898 (939 / 41 / 20) | 0.575 | 0.874 | 0.746 | **loại**: lập luận tự do trước `<plan>` của súp có ích |
+| `p2_f` = b + gợi ý đếm | 0.967 (980 / 13 / 7) | 0.605 | 0.869 | 0.756 | gợi ý đếm ≈ trung tính |
+
+d sửa 7 câu của c (2 câu "mấy bữa", cùng kỳ năm trước, "cháy hàng"…), thêm 3 (size sữa "số 4", đơn vị "gói", lô).
+
+## Vòng 3 (09/11, đang chạy)
+
+Code `3131884` / `c918ff2`: + thực thể **việc sửa xe** (qua bảng việc của toolkit, chỉ cụm sau động từ) và **size** danh mục ("số 4", "size M"),
+đồng nghĩa lời = lãi, precheck `named_periods` (cờ `--named-periods-flag`: mẫu không dùng đủ các kỳ câu nêu đúng 85 / 106).
+Lặp seed để đo nhiễu: `p2_g` (= d + named-periods), `p2_g_s1`, `p2_d` (code mới), `p2_c_s1`.
+
+## Vòng 4 (code sẵn, chờ vòng 3)
+
+Code `6bf3b19`: toolkit `lots_expiring` / `items_expiring` nhận **N ngày** ("hết hạn trong N ngày tới" — 3 câu sai ở mọi lần chạy vì
+`TODAY + 120` lỗi kiểu / tự tính ngày); precheck `threshold` + `--threshold-flag` (ngưỡng câu đặt không có trong chương trình: mẫu đúng
+13 / 19 vs 0.96; phát lại +0.001 public, +0.0015 pub_ho). Câu ổn định còn sai (sau d): đếm mặt hàng có mặt trong ≥ N đơn (quên lọc ngưỡng),
+lô hết hạn trong N ngày, đơn vị đếm ("bao nhiêu ly / gói" chọn `size_qty`), tỉ trọng máy theo số lượng, size bỉm, nhập theo viên.

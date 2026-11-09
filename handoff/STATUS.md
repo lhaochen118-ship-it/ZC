@@ -45,10 +45,10 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP4 nhà máy dữ liệu (+ G6, G7) | **xong** (DV chưa: cắt được) | D1 2119, D2 3816, D2N 5418, D4T 2000; bản ghi D3 (`training/data/d3_records.py`, lọc chương trình suy biến + câu rác + ≤ 3 bản / câu): self 16,688, qwen35a3b 18,146, gptoss 10,079, gemma31 17,043, qwen27 (đang dựng); thư mục nhánh `training/data/out/r2/` (symlink); `training/data/mix.py` trộn cố định |
 | WP5 D3 theo thầy (G8–G11) | **xong** 08/11 | giữ sau vòng lặp ngược: self 51.8 %, qwen35a3b 64.4 %, gptoss 31.9 % (nhiều câu rác), gemma31 69.5 %, **qwen27 73.6 %** |
 | WP6 nhánh fine-tune (G12–G19) | **xong** | vòng 1–3 + QĐ9 (entry 38–43): fine-tune đơn < gốc trên held-out; **súp + WiSE-FT** thắng: súp top-4 α 0.35–0.7 held-out gộp (pub_ho + tr_ho) ~0.74 vs gốc 0.713; nhiễu pub_ho ±1 |
-| WP7 huấn luyện đầy đủ (G20–G21) | **đang chọn** | public gốc 1000 câu (entry 45): **súp WC1–4 α 0.5 + think vòng 2 = 0.926**, gốc + think 0.924, súp WF α 0.5 0.923, súp cũ α 0.35 0.921, think mọi mẫu 0.921 (không dùng), v28 0.921; đang chạy: súp 8 thành viên v2, WF + think, súp cũ + think, lặp WC + think (nhiễu) |
+| WP7 huấn luyện đầy đủ (G20–G21) | **xong** | **cấu hình cuối: súp WF1–4 (thành viên prompt full, dữ liệu v2, adapter `quynhle07/zc-adapters-wf`, `phatle1578/zc-adapters-w8`) α 0.35 + prompt full + think vòng 2, không rescue** — public gốc 0.939 (3 lần WF + think: 0.939 / 0.930 / 0.939), held-out gộp 0.752 (entry 45–46) |
 | WP8 tin cậy / bộ kiểm / embedding (G22–G24) | **đang** | `tests/calibrate.py` + `--calibrator` nối vào luồng (QĐ14; test o6); M11 đọc lại: **không giữ** (A/B −2.5 quick400); biến thể `think` vòng 2: pub_ho +1.4 / quick400 −1.75 (ứng viên); QĐ11 n-gram |
 | WP9 sửa lỗi tới public = 1.0 (G25) | **đang** | vòng 1–3: gợi ý đơn vị / kỳ năm-trước / `debt_aging` / nhiều nhóm → list; cờ postcheck ngược thông tin bỏ (phát lại log +0.7–2 điểm mọi tập) — entry 39, 44; `tests/test_wp9_fixes.py` |
-| WP10 đánh giá cuối (G27–G29) | chưa | |
+| WP10 đánh giá cuối (G27–G29) | **đang** | job `automation/jobs/final_{a,b,stress}.jobs`: public gốc × 2 (+ pub_k0 làm dev hiệu chỉnh θ), pub_noind (ẩn hàm ngành), pub_noacc; sau đó `tests/calibrate.py` trên pub_full + pub_k0 → `configs/flow_final.json` |
 | WP11 Docker + nộp | **đang** | `docker/predict.sh`, `Dockerfile` đã chuyển sang luồng hybrid (`configs/flow_final.json` chưa có) |
 | WP12 DuckDB | **xong** | QĐ12: **không giữ** (mô hình không viết `<sql>` trên pub_noind; code giữ, tắt) — entry 42 |
 

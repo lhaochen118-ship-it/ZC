@@ -1022,3 +1022,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   nhiêu", "chia theo / thành" → list (train: khớp kiểu 2,620 / 2,641, trước 2,619).
 - Phát lại phiếu trên log (cùng mẫu, cờ mới): súp WC α 0.5 pub_full 0.887 → **0.907**, pub_k0 0.580 → 0.593, pub_ho 0.589 → **0.597**,
   tr_ho 0.875 → **0.884**; súp WC α 1 và mô hình gốc cũng tăng ở mọi tập (+0.7 → +2 điểm).
+- Súp WC α 0.7 (`huyenco/zc-wisewc07-1`): quick400 0.7675, pub_ho 0.587, tr_ho 0.865 → gộp 0.746 (cờ mới, phát lại: 0.756). Đường α súp WC
+  (gộp, cờ mới): α 1 0.751 / α 0.7 0.756 / **α 0.5 0.761**; quick400 0.758 / 0.768 / **0.785** → thử α 0.35.

@@ -3,7 +3,7 @@
 # Build context = repo root (docker/build.sh); model weights must already be in ./models/<name>/ (docker/fetch_assets.sh).
 ARG MODEL_NAME=Qwen3.5-9B
 
-# stage 1: the fine-tuned LoRA adapter (models/adapter/, docker/fetch_assets.sh) merged into the base checkpoint with the vLLM
+# stage 1: the fine-tuned LoRA adapter or soup of adapters (models/adapter/, docker/fetch_assets.sh; docker/merge_assets.py) merged into the base checkpoint with the vLLM
 # image's own torch (training/merge.py: same tensor names as the base, served with --quantization fp8); without an adapter
 # (models/adapter/NONE) the base weights are used as they are. Only the merged weights reach the final image.
 FROM vllm/vllm-openai:v0.32.0 AS merge
@@ -11,8 +11,8 @@ ARG MODEL_NAME
 COPY models/${MODEL_NAME}/ /w/base/
 COPY models/adapter/ /w/adapter/
 COPY training/merge.py /w/merge.py
-RUN if [ -f /w/adapter/adapter_config.json ]; then python3 /w/merge.py merge /w/base /w/model /w/adapter && rm -rf /w/base; \
-    else mv /w/base /w/model; fi
+COPY docker/merge_assets.py /w/merge_assets.py
+RUN python3 /w/merge_assets.py
 
 FROM vllm/vllm-openai:v0.32.0
 ARG MODEL_NAME

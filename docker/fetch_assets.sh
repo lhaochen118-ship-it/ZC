@@ -34,12 +34,17 @@ rm -rf models/adapter; mkdir -p models/adapter
 if [ -z "$ADAPTER_DS" ]; then echo "no adapter in docker/assets.env: the image serves the base weights"; touch models/adapter/NONE; exit 0; fi
 python3 -m pip install -q -U kaggle
 kaggle datasets download -d "$ADAPTER_DS" -p models/_adapter_dl --unzip -q
-SRC=$(dirname "$(find models/_adapter_dl -name adapter_config.json | head -1)")
-cp "$SRC"/adapter_config.json "$SRC"/adapter_model.safetensors models/adapter/ && rm -rf models/_adapter_dl
 python3 - <<'PY'
-import json, hashlib
-ref = json.load(open("src/adapter_hashes.json"))
-bad = [f for f, h in ref["files"].items() if hashlib.sha256(open("models/adapter/" + f, "rb").read()).hexdigest() != h]
+# one adapter (adapter_config.json) or a soup (soup.json + member folders); every file checked against src/adapter_hashes.json
+import json, hashlib, os, shutil, glob
+ref = json.load(open("src/adapter_hashes.json"))["files"]              # {relative path: sha256}
+root = os.path.dirname(min(glob.glob("models/_adapter_dl/**/" + ("soup.json" if any(k.endswith("soup.json") for k in ref) else "adapter_config.json"), recursive=True), key=len))
+bad = []
+for rel, h in ref.items():
+    src = os.path.join(root, rel); dst = os.path.join("models/adapter", rel)
+    if not os.path.isfile(src) or hashlib.sha256(open(src, "rb").read()).hexdigest() != h: bad.append(rel); continue
+    os.makedirs(os.path.dirname(dst) or ".", exist_ok=True); shutil.copy(src, dst)
+shutil.rmtree("models/_adapter_dl")
 print("adapter sha256 check:", "OK" if not bad else f"MISMATCH {bad}"); raise SystemExit(1 if bad else 0)
 PY
 du -sh models/adapter

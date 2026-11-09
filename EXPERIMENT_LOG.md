@@ -944,3 +944,7 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   Code v2 (gợi ý đơn vị, kỳ năm-trước, `debt_aging`) +2.75 quick400 / +6 pub_full / +3.4 pub_k0, held-out ngang (−0.6, trong nhiễu).
   **M11 đọc lại: không giữ** — 23 % mẫu bị đọc lại (chủ yếu do cờ postcheck "zero result" / lệch kiểu), 310 đáp án đổi, dev câu không
   có gợi ý thiếu dữ liệu 214 → 203 điểm ròng; câu có gợi ý thiếu dữ liệu chỉ 6 (đã đúng 5 / 6 với prompt full).
+| E1 + biến thể `think` ở vòng 2 (`nguyenhoa99/zc-e1think-1`, thay `rephrase`) | 0.7575 | 0.880 | 0.527 | **0.549** | 0.92 | 2,984 s |
+
+  Think vòng 2: 20 % mẫu, trung vị 553 token; held-out +1.4 (cao nhất đến nay) nhưng quick400 −1.75, pub_k0 −4, chậm hơn 52 % →
+  chưa quyết định (≈ 1 SE); giữ làm ứng viên cho so sánh cấu hình cuối (WP10).

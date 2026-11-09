@@ -960,3 +960,24 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   gốc code v2 0.534 → 0.530; A1 giữ vote. Kiểm conformal (sai held-out ≤ dev + 2 điểm) **không đạt được ở mọi θ hợp lý**: paraphrase
   khó hơn ở mọi ngưỡng (dịch phân phối, không phải lệch hiệu chỉnh); nâng θ không giới hạn làm PA sập (gốc: θ 0.96 → PA 0.04) →
   `calibrate.py` chỉ nâng θ khi PA dev mất ≤ 1 điểm, còn lại báo "SHIFT" và giữ θ dev.
+
+## Entry 43 — 2026-11-09: WP6 vòng 3 — mọi fine-tune đơn lẻ thua mô hình gốc trên held-out; WiSE-FT
+
+`synchan5704/zc-armsr3-1` (dữ liệu v2, code chính, mọi bản ghi D1, r 32):
+
+| Nhánh | quick400 | pub_full | pub_k0 | **pub_ho** | tr_ho | ghi chú |
+|---|---|---|---|---|---|---|
+| C1 (compact, seed 20261108) | 0.7175 | 0.780 | 0.513 | 0.510 | 0.93 | 34 bước, 4.5M token |
+| C1S (compact, seed 7) | 0.715 | 0.800 | 0.487 | **0.485** | 0.93 | phương sai seed: −2.5 pub_ho |
+| F1 (prompt full) | **0.760** | 0.847 | 0.540 | 0.503 | 0.96 | 7.4M token, đánh giá prompt full |
+| C1E2 (2 epoch) | 0.715 | 0.753 | 0.527 | **0.479** | 0.94 | huấn luyện thêm → held-out kém hơn |
+| *gốc prompt full, code v2 (E1)* | 0.775 | 0.893 | 0.567 | **0.535** | 0.91 | |
+
+- Mọi fine-tune đơn lẻ **dưới mô hình gốc trên held-out** (0.48–0.51 vs 0.535): 2k câu train làm mô hình chuyên biệt hoá theo cách hỏi
+  của train; thêm epoch làm xấu hơn; prompt full giúp quick400 (+4.25) nhưng không giúp held-out. Chỉ **súp** (trung bình các
+  fine-tune khác nhau) vượt gốc (0.564; 0.596 với θ hiệu chỉnh).
+- Đúng mẫu "bền dưới dịch phân phối" của **WiSE-FT** (Wortsman et al., CVPR 2022: nội suy trọng số fine-tune về trọng số gốc tăng độ
+  bền ngoài phân phối mà không mất trong phân phối) → thử súp và A1 ở α = 0.5 (`phatle1578/zc-wisep1-1`, `-wisep2-1`), đánh giá thêm
+  **tr_ho đầy đủ (1,826 câu)** làm tập held-out thứ hai cho súp α = 1 và mô hình gốc (tránh chọn quá khớp pub_ho).
+- Thành viên súp WP7 (`w7c` compact, `w7f` full: D1 seed 11 / 12, D1 + D2, D1 + D2N) đang huấn luyện; ý tưởng trên súp top-4
+  (think vòng 2, 12 mẫu, lặp seed để đo nhiễu) đang chạy (`nguyenhoa99/zc-ideasa-1`, `-ideasb-1`).

@@ -134,10 +134,15 @@ class FakeStepLLM:
     """tests without a GPU: responder(conv) -> text; requests finish one step after they are added."""
     def __init__(self, responder): self.r, self.n, self.q = responder, 0, []
     def add(self, conv, temp, seed, max_tokens, think=None, priority=0, grammar=None):
-        self.n += 1; rid = f"r{self.n}"; self.q.append((rid, conv)); return rid
+        self.n += 1; rid = f"r{self.n}"; self.q.append((rid, conv, max_tokens, think)); return rid
     def busy(self): return len(self.q)
+    def _call(self, conv, mt, think):
+        try: res = self.r(conv, think=think)                            # a responder may take think= (tests of the think paths)
+        except TypeError: res = self.r(conv)
+        text, ntok = res if isinstance(res, tuple) else (res, 10)       # (text, "MAX"): a truncated output (max_tokens used)
+        return text, (mt if ntok == "MAX" else ntok)
     def step(self):
-        out, self.q = [(rid, self.r(c), 10) for rid, c in self.q[:7]], self.q[7:]   # partial batches: exercises overlap
+        out, self.q = [(rid,) + self._call(c, mt, th) for rid, c, mt, th in self.q[:7]], self.q[7:]   # partial batches: overlap
         return out
 
 

@@ -94,10 +94,18 @@ class HybridPipeline(pipeline.Pipeline):
         mt = int(getattr(a, "think_tokens", 0) or a.max_tokens) if variant == "think" else int(a.max_tokens)
         def launch():
             seed = 1000 * len(smp["turns"]) + 17 * j + 1 + 7919 * int(getattr(a, "seed_base", 0) or 0)
-            self.gen2(conv, temp, seed, mt, on_text, think, st["prio"], grammar)
+            if smp.get("rescue"):                                       # think rescue: the same prompt, reasoning allowed
+                self.gen2(conv, temp, seed, int(getattr(a, "think_tokens", 0) or 4096), on_text, True, st["prio"], None)
+            else: self.gen2(conv, temp, seed, mt, on_text, think, st["prio"], grammar)
         def on_text(text, ntok, lp):
             self.ntok += ntok; self.stats["gen"] += 1
             out = prompting.parse_output(text)
+            if out["code"] is None and not think and not smp.get("rescue") and int(getattr(a, "think_rescue", 1) or 0) and ntok >= mt - 8:
+                # the model reasoned in plain text until the token cap without a program (fine-tuned soups: 6-10 % of the
+                # questions on the public set): re-run the sample once in thinking mode (reasoning goes to the think block)
+                smp["rescue"] = True; self.stats["think_rescue"] += 1
+                smp["turns"].append({"text": text[-600:], "ntok": ntok, "code": None, "rescued": True})
+                return launch()
             turn = {"text": text[-1200:], "ntok": ntok, "lp": lp, "code": out["code"], "escape": out["escape"], "plan": out["plan"]}
             smp["turns"].append(turn); conv.append({"role": "assistant", "content": text})
             code = out["code"]

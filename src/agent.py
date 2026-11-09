@@ -910,6 +910,7 @@ def build_parser():
     ap.add_argument("--explore-turns", type=int, default=2, help="hybrid: tool exploration turns of the explore variant")
     ap.add_argument("--variants", default="direct,rephrase", help="hybrid: prompt variants of round 2 (direct, rephrase, explore, think)")
     ap.add_argument("--think-tokens", type=int, default=4096, help="hybrid: max new tokens of a 'think' variant sample (reasoning + program)")
+    ap.add_argument("--think-rescue", type=int, default=1, help="hybrid: a sample cut at the token cap without a program is re-run once with thinking")
     ap.add_argument("--k-fast", type=int, default=2, help="hybrid: samples of round 1"); ap.add_argument("--k-max", type=int, default=8, help="hybrid: samples in all")
     ap.add_argument("--early-stop", type=int, default=1, help="hybrid: stop after round 1 when its samples agree without flags")
     ap.add_argument("--max-turns", type=int, default=2, help="hybrid: repair turns of a sample (precheck / execution errors)")

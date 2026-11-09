@@ -1057,3 +1057,14 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   WF + think: pub_ho 0.588, tr_ho 0.869 → held-out gộp 0.748 (gốc 0.713; súp WC α 0.5 cờ mới 0.761) → rào chắn held-out đạt. Xác nhận:
   lặp seed (`pf_wf05_think_s1`) và α 0.35 + think (`pf_wf035_think`).
 | Súp 8 thành viên v2 compact (WC1–8) α 0.35, không think (`synchan5704/zc-soup8v2a035-1`) | 0.913 | 927 / 14 / 59 | pub_ho 0.586, tr_ho 0.874 (gộp 0.750) = súp 4 thành viên → thêm thành viên không giúp |
+
+## Entry 46 — 2026-11-09: WP9 vòng 4 — mẫu "nói lan man" không có chương trình (think rescue)
+
+- Lỗi public gốc của súp WF + think (dev, 1000 câu): 95.5 % đúng, 1.7 % đúng-nhưng-bỏ, 1.6 % bất đồng, 1.2 % đồng thuận sai. Cơ chế lớn
+  nhất: mẫu không-think viết lập luận bằng văn xuôi ("toolkit không có hàm đếm mặt hàng có ≥ N đơn ...") tới trần 512 token mà không
+  có `<code>` (dù `int((item_sales(p, by="n_orders") >= 128).sum())` hợp lệ); lượt sửa hỏi lại vẫn lan man. Tần suất (mẫu bị cắt không
+  chương trình / câu bị ảnh hưởng): súp WF + think 145 / 62 câu, **súp WC + think 217 / 100 câu**, gốc + think 16 / 12 câu → súp fine-tune
+  dễ mắc hơn nhiều.
+- **Sửa (luồng, không đổi prompt để không lệch dữ liệu huấn luyện):** `--think-rescue 1` — mẫu bị cắt ở trần token mà không có chương
+  trình được chạy lại một lần ở chế độ suy nghĩ (cùng prompt, bỏ lượt lan man; `--think-tokens`). Test: mô hình giả "lan man" → 68 / 68
+  mẫu được cứu (0 khi tắt); ca `o7` / `o8` trong `test_flow_hybrid`.

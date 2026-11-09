@@ -7,7 +7,8 @@
 - a tiny --budget still writes a line for every question (abstain when out of time);
 - the <sql> escape (WP12) runs through precheck and DuckDB;
 - --review 1 (M11): a flagged result gets exactly one review turn and keeps a valid answer;
-- --calibrator (QĐ14): the online abstain decision equals confidence.decide on the same log.
+- --calibrator (QĐ14): the online abstain decision equals confidence.decide on the same log;
+- --think-rescue: a sample cut at the token cap without a program is re-run once in thinking mode.
 Usage: test_flow_hybrid.py <train_split> <scratch>"""
 import os, sys, json, subprocess, shutil
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -34,6 +35,14 @@ def responder(conv):
     if "The program has problems" in conv[-1]["content"] or "The program failed" in conv[-1]["content"]:
         raise AssertionError("the SQL program was refused: " + conv[-1]["content"][:300])
     return "<plan>orders | all | -</plan>\n<sql>\nSELECT COUNT(*) AS number FROM orders WHERE valid\n</sql>"
+'''
+
+
+FAKE_RAMBLE = r'''
+def responder(conv, think=None):
+    if not think:                                                       # plain mode: reasons in prose until the token cap
+        return ("Let me think about which toolkit function fits this question. " * 40, "MAX")
+    return "<plan>orders | month | -</plan>\n<code>\nANSWER = {\"type\": \"number\", \"answer\": 7}\n</code>"
 '''
 
 
@@ -110,6 +119,15 @@ def main():
         assert abs(p - r["samples"]["conf_cal"]) < 1e-9 and (fin.get("type") == "abstain") == (r["final"].get("type") == "abstain"), r["id"]
     assert m, "no calibrated decision"
     print(f"calibrator: {m} decisions equal to confidence.decide")
+    fr = os.path.join(S, "fake_ramble.py"); open(fr, "w").write(FAKE_RAMBLE)    # think rescue: no program at the cap -> rerun thinking
+    out7 = os.path.join(S, "o7"); run([split, out7] + [x if x != fake else fr for x in base] + ["--subset", "6"])
+    _, logs7 = check(out7, len(agent.select_subset(qs, 6)), "rescue")
+    sm = [s for r in logs7 for s in r["samples"]["samples"]]
+    assert sm and all(s["ok"] and s.get("rescue") and s["turns"][0].get("rescued") and s["answer"]["answer"] == 7 for s in sm), sm[:1]
+    out8 = os.path.join(S, "o8"); run([split, out8] + [x if x != fake else fr for x in base] + ["--subset", "6", "--think-rescue", "0"])
+    _, logs8 = check(out8, len(agent.select_subset(qs, 6)), "no rescue")
+    assert not any(s.get("ok") for r in logs8 for s in r["samples"]["samples"]), "without the rescue the rambling model has no program"
+    print(f"think rescue: {len(sm)} samples recovered (0 without --think-rescue)")
     print("test_flow_hybrid PASS")
 
 

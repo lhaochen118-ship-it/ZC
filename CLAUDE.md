@@ -27,6 +27,14 @@ Tiếp tục đúng chỗ dở nhờ bảng "Tiến độ WP" trong `handoff/STA
 với lời nhắc "đọc handoff/STATUS.md, làm tiếp bước chưa xong đầu tiên của docs/08; không dừng đến khi xong toàn bộ kế hoạch" —
 routine là cơ chế đánh thức lại sau khi hạn mức Claude reset; chỉ xoá routine khi toàn bộ kế hoạch đã xong.
 
+**NHIỆM VỤ SAU KẾ HOẠCH 1 (user, 09/11 — bắt buộc, đọc nguyên văn `docs/13_TASK_AFTER_PLAN1.md`):** xong WP0 → WP12 thì chấm public gốc
+với `data/raw/public_gt.jsonl` (= `score 1.jsonl`, chỉ để chấm) và liệt kê mọi câu sai; **điều kiện dừng cuối cùng = 100 % public gốc**
+đạt bằng cải tiến tổng quát mà **không giảm held-out** (pub_ho, paraphrase train, tr_ho; cải tiến tăng public mà giảm held-out → loại; báo
+cả hai số ở mọi mốc). Chưa đạt → vòng Phân tích lỗi (`docs/10_ERROR_ANALYSIS.md`, taxonomy 7 nhóm) → Tài liệu ngoài
+(`docs/11_LITERATURE.md`) → Kế hoạch 2 (`docs/12_PLAN2.md`, gói WP-P2-xx, lưới thí nghiệm song song) → Triển khai → Đo, lặp lại
+("Vòng n" trong `docs/12_PLAN2.md`); bảng "Tiến độ P2" trong `handoff/STATUS.md`. Kaggle: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU,
+dùng hết slot một acc rồi mới sang acc khác; việc không cần GPU đưa lên phiên CPU.
+
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 
 - Tự động hoá tối đa; chỉ hỏi việc chỉ user làm được (token, nộp portal, accept rules Kaggle trên web).

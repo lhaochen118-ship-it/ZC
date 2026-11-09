@@ -52,6 +52,16 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP11 Docker + nộp | **đang** | `docker/predict.sh`, `Dockerfile` đã chuyển sang luồng hybrid (`configs/flow_final.json` chưa có) |
 | WP12 DuckDB | **xong** | QĐ12: **không giữ** (mô hình không viết `<sql>` trên pub_noind; code giữ, tắt) — entry 42 |
 
+## Tiến độ P2 (sau kế hoạch 1 — `docs/13_TASK_AFTER_PLAN1.md`; dừng khi public gốc = 100 % và held-out không giảm)
+
+| Bước / gói | Trạng thái | Public gốc | Held-out (pub_ho / tr_ho) | Ghi chú |
+|---|---|---|---|---|
+| B1 hoàn tất kế hoạch 1 + liệt kê câu sai | đang (WP10 chạy) | 0.939 (súp WF + think) | 0.59 / 0.87 | |
+| B2 phân tích lỗi → `docs/10_ERROR_ANALYSIS.md` | chưa | | | |
+| B3 tài liệu ngoài → `docs/11_LITERATURE.md` | chưa | | | |
+| B4 kế hoạch 2 → `docs/12_PLAN2.md` | chưa | | | |
+| B5 triển khai WP-P2-xx (vòng 1…) | chưa | | | |
+
 ## Quyết định của user (09/11)
 
 - **Ưu tiên điểm public gốc** (đề private giống phong cách public): tiêu chí chọn chính = `pub_full` đủ 1000 câu (chạy 2 lần vì nhiễu); held-out (pub_ho + tr_ho) là rào chắn chống quá khớp (không được giảm quá nhiễu); vẫn chỉ sửa tổng quát.

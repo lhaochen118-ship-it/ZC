@@ -1,0 +1,14 @@
+{
+ "dataset": "nhatlong1103/zc-final-adapter",
+ "files": {
+  "WF1/adapter/adapter_config.json": "aedb6f9e400ab2d317b03f37ff4a6c1d835309f7e017f7faf6b1bfd89299efd6",
+  "WF1/adapter/adapter_model.safetensors": "6b30a718fbfc28328ffee70334547e1e72d866bb2365c343d3334fe26065fb1f",
+  "WF2/adapter/adapter_config.json": "aedb6f9e400ab2d317b03f37ff4a6c1d835309f7e017f7faf6b1bfd89299efd6",
+  "WF2/adapter/adapter_model.safetensors": "7409359f4032b566eb77ac7c7a2fe9be0cefa294c9ed59a7df5802f40682eeca",
+  "WF3/adapter/adapter_config.json": "aedb6f9e400ab2d317b03f37ff4a6c1d835309f7e017f7faf6b1bfd89299efd6",
+  "WF3/adapter/adapter_model.safetensors": "cfb5bfb60bb0c1de40ed9c06ca32ea9392ce8ee0e4dce1c8876e11441fcf6667",
+  "WF4/adapter/adapter_config.json": "aedb6f9e400ab2d317b03f37ff4a6c1d835309f7e017f7faf6b1bfd89299efd6",
+  "WF4/adapter/adapter_model.safetensors": "a610bb3bdd4cf42c32083b7f860625b2fe1ce0ef58532dd17ac4a3d400c6b6d1",
+  "soup.json": "803297a4e6a0d3e2323e4311a784049b922b05c287ef8aef0054e442f2866f64"
+ }
+}

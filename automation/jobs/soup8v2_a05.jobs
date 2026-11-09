@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/soup8v2_a05 --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WC1,WC2,WC3,WC4,WC5,WC6,WC7,WC8 --weights 0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625 --sets pub_full,pub_ho,tr_ho --eval-config configs/e0.json

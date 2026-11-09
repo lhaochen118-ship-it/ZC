@@ -1080,3 +1080,6 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   dataset được gắn: kernel được đẩy khi phiên bản code mới chưa sống; `fanout` chỉ chờ trạng thái "ready" — có thể là phiên bản trước).
   Sửa: `make_kernel` ghi mã phiên bản ngẫu nhiên vào `ZC_CODE_MARKER` và vào runner; runner so khớp khi khởi động, lệch → dừng ngay
   "STALE CODE" (không bao giờ chạy code cũ âm thầm). Lần lặp WC + think không đo được (WF dẫn đầu nên không chạy lại).
+- **Think rescue trên mô hình thật** (`phatle1578/zc-pfwc05rescue-1`, súp WC α 0.5 + think vòng 2 + rescue): 1,253 mẫu được cứu (1,001 hợp lệ),
+  nhưng pub_full **0.913** (940 / **27** / 33) < 0.926 không rescue (945 / 19 / 36); pub_ho 0.583, tr_ho 0.874 → câu trả lời được cứu kém tin
+  cậy hơn (sai tăng). Chờ súp WF + rescue trước khi quyết định.

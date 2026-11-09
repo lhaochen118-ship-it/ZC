@@ -52,6 +52,12 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP11 Docker + nộp | **đang** | `docker/predict.sh`, `Dockerfile` đã chuyển sang luồng hybrid (`configs/flow_final.json` chưa có) |
 | WP12 DuckDB | **xong** | QĐ12: **không giữ** (mô hình không viết `<sql>` trên pub_noind; code giữ, tắt) — entry 42 |
 
+## Quyết định của user (09/11)
+
+- **Ưu tiên điểm public gốc** (đề private giống phong cách public): tiêu chí chọn chính = `pub_full` đủ 1000 câu (chạy 2 lần vì nhiễu); held-out (pub_ho + tr_ho) là rào chắn chống quá khớp (không được giảm quá nhiễu); vẫn chỉ sửa tổng quát.
+- yeshenhi không thể có L4 (bỏ qua); cần thêm acc L4 thì báo user.
+- Ngày 15/11 user tự build Docker, chạy `run_public_test.sh`, nộp portal.
+
 ## Kaggle
 
 08/11: user cấp 9 token (`~/.kaggle/tok_<acc>`); probe 4×L4 OK trên 8 acc: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99,

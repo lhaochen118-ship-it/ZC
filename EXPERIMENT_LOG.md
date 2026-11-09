@@ -1068,3 +1068,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 - **Sửa (luồng, không đổi prompt để không lệch dữ liệu huấn luyện):** `--think-rescue 1` — mẫu bị cắt ở trần token mà không có chương
   trình được chạy lại một lần ở chế độ suy nghĩ (cùng prompt, bỏ lượt lan man; `--think-tokens`). Test: mô hình giả "lan man" → 68 / 68
   mẫu được cứu (0 khi tắt); ca `o7` / `o8` trong `test_flow_hybrid`.
+- Súp top-4 cũ α 0.35 + think vòng 2 (`phatle1578/zc-pfs4035think-1`): pub_full **0.901** (927 / 26 / 47) < không think 0.921; pub_ho 0.580,
+  tr_ho 0.876 → think không giúp ổn định trên mọi mô hình; chờ hai lần lặp seed (WC + think, WF + think) để đo nhiễu public gốc trước khi chọn.

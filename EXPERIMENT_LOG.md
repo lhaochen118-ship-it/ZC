@@ -1043,3 +1043,4 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 | *mốc v28 (LLM luồng cũ)* | *0.921* | | |
 
 → thêm súp WF α 0.5 + think (`quynhle07/zc-pfwf05think-1`, + pub_ho / tr_ho).
+| Súp WC1–4 α 0.5 (compact) + think vòng 2 (`mucnokieu/zc-pfwc05think-1`) | **0.926** | 945 / 19 / 36 | |

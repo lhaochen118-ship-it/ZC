@@ -115,8 +115,9 @@ class HybridPipeline(pipeline.Pipeline):
             code = out["code"]
             if out["escape"] == "sql" and code is not None:          # the query becomes a program first (a SQL text is no Python)
                 code = sql_program(code, (st["hints"] or {}).get("answer_type"))
+            uc = bool(int(getattr(a, "unit_check", 0) or 0))
             iss = pre.precheck(code, self.spec, st["hints"], ctx.entity_values, out["escape"], q["as_of_date"],
-                               q["question"] if int(getattr(a, "size_check", 0) or 0) else None)
+                               q["question"] if (int(getattr(a, "size_check", 0) or 0) or uc) else None, uc)
             turn["precheck"] = [f"{i['level']}:{i['rule']}:{i['msg'][:120]}" for i in iss]
             if pre.errors(iss):
                 self.stats["precheck_error"] += 1

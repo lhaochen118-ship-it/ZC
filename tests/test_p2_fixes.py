@@ -114,5 +114,13 @@ check("size= kw", sz('ANSWER = {"type": "number", "answer": diaper_qty(month(202
 check("số 4", sz('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY), size="4")}', "bán bao nhiêu lon sữa bột số 4"), [])
 check("no question", [i for i in pre.precheck('ANSWER = {"type": "number", "answer": size_qty(yesterday(TODAY), "L")}', spec, {}, None, None, "2026-04-10") if i["rule"] == "size"], [])
 
+# 11. 'bao nhiêu <đơn vị>' with a bare item_qty(p): error (counts every unit)
+HU = {"entities": [{"kind": "base_unit", "data_value": "gói", "text": "goi"}]}
+un = lambda code, q: [i["level"] for i in pre.precheck(code, spec, HU, None, None, "2026-04-10", q, True) if i["rule"] == "unit"]
+check("bare item_qty", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY))}', "Tuần này bán được tổng cộng bao nhiêu gói rồi ha?"), ["error"])
+check("base_unit given", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY), base_unit="gói")}', "Tuần này bán được bao nhiêu gói?"), [])
+check("item given", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY), item="Mì Hảo Hảo gói")}', "Tuần này bán được bao nhiêu gói Mì Hảo Hảo?"), [])
+check("unit not counted", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY))}', "Tuần này mì gói bán chạy không?"), [])
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

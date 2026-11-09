@@ -57,6 +57,12 @@ def _size_args(tree):
     return out
 
 
+def _bare_calls(tree, name):
+    """calls of name(...) with no keyword filter and only the period argument."""
+    return [n for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == name
+            and len(n.args) <= 1 and not n.keywords]
+
+
 def _uses_number(code, v):
     """the program writes the number v (187, 9100000, 9_100_000, 9.1e6, 9100000.0, 10 * 1e6 ...): any numeric literal or
     constant product of literals equal to v."""
@@ -86,7 +92,7 @@ def all_periods(src, today):
     return out
 
 
-def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None, question=None):
+def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None, question=None, unit_check=False):
     import api_spec
     out = []
     if code is None: return [_issue("error", "format", "no program block (<code> ... </code>) in the output")]
@@ -170,6 +176,13 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
             if k and f" {k} " not in qk and not re.search(r"\b(?:size|so|co)\s*" + re.escape(k) + r"\b", qk):
                 out.append(_issue("error", "size", f"size {size!r}: the question names no such size",
                                   "for 'bán được bao nhiêu <đơn vị>' use item_qty(p, base_unit=...); a size only when the question says it"))
+    if question is not None and unit_check:                             # P2: 'bán được bao nhiêu <đơn vị>' counts only the items of
+        qk = " " + " ".join(dm.key(str(question) + " " + str(h.get("clean") or "")).split()) + " "   # that base unit (rulebook)
+        units = [e.get("data_value") for e in h.get("entities") or [] if e.get("kind") == "base_unit" and e.get("data_value")]
+        asked = [u for u in units if re.search(r"\b(?:bao nhieu|bnhiu|bn|may|nhieu|so)\s+" + re.escape(" ".join(dm.key(u).split())) + r"\b", qk)]
+        if asked and _bare_calls(tree, "item_qty"):                     # a bare item_qty(p) adds every unit: 172 / 172 wrong
+            out.append(_issue("error", "unit", f"the question counts {asked[0]!r} but item_qty(...) has no filter: it adds every unit",
+                              f"item_qty(p, base_unit={asked[0]!r}) (rulebook 'Bán được bao nhiêu <đơn vị>'), or an item / group filter"))
     for th in h.get("thresholds") or []:                                 # P2: a threshold the question sets ('ít nhất 187 đơn')
         v = th.get("value")                                             # should appear in the program
         if isinstance(v, (int, float)) and not _uses_number(code, v):

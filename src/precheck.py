@@ -43,6 +43,20 @@ def first_period(tree, today):
     return None
 
 
+def all_periods(src, today):
+    """{(from, to)} of every period expression of a program (source text or parsed tree); None if it does not parse."""
+    import pandas as pd
+    try: tree = ast.parse(src) if isinstance(src, str) else src
+    except SyntaxError: return None
+    ns = dict(dm.PERIOD_API); ns["TODAY"] = pd.Timestamp(today); out = set()
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id in dm.PERIOD_API and n.func.id not in ("lunar_to_solar", "month_seq"):
+            try: p = eval(compile(ast.Expression(n), "<p>", "eval"), ns)
+            except Exception: continue
+            if isinstance(p, dm.Period): out.add((str(p.start.date()), str(p.end.date())))
+    return out
+
+
 def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None):
     import api_spec
     out = []
@@ -114,6 +128,12 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
         hp = (h["period"].get("from"), h["period"].get("to"))
         if fp and fp != hp:
             out.append(_issue("warn", "period", f"the program's period {fp[0]}..{fp[1]} differs from the period read in the question {hp[0]}..{hp[1]}"))
+    if len(h.get("periods") or []) >= 2 and today is not None:          # P2: every period the question names should be used
+        hp, pp = all_periods("\n".join(h["periods"]), today), all_periods(tree, today)
+        if hp and pp is not None and not hp <= pp:
+            miss = sorted(hp - pp)
+            out.append(_issue("warn", "named_periods", "the question names the periods " + ", ".join(h["periods"]) + " but the program does "
+                              f"not use {miss[0][0]}..{miss[0][1]}"))
     at = h.get("answer_type")
     m = re.search(r'ANSWER\s*=\s*\{\s*["\']type["\']\s*:\s*["\'](\w+)["\']', code)
     if at and m and m.group(1) != at and m.group(1) != "unanswerable" and not (at == "number" and m.group(1) == "percent"):

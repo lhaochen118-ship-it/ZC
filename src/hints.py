@@ -172,7 +172,7 @@ _UNIT_KINDS = ("unit", "base_unit")
 # general Vietnamese shop words that say the same as a rulebook word ('bữa' = 'ngày', 'củ' = 'triệu', 'cháy hàng' = 'hết hàng')
 _SYNONYMS = [(r"\bbữa\b", "ngày"), (r"\bcủ\b", "triệu"), (r"\bcháy hàng\b", "hết hàng"), (r"\bnhứt\b", "nhất"), (r"\bmô\b", "nào"),
              (r"\bthằng\b", "người"), (r"\bsp\b", "sản phẩm"), (r"\bncc\b", "nhà cung cấp"), (r"\bxịn\b", "sộp"),
-             (r"%", "phần trăm"), (r"\b(?:chênh|tăng|giảm|hơn|kém)\b(?=.*(?:%|phần trăm))", "thay đổi")]   # 'chênh mấy %' = % thay đổi
+             (r"\blời\b", "lãi"), (r"%", "phần trăm"), (r"\b(?:chênh|tăng|giảm|hơn|kém)\b(?=.*(?:%|phần trăm))", "thay đổi")]   # 'chênh mấy %' = % thay đổi
 
 
 def _toks(text):

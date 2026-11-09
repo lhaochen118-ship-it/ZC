@@ -81,5 +81,15 @@ check("tháng is not thắng", ents("tháng 8 thợ An lãnh bao nhiêu tiền")
 check("size số 4", ents("tháng này bán bao nhiêu lon sữa bột số 4"), [("size", "Số 4")])
 check("size M", ents("bỉm size M bán được mấy bịch"), [("size", "Size M")])
 
+# 7. named periods: a year-over-year program must use both months; 'lời gộp' = 'Lãi gộp'
+import precheck as pre, api_spec
+spec = api_spec.build_api_spec()
+H = {"periods": ["month(2026, 3)", "month(2025, 3)"]}
+miss = lambda code: [i["rule"] for i in pre.precheck(code, spec, H, None, None, "2026-04-10") if i["rule"] == "named_periods"]
+check("yoy prev_month", miss('ANSWER = {"type": "percent", "answer": growth(revenue(month(2026, 3)), revenue(prev_month(month(2026, 3))))}'), ["named_periods"])
+check("yoy right", miss('ANSWER = {"type": "percent", "answer": growth(revenue(month(2026, 3)), revenue(month(2025, 3)))}'), [])
+rows2 = hints.rulebook_rows("| a | b |\n|---|---|\n| Lãi gộp | doanh thu trừ giá vốn |\n")
+check("lời gộp", [t["term"] for t in hints.rule_terms_of("xem lời gộp tháng 9", rows2)], ["Lãi gộp"])
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

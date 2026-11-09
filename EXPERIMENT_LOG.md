@@ -1024,3 +1024,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   tr_ho 0.875 → **0.884**; súp WC α 1 và mô hình gốc cũng tăng ở mọi tập (+0.7 → +2 điểm).
 - Súp WC α 0.7 (`huyenco/zc-wisewc07-1`): quick400 0.7675, pub_ho 0.587, tr_ho 0.865 → gộp 0.746 (cờ mới, phát lại: 0.756). Đường α súp WC
   (gộp, cờ mới): α 1 0.751 / α 0.7 0.756 / **α 0.5 0.761**; quick400 0.758 / 0.768 / **0.785** → thử α 0.35.
+- Súp WF1–4 (thành viên prompt full, đánh giá prompt full; `quynhle07/zc-soupwf4-1`): quick400 0.7575, pub_ho 0.550, tr_ho 0.849 → gộp
+  0.720 (cờ mới 0.725) < súp compact WC (0.743 / 0.751): sai nhiều hơn (229 vs 189 trên pub_ho) → **thành viên compact thắng**.

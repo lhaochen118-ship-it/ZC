@@ -999,3 +999,7 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   này: `huyenco/zc-wisewc05-1`, `-wisewc07-1`.
 - Súp 8 (top-4 cũ dữ liệu v1 + 4 thành viên WP7 v2, `mucnokieu/zc-soup8m-1`): quick400 0.7575, pub_ho 0.567, tr_ho 0.869 → gộp 0.739
   (θ dev 0.750) < súp 4 thành viên v2 (0.743 / 0.761): thành viên v1 không thêm gì.
+- Súp top-4 α 0.7 (`nguyenhoa99/zc-wisea07-1`): quick400 0.750, pub_ho 0.576, tr_ho 0.865 → gộp 0.741 (vote); θ hiệu chỉnh trên 300 câu dev
+  dao động mạnh giữa các lần (0.37–0.71) → hiệu chỉnh cuối (WP10) phải dùng dev lớn: **pub_full + pub_k0 đầy đủ (~1,700 câu, không
+  huấn luyện trên chúng)**; câu train không dùng làm dev cho mô hình fine-tune (trong mẫu). Đường α của súp cũ phẳng trong nhiễu
+  (α 0.5 0.736, α 0.7 0.741, α 1 ~0.730).

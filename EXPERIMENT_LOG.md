@@ -948,3 +948,10 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 
   Think vòng 2: 20 % mẫu, trung vị 553 token; held-out +1.4 (cao nhất đến nay) nhưng quick400 −1.75, pub_k0 −4, chậm hơn 52 % →
   chưa quyết định (≈ 1 SE); giữ làm ứng viên cho so sánh cấu hình cuối (WP10).
+- **QĐ9 súp (`nguyenhoa99/zc-soupr2b-1`, gộp tuyến tính đều vào trọng số gốc, code `fd2b876`, prompt compact):** top-4 theo quick400
+  (A1, B3S, B3OSS, A2T64): quick400 0.7575, pub_full 0.807, pub_k0 **0.607**, **pub_ho 0.5637** (931 / **157** / 285), tr_ho 0.91;
+  top-8: quick400 0.7425, pub_k0 0.587, pub_ho 0.554 (936 / 175 / 262). Súp top-4 = **held-out cao nhất đến nay** (+2.9 so với gốc
+  prompt full code v2, +3.3 so với A1): sai ít hơn hẳn (157 vs ~230), bỏ nhiều hơn (mẫu bất đồng → vòng 2 483 câu). Theo đúng QĐ9
+  (+0.5 quick400 so với nhánh đơn tốt nhất A1 0.7775) súp chưa đạt, nhưng 0.7775 của A1 là đo may (entry 41) → súp là **ứng viên
+  cho so sánh held-out cuối (QĐ15)**; ủng hộ hướng WP7 "thêm seed để gộp". Gộp 8 adapter: 367–419 s; đánh giá DP 4 ~2,700–3,000 s
+  (vòng 2 nhiều hơn).

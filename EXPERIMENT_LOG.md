@@ -1083,3 +1083,8 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 - **Think rescue trên mô hình thật** (`phatle1578/zc-pfwc05rescue-1`, súp WC α 0.5 + think vòng 2 + rescue): 1,253 mẫu được cứu (1,001 hợp lệ),
   nhưng pub_full **0.913** (940 / **27** / 33) < 0.926 không rescue (945 / 19 / 36); pub_ho 0.583, tr_ho 0.874 → câu trả lời được cứu kém tin
   cậy hơn (sai tăng). Chờ súp WF + rescue trước khi quyết định.
+- Súp WF α 0.5 + think + rescue (`phatle1578/zc-pfwf05rescue-1`): 880 mẫu được cứu (728 hợp lệ); pub_full 0.932 (956 / **24** / 20) vs không
+  rescue 0.939 / 0.930; pub_ho 0.594, tr_ho 0.869. Cả hai súp: rescue đổi câu bỏ thành câu trả lời sai nhiều hơn → **think rescue tắt mặc định**
+  (`--think-rescue 0`; code giữ, test bật tường minh).
+- **Chọn cấu hình cuối (trước WP10):** súp WF1–4 (thành viên prompt full, dữ liệu v2) **α 0.35**, prompt full, think ở vòng 2 (biến thể
+  `direct,think`), không rescue: public gốc 0.939 (α 0.5: 0.939 / 0.930), held-out gộp 0.752 (α 0.5: 0.748).

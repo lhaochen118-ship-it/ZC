@@ -120,7 +120,7 @@ def main():
     assert m, "no calibrated decision"
     print(f"calibrator: {m} decisions equal to confidence.decide")
     fr = os.path.join(S, "fake_ramble.py"); open(fr, "w").write(FAKE_RAMBLE)    # think rescue: no program at the cap -> rerun thinking
-    out7 = os.path.join(S, "o7"); run([split, out7] + [x if x != fake else fr for x in base] + ["--subset", "6"])
+    out7 = os.path.join(S, "o7"); run([split, out7] + [x if x != fake else fr for x in base] + ["--subset", "6", "--think-rescue", "1"])
     _, logs7 = check(out7, len(agent.select_subset(qs, 6)), "rescue")
     sm = [s for r in logs7 for s in r["samples"]["samples"]]
     assert sm and all(s["ok"] and s.get("rescue") and s["turns"][0].get("rescued") and s["answer"]["answer"] == 7 for s in sm), sm[:1]

@@ -926,3 +926,10 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   174). Hơn quick400 +2.0 so với trung bình hai lần đo Qwen = đúng ngưỡng nhưng trong nhiễu đo (±2); held-out lớn hơn 3.4× nghiêng
   về Qwen 2 điểm (Gemma trả lời nhiều hơn, sai nhiều hơn); Gemma bf16 24 GB không vừa 1 L4 để LoRA → **giữ Qwen3.5-9B**. Job 2
   (Gemma compact pub_ho) không ra kết quả (lỗi chia GPU) — không cần cho quyết định.
+
+## Entry 42 — 2026-11-09: QĐ12 (DuckDB) — không giữ; súp / vòng 3 / A/B suy luận đang chạy
+
+- `yuan1103/zc-e1sql-1` (mô hình gốc, prompt full, code v2, `pub_noind` ẩn hàm ngành, `--escape python,sql`): PA 0.036 (28 / 24 / 60)
+  vs −0.0625 trước (prompt compact, chỉ `<python>`). Mô hình **không viết khối `<sql>` nào** (0 / 674 mẫu) và chỉ 2 khối `<python>`
+  → phần tăng đến từ prompt full + gợi ý v2, không từ SQL. **QĐ12: DuckDB không giữ** (mô hình không dùng nhánh thoát; code giữ, tắt
+  mặc định). Điểm yếu thật: khi thiếu hàm ngành, mô hình ép hàm toolkit chung thay vì thoát sang pandas.

@@ -1030,3 +1030,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   tr_ho 0.867 → gộp 0.744 (cờ mới 0.751) ≈ súp WC α 0.5 (0.752 / 0.761) → vào danh sách đánh giá public gốc đủ 1000 câu.
 - Súp WC α 0.35 (`huyenco/zc-wisewc035-1`, đã chạy với cờ mới): quick400 0.785, pub_full (150) 0.880, **pub_ho 0.599** (cao nhất), tr_ho 0.870
   → gộp 0.754 (α 0.5 cùng cơ sở: 0.761) → ngang; quyết định bằng public gốc đủ 1000 câu (đang chạy: `pf*` kernel).
+- WC5–8 (`synchan5704/zc-w7c2-1`; WC5 D1 seed 21, WC6 D1 + D2 mẫu mới, WC7 D1 + D2N mẫu mới, WC8 D1 + D4T) huấn luyện xong → súp 8 thành viên v2
+  α 0.5 / 0.35 trên public gốc đủ + pub_ho + tr_ho (`huyenco/zc-soup8v2a05-1`, `synchan5704/zc-soup8v2a035-1`).

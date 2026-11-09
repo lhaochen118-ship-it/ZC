@@ -105,5 +105,14 @@ check("threshold missing", thr('ANSWER = {"type": "number", "answer": len(item_s
 for lit in ("9100000", "9_100_000", "9.1e6", "9.1 * 1e6", "9100 * 1000"):
     check(f"threshold {lit}", thr('ANSWER = {"type": "number", "answer": n_days_revenue_at_least(month(2025, 10), ' + lit + ')}'), [])
 
+# 10. a size filter must be a size the question names ('bao nhiêu lon' is a unit, not size L)
+sz = lambda code, q: [i["level"] for i in pre.precheck(code, spec, {}, None, None, "2026-04-10", q) if i["rule"] == "size"]
+check("size not named", sz('ANSWER = {"type": "number", "answer": size_qty(yesterday(TODAY), "L")}', "Bữa qua bán ra được nhiêu lon vậy?"), ["error"])
+check("size named", sz('ANSWER = {"type": "number", "answer": size_qty(this_week(TODAY), "M")}', "tuần này bán mấy ly size M"), [])
+check("unit as size", sz('ANSWER = {"type": "number", "answer": size_qty(this_week(TODAY), "đĩa")}', "Tuan nay quan ban dc bnhiu dia?"), [])
+check("size= kw", sz('ANSWER = {"type": "number", "answer": diaper_qty(month(2026, 5), size="XL")}', "bỉm size M bán mấy bịch"), ["error"])
+check("số 4", sz('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY), size="4")}', "bán bao nhiêu lon sữa bột số 4"), [])
+check("no question", [i for i in pre.precheck('ANSWER = {"type": "number", "answer": size_qty(yesterday(TODAY), "L")}', spec, {}, None, None, "2026-04-10") if i["rule"] == "size"], [])
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

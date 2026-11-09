@@ -43,6 +43,20 @@ def first_period(tree, today):
     return None
 
 
+_SIZE_FUNCS = {"size_qty"}
+
+
+def _size_args(tree):
+    """string sizes given to size filters: size_qty(p, "M"), any call's size="XL"."""
+    out = []
+    for n in ast.walk(tree):
+        if not isinstance(n, ast.Call): continue
+        if isinstance(n.func, ast.Name) and n.func.id in _SIZE_FUNCS and len(n.args) >= 2 and isinstance(n.args[1], ast.Constant) and isinstance(n.args[1].value, str):
+            out.append(n.args[1].value)
+        out += [kw.value.value for kw in n.keywords if kw.arg == "size" and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str)]
+    return out
+
+
 def _uses_number(code, v):
     """the program writes the number v (187, 9100000, 9_100_000, 9.1e6, 9100000.0, 10 * 1e6 ...): any numeric literal or
     constant product of literals equal to v."""
@@ -72,7 +86,7 @@ def all_periods(src, today):
     return out
 
 
-def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None):
+def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None, question=None):
     import api_spec
     out = []
     if code is None: return [_issue("error", "format", "no program block (<code> ... </code>) in the output")]
@@ -149,6 +163,13 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
             miss = sorted(hp - pp)
             out.append(_issue("warn", "named_periods", "the question names the periods " + ", ".join(h["periods"]) + " but the program does "
                               f"not use {miss[0][0]}..{miss[0][1]}"))
+    if question is not None:                                            # P2: a size filter must be a size the question names
+        qk = " " + " ".join(dm.key(str(question) + " " + str(h.get("clean") or "")).split()) + " "   # ('bao nhiêu lon' is a unit,
+        for size in _size_args(tree):                                   # not size 'L': 28 / 28 such samples were wrong)
+            k = " ".join(dm.key(size).split())
+            if k and f" {k} " not in qk and not re.search(r"\b(?:size|so|co)\s*" + re.escape(k) + r"\b", qk):
+                out.append(_issue("error", "size", f"size {size!r}: the question names no such size",
+                                  "for 'bán được bao nhiêu <đơn vị>' use item_qty(p, base_unit=...); a size only when the question says it"))
     for th in h.get("thresholds") or []:                                 # P2: a threshold the question sets ('ít nhất 187 đơn')
         v = th.get("value")                                             # should appear in the program
         if isinstance(v, (int, float)) and not _uses_number(code, v):

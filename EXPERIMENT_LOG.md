@@ -1074,3 +1074,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   không hơn súp 4 thành viên.
 - **Súp WF α 0.35 + think** (`quynhle07/zc-pfwf035think-1`): pub_full **0.939** (956 / 17 / 27) = α 0.5; pub_ho 0.592, tr_ho 0.873 → held-out gộp
   **0.752** (α 0.5: 0.748) → hai α độc lập cùng 0.939: súp WF (prompt full) + think vòng 2 ổn định; α 0.35 nhỉnh hơn ở held-out.
+- Lặp seed súp WF α 0.5 + think (`quynhle07/zc-pfwf05thinks1-1`): pub_full **0.930** (951 / 21 / 28; lần 1 0.939), pub_ho 0.586, tr_ho 0.868 →
+  nhiễu public gốc ≈ ±0.5–1 điểm; trung bình 3 lần súp WF + think ≈ **0.936** (dẫn đầu mọi ứng viên).

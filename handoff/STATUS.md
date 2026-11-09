@@ -64,7 +64,9 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP-P2-02 trần 1536 token | chờ GPU (`p2_b`) | | | |
 | WP-P2-03 định dạng + cờ kỳ lệch | CPU xong | | | |
 | WP-P2-04 review thiếu dữ liệu | chờ GPU (`p2_c`) | | | |
-| Vòng 1 GPU (`p2_a/b/c`) | sắp chạy | | | `automation/jobs/p2r1{a,b,c}.jobs` |
+| Vòng 1 GPU (`p2_a/b/c`) | **đang chạy** (09/11 18:00 UTC, code `1d759c8`, CPU suite ALL PASS) | | | kernel `nhatlong1103/zc-p2r1a-1`, `nhatlong1103/zc-p2r1b-1`, `phatle1578/zc-p2r1c-1` (mucnokieu hết slot GPU: acc dùng chung) |
+| Vòng 2 code (`p2_d/e`) | code xong `c49da84`, CPU suite đang chạy | | | gợi ý `counted` / `thresholds`, prefill `<plan>`, đồng nghĩa % ; kiểu gợi ý = đáp án 100 % câu có gợi ý (train + public) |
+| WP10 stress (pub_noind, pub_noacc) | không đo được (kernel dừng "STALE CODE" sau restart hàng đợi) → đo trên cấu hình P2 cuối | | | |
 
 ## Quyết định của user (09/11)
 

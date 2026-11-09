@@ -1047,3 +1047,4 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 | Súp WC1–4 α 0.5 (compact), không think (`mucnokieu/zc-pfwc05-1`) | 0.913 | 931 / 18 / 51 | |
 
   Think vòng 2 trên public gốc: gốc +1.8 (0.906 → 0.924), súp WC +1.3 (0.913 → 0.926) — chủ yếu đổi câu bỏ thành câu đúng.
+| Súp WC1–4 α 0.35 (compact), không think (`huyenco/zc-pfwc035-1`) | 0.913 | 930 / 17 / 53 | |

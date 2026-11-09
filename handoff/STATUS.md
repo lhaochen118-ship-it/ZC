@@ -65,7 +65,7 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP-P2-03 định dạng + cờ kỳ lệch | CPU xong | | | |
 | WP-P2-04 review thiếu dữ liệu | chờ GPU (`p2_c`) | | | |
 | Vòng 1 GPU (`p2_a/b/c`) | **đang chạy** (09/11 18:00 UTC, code `1d759c8`, CPU suite ALL PASS) | | | kernel `nhatlong1103/zc-p2r1a-1`, `nhatlong1103/zc-p2r1b-1`, `phatle1578/zc-p2r1c-1` (mucnokieu hết slot GPU: acc dùng chung) |
-| Vòng 2 code (`p2_d/e`) | code xong `c49da84`, CPU suite đang chạy | | | gợi ý `counted` / `thresholds`, prefill `<plan>`, đồng nghĩa % ; kiểu gợi ý = đáp án 100 % câu có gợi ý (train + public) |
+| Vòng 2 GPU (`p2_d/e/f`) | **đang chạy** (09/11 18:50 UTC, code `c49da84`/`d9b30fb`, CPU suite ALL PASS) | | | `huyenco/zc-p2r2d-1`, `huyenco/zc-p2r2e-1`, `phatle1578/zc-p2r2f-1`; gợi ý `counted` / `thresholds`, prefill `<plan>`, đồng nghĩa %; kiểu gợi ý = đáp án 100 % câu có gợi ý (train + public) |
 | WP10 stress (pub_noind, pub_noacc) | không đo được (kernel dừng "STALE CODE" sau restart hàng đợi) → đo trên cấu hình P2 cuối | | | |
 
 ## Quyết định của user (09/11)
@@ -79,7 +79,7 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 08/11: user cấp 9 token (`~/.kaggle/tok_<acc>`); probe 4×L4 OK trên 8 acc: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99,
 yuan1103 (~15 h W46 đã dùng), synchan5704, anderson1202, loinguyentran (quota W46 của các acc mới chưa rõ: acc dùng chung dự án
 khác). yeshenhi: chỉ T4 (dùng cho kernel wheels / T4). Đủ 8 acc L4 mà kế hoạch §9 cần (7, lý tưởng 8).
-09/11: user cấp thêm **phatle1578** (probe 4×L4 OK, 48 CPU; đã có `phatle1578/zc-para` trùng sha256 với bản đang dùng) và token mới cho **yeshenhi** (probe: vẫn không có GPU L4 → cần user accept rules `gemma-4-developer-agent` trên web bằng acc này); thêm **mucnokieu**, **huyenco** (probe 4×L4 OK, 48 CPU; tạo `<acc>/zc-para` riêng tư, cùng tệp). → **11 acc 4×L4**.
+09/11: user cấp thêm **phatle1578** (probe 4×L4 OK, 48 CPU; đã có `phatle1578/zc-para` trùng sha256 với bản đang dùng) và token mới cho **yeshenhi** (probe: vẫn không có GPU L4 → cần user accept rules `gemma-4-developer-agent` trên web bằng acc này); thêm **mucnokieu**, **huyenco** (probe 4×L4 OK, 48 CPU; tạo `<acc>/zc-para` riêng tư, cùng tệp). → **11 acc 4×L4**. 09/11 18:50: **quynhle07 hết 30 h GPU tuần W46**; `huyenco/zc-final-adapter` (bản riêng tư của adapter cuối) tạo để chạy vòng 2.
 
 ## Việc tiếp theo (user đã duyệt 08/11): triển khai code đúng `docs/08_MASTER_PLAN.md` §8 (WP0 → WP12), đặc tả §5, quy tắc §10
 

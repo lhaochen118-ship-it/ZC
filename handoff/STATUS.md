@@ -64,7 +64,8 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | WP-P2-02 trần 1536 token | chờ GPU (`p2_b`) | | | |
 | WP-P2-03 định dạng + cờ kỳ lệch | CPU xong | | | |
 | WP-P2-04 review thiếu dữ liệu | chờ GPU (`p2_c`) | | | |
-| Vòng 1 GPU (`p2_a/b/c`) | **p2_b xong**; a, c đang chạy | **p2_b 0.967** (979 / 12 / 9; mốc 0.934 tb 5 lần, tốt nhất 0.939) | **0.603 / 0.866** (mốc 0.592 / 0.873; gộp 0.753 vs 0.752: không giảm → **giữ**) | p2_b = sửa gợi ý / làm sạch / định dạng / cờ kỳ + trần 1536 token; 1,000 + 3,199 câu trong 4,488 s (merge 792 s), GPU 70–78 %; 21 câu còn sai (15 cũ, 6 mới) |
+| Vòng 1: **p2_c** (= b + review thiếu dữ liệu) | **xong — tốt nhất** | **0.972** (981 / 9 / 10) | **0.601 / 0.874** (gộp **0.757**) | giữ |
+| Vòng 1 GPU (`p2_a/b/c`) | **p2_b, p2_c xong**; a đang chạy | **p2_b 0.967** (979 / 12 / 9; mốc 0.934 tb 5 lần, tốt nhất 0.939) | **0.603 / 0.866** (mốc 0.592 / 0.873; gộp 0.753 vs 0.752: không giảm → **giữ**) | p2_b = sửa gợi ý / làm sạch / định dạng / cờ kỳ + trần 1536 token; 1,000 + 3,199 câu trong 4,488 s (merge 792 s), GPU 70–78 %; 21 câu còn sai (15 cũ, 6 mới) |
 | Vòng 2 GPU (`p2_d/e/f`) | **đang chạy** (09/11 18:50 UTC, code `c49da84`/`d9b30fb`, CPU suite ALL PASS) | | | `huyenco/zc-p2r2d-1`, `huyenco/zc-p2r2e-1`, `phatle1578/zc-p2r2f-1`; gợi ý `counted` / `thresholds`, prefill `<plan>`, đồng nghĩa %; kiểu gợi ý = đáp án 100 % câu có gợi ý (train + public) |
 | WP10 stress (pub_noind, pub_noacc) | không đo được (kernel dừng "STALE CODE" sau restart hàng đợi) → đo trên cấu hình P2 cuối | | | |
 

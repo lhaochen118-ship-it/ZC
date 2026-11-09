@@ -1032,3 +1032,14 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   → gộp 0.754 (α 0.5 cùng cơ sở: 0.761) → ngang; quyết định bằng public gốc đủ 1000 câu (đang chạy: `pf*` kernel).
 - WC5–8 (`synchan5704/zc-w7c2-1`; WC5 D1 seed 21, WC6 D1 + D2 mẫu mới, WC7 D1 + D2N mẫu mới, WC8 D1 + D4T) huấn luyện xong → súp 8 thành viên v2
   α 0.5 / 0.35 trên public gốc đủ + pub_ho + tr_ho (`huyenco/zc-soup8v2a05-1`, `synchan5704/zc-soup8v2a035-1`).
+
+## Entry 45 — 2026-11-09: public gốc đủ 1000 câu (ưu tiên của user) — ứng viên
+
+| Ứng viên (code `183953d`, cờ mới) | **pub_full 1000** | đúng / sai / bỏ | thời gian đánh giá |
+|---|---|---|---|
+| Gốc, prompt full | 0.906 | 930 / 24 / 46 | 727 s |
+| Gốc, prompt full + think vòng 2 | **0.924** | 946 / 22 / 32 | 771 s |
+| Súp WF1–4 α 0.5 (prompt full) | **0.923** | 942 / 19 / 39 | 1,139 s (gồm gộp) |
+| *mốc v28 (LLM luồng cũ)* | *0.921* | | |
+
+→ thêm súp WF α 0.5 + think (`quynhle07/zc-pfwf05think-1`, + pub_ho / tr_ho).

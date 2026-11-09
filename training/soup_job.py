@@ -26,6 +26,8 @@ def main():
     ap.add_argument("--weights", default=""); ap.add_argument("--sets", default="quick400,pub_ho"); ap.add_argument("--eval-config", default="configs/e0.json")
     ap.add_argument("--search", default="/kaggle/input"); ap.add_argument("--dp", type=int, default=4); ap.add_argument("--tmp", default="")
     ap.add_argument("--fake-responder", default=""); ap.add_argument("--subset", type=int, default=0)
+    ap.add_argument("--runner", default="eval", choices=["eval", "predict"],
+                    help="predict: the submission path (src/predict_flow.py --config, whole split) instead of eval_flow's sets")
     a = ap.parse_args()
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     a.tmp = a.tmp or "/tmp/soup_" + os.path.basename(os.path.normpath(a.out))      # one folder per job (two soups in a kernel)
@@ -48,14 +50,22 @@ def main():
 
 def evaluate(a, model, res, t0):
     t1 = time.time(); ev = f"{a.tmp}/eval"
-    cmd = [PY, os.path.join(SRC, "eval_flow.py"), a.split, ev, "--sets", a.sets, "--model", model, "--dp", str(a.dp),
-           "--config", a.eval_config, "--cache", f"{a.tmp}/cache"]
-    if a.fake_responder: cmd += ["--", "--fake-responder", a.fake_responder]
-    if a.subset: cmd += ([] if a.fake_responder else ["--"]) + ["--subset", str(a.subset)]
+    if a.runner == "predict":                                          # the container's entry point on the whole split
+        cmd = [PY, os.path.join(SRC, "predict_flow.py"), a.split, ev, "--model", model, "--dp", str(a.dp), "--config", a.eval_config,
+               "--runs", "1", "--work", f"{a.tmp}/work"]
+        if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]   # predict_flow's own flag (tests)
+        if a.subset: cmd += ["--", "--subset", str(a.subset)]
+    else:
+        cmd = [PY, os.path.join(SRC, "eval_flow.py"), a.split, ev, "--sets", a.sets, "--model", model, "--dp", str(a.dp),
+               "--config", a.eval_config, "--cache", f"{a.tmp}/cache"]
+        if a.fake_responder: cmd += ["--", "--fake-responder", a.fake_responder]
+        if a.subset: cmd += ([] if a.fake_responder else ["--"]) + ["--subset", str(a.subset)]
     rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "eval.log"), "w"), stderr=subprocess.STDOUT).returncode
     for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"):
-        p = os.path.join(ev, "run", f)
-        if os.path.isfile(p): shutil.copy(p, a.out)
+        for p in (os.path.join(ev, "run", f), os.path.join(ev, f)):
+            if os.path.isfile(p): shutil.copy(p, a.out); break
+    if a.runner == "predict" and os.path.isdir(os.path.join(ev, "logs")):
+        shutil.copytree(os.path.join(ev, "logs"), os.path.join(a.out, "logs"), dirs_exist_ok=True)
     res.update(eval_rc=rc, eval_s=round(time.time() - t1))
     if model != a.model: shutil.rmtree(model, ignore_errors=True)       # 19 GB merged copy: the next soup of the kernel needs the space
     json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1)

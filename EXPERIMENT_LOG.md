@@ -1003,3 +1003,6 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   dao động mạnh giữa các lần (0.37–0.71) → hiệu chỉnh cuối (WP10) phải dùng dev lớn: **pub_full + pub_k0 đầy đủ (~1,700 câu, không
   huấn luyện trên chúng)**; câu train không dùng làm dev cho mô hình fine-tune (trong mẫu). Đường α của súp cũ phẳng trong nhiễu
   (α 0.5 0.736, α 0.7 0.741, α 1 ~0.730).
+- Súp top-4 α 0.35 (`nguyenhoa99/zc-wisea035-1`): **quick400 0.785** (cao nhất, chỉ 18 sai), pub_full 0.860, pub_k0 0.607, pub_ho 0.570,
+  tr_ho 0.870 → gộp 0.741. Đường α súp cũ (held-out gộp): 0.35 0.741 / 0.5 0.736 / 0.7 0.741 / 1 ~0.730 — phẳng với α ≤ 0.7, α nhỏ tốt
+  nhất trong phân phối (giữ nhiều trọng số gốc hơn không mất gì).

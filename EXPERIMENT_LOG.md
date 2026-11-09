@@ -1028,3 +1028,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   0.720 (cờ mới 0.725) < súp compact WC (0.743 / 0.751): sai nhiều hơn (229 vs 189 trên pub_ho) → **thành viên compact thắng**.
 - Súp WF1–4 × α 0.5 (prompt full; `quynhle07/zc-wisewf05-1`): **quick400 0.790** (cao nhất), pub_full (150) 0.880, pub_k0 0.593, pub_ho 0.581,
   tr_ho 0.867 → gộp 0.744 (cờ mới 0.751) ≈ súp WC α 0.5 (0.752 / 0.761) → vào danh sách đánh giá public gốc đủ 1000 câu.
+- Súp WC α 0.35 (`huyenco/zc-wisewc035-1`, đã chạy với cờ mới): quick400 0.785, pub_full (150) 0.880, **pub_ho 0.599** (cao nhất), tr_ho 0.870
+  → gộp 0.754 (α 0.5 cùng cơ sở: 0.761) → ngang; quyết định bằng public gốc đủ 1000 câu (đang chạy: `pf*` kernel).

@@ -280,6 +280,31 @@ def thresholds(t):
     return out[:3]
 
 
+def job_size_entities(t, shop):
+    """P2: a repair job the question names, through the toolkit's job table ('thay dầu láp' -> 'thay nhớt láp'; shops whose
+    tickets record the work done), and a product size / number of the catalogue ('sữa bột số 4', 'bỉm size M'; shops with a
+    size column). t: accent-free key of the cleaned question."""
+    out = []
+    O = getattr(shop, "O", None)
+    if O is not None and "work" in O.columns and O["work"].notna().any():
+        for m in re.finditer(r"\b(?:thay|va|rua|bao duong|bdtq|ve sinh|can chinh|chinh|tang|bom|do)\s+(?:\w+\s+){0,2}\w+", t):
+            try: job = industry.job_query(m.group(0))                  # the job table reads a ticket cell: only the phrase
+            except Exception: job = None                               # after a work verb ('tháng' is not 'thắng')
+            if job and not any(e["data_value"] == job for e in out):
+                out.append({"text": m.group(0), "kind": "job", "data_value": job, "how": "job table", "candidates": []})
+    sizes = set()
+    for tab in ("lines", "items"):
+        T = shop.C.get(tab) if hasattr(shop, "C") else None
+        if T is not None and "size" in T.columns: sizes |= {str(x).strip() for x in T["size"].dropna().unique() if str(x).strip()}
+    if sizes:
+        norm = {re.sub(r"^(?:size|so|co)\s+", "", dm.key(v)).strip(): v for v in sizes}
+        for m in re.finditer(r"\b(?:so|size|sz|co)\s*([0-9]{1,2}|xxl|xl|xs|nb|s|m|l)\b", t):
+            v = norm.get(m.group(1))
+            if v is not None and not any(e["data_value"] == v for e in out):
+                out.append({"text": m.group(0), "kind": "size", "data_value": v, "how": "size column", "candidates": []})
+    return out
+
+
 def build_hints(question, as_of, shop, normalizer=None, rule_rows=None, vocab=None, counts_hints=False):
     """the hint bundle (see the module doc). shop: dm.Shop of the question's day; normalizer: qnorm.Normalizer of the shop;
     rule_rows: rulebook_rows(rulebook) of the split; vocab: ShopVocab(shop) (built here when not given)."""
@@ -306,6 +331,9 @@ def build_hints(question, as_of, shop, normalizer=None, rule_rows=None, vocab=No
     if vocab is not None:
         try: h["entities"] = link_entities(clean, vocab, raw)
         except Exception: h["entities"] = []
+    if counts_hints:
+        try: h["entities"] = (h["entities"] or []) + job_size_entities(t, shop)
+        except Exception: pass
     h["answer_type"] = answer_type(t, clean)
     if rule_rows: h["rule_terms"] = rule_terms_of(clean, rule_rows, h["entities"])
     try:

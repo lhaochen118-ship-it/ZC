@@ -70,5 +70,16 @@ for q, c, th in [("tháng 10 có mấy bữa quán bán được từ 9.100.000 
                  ("30 ngày sau bán nhiều hơn 30 ngày trước mấy %", None, [])]:
     t = K(q); check(f"counted {q}", hints.counted(t), c); check(f"thresholds {q}", hints.thresholds(t), th)
 
+# 6. round 3: a repair job after a work verb (never 'tháng' read as 'thắng'), a catalogue size ('số 4', 'size M')
+import pandas as pd
+class _Shop:
+    O = pd.DataFrame({"work": ["thay nhớt, vá ruột"]})
+    C = {"lines": pd.DataFrame({"size": ["Số 4", "Size M", None]})}
+ents = lambda q: [(e["kind"], e["data_value"]) for e in hints.job_size_entities(K(q), _Shop())]
+check("job after a verb", ents("tháng 9 tiệm thay dầu láp cho bao nhiêu lượt xe"), [("job", "thay nhớt láp")])
+check("tháng is not thắng", ents("tháng 8 thợ An lãnh bao nhiêu tiền"), [])
+check("size số 4", ents("tháng này bán bao nhiêu lon sữa bột số 4"), [("size", "Số 4")])
+check("size M", ents("bỉm size M bán được mấy bịch"), [("size", "Size M")])
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

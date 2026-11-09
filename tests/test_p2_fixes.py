@@ -91,5 +91,12 @@ check("yoy right", miss('ANSWER = {"type": "percent", "answer": growth(revenue(m
 rows2 = hints.rulebook_rows("| a | b |\n|---|---|\n| Lãi gộp | doanh thu trừ giá vốn |\n")
 check("lời gộp", [t["term"] for t in hints.rule_terms_of("xem lời gộp tháng 9", rows2)], ["Lãi gộp"])
 
+# 8. 'hết hạn trong N ngày tới': the expiry window takes N days (d + N), a date, a period or a Timedelta
+import dm
+check("until N days", str(dm.until_day("2026-08-08", 120).date()), "2026-12-06")
+check("until date", str(dm.until_day("2026-08-08", "2026-12-06").date()), "2026-12-06")
+check("until period", str(dm.until_day("2026-08-08", dm.month(2026, 9)).date()), "2026-09-30")
+check("until timedelta", str(dm.until_day("2026-08-08", pd.Timedelta(days=30)).date()), "2026-09-07")
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

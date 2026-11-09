@@ -52,6 +52,16 @@ def _ts(x):
 
 
 def day(d): d = _ts(d); return Period(d, d, f"day {d.date()}")
+
+
+def until_day(d, until):
+    """the last day of 'within N days of d' (rulebook 'Hàng hết hạn trong N ngày tới': d to d + N): until is a date, a period
+    (its last day), a number of days N or a Timedelta (models wrote TODAY + 120, which pandas refuses)."""
+    if isinstance(until, bool): raise TypeError("until: a date or a number of days")
+    if isinstance(until, (int, float)) or (hasattr(until, "dtype") and getattr(until, "ndim", 1) == 0 and str(getattr(until, "dtype", "")).startswith(("int", "float"))):
+        return _ts(d) + pd.Timedelta(days=int(until))
+    if isinstance(until, pd.Timedelta): return _ts(d) + until
+    return _ts(until)
 def today_p(today): return day(today)
 def yesterday(today): return day(_ts(today) - D)
 def between(a, b): return Period(_ts(a), _ts(b), "range")
@@ -1308,11 +1318,11 @@ class Shop(industry.IndustryMetrics):
         L["expiry"] = pd.to_datetime(L["expiry"]); return L[L["remaining"] > 0]
 
     def lots_expiring(self, d, until):
-        """lots in stock at the end of day d whose expiry is in [d, until]."""
-        L = self.lot_stock(d); return L[(L["expiry"] >= _ts(d)) & (L["expiry"] <= _ts(until))]
+        """lots in stock at the end of day d whose expiry is in [d, until]; until: a date, or N = 'trong N ngày tới' (d + N days)."""
+        L = self.lot_stock(d); return L[(L["expiry"] >= _ts(d)) & (L["expiry"] <= until_day(d, until))]
 
     def items_expiring(self, d, until):
-        """items with a lot in stock at the end of day d expiring in [d, until] -> catalogue names, earliest expiry of the
+        """items with a lot in stock at the end of day d expiring in [d, until] (until: a date or N days) -> catalogue names, earliest expiry of the
         item first, then item code (rulebook: liệt kê hàng theo hạn dùng: hạn sớm nhất của mặt hàng trước, cùng hạn theo mã)."""
         L = self.lots_expiring(d, until)
         if not len(L): return []

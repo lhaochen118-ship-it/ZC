@@ -981,3 +981,6 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   **tr_ho đầy đủ (1,826 câu)** làm tập held-out thứ hai cho súp α = 1 và mô hình gốc (tránh chọn quá khớp pub_ho).
 - Thành viên súp WP7 (`w7c` compact, `w7f` full: D1 seed 11 / 12, D1 + D2, D1 + D2N) đang huấn luyện; ý tưởng trên súp top-4
   (think vòng 2, 12 mẫu, lặp seed để đo nhiễu) đang chạy (`nguyenhoa99/zc-ideasa-1`, `-ideasb-1`).
+- **Nhiễu đánh giá (đo trực tiếp):** súp top-4 chạy lại với seed lấy mẫu dịch (`nguyenhoa99/zc-ideasb-1`, `seed_base 1`): quick400 0.750
+  (lần 1: 0.7575), pub_k0 0.560 (0.607), **pub_ho 0.555** (0.564), hiệu chỉnh θ dev → 0.577 (0.596); 143 / 1373 câu pub_ho đổi kết quả
+  giữa hai lần. → nhiễu pub_ho ≈ ±1 điểm, pub_k0 / quick400 ±2–5; súp vẫn hơn gốc (0.535) và mọi fine-tune đơn ở cả hai lần.

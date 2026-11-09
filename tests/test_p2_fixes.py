@@ -122,5 +122,9 @@ check("base_unit given", un('ANSWER = {"type": "number", "answer": item_qty(this
 check("item given", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY), item="Mì Hảo Hảo gói")}', "Tuần này bán được bao nhiêu gói Mì Hảo Hảo?"), [])
 check("unit not counted", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY))}', "Tuần này mì gói bán chạy không?"), [])
 
+# 12. review 3 asks like review 2 (missing data only; the flag of a sample still answering is set in the flow)
+check("review 3 missing data", bool(hybrid.review_msg({"missing_data": ["reason"]}, {"type": "number", "answer": 3}, [], 3)), True)
+check("review 3 flags only", hybrid.review_msg({"missing_data": []}, {"type": "number", "answer": 0}, ["zero result"], 3), None)
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

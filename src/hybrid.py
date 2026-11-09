@@ -141,6 +141,9 @@ class HybridPipeline(pipeline.Pipeline):
                 flags = list(flags) + ["the threshold the question sets is not used"]       # P2: such samples were right 13 / 19
             if int(getattr(a, "named_periods_flag", 0) or 0) and any(str(p).startswith("warn:named_periods") for p in turn.get("precheck") or []):
                 flags = list(flags) + ["a period the question names is not used"]           # P2: such samples were right 85 / 106
+            if int(getattr(a, "review", 0) or 0) == 3 and smp.get("reviewed") and (st["hints"] or {}).get("missing_data") \
+                    and (r["answer"] or {}).get("type") != "unanswerable":       # review 3: still an answer after the missing-data
+                flags = list(flags) + ["answered although the hints say the data does not record it"]   # review (hint right 75 / 75)
             turn["post"] = flags; smp.update(ok=True, answer=r["answer"], flags=flags, lp=turn.get("lp"), escape=turn.get("escape"))
             rv = review_msg(st["hints"], r["answer"], flags, int(getattr(a, "review", 0) or 0)) if int(getattr(a, "review", 0) or 0) and not smp.get("reviewed") else None
             if rv:                                                     # M11: the model re-reads a suspicious result once (it decides;
@@ -262,7 +265,7 @@ def review_msg(hints, answer, flags, mode=1):
     if md and (answer or {}).get("type") != "unanswerable":
         return ("Check before answering: the HINTS say the shop's data does not record " + "; ".join(map(str, md)) + ". If the question "
                 "needs that, write raise Unanswerable(\"<reason>\") instead of ANSWER; if it does not, write the same program again.")
-    if flags and mode == 1:
+    if flags and mode == 1:                                             # (mode 3 = mode 2 + a sample still answering is flagged)
         return ("The result " + json.dumps(answer, ensure_ascii=False, default=str)[:200] + " looks suspicious: " + "; ".join(flags) +
                 ". Check the program against the question (period, filters, function, answer type); if it is right, write the same program again.")
     return None

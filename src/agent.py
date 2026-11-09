@@ -915,7 +915,7 @@ def build_parser():
     ap.add_argument("--k-fast", type=int, default=2, help="hybrid: samples of round 1"); ap.add_argument("--k-max", type=int, default=8, help="hybrid: samples in all")
     ap.add_argument("--early-stop", type=int, default=1, help="hybrid: stop after round 1 when its samples agree without flags")
     ap.add_argument("--max-turns", type=int, default=2, help="hybrid: repair turns of a sample (precheck / execution errors)")
-    ap.add_argument("--review", type=int, default=0, help="hybrid: model reads suspicious results (M11, WP8): 1 missing data + postcheck flags, 2 missing data only")
+    ap.add_argument("--review", type=int, default=0, help="hybrid: model reads suspicious results (M11, WP8): 1 missing data + postcheck flags, 2 missing data only, 3 = 2 + a sample still answering after the review is flagged")
     ap.add_argument("--prefill-plan", type=int, default=0, help="hybrid: plain samples start with '<plan>' already written (the fine-tuned soups otherwise reason in free text and hit the token cap)")
     ap.add_argument("--hint-counts", type=int, default=0, help="hybrid: hints name what the question counts ('mấy bữa' -> ngày) and its thresholds ('từ 10 củ trở lên')")
     ap.add_argument("--unit-check", type=int, default=0, help="hybrid: precheck error when the question counts a base unit ('bao nhiêu gói') and item_qty(p) has no filter")

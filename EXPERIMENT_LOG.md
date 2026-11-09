@@ -987,3 +987,6 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 - **Ý tưởng trên súp top-4** (`nguyenhoa99/zc-ideasa-1`): + think vòng 2: quick400 0.770, pub_k0 0.580, **pub_ho 0.558** (θ dev 0.584),
   3,799 s; + 12 mẫu: quick400 0.725, pub_ho 0.548 (θ dev 0.573), 3,829 s (nhiều mẫu hơn → conf = phiếu / mẫu thấp hơn → bỏ nhiều hơn).
   Cả hai trong nhiễu so với súp thường (0.564 / 0.555; θ dev 0.596 / 0.577) mà chậm hơn 30 % → **không dùng**.
+- **WiSE-FT xác nhận** (`phatle1578/zc-wisep2-1`): A1 × 0.5 (Δ LoRA giảm nửa, gộp vào gốc): quick400 0.775 (A1 0.7775), pub_k0 **0.620**,
+  **pub_ho 0.559** (A1 0.531, +2.8; sai 154 vs 228), **tr_ho đầy đủ 0.851** (1,826 câu: 1622 / 68 / 136); mô hình gốc prompt full trên
+  tr_ho đầy đủ 0.8467 (1652 / 106 / 68). → Nội suy về gốc giữ trong phân phối, tăng held-out, giảm mạnh câu sai tự tin.

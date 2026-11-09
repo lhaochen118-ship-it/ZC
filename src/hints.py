@@ -133,6 +133,8 @@ def answer_type(t):
         n = m.group(1) or m.group(2); n = int(n) if n.isdigit() else qparse.NUMW.get(n, 2)
         if n >= 2: return "table" if each else "list"
     if re.search(r"\b(?:moi|tung|lan luot|theo)\s+(?:thang|ngay|tuan|quy)\b", t) and asks_n: return "list"
+    # several groups asked at once ('chia theo tuổi nợ 0-7, 8-15, trên 15 ngày, mỗi nhóm bao nhiêu'; 'từng loại / mỗi kênh có bao nhiêu')
+    if asks_n and re.search(r"\b(?:moi|tung)\s+(?:nhom|loai|kenh|hinh thuc|ca|khung|muc|phan|khoang)\b|\bchia (?:theo|thanh|ra)\b", t): return "list"
     if re.search(r"\bnhung\b|\bcac (?:mat hang|mon|san pham|khach|nha cung cap)\b|\bliet ke\b|\bdanh sach\b", t) and re.search(r"\bnao\b|\bgi\b|\bliet ke\b|\bdanh sach\b", t):
         return "table" if each else "list"
     if re.search(r"\b" + _NOUN + r"\s+(?:\w+\s+){0,3}nao\b|\bla ai\b|\bai\b.*\bnhat\b|\bten (?:gi|la gi)\b|\bla gi\b", t) and not asks_n: return "string"

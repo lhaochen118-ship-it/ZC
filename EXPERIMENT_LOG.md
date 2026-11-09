@@ -1008,3 +1008,17 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   nhất trong phân phối (giữ nhiều trọng số gốc hơn không mất gì).
 - **Súp WC1–4 × α 0.5** (`huyenco/zc-wisewc05-1`): quick400 **0.785**, pub_full (150) 0.887, pub_k0 0.580, **pub_ho 0.589**, **tr_ho 0.875**
   (1660 / 62 / 104) → held-out gộp **0.752** (α 1: 0.743; gốc: 0.713) = **tốt nhất mọi tập**; sai pub_ho 162.
+
+## Entry 44 — 2026-11-09: WP9 vòng 3 — cờ postcheck sai làm bỏ câu đúng
+
+- Phân tích lỗi dev của súp WC α 0.5: 81 % đúng, lỗi rải rác (không nhóm nào > 5 câu); 17 câu "đúng nhưng bỏ". Ví dụ `debt_aging`: **cả 7
+  mẫu cùng đáp án đúng nhưng bỏ** vì mỗi mẫu bị cờ "type list but the question asks number" (gợi ý kiểu đáp án đọc "từng nhóm bao
+  nhiêu tiền" là number) → trọng số 0.5 → conf 0.375 < 0.5; câu tăng trưởng bị cờ "a count must be a non-negative integer" trên đáp
+  án percent.
+- Độ chính xác từng loại cờ trên mẫu đã chạy (dev; held-out chỉ xem tổng): mẫu không cờ sai 22 %; "count non-negative integer" dev
+  sai **1 %** (206 / 2), "type list but asks number" dev **3 %** (112 / 4), "type number but asks string" 6 % → cờ **ngược thông tin**;
+  "zero result" sai 100 % (dev 0 / 29), "empty list" 100 %, "list but asks string" 87 % → cờ tốt. **Sửa (quyết định theo dev):** bỏ
+  cờ đếm; cặp kiểu (list cho number, number cho string) không còn là cờ; gợi ý kiểu đáp án: "mỗi / từng nhóm, loại, kênh ... bao
+  nhiêu", "chia theo / thành" → list (train: khớp kiểu 2,620 / 2,641, trước 2,619).
+- Phát lại phiếu trên log (cùng mẫu, cờ mới): súp WC α 0.5 pub_full 0.887 → **0.907**, pub_k0 0.580 → 0.593, pub_ho 0.589 → **0.597**,
+  tr_ho 0.875 → **0.884**; súp WC α 1 và mô hình gốc cũng tăng ở mọi tập (+0.7 → +2 điểm).

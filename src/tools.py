@@ -199,13 +199,16 @@ def postcheck(answer, expected_type=None, shop=None, question_key=None, k_asked=
     flags = []
     if not isinstance(answer, dict): return ["ANSWER is not a dict"]
     t, v = answer.get("type"), answer.get("answer")
-    if expected_type and t != expected_type and not (expected_type == "number" and t in ("percent",)) and t != "unanswerable":
+    # type flags measured on the dev logs (WP9, entry 44): a list of numbers for a 'number' question (multi-group asks: 'mỗi nhóm
+    # bao nhiêu') and a number for a 'string' hint were right 97 % / 94 % of the time -> not suspicious; other pairs stay flags
+    benign = (expected_type == "number" and t in ("percent", "list")) or (expected_type == "string" and t == "number")
+    if expected_type and t != expected_type and not benign and t != "unanswerable":
         flags.append(f"type {t} but the question asks {expected_type}")
     if t == "unanswerable": return flags
     if v is None: return flags + ["empty answer"]
     if t in ("number", "percent") and isinstance(v, (int, float)) and not isinstance(v, bool):
         if t == "percent" and not (-1000 <= v <= 1000): flags.append(f"percentage {v} out of range")
-        if question_key and _COUNT_Q.search(question_key) and (v < 0 or v != int(v)): flags.append("a count must be a non-negative integer")
+        # ('a count must be a non-negative integer' removed: on dev logs 206 of 208 flagged samples were right, e.g. percents / averages)
         if v == 0: flags.append("zero result (a filter may match nothing)")
     if t == "list":
         if not v: flags.append("empty list")

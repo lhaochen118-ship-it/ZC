@@ -990,3 +990,6 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 - **WiSE-FT xác nhận** (`phatle1578/zc-wisep2-1`): A1 × 0.5 (Δ LoRA giảm nửa, gộp vào gốc): quick400 0.775 (A1 0.7775), pub_k0 **0.620**,
   **pub_ho 0.559** (A1 0.531, +2.8; sai 154 vs 228), **tr_ho đầy đủ 0.851** (1,826 câu: 1622 / 68 / 136); mô hình gốc prompt full trên
   tr_ho đầy đủ 0.8467 (1652 / 106 / 68). → Nội suy về gốc giữ trong phân phối, tăng held-out, giảm mạnh câu sai tự tin.
+- **Súp × WiSE** (`phatle1578/zc-wisep1-1`): súp top-4 α 0.5 (mỗi thành viên 0.125): quick400 0.7475, pub_ho 0.559, **tr_ho 0.870**
+  (1656 / 68 / 102); súp α 1 trên tr_ho đầy đủ 0.859. Held-out gộp (pub_ho + tr_ho, 3,199 câu; QĐ15): gốc full 0.713, A1 × 0.5 0.726,
+  súp α 1 0.730, **súp α 0.5 0.736 → 0.749 với θ hiệu chỉnh trên dev (θ 0.504; kiểm conformal đạt)**. Quét α 0.35 / 0.7 đang chạy.

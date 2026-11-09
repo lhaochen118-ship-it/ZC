@@ -984,3 +984,6 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 - **Nhiễu đánh giá (đo trực tiếp):** súp top-4 chạy lại với seed lấy mẫu dịch (`nguyenhoa99/zc-ideasb-1`, `seed_base 1`): quick400 0.750
   (lần 1: 0.7575), pub_k0 0.560 (0.607), **pub_ho 0.555** (0.564), hiệu chỉnh θ dev → 0.577 (0.596); 143 / 1373 câu pub_ho đổi kết quả
   giữa hai lần. → nhiễu pub_ho ≈ ±1 điểm, pub_k0 / quick400 ±2–5; súp vẫn hơn gốc (0.535) và mọi fine-tune đơn ở cả hai lần.
+- **Ý tưởng trên súp top-4** (`nguyenhoa99/zc-ideasa-1`): + think vòng 2: quick400 0.770, pub_k0 0.580, **pub_ho 0.558** (θ dev 0.584),
+  3,799 s; + 12 mẫu: quick400 0.725, pub_ho 0.548 (θ dev 0.573), 3,829 s (nhiều mẫu hơn → conf = phiếu / mẫu thấp hơn → bỏ nhiều hơn).
+  Cả hai trong nhiễu so với súp thường (0.564 / 0.555; θ dev 0.596 / 0.577) mà chậm hơn 30 % → **không dùng**.

@@ -1006,3 +1006,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 - Súp top-4 α 0.35 (`nguyenhoa99/zc-wisea035-1`): **quick400 0.785** (cao nhất, chỉ 18 sai), pub_full 0.860, pub_k0 0.607, pub_ho 0.570,
   tr_ho 0.870 → gộp 0.741. Đường α súp cũ (held-out gộp): 0.35 0.741 / 0.5 0.736 / 0.7 0.741 / 1 ~0.730 — phẳng với α ≤ 0.7, α nhỏ tốt
   nhất trong phân phối (giữ nhiều trọng số gốc hơn không mất gì).
+- **Súp WC1–4 × α 0.5** (`huyenco/zc-wisewc05-1`): quick400 **0.785**, pub_full (150) 0.887, pub_k0 0.580, **pub_ho 0.589**, **tr_ho 0.875**
+  (1660 / 62 / 104) → held-out gộp **0.752** (α 1: 0.743; gốc: 0.713) = **tốt nhất mọi tập**; sai pub_ho 162.

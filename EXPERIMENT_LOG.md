@@ -997,3 +997,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   quick400 0.7575, pub_k0 0.580, **pub_ho 0.579** (cao nhất), tr_ho 0.867 → held-out gộp **0.743**, θ hiệu chỉnh dev **0.761** (cao nhất).
   Thành viên huấn luyện trên dữ liệu v2 (khớp gợi ý suy luận) + đủ D1 → súp mạnh hơn súp cũ kể cả chưa WiSE. Quét α 0.5 / 0.7 trên súp
   này: `huyenco/zc-wisewc05-1`, `-wisewc07-1`.
+- Súp 8 (top-4 cũ dữ liệu v1 + 4 thành viên WP7 v2, `mucnokieu/zc-soup8m-1`): quick400 0.7575, pub_ho 0.567, tr_ho 0.869 → gộp 0.739
+  (θ dev 0.750) < súp 4 thành viên v2 (0.743 / 0.761): thành viên v1 không thêm gì.

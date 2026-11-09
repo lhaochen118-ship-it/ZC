@@ -153,7 +153,13 @@ def answer_type(t, clean=None):
         if n >= 2: return "table" if each else "list"
     if re.search(r"\b(?:moi|tung|lan luot|theo)\s+(?:thang|ngay|tuan|quy)\b", t) and asks_n: return "list"
     # several groups asked at once ('chia theo tuổi nợ 0-7, 8-15, trên 15 ngày, mỗi nhóm bao nhiêu'; 'từng loại / mỗi kênh có bao nhiêu')
-    if asks_n and not total and re.search(r"\b(?:moi|tung)\s+(?:nhom|loai|kenh|hinh thuc|ca|khung|muc|phan|khoang)\b|\bchia (?:theo|thanh|ra)\b", t): return "list"
+    c = unicodedata.normalize("NFC", str(clean or "")).lower()
+    each_rx = r"\b(?:moi|tung)\s+(?:nhom|loai|kenh|hinh thuc|ca|khung|muc|phan|khoang)\b"
+    if c and c != dm.strip_accents(c):                                  # accented: 'mọi loại' (all) is not 'mỗi loại' (each)
+        each = re.search(r"(?<!\w)(?:mỗi|từng)\s+(?:nhóm|loại|kênh|hình thức|ca|khung|mục|phần|khoảng)(?!\w)", c)
+    else: each = re.search(each_rx, t) and not re.search(r"\btinh moi loai\b|\bmoi loai do\b", t)
+    if asks_n and not total and (each or re.search(r"\bchia (?:theo|thanh|ra)\b", t)): return "list"
+    if asks_n and len(re.findall(r"\d+\s*[-–—]\s*\d+\s*ngay\b", dm.strip_accents(c) if c else t)) >= 2: return "list"   # 'nhóm 0–7 ngày, 8–15 ngày và trên 15 ngày'
     if re.search(r"\bnhung\b|\bcac (?:mat hang|mon|san pham|khach|nha cung cap)\b|\bliet ke\b|\bdanh sach\b", t) and re.search(r"\bnao\b|\bgi\b|\bliet ke\b|\bdanh sach\b", t):
         return "table" if each else "list"
     if re.search(r"\b" + _NOUN + r"\s+(?:\w+\s+){0,3}nao\b|\bla ai\b|\bai\b.*\bnhat\b|\bten (?:gi|la gi)\b|\bla gi\b", t) and not asks_n: return "string"
@@ -165,7 +171,8 @@ _GENERIC = {"mat", "hang", "san", "pham", "mon", "khach", "don", "nguoi"}
 _UNIT_KINDS = ("unit", "base_unit")
 # general Vietnamese shop words that say the same as a rulebook word ('bữa' = 'ngày', 'củ' = 'triệu', 'cháy hàng' = 'hết hàng')
 _SYNONYMS = [(r"\bbữa\b", "ngày"), (r"\bcủ\b", "triệu"), (r"\bcháy hàng\b", "hết hàng"), (r"\bnhứt\b", "nhất"), (r"\bmô\b", "nào"),
-             (r"\bthằng\b", "người"), (r"\bsp\b", "sản phẩm"), (r"\bncc\b", "nhà cung cấp"), (r"\bxịn\b", "sộp")]
+             (r"\bthằng\b", "người"), (r"\bsp\b", "sản phẩm"), (r"\bncc\b", "nhà cung cấp"), (r"\bxịn\b", "sộp"),
+             (r"%", "phần trăm"), (r"\b(?:chênh|tăng|giảm|hơn|kém)\b(?=.*(?:%|phần trăm))", "thay đổi")]   # 'chênh mấy %' = % thay đổi
 
 
 def _toks(text):
@@ -237,7 +244,43 @@ def rulebook_rows(text):
     return out
 
 
-def build_hints(question, as_of, shop, normalizer=None, rule_rows=None, vocab=None):
+_COUNTED = [(r"bua|hom|ngay", "ngày"), (r"hoa don|don hang|don|bill", "đơn"), (r"mat hang|san pham|sp|mon|loai hang|loai", "mặt hàng"),
+            (r"khach hang|khach|nguoi", "khách"), (r"luot xe|luot|phieu", "lượt xe / phiếu"), (r"chiec xe|xe", "xe"),
+            (r"lo hang|lo", "lô"), (r"chiec may|chiec|may", "máy"), (r"nha cung cap|ncc", "nhà cung cấp"), (r"tho|nhan vien", "nhân viên"),
+            (r"tuan", "tuần"), (r"thang", "tháng")]
+_CMP = [(r"it nhat|toi thieu|tu", ">="), (r"tren|hon|qua|vuot", ">"), (r"duoi|chua toi|chua den", "<"), (r"khong qua|toi da", "<=")]
+_UNIT_MUL = {"trieu": 1e6, "tr": 1e6, "cu": 1e6, "k": 1e3, "nghin": 1e3, "ngan": 1e3}
+
+
+def counted(t):
+    """what the question counts ('có mấy bữa ...' -> 'ngày', 'bao nhiêu lượt xe' -> 'lượt xe / phiếu'), else None (t: accent-free key)."""
+    m = re.search(r"\b(?:may|bao nhieu|bnhiu|bn|so)\s+(" + "|".join(p for p, _ in _COUNTED) + r")\b", t)
+    if not m: return None
+    w = m.group(1)
+    return next(v for p, v in _COUNTED if re.fullmatch(p, w))
+
+
+def thresholds(t):
+    """comparisons the question sets ('ít nhất 152 đơn', 'từ 10 củ trở lên', 'trên 7 ngày') -> [{"op", "value", "of"}]; money in đồng."""
+    t = qparse.slang(t); out = []
+    rx = r"\b(" + "|".join(p for p, _ in _CMP) + r")\s+(\d+(?:[.,]\d+)?)(?![/\d])\s*(?:(trieu|tr|cu|k|nghin|ngan)\b)?\s*(?:(dong|d|vnd)\b)?\s*(\w+(?: xe| hang)?)?"
+    for m in re.finditer(rx, t):
+        word, num, mul, cur, noun = m.groups()
+        if word == "hon" and re.search(r"\b(?:nhieu|it|cao|thap|lon|nho|tang|giam)\s*$", t[:m.start()]): continue   # 'nhiều hơn 30': a comparison
+        if word == "tu" and not re.search(r"\btro (?:len|di)\b", t[m.start():m.end() + 40]):
+            continue                                                         # 'từ 01/07 đến ...', 'từ 5 đến 10': a range, not '>='
+        op = next(o for p, o in _CMP if re.fullmatch(p, word))
+        if re.search(r"\btro xuong\b", t[m.end():m.end() + 30]): op = "<="
+        v = float(num.replace(",", ".")) * _UNIT_MUL.get(mul or "", 1)
+        of = "đồng" if (mul or cur) else {"don": "đơn", "don hang": "đơn", "dot": "đợt", "lo": "lô", "lan": "lần", "ngay": "ngày", "bua": "ngày", "mon": "mặt hàng", "khach": "khách",
+                                          "luot": "lượt", "luot xe": "lượt"}.get(noun or "", noun)
+        if of in ("tro", "len", None) and not (mul or cur): of = None
+        if of == "tro": of = None
+        out.append({"op": op, "value": int(v) if v == int(v) else v, **({"of": of} if of else {})})
+    return out[:3]
+
+
+def build_hints(question, as_of, shop, normalizer=None, rule_rows=None, vocab=None, counts_hints=False):
     """the hint bundle (see the module doc). shop: dm.Shop of the question's day; normalizer: qnorm.Normalizer of the shop;
     rule_rows: rulebook_rows(rulebook) of the split; vocab: ShopVocab(shop) (built here when not given)."""
     raw = str(question)
@@ -271,4 +314,9 @@ def build_hints(question, as_of, shop, normalizer=None, rule_rows=None, vocab=No
         if why: h["missing_data"].append(why)
     except Exception: pass
     h["measure_words"] = [name for name, rx in MEASURES if re.search(rx, t)][:4]
+    if counts_hints:                                                   # P2-05: what is counted, the thresholds the question sets
+        try: h["counted"] = counted(t)
+        except Exception: h["counted"] = None
+        try: h["thresholds"] = thresholds(t)
+        except Exception: h["thresholds"] = []
     return h

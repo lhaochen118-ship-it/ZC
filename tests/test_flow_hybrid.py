@@ -38,6 +38,9 @@ def responder(conv):
 '''
 
 
+FAKE_CONT = '''def responder(conv, think=False):
+    return "n | - | -</plan>\\n<code>\\nANSWER = {\\"type\\": \\"number\\", \\"answer\\": 7}\\n</code>"
+'''
 FAKE_RAMBLE = r'''
 def responder(conv, think=None):
     if not think:                                                       # plain mode: reasons in prose until the token cap
@@ -128,6 +131,13 @@ def main():
     _, logs8 = check(out8, len(agent.select_subset(qs, 6)), "no rescue")
     assert not any(s.get("ok") for r in logs8 for s in r["samples"]["samples"]), "without the rescue the rambling model has no program"
     print(f"think rescue: {len(sm)} samples recovered (0 without --think-rescue)")
+    fp = os.path.join(S, "fake_cont.py"); open(fp, "w").write(FAKE_CONT)        # P2: --prefill-plan: the model continues '<plan>'
+    out9 = os.path.join(S, "o9"); run([split, out9] + [x if x != fake else fp for x in base] + ["--subset", "6", "--prefill-plan", "1", "--hint-counts", "1"])
+    _, logs9 = check(out9, len(agent.select_subset(qs, 6)), "prefill")
+    sm = [s for r in logs9 for s in r["samples"]["samples"]]
+    assert sm and all(s["ok"] and s["answer"]["answer"] == 7 and s["turns"][0]["plan"].startswith("n |") for s in sm), sm[:1]
+    assert all("counted" in (r["samples"]["hints"] or {}) for r in logs9), "--hint-counts: no 'counted' key in the hints"
+    print(f"prefill: {len(sm)} samples parsed from a continuation of '<plan>'")
     print("test_flow_hybrid PASS")
 
 

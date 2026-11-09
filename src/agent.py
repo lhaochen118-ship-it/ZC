@@ -916,6 +916,8 @@ def build_parser():
     ap.add_argument("--early-stop", type=int, default=1, help="hybrid: stop after round 1 when its samples agree without flags")
     ap.add_argument("--max-turns", type=int, default=2, help="hybrid: repair turns of a sample (precheck / execution errors)")
     ap.add_argument("--review", type=int, default=0, help="hybrid: model reads suspicious results (M11, WP8): 1 missing data + postcheck flags, 2 missing data only")
+    ap.add_argument("--prefill-plan", type=int, default=0, help="hybrid: plain samples start with '<plan>' already written (the fine-tuned soups otherwise reason in free text and hit the token cap)")
+    ap.add_argument("--hint-counts", type=int, default=0, help="hybrid: hints name what the question counts ('mấy bữa' -> ngày) and its thresholds ('từ 10 củ trở lên')")
     ap.add_argument("--period-flag", type=int, default=0, help="hybrid: a sample whose program period differs from the question's (precheck warn) counts as flagged (half vote, no early stop)")
     ap.add_argument("--fmt-fix", type=int, default=0, help="hybrid: answer wrapped in the hinted type before the vote ([5] -> 5 for a number, '2025-07' -> date)")
     ap.add_argument("--retriever", default="ngram", choices=["ngram", "embed"]); ap.add_argument("--embed-model", default="")

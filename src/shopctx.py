@@ -48,6 +48,7 @@ class ShopCtx:
         self.spec = api_spec.build_api_spec(hide=self.hide)
         self.rule_rows = hintsmod.rulebook_rows(rulebook)
         self._nz = self._voc = self._g = self._ev = None
+        self.hint_opts = {}                                              # build_hints options (--hint-counts: {"counts_hints": True})
         self.ind = industry_of(rulebook, biz)
         ind_doc = ""
         if self.ind:
@@ -81,7 +82,7 @@ class ShopCtx:
         return self._voc or None
 
     def hints(self, question, as_of):
-        return hintsmod.build_hints(question, as_of, self.shop(as_of), self.normalizer, self.rule_rows, self.vocab)
+        return hintsmod.build_hints(question, as_of, self.shop(as_of), self.normalizer, self.rule_rows, self.vocab, **self.hint_opts)
 
     def messages(self, question, as_of, examples=(), hints=None, variant="direct"):
         return prompting.messages(self.system, self.business, prompting.question_block(list(examples), hints, question, as_of, variant))

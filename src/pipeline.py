@@ -90,8 +90,9 @@ class StepLLM:
                 self.prio_ok = False
         self.core.add_request(rid, prompt, sp, **kw); self.unfinished += 1
 
-    def add(self, conv, temp, seed, max_tokens, think=None, priority=0, grammar=None):
+    def add(self, conv, temp, seed, max_tokens, think=None, priority=0, grammar=None, prefill=""):
         prompt, mt = self.e.fit(conv, max_tokens, think)
+        if prompt is not None and prefill: prompt += prefill            # the answer starts with this text (e.g. '<plan>')
         self.n += 1; rid = f"r{self.n}"
         if prompt is None: self.pending[rid] = None; return rid        # too long: finishes empty at the next step
         cap = self.think_cap if think and self.think_cap and self.core is not None and mt >= self.think_cap + 1024 else 0
@@ -133,7 +134,7 @@ class StepLLM:
 class FakeStepLLM:
     """tests without a GPU: responder(conv) -> text; requests finish one step after they are added."""
     def __init__(self, responder): self.r, self.n, self.q = responder, 0, []
-    def add(self, conv, temp, seed, max_tokens, think=None, priority=0, grammar=None):
+    def add(self, conv, temp, seed, max_tokens, think=None, priority=0, grammar=None, prefill=""):
         self.n += 1; rid = f"r{self.n}"; self.q.append((rid, conv, max_tokens, think)); return rid
     def busy(self): return len(self.q)
     def _call(self, conv, mt, think):

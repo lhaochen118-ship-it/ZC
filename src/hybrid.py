@@ -45,15 +45,17 @@ class HybridPipeline(pipeline.Pipeline):
                 d = pickle.load(open(can["path"], "rb"))
                 c = shopctx.ShopCtx(self.a.split, b, self.bizs[b], d["C"], d.get("notes", ""), d.get("data_end"), self.rulebook,
                                     hide=self.hide, mode=getattr(self.a, "prompt", "compact"), escapes=self.escapes)
+                c.hint_opts = {"counts_hints": bool(int(getattr(self.a, "hint_counts", 0) or 0))}
                 if getattr(self.a, "grammar", 1): c.grammar(int(getattr(self.a, "max_enum", 5000)))
             except Exception as e:
                 print(f"[hybrid] {b}: no context ({type(e).__name__}: {e})", flush=True); c = None
         self.ctxs[b] = c
         return c
 
-    def gen2(self, conv, temp, seed, max_tokens, cb, think=None, prio=0, grammar=None):
-        rid = self.llm.add(conv, temp, seed, max_tokens, think, prio, grammar)
-        self.cb[rid] = lambda text, ntok, rid=rid: cb(text, ntok, getattr(self.llm, "lp", {}).pop(rid, None))
+    def gen2(self, conv, temp, seed, max_tokens, cb, think=None, prio=0, grammar=None, prefill=""):
+        rid = self.llm.add(conv, temp, seed, max_tokens, think, prio, grammar, prefill) if prefill else \
+            self.llm.add(conv, temp, seed, max_tokens, think, prio, grammar)
+        self.cb[rid] = lambda text, ntok, rid=rid: cb(prefill + text, ntok, getattr(self.llm, "lp", {}).pop(rid, None))
 
     # -- questions
     def answer_chunk(self, b, ci, can):
@@ -96,7 +98,9 @@ class HybridPipeline(pipeline.Pipeline):
             seed = 1000 * len(smp["turns"]) + 17 * j + 1 + 7919 * int(getattr(a, "seed_base", 0) or 0)
             if smp.get("rescue"):                                       # think rescue: the same prompt, reasoning allowed
                 self.gen2(conv, temp, seed, int(getattr(a, "think_tokens", 0) or 4096), on_text, True, st["prio"], None)
-            else: self.gen2(conv, temp, seed, mt, on_text, think, st["prio"], grammar)
+            else:                                                      # P2-02 alt: a plain sample starts inside '<plan>' (no
+                pf = "<plan>" if int(getattr(a, "prefill_plan", 0) or 0) and not think else ""   # free-text reasoning first)
+                self.gen2(conv, temp, seed, mt, on_text, think, st["prio"], grammar, pf)
         def on_text(text, ntok, lp):
             self.ntok += ntok; self.stats["gen"] += 1
             out = prompting.parse_output(text)

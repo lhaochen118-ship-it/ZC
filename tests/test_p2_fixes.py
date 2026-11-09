@@ -18,7 +18,10 @@ for q, want in [("Tháng 5 bán được mấy máy?", "number"), ("bán đượ
                 ("tháng 3 bán được mấy máy cũ và mấy máy mới", "list"), ("doanh thu tháng 6 và tháng 7 mỗi tháng bao nhiêu", "list"),
                 ("tháng này bán mấy chiếc, gộp cả máy mới với máy cũ", "number"), ("Tháng 6/25, tháng 7/25 hay tháng 8/25, tháng nào doanh thu cao nhất?", "date"),
                 ("3 ngày nào bán nhiều tiền nhất tháng này", "list"),
-                ("Mấy lô còn tồn hạn dùng tới hết 06/12/2026 đang đọng bao nhiêu tiền vốn?", "number")]:
+                ("Mấy lô còn tồn hạn dùng tới hết 06/12/2026 đang đọng bao nhiêu tiền vốn?", "number"),
+                ("tháng này số ly size L bán được là bao nhiêu, tính mọi loại đồ uống?", "number"),
+                ("doanh thu mỗi loại hình thức thanh toán bao nhiêu", "list"),
+                ("khách còn nợ bao nhiêu ở nhóm tuổi nợ 0–7 ngày, 8–15 ngày và trên 15 ngày", "list")]:
     check(f"answer_type {q}", hints.answer_type(K(q), q), want)
 check("answer_type accent-free máy", hints.answer_type(K("thang nay ban duoc bao nhieu chiec may cu"), None), "number")
 
@@ -57,6 +60,15 @@ check("fmt name stays", hybrid.fmt_fix({"type": "string", "answer": "Cà phê"},
 check("review 2 flags only", hybrid.review_msg({"missing_data": []}, {"type": "number", "answer": 0}, ["zero result"], 2), None)
 check("review 2 missing data", bool(hybrid.review_msg({"missing_data": ["reason"]}, {"type": "number", "answer": 3}, [], 2)), True)
 check("review 1 flags", bool(hybrid.review_msg({"missing_data": []}, {"type": "number", "answer": 0}, ["zero result"], 1)), True)
+
+# 5. round 2 (WP-P2-05): what is counted, thresholds (money in đồng; 'từ X đến Y' is a range, 'nhiều hơn 30' a comparison)
+for q, c, th in [("tháng 10 có mấy bữa quán bán được từ 9.100.000 đồng trở lên?", "ngày", [{"op": ">=", "value": 9100000, "of": "đồng"}]),
+                 ("có bao nhiêu mặt hàng có mặt trong ít nhất 50 đơn", "mặt hàng", [{"op": ">=", "value": 50, "of": "đơn"}]),
+                 ("mấy ngày bán từ 10 củ trở lên", "ngày", [{"op": ">=", "value": 10000000, "of": "đồng"}]),
+                 ("trung bình mỗi thứ Tư sửa mấy lượt xe", "lượt xe / phiếu", []),
+                 ("từ 01/07/2025 đến 15/07/2025 bán bao nhiêu tiền", None, []),
+                 ("30 ngày sau bán nhiều hơn 30 ngày trước mấy %", None, [])]:
+    t = K(q); check(f"counted {q}", hints.counted(t), c); check(f"thresholds {q}", hints.thresholds(t), th)
 
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

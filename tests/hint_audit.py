@@ -34,6 +34,7 @@ def main():
     c = Counter(); conf = Counter()
     for q in qs:
         ctx = common.ctx(split, cache, canon, q["business_id"], "full")
+        if "--counts" in sys.argv: ctx.hint_opts = {"counts_hints": True}
         try: h = ctx.hints(q["question"], q["as_of_date"])
         except Exception as e: h = {"error": f"{type(e).__name__}: {e}"}; c["hint_error"] += 1
         ref = R.get(q["id"]) or {}

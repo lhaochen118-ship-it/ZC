@@ -20,6 +20,21 @@ DEFAULTS = ("--flow hybrid --pipeline --quant fp8 --prefer-map fmt:automap --adj
             "--max-len 8192 --max-tokens 512 --k-fast 2 --k-max 8 --repairs 2 --max-turns 2 --shots 3 --prompt compact --grammar 0").split()
 
 
+def defaults_for(cfg):
+    """DEFAULTS minus every flag the config file sets: a flag on the command line beats the config's value
+    (agent.parse_with_config), so passing both made '--prompt compact' override a config's 'prompt': 'full'."""
+    keys = set()
+    if cfg:
+        keys = {k.lstrip("-").replace("-", "_") for k in json.load(open(cfg, encoding="utf-8")) if not k.startswith("_")}
+    out, i = [], 0
+    while i < len(DEFAULTS):
+        t = DEFAULTS[i]; nxt = DEFAULTS[i + 1] if i + 1 < len(DEFAULTS) else None
+        has_val = nxt is not None and not nxt.startswith("--")
+        if t.lstrip("-").replace("-", "_") not in keys: out += [t] + ([nxt] if has_val else [])
+        i += 2 if has_val else 1
+    return out
+
+
 def n_gpus():
     try: out = subprocess.run(["nvidia-smi", "-L"], capture_output=True, text=True, timeout=60).stdout
     except Exception: return 0
@@ -87,7 +102,7 @@ def main():
     def agent(i, budget, logdir):
         out = os.path.join(a.work, f"llm_{i}"); os.makedirs(out, exist_ok=True)
         cmd = [sys.executable, os.path.join(HERE, "agent.py"), a.split, out, "--model", a.model, "--dp", str(dp), "--budget", str(int(budget)),
-               "--cache", cache, "--seed-base", str(i), "--log-dir", logdir] + DEFAULTS + (["--config", cfg] if cfg else []) + extra
+               "--cache", cache, "--seed-base", str(i), "--log-dir", logdir] + defaults_for(cfg) + (["--config", cfg] if cfg else []) + extra
         return out, run(cmd, log)
 
     stop = threading.Event()

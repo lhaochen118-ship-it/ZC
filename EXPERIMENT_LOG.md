@@ -1088,3 +1088,8 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   (`--think-rescue 0`; code giữ, test bật tường minh).
 - **Chọn cấu hình cuối (trước WP10):** súp WF1–4 (thành viên prompt full, dữ liệu v2) **α 0.35**, prompt full, think ở vòng 2 (biến thể
   `direct,think`), không rescue: public gốc 0.939 (α 0.5: 0.939 / 0.930), held-out gộp 0.752 (α 0.5: 0.748).
+- **Lỗi đường nộp (Docker) tìm thấy khi viết `configs/flow_final.json`:** `predict_flow.py` truyền DEFAULTS như cờ dòng lệnh cùng `--config`;
+  cờ dòng lệnh thắng giá trị config → `--prompt compact --max-tokens 512` sẽ ghi đè prompt full của cấu hình nộp (mọi đánh giá Kaggle đi qua
+  `eval_flow` chỉ với `--config` nên không bị ảnh hưởng). Sửa: bỏ khỏi DEFAULTS mọi cờ mà config đặt; `tests/test_predict_args.py` (31 giá trị
+  config giữ nguyên). `configs/flow_final.json` = cấu hình WP7 (prompt full, `direct,think`, think 3072, θ 0.5, không rescue);
+  `docker/README_SOLUTION.md` viết lại cho luồng hybrid; adapter cuối `nhatlong1103/zc-final-adapter` (riêng tư) + `src/adapter_hashes.json`.

@@ -43,6 +43,21 @@ def first_period(tree, today):
     return None
 
 
+def _uses_number(code, v):
+    """the program writes the number v (187, 9100000, 9_100_000, 9.1e6, 9100000.0, 10 * 1e6 ...): any numeric literal or
+    constant product of literals equal to v."""
+    try: tree = ast.parse(code)
+    except SyntaxError: return str(int(v)) in code
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and not isinstance(n.value, bool) and abs(n.value - v) < 1e-6: return True
+        if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Mult):
+            try:
+                x = eval(compile(ast.Expression(n), "<n>", "eval"), {"__builtins__": {}})
+                if isinstance(x, (int, float)) and abs(x - v) < 1e-6: return True
+            except Exception: pass
+    return False
+
+
 def all_periods(src, today):
     """{(from, to)} of every period expression of a program (source text or parsed tree); None if it does not parse."""
     import pandas as pd
@@ -134,6 +149,10 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
             miss = sorted(hp - pp)
             out.append(_issue("warn", "named_periods", "the question names the periods " + ", ".join(h["periods"]) + " but the program does "
                               f"not use {miss[0][0]}..{miss[0][1]}"))
+    for th in h.get("thresholds") or []:                                 # P2: a threshold the question sets ('ít nhất 187 đơn')
+        v = th.get("value")                                             # should appear in the program
+        if isinstance(v, (int, float)) and not _uses_number(code, v):
+            out.append(_issue("warn", "threshold", f"the question sets {th.get('op')} {v:g} {th.get('of') or ''}".rstrip() + " but the program does not use that number"))
     at = h.get("answer_type")
     m = re.search(r'ANSWER\s*=\s*\{\s*["\']type["\']\s*:\s*["\'](\w+)["\']', code)
     if at and m and m.group(1) != at and m.group(1) != "unanswerable" and not (at == "number" and m.group(1) == "percent"):

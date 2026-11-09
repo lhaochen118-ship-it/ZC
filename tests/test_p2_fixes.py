@@ -98,5 +98,12 @@ check("until date", str(dm.until_day("2026-08-08", "2026-12-06").date()), "2026-
 check("until period", str(dm.until_day("2026-08-08", dm.month(2026, 9)).date()), "2026-09-30")
 check("until timedelta", str(dm.until_day("2026-08-08", pd.Timedelta(days=30)).date()), "2026-09-07")
 
+# 9. a threshold of the question must appear in the program (any spelling of the number)
+HT = {"thresholds": [{"op": ">=", "value": 9100000, "of": "đồng"}]}
+thr = lambda code: [i["rule"] for i in pre.precheck(code, spec, HT, None, None, "2026-04-10") if i["rule"] == "threshold"]
+check("threshold missing", thr('ANSWER = {"type": "number", "answer": len(item_sales(month(2026, 1), by="n_orders"))}'), ["threshold"])
+for lit in ("9100000", "9_100_000", "9.1e6", "9.1 * 1e6", "9100 * 1000"):
+    check(f"threshold {lit}", thr('ANSWER = {"type": "number", "answer": n_days_revenue_at_least(month(2025, 10), ' + lit + ')}'), [])
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

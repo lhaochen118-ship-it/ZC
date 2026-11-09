@@ -135,6 +135,8 @@ class HybridPipeline(pipeline.Pipeline):
             flags = toolsmod.postcheck(r["answer"], st["hints"].get("answer_type"), None, st["qkey"], k_asked)
             if int(getattr(a, "period_flag", 0) or 0) and any(str(p).startswith("warn:period") for p in turn.get("precheck") or []):
                 flags = list(flags) + ["the program's period differs from the question's"]   # P2: such samples were right 2 / 23
+            if int(getattr(a, "threshold_flag", 0) or 0) and any(str(p).startswith("warn:threshold") for p in turn.get("precheck") or []):
+                flags = list(flags) + ["the threshold the question sets is not used"]       # P2: such samples were right 13 / 19
             if int(getattr(a, "named_periods_flag", 0) or 0) and any(str(p).startswith("warn:named_periods") for p in turn.get("precheck") or []):
                 flags = list(flags) + ["a period the question names is not used"]           # P2: such samples were right 85 / 106
             turn["post"] = flags; smp.update(ok=True, answer=r["answer"], flags=flags, lp=turn.get("lp"), escape=turn.get("escape"))

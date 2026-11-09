@@ -1056,3 +1056,4 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 
   WF + think: pub_ho 0.588, tr_ho 0.869 → held-out gộp 0.748 (gốc 0.713; súp WC α 0.5 cờ mới 0.761) → rào chắn held-out đạt. Xác nhận:
   lặp seed (`pf_wf05_think_s1`) và α 0.35 + think (`pf_wf035_think`).
+| Súp 8 thành viên v2 compact (WC1–8) α 0.35, không think (`synchan5704/zc-soup8v2a035-1`) | 0.913 | 927 / 14 / 59 | pub_ho 0.586, tr_ho 0.874 (gộp 0.750) = súp 4 thành viên → thêm thành viên không giúp |

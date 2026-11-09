@@ -1052,3 +1052,7 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
 | Súp WC α 0.5 + think **mọi mẫu** (6144 token, k 2 → 4; `mucnokieu/zc-pfwc05allthink-1`) | 0.921 | 951 / **30** / 19 | 2,284 s |
 
   Think mọi mẫu: đúng nhiều nhất (951) nhưng sai tăng (30 vs 19), gấp đôi thời gian → **không dùng**; think chỉ ở vòng 2 tốt hơn và nhanh hơn.
+| **Súp WF1–4 α 0.5 (prompt full) + think vòng 2** (`quynhle07/zc-pfwf05think-1`) | **0.939** | 955 / 16 / 29 | 4,423 s (gồm pub_ho + tr_ho) |
+
+  WF + think: pub_ho 0.588, tr_ho 0.869 → held-out gộp 0.748 (gốc 0.713; súp WC α 0.5 cờ mới 0.761) → rào chắn held-out đạt. Xác nhận:
+  lặp seed (`pf_wf05_think_s1`) và α 0.35 + think (`pf_wf035_think`).

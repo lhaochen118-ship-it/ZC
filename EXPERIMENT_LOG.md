@@ -1070,3 +1070,5 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   mẫu được cứu (0 khi tắt); ca `o7` / `o8` trong `test_flow_hybrid`.
 - Súp top-4 cũ α 0.35 + think vòng 2 (`phatle1578/zc-pfs4035think-1`): pub_full **0.901** (927 / 26 / 47) < không think 0.921; pub_ho 0.580,
   tr_ho 0.876 → think không giúp ổn định trên mọi mô hình; chờ hai lần lặp seed (WC + think, WF + think) để đo nhiễu public gốc trước khi chọn.
+- Súp 8 thành viên v2 α 0.5, không think (`huyenco/zc-soup8v2a05-1`): pub_full 0.899 (924 / 25 / 51), pub_ho 0.581, tr_ho 0.878 (α 0.35: 0.913) →
+  không hơn súp 4 thành viên.

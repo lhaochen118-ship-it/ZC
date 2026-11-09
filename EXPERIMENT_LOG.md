@@ -955,3 +955,8 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   (+0.5 quick400 so với nhánh đơn tốt nhất A1 0.7775) súp chưa đạt, nhưng 0.7775 của A1 là đo may (entry 41) → súp là **ứng viên
   cho so sánh held-out cuối (QĐ15)**; ủng hộ hướng WP7 "thêm seed để gộp". Gộp 8 adapter: 367–419 s; đánh giá DP 4 ~2,700–3,000 s
   (vòng 2 nhiều hơn).
+- **QĐ14 hiệu chỉnh trên log ứng viên** (`tests/calibrate.py`, θ chọn trên dev 300 câu; held-out chỉ đọc tổng): súp top-4 pub_ho
+  0.564 (vote ≥ 0.5) → **0.596 ở θ dev 0.386** (0.603 nếu nâng θ có giới hạn) ≈ mốc v34 held-out 0.602; gốc + think 0.548 → 0.545;
+  gốc code v2 0.534 → 0.530; A1 giữ vote. Kiểm conformal (sai held-out ≤ dev + 2 điểm) **không đạt được ở mọi θ hợp lý**: paraphrase
+  khó hơn ở mọi ngưỡng (dịch phân phối, không phải lệch hiệu chỉnh); nâng θ không giới hạn làm PA sập (gốc: θ 0.96 → PA 0.04) →
+  `calibrate.py` chỉ nâng θ khi PA dev mất ≤ 1 điểm, còn lại báo "SHIFT" và giữ θ dev.

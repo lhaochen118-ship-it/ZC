@@ -57,7 +57,7 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 08/11: user cấp 9 token (`~/.kaggle/tok_<acc>`); probe 4×L4 OK trên 8 acc: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99,
 yuan1103 (~15 h W46 đã dùng), synchan5704, anderson1202, loinguyentran (quota W46 của các acc mới chưa rõ: acc dùng chung dự án
 khác). yeshenhi: chỉ T4 (dùng cho kernel wheels / T4). Đủ 8 acc L4 mà kế hoạch §9 cần (7, lý tưởng 8).
-09/11: user cấp thêm **phatle1578** (probe 4×L4 OK, 48 CPU; đã có `phatle1578/zc-para` trùng sha256 với bản đang dùng) và token mới cho **yeshenhi** (probe: vẫn không có GPU L4 → cần user accept rules `gemma-4-developer-agent` trên web bằng acc này). → 9 acc 4×L4.
+09/11: user cấp thêm **phatle1578** (probe 4×L4 OK, 48 CPU; đã có `phatle1578/zc-para` trùng sha256 với bản đang dùng) và token mới cho **yeshenhi** (probe: vẫn không có GPU L4 → cần user accept rules `gemma-4-developer-agent` trên web bằng acc này); thêm **mucnokieu**, **huyenco** (probe 4×L4 OK, 48 CPU; tạo `<acc>/zc-para` riêng tư, cùng tệp). → **11 acc 4×L4**.
 
 ## Việc tiếp theo (user đã duyệt 08/11): triển khai code đúng `docs/08_MASTER_PLAN.md` §8 (WP0 → WP12), đặc tả §5, quy tắc §10
 

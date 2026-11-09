@@ -94,13 +94,18 @@ def main():
         Xh = C.matrix([L[i][0] for i in chk]); yh = np.array([L[i][1] for i in chk]); ah = np.array([L[i][2] for i in chk])
         ph = cal.predict(Xh) if use_cal else np.array([float(L[i][0].get("conf") or 0.0) for i in chk])
         err, ok = C.conformal_check(ph[ah > 0], yh[ah > 0], theta, dev_err)
-        th2 = theta
-        while not ok and th2 < 1.0:                                     # QĐ14: raise theta until the held-out error rate holds
-            th2 = round(th2 + 0.01, 4); err, ok = C.conformal_check(ph[ah > 0], yh[ah > 0], th2, dev_err)
+        at_dev = pa(ph, yh, ah, theta)                                  # the honest number: theta chosen on dev only
+        pdev = cv if use_cal else vote
+        best_dev = pa(pdev, y, a, theta)[0]; th2 = theta
+        while not ok and th2 < 1.0:                                     # QĐ14: raise theta until the held-out error rate holds,
+            nxt = round(th2 + 0.01, 4)                                  # but never past a 1-point loss of dev PA: beyond it the gap
+            if pa(pdev, y, a, nxt)[0] < best_dev - 0.01: break          # is a distribution shift (paraphrases are harder at every
+            th2 = nxt; err, ok = C.conformal_check(ph[ah > 0], yh[ah > 0], th2, dev_err)   # theta), not a calibration miss
         res = pa(ph, yh, ah, th2)
-        print(f"held-out {chk_sets} {len(chk)} q: err {err:.3f} (dev {dev_err:.3f} + 0.02) -> theta {th2:.3f} PA {res[0]:.4f} "
-              f"(vote>=0.50: {pa(np.array([float(L[i][0].get('conf') or 0.0) for i in chk]), yh, ah, 0.5)[0]:.4f})")
-        rep.update(n_check=len(chk), check_err=err, theta_final=th2, pa_check=res[0])
+        vote_h = pa(np.array([float(L[i][0].get('conf') or 0.0) for i in chk]), yh, ah, 0.5)[0]
+        print(f"held-out {chk_sets} {len(chk)} q: at dev theta {theta:.3f}: PA {at_dev[0]:.4f} err {at_dev[1]:.3f} (vote>=0.50: {vote_h:.4f})")
+        print(f"  conformal (dev err {dev_err:.3f} + 0.02): {'holds' if ok else 'SHIFT: not reachable within 1 dev point'} -> theta {th2:.3f} PA {res[0]:.4f}")
+        rep.update(n_check=len(chk), pa_check_dev_theta=at_dev[0], check_err=err, conformal_ok=bool(ok), theta_final=th2, pa_check=res[0], pa_check_vote50=vote_h)
     if arg("--out") and use_cal: cal.save(arg("--out"))
     if arg("--json"): json.dump(rep, open(arg("--json"), "w"), indent=1)
 

@@ -933,3 +933,14 @@ Vòng 2 (4M token ≈ 1.87k bản ghi, D1 + 50 % D3 một thầy, r 32 trừ ghi
   vs −0.0625 trước (prompt compact, chỉ `<python>`). Mô hình **không viết khối `<sql>` nào** (0 / 674 mẫu) và chỉ 2 khối `<python>`
   → phần tăng đến từ prompt full + gợi ý v2, không từ SQL. **QĐ12: DuckDB không giữ** (mô hình không dùng nhánh thoát; code giữ, tắt
   mặc định). Điểm yếu thật: khi thiếu hàm ngành, mô hình ép hàm toolkit chung thay vì thoát sang pandas.
+- **A/B suy luận trên mô hình gốc (code v2 `4f1df6c`, prompt full, quick400 + pub_ho, DP 4):**
+
+| Cấu hình | quick400 | pub_full (150) | pub_k0 (150) | pub_ho (1373) | tr_ho | thời gian kernel |
+|---|---|---|---|---|---|---|
+| code cũ `bc7c1a3`, full (QĐ4 job) | 0.740 | 0.833 | 0.533 | **0.541** | 0.91 | 2,056 s |
+| **E1 code v2, full** (`quynhtran35/zc-e1full-1`) | **0.775** | **0.893** | **0.567** | 0.535 | 0.91 | 1,963 s |
+| E1 + `--review 1` (`quynhle07/zc-e1review-1`) | 0.750 | 0.847 | 0.540 | 0.523 | 0.92 | 2,133 s |
+
+  Code v2 (gợi ý đơn vị, kỳ năm-trước, `debt_aging`) +2.75 quick400 / +6 pub_full / +3.4 pub_k0, held-out ngang (−0.6, trong nhiễu).
+  **M11 đọc lại: không giữ** — 23 % mẫu bị đọc lại (chủ yếu do cờ postcheck "zero result" / lệch kiểu), 310 đáp án đổi, dev câu không
+  có gợi ý thiếu dữ liệu 214 → 203 điểm ròng; câu có gợi ý thiếu dữ liệu chỉ 6 (đã đúng 5 / 6 với prompt full).

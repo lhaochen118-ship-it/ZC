@@ -7,7 +7,10 @@ OUT/: adapter/ (published for the Docker build: docker/fetch_assets.sh merges it
 Usage (Kaggle job): run_kaggle.py public_test OUT/full --script training/full_job.py --model Qwen/Qwen3.5-9B --train
         --files d1.jsonl,d2.jsonl,... [--data sft] [--r 64 --alpha 128 --lr 1e-4 --epochs 1 --budget 0] [--mb 8 --eff-batch 64]
         [--sets quick400,pub_full] [--eval-config configs/e0.json] [--subset N] [--no-eval]
-       (smoke: --budget 3e5 --subset 40 checks FSDP save -> merge -> evaluation end to end)"""
+       (smoke: --budget 3e5 --subset 40 checks FSDP save -> merge -> evaluation end to end)
+       [--trainer dpo --beta 0.1 --sft-weight 0.2] (M4: pairs from training/data/dpo_from_logs.py)
+       [--base-adapters WF1,WF2,WF3,WF4 --base-weights 0.0875,... --no-eval] (train on top of the merged soup; evaluate with
+       training/soup_job.py --adapters WF1,...,<this run's name> --search /kaggle)"""
 import os, sys, json, time, glob, shutil, argparse, subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
@@ -25,22 +28,37 @@ def main():
     ap.add_argument("--sets", default="quick400,pub_full"); ap.add_argument("--eval-config", default="configs/e0.json")
     ap.add_argument("--max-len", type=int, default=3072); ap.add_argument("--seed", type=int, default=20261108)
     ap.add_argument("--no-eval", action="store_true"); ap.add_argument("--subset", type=int, default=0, help="evaluation: first N questions per shop")
+    ap.add_argument("--trainer", default="sft", choices=["sft", "dpo"], help="dpo: training/dpo.py on (chosen, rejected) pairs (M4)")
+    ap.add_argument("--beta", type=float, default=0.1); ap.add_argument("--sft-weight", type=float, default=0.0)
+    ap.add_argument("--base-adapters", default="", help="train on top of these adapters merged into --model first (arms_job.merge_base)")
+    ap.add_argument("--base-weights", default=""); ap.add_argument("--search", default="/kaggle/input")
     a = ap.parse_args()
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)
     data = ",".join(os.path.join(D, f) for f in a.files.split(","))
     tmp = "/tmp/full_" + os.path.basename(os.path.normpath(a.out)); os.makedirs(tmp, exist_ok=True)   # one folder per job
     cfg = os.path.join(HERE, f"fsdp{a.gpus}.yaml")
-    cmd = [PY, "-m", "accelerate.commands.launch", "--config_file", cfg, "--num_processes", str(a.gpus), "--main_process_port", "29531",
-           os.path.join(HERE, "sft.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
-           "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--max-tokens", str(a.budget),
-           "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed)]
+    base = a.model
+    if a.base_adapters:                                                 # M2 / M4: the new LoRA learns on top of the merged soup
+        import arms_job
+        base = arms_job.merge_base(a)
+    cmd = [PY, "-m", "accelerate.commands.launch", "--config_file", cfg, "--num_processes", str(a.gpus), "--main_process_port", "29531"]
+    if a.trainer == "dpo":
+        cmd += [os.path.join(HERE, "dpo.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
+                "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--beta", str(a.beta),
+                "--sft-weight", str(a.sft_weight), "--metrics", os.path.join(a.out, "train_metrics.json"), "--max-len", str(a.max_len), "--seed", str(a.seed)]
+    else:
+        cmd += [os.path.join(HERE, "sft.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
+                "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--max-tokens", str(a.budget),
+                "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed)]
     rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "train.log"), "w"), stderr=subprocess.STDOUT).returncode
     print(f"[full] training rc {rc} in {time.time() - t0:.0f}s", flush=True)
     if rc != 0 or not os.path.isfile(f"{tmp}/adapter/adapter_config.json"):
         print("[full] training failed:\n" + open(os.path.join(a.out, "train.log"), errors="ignore").read()[-3000:], flush=True); sys.exit(1)
     shutil.copytree(f"{tmp}/adapter", os.path.join(a.out, "adapter"), dirs_exist_ok=True)
+    if base != a.model: shutil.rmtree(base, ignore_errors=True)        # the merged soup (19 GB): the evaluation merges its own
     if a.no_eval: return
+    if base != a.model: sys.exit("[full] --base-adapters: evaluate with training/soup_job.py (base adapters + this one)")
     t1 = time.time()
     rc = subprocess.run([PY, os.path.join(HERE, "merge.py"), "merge", a.model, f"{tmp}/merged", f"{tmp}/adapter"],
                         stdout=open(os.path.join(a.out, "merge.log"), "w"), stderr=subprocess.STDOUT).returncode

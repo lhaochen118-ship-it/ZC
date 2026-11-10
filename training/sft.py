@@ -98,8 +98,10 @@ class TorchLogProb:
         lsm = torch.log_softmax(logits, -1)
         lp = lsm.gather(-1, targets[:, None]).squeeze(-1)
         ent = -(lsm.exp() * lsm).sum(-1) if "entropy" in outputs else None
+        lss = torch.logsumexp(2 * lsm, -1) if "log_sum_sq_probs" in outputs else None
+        ml = logits.mean(-1) if "mean_logits" in outputs else None      # DPO logs the mean logit of each side
         top1 = (logits.argmax(-1) == targets) if "is_top1" in outputs else None
-        return lp, ent, None, None, top1
+        return lp, ent, lss, ml, top1
 
 
 def main():

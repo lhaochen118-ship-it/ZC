@@ -124,6 +124,11 @@ def last_n_days(n, today):
     t = _ts(today); return Period(t - (int(n) - 1) * D, t, f"last {n} days")
 
 
+def next_n_days(n, today):
+    """'trong N ngày tới': from today to the end of day today + N (rulebook 'Hàng hết hạn trong N ngày tới': D to D + N)."""
+    t = _ts(today); return Period(t, t + int(n) * D, f"next {n} days")
+
+
 def ytd(today):
     t = _ts(today); return Period(t.replace(month=1, day=1), t, "year to date")
 
@@ -1453,7 +1458,7 @@ def shop_api(shop):
 
 
 PERIOD_API = {f.__name__: f for f in (day, today_p, yesterday, between, month, month_noyear, quarter, quarter_noyear, year, this_month,
-                                      prev_month_same_days, prev_month, same_month_last_year, this_week, last_week, last_n_days,
+                                      prev_month_same_days, prev_month, same_month_last_year, this_week, last_week, last_n_days, next_n_days,
                                       ytd, until, months_back, month_seq, tet, before_tet, tet_of, lunar_to_solar)}
 NUM_API = {f.__name__: f for f in (round_half_up, money, pct, growth, rank, canon_status, map_status, canon_payment, canon_channel, key, require)}
 

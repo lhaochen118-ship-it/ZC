@@ -121,6 +121,8 @@ def parse_period(text, today):
         n = int(next(g for g in m.groups() if g)); return dm.last_n_days(n, today), f"last_n_days({n}, TODAY)"
     if re.search(r"(dau thang nay|tu dau thang|tu mung 1|thang nay|thang ni|th nay|thang hien tai)", t): return dm.this_month(today), "this_month(TODAY)"
     if re.search(r"(tu dau nam|dau nam (toi|den)|nam nay tinh tu|nam nay (?:tinh )?(?:toi|den) (?:het )?(?:hom nay|nay|bay gio)|tu ngay 1/1|tu 1/1|tu mung 1 tet duong)", t): return dm.ytd(today), "ytd(TODAY)"
+    m = re.search(r"(\d+) ngay (?:toi|sap toi|tiep theo|ke tiep|nua)\b", t)
+    if m: return dm.next_n_days(int(m.group(1)), today), f"next_n_days({int(m.group(1))}, TODAY)"   # 'hết hạn trong 90 ngày tới'
     m = re.search(r"(\d+) ngay (gan nhat|qua|vua qua|gan day|lien tiep gan nhat|cuoi|gan nhut|vua roi)", t)
     if m: return dm.last_n_days(int(m.group(1)), today), f"last_n_days({int(m.group(1))}, TODAY)"
     if re.search(r"tuan (roi|truoc|vua roi|vua qua|qua|trc)", t): return dm.last_week(today), "last_week(TODAY)"

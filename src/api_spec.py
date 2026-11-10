@@ -59,7 +59,7 @@ RETURNS = {"revenue": "money", "n_orders": "count", "aov": "money", "cancel_rate
            "daily_revenue": "Series", "debts": "Series", "debt_by_customer": "Series", "lot_stock": "DataFrame",
            "lots_expiring": "DataFrame", "money": "money", "round_half_up": "number", "rank": "list", "key": "text"}
 for _n in ("day", "today_p", "yesterday", "between", "month", "month_noyear", "quarter", "quarter_noyear", "year", "this_month",
-           "prev_month_same_days", "prev_month", "same_month_last_year", "this_week", "last_week", "last_n_days", "ytd", "until",
+           "prev_month_same_days", "prev_month", "same_month_last_year", "this_week", "last_week", "last_n_days", "next_n_days", "ytd", "until",
            "months_back", "tet", "before_tet", "tet_of"):
     RETURNS[_n] = "period"
 RETURNS["month_seq"] = "periods"; RETURNS["lunar_to_solar"] = "date"

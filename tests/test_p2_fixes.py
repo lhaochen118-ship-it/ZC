@@ -126,5 +126,11 @@ check("unit not counted", un('ANSWER = {"type": "number", "answer": item_qty(thi
 check("review 3 missing data", bool(hybrid.review_msg({"missing_data": ["reason"]}, {"type": "number", "answer": 3}, [], 3)), True)
 check("review 3 flags only", hybrid.review_msg({"missing_data": []}, {"type": "number", "answer": 0}, ["zero result"], 3), None)
 
+# 13. 'trong N ngày tới' = next_n_days(N, TODAY): the period of the hint and of the expiry window (D to D + N)
+p, code = qparse.parse_period("hiện còn bao nhiêu lô hạn dùng rơi vô 120 ngày tới", "2026-08-08")
+check("next_n_days code", code, "next_n_days(120, TODAY)"); check("next_n_days end", str(p.end.date()), "2026-12-06")
+check("expiry until a period", str(dm.until_day("2026-08-08", dm.next_n_days(120, "2026-08-08")).date()), "2026-12-06")
+check("last_n_days unchanged", qparse.parse_period("30 ngày qua bán bao nhiêu", "2026-08-08")[1], "last_n_days(30, TODAY)")
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

@@ -72,6 +72,55 @@ Quy trình: nhánh train 1 epoch (Unsloth, ~1.5 h / nhánh / L4) → đo nhanh `
 | 14/11 | Chốt cấu hình, đo đường container, cập nhật Docker assets + README + STATUS |
 | 15/11 | User build Docker, chạy `run_public_test.sh`, nộp |
 
+## 6. Hai hướng: R (luật tổng quát) và M (cải tiến mô hình) — user 10/11
+
+User 10/11: "Trước mắt cứ thêm luật, nhưng sang kế hoạch 2 chúng ta sẽ xuất phát từ bản không có luật có score cao nhất (0.939), thử
+nghiệm song song nhiều cách để cải tiến mô hình đến khi đạt score = 1 mới thôi (ví dụ: thêm model phụ, finetune lại, dùng thêm dataset…)".
+
+- **Hướng R** (đang làm, các "Vòng n" bên dưới): thêm luật tổng quát (gợi ý, làm sạch câu, toolkit, kiểm tra / sửa) trên luồng
+  hiện tại, quy tắc §4. Bản nộp hiện tại = `p2_j` (public 0.9755 / held-out 0.758, tb 2 seed; đường container 0.978).
+- **Hướng M** (cải tiến phía mô hình, **không thêm luật**): xuất phát từ bản không có luật P2 có public cao nhất = **M0**: code kế
+  hoạch 1 `b093d46` + `configs/flow_final.json` của commit đó (súp WF1–4 α 0.35, prompt full, think vòng 2, không rescue): public gốc
+  **0.939** (5 lần: 0.939 / 0.930 / 0.938 / 0.934 / 0.930, tb 0.934), held-out 0.592 / 0.873 (gộp 0.752). Code luật (`hints`, `qnorm`,
+  `precheck`, `tools`, `dm`, `industry`, `prompting`) **đóng băng** ở M0 (worktree riêng); chỉ được đổi: trọng số mô hình (fine-tune,
+  chưng cất, DPO / RL), **mô hình phụ** (bộ chọn / bộ kiểm, truy hồi embedding), dữ liệu huấn luyện (train split + dataset ngoài uy
+  tín), cách lấy mẫu và chọn ứng viên bằng mô hình học được. Mục tiêu: public gốc **1.0**, held-out không giảm (điều kiện dừng
+  `docs/13`).
+- Ràng buộc giữ nguyên: tổng tham số lúc inference ≤ 15B (hiện 9.65B → mô hình phụ ≤ ~5.3B); ≤ 6 h trên 2×RTX 5090; không train trên
+  public / private test (kể cả paraphrase câu public); chỉ dataset uy tín (`docs/07_DATASETS.md`); thầy có trọng số public trước 01/10/2026.
+
+### 6.1 Gói việc hướng M (WP-M-xx)
+
+| Gói | Ý tưởng (tài liệu `docs/11`) | Dữ liệu | Chi phí GPU | Nhóm lỗi nhắm |
+|---|---|---|---|---|
+| **M0** | mốc trên code đóng băng (đã có 5 lần chạy) | — | 0 | — |
+| **M1** | SFT lại cho **định dạng gọn**: lập luận ngắn trong `<plan>`, không lan man trước `<plan>` (10.7 % mẫu bị cắt ở 512 token) | D1 + D2 + D2N dựng lại với prompt M0 | 4 nhánh × ~1.5 h L4 | 3 |
+| **M2** | **Tự chưng cất có kiểm thực thi** (STaR / RFT): súp sinh trên câu train + paraphrase train, giữ chương trình chạy ra đúng, SFT lại; 2 vòng | câu train, D2, D2N | sinh 1 phiên + 4 nhánh | 1, 3, 4 |
+| **M3** | **Chưng cất từ thầy** (Qwen3.6-27B-FP8, Gemma 4 31B, WP5): chương trình + lập luận của thầy, chỉ giữ mẫu đúng khi chạy | bản ghi D3 (5 thầy, đã có) | 4 nhánh | 1, 4 |
+| **M4** | **DPO theo phản hồi thực thi** (ExCoT): cặp (đúng, sai) của chính súp | log train dev + paraphrase train | 1 phiên | 1, 7 |
+| **M5** | **GRPO** thưởng thực thi + thưởng từng phần (Reasoning-SQL, SQL-R1): đúng đáp án, kỳ, thực thể, định dạng | câu train + paraphrase train | cao (8–20 GPU-giờ) | 1, 3, 4 |
+| **M6** | **Mô hình phụ chọn ứng viên / bộ kiểm** (LEVER; CHASE-SQL so cặp): (câu, chương trình, kết quả) → xác suất đúng; quyết định phiếu và bỏ trả lời | log mẫu train dev + paraphrase train (không public) | sinh log 1–2 phiên + train mô hình nhỏ (0.8–4B hoặc LoRA 9B) | 7 (phiếu tách, câu bỏ) |
+| **M7** | **Nhiều bộ sinh** thay súp trộn (XiYan-SQL): các thành viên WF / WC chạy như bộ sinh riêng, gom ứng viên rồi bỏ phiếu / M6 | adapter có sẵn | 1 phiên | 7 |
+| **M8** | **Dataset ngoài** (`docs/07`): SynSQL-2.5M / BIRD / Spider (có CoT) trộn vào SFT để tăng suy luận trên bảng; có thể đổi sang bài tập chương trình bảng | SynSQL-2.5M, BIRD train, Spider train | sinh + 4 nhánh | 1, 4 |
+| **M9** | **Học sinh khác** ≤ 15B với cùng dữ liệu (Gemma 12B đã thử ở QĐ4; các bản Qwen khác nếu có) | như M1–M3 | 4 nhánh | mọi nhóm |
+
+### 6.2 Lưới song song và loại sớm
+
+Mỗi acc 4×L4: 2 phiên GPU × 4 nhánh (1 GPU / nhánh, Unsloth); mỗi biến thể (khác học sinh / thầy / dataset / hỗn hợp) đánh giá
+chung `quick400` + `pub_ho` trên chính phiên đó; **loại sớm** khi quick400 < M0 − 2 hoặc pub_ho < M0 − 1.5. Nhánh qua → súp + WiSE
+α ∈ {0.35, 0.5} → `pub_full` × 2 seed + `pub_ho` + `tr_ho`. Giữ / bỏ theo §4, **so với M0** (không so với hướng R); báo cả hai số.
+
+### 6.3 Thứ tự (rẻ, tăng nhiều trước)
+
+M7 (không train) → M6 (bộ chọn: nhắm câu bỏ / phiếu tách — phần lớn lỗi còn lại của cả hai hướng) → M1 + M2 song song (nhiều nhánh)
+→ M3 → M4 → M5, M8, M9 khi còn quota GPU.
+
+### 6.4 Lịch và quan hệ với bản nộp
+
+- Trước mắt (user 10/11): tiếp tục hướng R; hướng M chuẩn bị dữ liệu trên CPU và dùng slot GPU rảnh.
+- Bản nộp (user build 15/11): bản tốt nhất theo §4 giữa R và M tại 14/11 (M có thể ghép với luật của R để đo, nhưng số của M báo riêng).
+- Hướng M dừng khi public gốc = 1.0 với held-out không giảm.
+
 ## Vòng 1 (09/11) — kết quả
 
 Code `1d759c8`. Cùng súp WF1–4 α 0.35, mỗi cấu hình một phiên 4×L4 (merge trong kernel + eval 4,199 câu ≈ 1.5 h).

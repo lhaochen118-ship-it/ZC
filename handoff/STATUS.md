@@ -77,6 +77,7 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | Vòng 5: **`p2_j`** (g + ngưỡng + size / unit), 2 seed | xong | 0.977 (982 / **5** / 13), 0.974 (982 / 8 / 10); tb **0.9755** | 0.605 / 0.868, 0.613 / 0.874; tb **0.758** | bình nguyên: c 0.9725 / 0.755, g 0.976 / 0.756, h 0.9755 / 0.758, i 0.9745 / 0.759, j 0.9755 / 0.758; j ít sai nhất, bỏ nhiều nhất. θ 0.375 phát lại: public j +0.7 / +0.3 nhưng pub_ho −1.0 / −0.5 → **giữ θ 0.5** (cấm tăng public bằng giảm held-out); câu bỏ cần ứng viên tốt hơn (vòng 6: 12 mẫu, review 3) |
 | **Nộp**: `configs/flow_final.json` = **j** (10/11) | | 0.9755 (tb 2 seed) | 0.758 | README_SOLUTION cập nhật; adapter giữ nguyên |
 | **Đường container** với `flow_final.json` (= j), `quynhtran35/zc-p2r6pred-1` | xong | **0.978** (985 / 7 / 8) | — | `predict_flow.py` (lối vào Docker) tái lập số eval; 1,262 s / 1,000 câu kể cả nạp mô hình (4×L4) |
+| **Hướng M** (cải tiến mô hình từ M0 = 0.939, không luật; `docs/12_PLAN2.md` §6, WP-M0…M9) | chưa bắt đầu (kế hoạch xong 10/11) | M0 0.939 (tb 0.934) | 0.592 / 0.873 (0.752) | thứ tự: M7 nhiều bộ sinh → M6 bộ chọn → M1 + M2 fine-tune lại / tự chưng cất → M3 thầy → M4 DPO → M5 GRPO, M8 dataset ngoài, M9 học sinh khác |
 | Vòng 6 GPU (`p2_l` = j + review 3; `p2_k` = l + 12 mẫu, `p2_k_s1`; `p2r6pred` = đường container với flow_final) | **đang chạy** (10/11 01:40 UTC, code `0b154ac`/`ca0e183`, CPU suite ALL PASS sau khi container khởi động lại) | | | `nhatlong1103/zc-p2r6k-1`, `nhatlong1103/zc-p2r6ks1-1`, `quynhtran35/zc-p2r6l-1`, `quynhtran35/zc-p2r6pred-1` |
 | Vòng 5 GPU (`p2_i` = c + precheck lỗi size / unit; `p2_i_s1`) | **đang chạy** (09/11 22:45 UTC, code `89243a8`, CPU suite ALL PASS) | | | `nhatlong1103/zc-p2r5i-1`, `nhatlong1103/zc-p2r5is1-1`; hai luật chỉ chạm mẫu sai trên mọi log (size 54 + 114, unit 71 + 104) |
 | Vòng 4: `p2_h` (d + cờ ngưỡng, code vòng 4) | xong | 0.971 (981 / 10 / 9) | 0.611 / 0.864 (gộp 0.755) | ngang c / g ở held-out, thấp hơn g ở public |
@@ -87,6 +88,12 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | Vòng 1 GPU (`p2_a/b/c`) | **xong cả 3** | **p2_b 0.967** (979 / 12 / 9; mốc 0.934 tb 5 lần, tốt nhất 0.939) | **0.603 / 0.866** (mốc 0.592 / 0.873; gộp 0.753 vs 0.752: không giảm → **giữ**) | p2_b = sửa gợi ý / làm sạch / định dạng / cờ kỳ + trần 1536 token; 1,000 + 3,199 câu trong 4,488 s (merge 792 s), GPU 70–78 %; 21 câu còn sai (15 cũ, 6 mới) |
 | Vòng 2 GPU (`p2_d/e/f`) | **đang chạy** (09/11 18:50 UTC, code `c49da84`/`d9b30fb`, CPU suite ALL PASS) | | | `huyenco/zc-p2r2d-1`, `huyenco/zc-p2r2e-1`, `phatle1578/zc-p2r2f-1`; gợi ý `counted` / `thresholds`, prefill `<plan>`, đồng nghĩa %; kiểu gợi ý = đáp án 100 % câu có gợi ý (train + public) |
 | WP10 stress (pub_noind, pub_noacc) | không đo được (kernel dừng "STALE CODE" sau restart hàng đợi) → đo trên cấu hình P2 cuối | | | |
+
+## Quyết định của user (10/11)
+
+- Trước mắt **tiếp tục thêm luật tổng quát** (hướng R). Kế hoạch 2 có thêm **hướng M** (`docs/12_PLAN2.md` §6): xuất phát từ bản **không có
+  luật P2** có public cao nhất (M0 = code `b093d46` + flow_final cũ: 0.939), thử song song nhiều cách cải tiến **mô hình** (mô hình phụ,
+  fine-tune lại, dataset ngoài, chưng cất, DPO / RL…) đến khi public gốc = 1.0; không thêm luật ở hướng M.
 
 ## Quyết định của user (09/11)
 

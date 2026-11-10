@@ -28,7 +28,7 @@
 {"id": "q_05cde771f4c3", "type": "number", "answer": 226846}
 {"id": "q_0641a621b596", "type": "list", "answer": [233818700, 248568700, 237185200]}
 {"id": "q_06b7f437fcc4", "type": "number", "answer": 25180500}
-{"id": "q_06de4545fe25", "type": "abstain"}
+{"id": "q_06de4545fe25", "type": "number", "answer": 14}
 {"id": "q_06dfe652d857", "type": "number", "answer": -38326476}
 {"id": "q_07b7be37628b", "type": "percent", "answer": -8.16}
 {"id": "q_07ceefc30333", "type": "string", "answer": "Cà phê sữa (M)"}
@@ -109,7 +109,7 @@
 {"id": "q_1adddf599009", "type": "number", "answer": 145}
 {"id": "q_1af400957d96", "type": "number", "answer": 211}
 {"id": "q_1bd68f25b288", "type": "unanswerable", "answer": null}
-{"id": "q_1c0046277ff9", "type": "abstain"}
+{"id": "q_1c0046277ff9", "type": "table", "answer": {"columns": ["tho", "hoa_hong"], "rows": [["Đàm Lan An", 9296595], ["Hà Loan Đạt", 7548960], ["Đoàn Bảo Phúc", 5910100], ["Lương Chi Đức", 5737000]]}}
 {"id": "q_1c0ec38b3d82", "type": "number", "answer": 84059600}
 {"id": "q_1c2ff6b4820f", "type": "string", "answer": "Costar Omega 3 1000mg lọ 100 viên"}
 {"id": "q_1c7bef344864", "type": "number", "answer": 5500000}
@@ -119,7 +119,7 @@
 {"id": "q_1f1a1f45b377", "type": "number", "answer": 6601500}
 {"id": "q_1f7113a48e4b", "type": "number", "answer": 20}
 {"id": "q_1fafcc702c72", "type": "string", "answer": "Pharmaton Essential hộp 30 viên"}
-{"id": "q_1fc8004b6900", "type": "number", "answer": 405}
+{"id": "q_1fc8004b6900", "type": "number", "answer": 44}
 {"id": "q_20221903b95b", "type": "unanswerable", "answer": null}
 {"id": "q_203767dd52af", "type": "number", "answer": 8}
 {"id": "q_20b7bbf203c7", "type": "table", "answer": {"columns": ["tho", "hoa_hong"], "rows": [["Đàm Lan An", 8001675], ["Hà Loan Đạt", 7363040], ["Đoàn Bảo Phúc", 6251840], ["Lương Chi Đức", 5608625]]}}
@@ -396,7 +396,7 @@
 {"id": "q_605c59254c52", "type": "list", "answer": [62390000, 7123000]}
 {"id": "q_6066d5e1f466", "type": "number", "answer": 92}
 {"id": "q_60f97553a06e", "type": "number", "answer": 1117431900}
-{"id": "q_611bf24dd2f9", "type": "string", "answer": "Cty Trịnh Giang"}
+{"id": "q_611bf24dd2f9", "type": "unanswerable", "answer": null}
 {"id": "q_6172ede181a5", "type": "list", "answer": [41119000, 41361000]}
 {"id": "q_617cccfd98d1", "type": "number", "answer": 19}
 {"id": "q_618001244985", "type": "number", "answer": 16}
@@ -424,7 +424,7 @@
 {"id": "q_67412073e116", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Tăng Đạt Phương", 853000], ["Lý Tâm Khánh", 725000], ["Hứa Châu Hùng", 456500], ["Bùi Tâm Mai", 449500], ["Vương Nhung Trung", 443000]]}}
 {"id": "q_6779a7bd2b29", "type": "percent", "answer": 24.09}
 {"id": "q_682e548226be", "type": "list", "answer": [242091500, 234440500, 258096500]}
-{"id": "q_6830bf77b8c5", "type": "unanswerable", "answer": null}
+{"id": "q_6830bf77b8c5", "type": "string", "answer": "Cty Tăng Thu"}
 {"id": "q_68d46c34c960", "type": "list", "answer": [278868200, 264574100, 279109500]}
 {"id": "q_690a98214478", "type": "percent", "answer": 7.29}
 {"id": "q_693e2a329c10", "type": "list", "answer": ["Nguyễn Trang Loan", "Thái Khoa Phúc", "Tăng Hùng Hà", "Diệp Khoa Châu", "Tăng An Khánh"]}
@@ -469,7 +469,7 @@
 {"id": "q_71ead7c337f8", "type": "number", "answer": 3631}
 {"id": "q_7260611e1637", "type": "number", "answer": 192663000}
 {"id": "q_72e220b80878", "type": "string", "answer": "Đoàn Bảo Thu"}
-{"id": "q_7305db18bf51", "type": "number", "answer": 19}
+{"id": "q_7305db18bf51", "type": "abstain"}
 {"id": "q_733500e5c7a7", "type": "percent", "answer": -26.32}
 {"id": "q_735ea0888aab", "type": "string", "answer": "Giang Phương Hùng"}
 {"id": "q_73aa64c2c7cf", "type": "number", "answer": 15}
@@ -497,7 +497,7 @@
 {"id": "q_78b9ca050ca1", "type": "number", "answer": 1564120000}
 {"id": "q_78f694893432", "type": "number", "answer": 166}
 {"id": "q_791de98789d5", "type": "string", "answer": "NV005"}
-{"id": "q_792e1070baaf", "type": "percent", "answer": 22.26}
+{"id": "q_792e1070baaf", "type": "percent", "answer": 27.82}
 {"id": "q_79a79df3f048", "type": "percent", "answer": -3.44}
 {"id": "q_79b2abb21862", "type": "number", "answer": 5602000}
 {"id": "q_7ab1e13137e3", "type": "list", "answer": [325500, 295834, 277502]}
@@ -592,7 +592,7 @@
 {"id": "q_9498d6b37278", "type": "percent", "answer": 2.65}
 {"id": "q_94a2e7ebecc0", "type": "percent", "answer": 16.11}
 {"id": "q_94acd8f437f4", "type": "string", "answer": "Blackmores Bio C 1000mg hộp 31 viên"}
-{"id": "q_94cca7f32768", "type": "number", "answer": 50}
+{"id": "q_94cca7f32768", "type": "abstain"}
 {"id": "q_94f634ace6b1", "type": "number", "answer": 4325306}
 {"id": "q_95427850405e", "type": "number", "answer": 5322}
 {"id": "q_95a45f58351b", "type": "number", "answer": 55}
@@ -635,7 +635,7 @@
 {"id": "q_a1195f9fe04c", "type": "percent", "answer": 2.43}
 {"id": "q_a119f396d2af", "type": "percent", "answer": 1.81}
 {"id": "q_a13017cca903", "type": "number", "answer": 2007153000}
-{"id": "q_a18fefbb07ad", "type": "abstain"}
+{"id": "q_a18fefbb07ad", "type": "number", "answer": 21}
 {"id": "q_a1deeb0f213d", "type": "number", "answer": 631}
 {"id": "q_a225dc12182c", "type": "string", "answer": "Hà Loan Đạt"}
 {"id": "q_a29355405c06", "type": "number", "answer": 82}
@@ -720,7 +720,7 @@
 {"id": "q_b7ad6a55cf62", "type": "number", "answer": 263}
 {"id": "q_b7bc96270d9f", "type": "number", "answer": 31}
 {"id": "q_b82c713cb7b5", "type": "number", "answer": 430}
-{"id": "q_b88ec465ade3", "type": "abstain"}
+{"id": "q_b88ec465ade3", "type": "number", "answer": 12}
 {"id": "q_b963dcade0d3", "type": "number", "answer": 56}
 {"id": "q_b9aab5c81568", "type": "list", "answer": [1991699500, 1551523500, 1628303500]}
 {"id": "q_b9c6ed02f53d", "type": "number", "answer": 291328400}

@@ -73,6 +73,7 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | Vòng 3: `p2_g_s1` (d code vòng 3 + cờ named-periods, seed 1) | xong | 0.972 (982 / 10 / 8) | 0.609 / 0.868 (gộp **0.757**) | ngang c |
 | Vòng 3: **`p2_g`** (d code vòng 3 + cờ named-periods) | xong | **0.980** (986 / 6 / 8); tb 2 seed **0.976** | 0.601 / 0.871 (gộp 0.755); tb 2 seed **0.756** | **dẫn đầu** (c tb: 0.9725 / 0.755); 22 câu sai ở ≥ 1 seed, 10 ổn định: đếm đơn vị, ≥ N đơn, hạn dùng N ngày, size → các kiểm tra vòng 4–5 |
 | Vòng 5: `p2_i` (c + precheck lỗi size / unit) | xong | 0.972 (981 / 9 / 10) | 0.603 / 0.870 (gộp 0.756) | kiểm tra đúng mục tiêu: 10 / 10 lượt sửa sau lỗi size / unit ra đúng, 5 / 5 câu đếm đơn vị đúng (4 câu c sai); câu mới sai là phiếu tách (nhiễu) |
+| Vòng 5: `p2_i_s1` | xong | **0.977** (986 / 9 / 5); tb i 0.9745 | 0.611 / 0.875 (gộp **0.762**); tb i **0.759** | i > c cả hai (tb +0.2 public, +0.4 held-out) → **giữ size / unit** |
 | Vòng 5 GPU (`p2_i` = c + precheck lỗi size / unit; `p2_i_s1`) | **đang chạy** (09/11 22:45 UTC, code `89243a8`, CPU suite ALL PASS) | | | `nhatlong1103/zc-p2r5i-1`, `nhatlong1103/zc-p2r5is1-1`; hai luật chỉ chạm mẫu sai trên mọi log (size 54 + 114, unit 71 + 104) |
 | Vòng 4: `p2_h` (d + cờ ngưỡng, code vòng 4) | xong | 0.971 (981 / 10 / 9) | 0.611 / 0.864 (gộp 0.755) | ngang c / g ở held-out, thấp hơn g ở public |
 | Vòng 4: `p2_h_s1` | xong | **0.980** (986 / 6 / 8); tb h 0.9755 | 0.615 / 0.869 (gộp **0.760**); tb h **0.758** | h ≈ g (tb 0.976 / 0.756) trong nhiễu |

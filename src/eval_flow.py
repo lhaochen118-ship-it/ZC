@@ -92,9 +92,6 @@ def main():
     n = build(sets, sp, split, para)
     if not n: sys.exit(f"eval_flow: no question of {sets} has a text here (paraphrase sets need --para / $ZC_PARA_DIR / a zc-para dataset)")
     if os.environ.get("ZC_SMOKE") == "1" and "--subset" not in extra: extra += ["--subset", "16"]
-    dl = float(os.environ.get("ZC_DEADLINE") or 0)                     # Kaggle's 12 h session (make_kernel.py): the agent's own
-    if dl and "--budget" not in extra + rest:                           # time budget ends the run with abstains before it, so
-        extra += ["--budget", str(max(600, int(dl - time.time() - 900)))]   # the finished answers are saved (user 10/11)
     cmd = [sys.executable, os.path.join(HERE, "agent.py"), sp, os.path.join(out, "run")] + rest + extra
     rc = subprocess.run(cmd).returncode
     sys.exit(rc)

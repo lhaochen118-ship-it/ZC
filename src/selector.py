@@ -16,6 +16,9 @@ import numpy as np
 FEATS = ["share", "share_w", "rank0", "gap_top", "n_support", "n_think", "think_frac", "n_direct", "n_programs", "flag_frac",
          "repair_frac", "raw_frac", "t_hint_agree", "unans", "zero", "empty", "n_valid", "n_samples", "n_groups", "round2",
          "lp_mean"]
+COUNTS = ("n_support", "n_think", "n_direct", "n_programs", "n_valid", "n_samples", "n_groups", "round2")
+FEATS_INV = [f for f in FEATS if f not in COUNTS]   # shares / fractions only: the same meaning whatever the number of samples
+                                                    # (pooled generators, k 8 or 12); better on single runs too (10/11)
 _RAW = re.compile(r"\bC\[|\bT\[|\.groupby\(|\.nunique\(|\bpd\.")
 
 
@@ -61,9 +64,13 @@ def group_features(rec, ans, smp, allg):
 
 
 class Selector:
-    def __init__(self, l2=1.0): self.l2, self.w, self.mu, self.sd, self.theta = l2, None, None, None, 0.5
+    def __init__(self, l2=1.0, feats=None):
+        self.l2, self.w, self.mu, self.sd, self.theta = l2, None, None, None, 0.5
+        self.feats = list(feats or FEATS); self.cols = [FEATS.index(f) for f in self.feats]
 
     def _z(self, X): return (X - self.mu) / self.sd
+
+    def _x(self, rec, a, s, G): return group_features(rec, a, s, G)[self.cols]
 
     def fit(self, records, refs, judge, iters=400, lr=0.5):
         X, y = [], []
@@ -74,7 +81,7 @@ class Selector:
             for ans, smp in G:
                 try: ok = judge(ans, ref) == "correct"
                 except Exception: ok = False
-                X.append(group_features(r, ans, smp, G)); y.append(float(ok))
+                X.append(self._x(r, ans, smp, G)); y.append(float(ok))
         X = np.array(X); y = np.array(y)
         self.mu = X.mean(0); self.sd = X.std(0) + 1e-6
         Z = np.c_[np.ones(len(X)), self._z(X)]; w = np.zeros(Z.shape[1])
@@ -87,7 +94,7 @@ class Selector:
     def score(self, rec):
         G = groups(rec)
         if not G: return []
-        X = np.array([group_features(rec, a, s, G) for a, s in G])
+        X = np.array([self._x(rec, a, s, G) for a, s in G])
         p = 1 / (1 + np.exp(-(np.c_[np.ones(len(X)), self._z(X)] @ self.w)))
         return sorted(zip(p.tolist(), [a for a, _ in G]), key=lambda x: -x[0])
 
@@ -104,17 +111,17 @@ class Selector:
         if not G: return {"type": "abstain"}
         lg = rec.get("samples") if isinstance(rec.get("samples"), dict) else {}
         n = max(1, len(lg.get("samples") or []))
-        X = np.array([group_features(rec, a, s, G) for a, s in G])
+        X = np.array([self._x(rec, a, s, G) for a, s in G])
         p = 1 / (1 + np.exp(-(np.c_[np.ones(len(X)), self._z(X)] @ self.w)))
         k = int(np.argmax(p)); share = sum(0.5 if s.get("flags") else 1.0 for s in G[k][1]) / n
         return G[k][0] if share >= theta_vote else {"type": "abstain"}
 
     def save(self, path):
-        json.dump({"feats": FEATS, "w": self.w.tolist(), "mu": self.mu.tolist(), "sd": self.sd.tolist(), "theta": self.theta, "l2": self.l2},
+        json.dump({"feats": self.feats, "w": self.w.tolist(), "mu": self.mu.tolist(), "sd": self.sd.tolist(), "theta": self.theta, "l2": self.l2},
                   open(path, "w"), indent=1)
 
     @classmethod
     def load(cls, path):
-        d = json.load(open(path)); s = cls(d.get("l2", 1.0))
+        d = json.load(open(path)); s = cls(d.get("l2", 1.0), d.get("feats"))
         s.w, s.mu, s.sd, s.theta = np.array(d["w"]), np.array(d["mu"]), np.array(d["sd"]), d["theta"]
         return s

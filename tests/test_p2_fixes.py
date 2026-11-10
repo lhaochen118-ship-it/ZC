@@ -145,5 +145,20 @@ check("len of notna", mk('ANSWER = {"type": "number", "answer": len(item_sales(m
 check("len of filtered", mk('s = item_sales(month(2026, 5), by="n_orders")\nANSWER = {"type": "number", "answer": len(s[s >= 152])}'), [])
 check("sum of mask", mk('ANSWER = {"type": "number", "answer": item_sales(month(2026, 5), by="n_orders").ge(152).sum()}'), [])
 
+# 16. learned selector (track M, WP-M6): the shares-only feature set saves / loads with its columns and scores any sample count
+import selector as SEL, tempfile
+def _rec(i, answers):
+    return {"id": f"t{i}", "samples": {"hints": {"answer_type": "number"}, "samples": [
+        {"ok": True, "answer": {"type": "number", "answer": a}, "variant": "direct", "turns": [{"code": f"ANSWER={a}"}]} for a in answers]}}
+recs = [_rec(i, [1, 1] if i % 2 else [1, 2]) for i in range(40)]
+refs_t = {f"t{i}": {"type": "number", "answer": 1} for i in range(40)}
+judge = lambda a, r: "correct" if a.get("answer") == r["answer"] else "wrong"
+sel = SEL.Selector(feats=SEL.FEATS_INV).fit(recs, refs_t, judge)
+fp = os.path.join(tempfile.mkdtemp(), "sel.json"); sel.save(fp); s2 = SEL.Selector.load(fp)
+check("selector feats saved", s2.feats, SEL.FEATS_INV)
+check("selector same score", round(s2.score(recs[1])[0][0], 6), round(sel.score(recs[1])[0][0], 6))
+check("selector picks majority", s2.decide(_rec(99, [1, 1, 1, 2]), 0.0)[0], {"type": "number", "answer": 1})
+check("selector old file", SEL.Selector.load(os.path.join(ROOT, "src", "refs", "selector", "selector_m0.json")).feats, SEL.FEATS)
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

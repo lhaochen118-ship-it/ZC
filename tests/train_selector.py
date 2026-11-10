@@ -3,7 +3,8 @@
 Train: logs of the training shops that are not held out (tr_dev_all) and their paraphrases (tr_dev_para) — never public or
 private test. theta chosen on the training logs (PA). Evaluation: replay on other runs' logs (pub_full; held-out pub_ho / tr_ho as
 aggregates), compared with the flow's own vote (theta 0.5).
-Usage: train_selector.py --train <run_dir>[,<run_dir>] --eval <run_dir>[,...] [--sets pub_full,pub_ho,tr_ho] [--out selector.json]"""
+Usage: train_selector.py --train <run_dir>[,<run_dir>] --eval <run_dir>[,...] [--sets pub_full,pub_ho,tr_ho] [--out selector.json]
+       [--feats all|inv]   (inv = shares / fractions only, src/selector.FEATS_INV)"""
 import os, sys, json
 import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -61,11 +62,11 @@ def main():
     for run in arg("--train").split(","):
         train += [r for i, r in load(run).items() if i in tr_ids and r.get("business_id") not in HO]
     print(f"train: {len(train)} question logs (training shops not held out + their paraphrases)")
-    sel = SEL.Selector().fit(train, refs, score.judge)
+    sel = SEL.Selector(feats=SEL.FEATS_INV if arg("--feats", "all") == "inv" else SEL.FEATS).fit(train, refs, score.judge)
     best = max(((pa(train, refs, lambda r, t=t: sel.decide(r, t)[0])[0], t) for t in np.arange(0.2, 0.81, 0.05)))
     sel.theta = float(best[1])
     print(f"theta {sel.theta:.2f} (train PA {best[0]:.4f}; vote 0.5: {pa(train, refs, vote_decide)[0]:.4f})")
-    print("weights:", {k: round(float(w), 2) for k, w in zip(["bias"] + SEL.FEATS, sel.w)})
+    print("weights:", {k: round(float(w), 2) for k, w in zip(["bias"] + sel.feats, sel.w)})
     sets = arg("--sets", "pub_full,pub_ho,tr_ho").split(",")
     for run in [x for x in arg("--eval").split(",") if x]:
         L = load(run); line = []

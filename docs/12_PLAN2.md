@@ -198,6 +198,12 @@ mỗi nhóm đáp án (`src/selector.py`), θ chọn trên dữ liệu train. Ph
 public giảm (−0.8) → dữ liệu ngoài mẫu D3 là then chốt. Bộ chọn huấn luyện trên M0 không chuyển được sang hướng R (j: public −0.6).
 
 
+**Bộ chọn M6 lần 3 — đặc trưng bất biến** (`src/selector.FEATS_INV`: 13 đặc trưng tỉ lệ, bỏ 8 đặc trưng đếm; `src/refs/selector/selector_m0_inv.json`,
+θ 0.55 chọn trên train): gộp mẫu nhiều lần chạy (M7) làm lệch đặc trưng đếm (bộ chọn lần 2 trên 3 lần chạy M0 gộp: public 0.894); bản bất biến
+không lệch và tốt hơn cả trên một lần chạy: public **0.941 / 0.949 / 0.943** (tb **0.944**; lần 2: 0.941), pub_ho 0.611, tr_ho 0.884 (gộp
+0.767, bằng lần 2) → **M0 + M6 = tb 0.944 / 0.767** (thay lần 2). Gộp mẫu 2–3 lần chạy M0 (cùng mô hình): phiếu 0.932–0.935 (không tăng),
+bộ chọn 0.946–0.949. Trên log hướng R (j vòng 8): public −0.2 / −0.3, tr_ho +1.3 → vẫn không dùng cho R (chờ dữ liệu jsel).
+
 ## Hướng M — M7 / M2 (10/11, đang chạy)
 
 - **M7**: WF1…WF4 mỗi thành viên × 0.35 (WiSE như súp) là một bộ sinh riêng, code M0, `pub_full` + `pub_ho` + `tr_ho` (`automation/jobs/m7a.jobs`, `m7b.jobs`). Đánh giá: gom mẫu của các bộ sinh với log M0 cho cùng câu (phát lại phiếu / bộ chọn), so với M0 (phiếu) và M0 + M6.

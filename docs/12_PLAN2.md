@@ -214,3 +214,4 @@ bộ chọn 0.946–0.949. Trên log hướng R (j vòng 8): public −0.2 / −
   512 token (dạy định dạng gọn = M1). `training/dpo.py` (TRL 1.15 DPOTrainer + PEFT, tham chiếu = tắt LoRA, β 0.1 + 0.2 × NLL câu chọn, lr 3e-5),
   FSDP 4 GPU trên súp M0 (`full_job.py --trainer dpo --base-adapters`); ứng viên súp + DPO × 1.0 / × 0.5 (`automation/jobs/m4dpo.jobs`).
 - **M0 trần 1536** (đổi cách lấy mẫu, không luật): `configs/m0/m0_mt1536*.json`, 2 seed — tách phần tăng do bỏ cắt ở 512 token.
+- **Kết quả M0 trần 1536** (2 seed): public 0.941 / 0.938 (tb 0.9395 vs M0 0.934), held-out gộp 0.745 / 0.740 (tb 0.742 vs 0.752); với bộ chọn bất biến: public 0.952 vs 0.944, held-out 0.758 vs 0.767 → **loại** (held-out −1.0 > 0.3). Giữ trần 512 cho hướng M; vấn đề 10.7 % mẫu bị cắt giao cho M1 / M4 (cặp loại = văn bản bị cắt).

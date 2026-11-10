@@ -828,8 +828,12 @@ class Pipeline:
 
     def run(self):
         a = self.a; span = (self.deadline - self.t0) if self.deadline else 0; stopped = False; last_check = last_fill = last_est = 0.0
-        while True:
+        hard = float(getattr(a, "hard_deadline", 0) or 0)               # Kaggle's 12 h session (user 10/11): a fixed end time
+        while True:                                                    # that only abstains what is left (no fast mode)
             now = time.time(); left_s = (self.deadline - now) if self.deadline else None
+            if hard and now >= hard:
+                self.claim_rest(); self.abstain_qs([q for (b, ci) in self.mine for q in self.chunks[b][ci]])
+                print("[pipe] hard deadline reached: unanswered questions abstained", flush=True); break
             if self.deadline and left_s <= 0.01 * span:                 # hard limit: every unwritten question is abstained
                 self.claim_rest(); self.abstain_qs([q for (b, ci) in self.mine for q in self.chunks[b][ci]])   # own chunks only
                 print("[pipe] time budget reached", flush=True); break

@@ -834,6 +834,8 @@ def build_parser():
     ap.add_argument("--shard", default="", help="internal: i/N")
     ap.add_argument("--chunk", type=int, default=0, help="businesses per chunk (answers appended after each chunk)")
     ap.add_argument("--budget", type=float, default=0, help="wall-clock budget in seconds: fast mode / abstain when running out")
+    ap.add_argument("--hard-deadline", type=float, default=0, help="pipeline: epoch seconds at which every unanswered question is "
+                    "abstained and the run ends (Kaggle's 12 h session, set from ZC_DEADLINE by eval_flow); unlike --budget no fast mode")
     ap.add_argument("--log-dir", default="", help="also write one JSON log per question here (Docker: /result/logs)")
     ap.add_argument("--v1", action="store_true", help="old pipeline (LLM writes raw pandas / compile programs) instead of the toolkit")
     ap.add_argument("--qw", type=float, default=2.0, help="v2: vote weight of the rule-based template program (0 = off)")

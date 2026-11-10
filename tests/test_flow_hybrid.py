@@ -94,6 +94,14 @@ def main():
     check(out2, n, "dp2"); print("dp2: every question answered once")
     out3 = os.path.join(S, "o3"); run([split, out3] + base + ["--budget", "20"])
     check(out3, n, "budget"); print("budget: every question has a line")
+    import time as _t                                                     # Kaggle 12 h session: --hard-deadline (eval_flow sets it
+    out3h = os.path.join(S, "o3h"); run([split, out3h] + base + ["--hard-deadline", str(int(_t.time()) - 1)])   # from ZC_DEADLINE)
+    subh, _ = check(out3h, n, "hard deadline past")
+    assert all(x.get("type") == "abstain" for x in subh), "hard deadline in the past: every question must be abstained"
+    out3f = os.path.join(S, "o3f"); run([split, out3f] + base + ["--hard-deadline", str(int(_t.time()) + 86400)])
+    subf, _ = check(out3f, n, "hard deadline far")
+    assert {x["id"]: x.get("answer") for x in subf} == {x["id"]: x.get("answer") for x in sub}, "a far hard deadline changed answers"
+    print("hard deadline: past -> all abstained, far -> same answers as without it")
     fs = os.path.join(S, "fake_sql.py"); open(fs, "w").write(FAKE_SQL)              # WP12: <sql> -> precheck -> DuckDB -> answer
     out4 = os.path.join(S, "o4"); run([split, out4] + [x if x != fake else fs for x in base] + ["--escape", "python,sql", "--subset", "6"])
     _, logs4 = check(out4, len(agent.select_subset(qs, 6)), "sql")

@@ -92,6 +92,9 @@ def main():
     n = build(sets, sp, split, para)
     if not n: sys.exit(f"eval_flow: no question of {sets} has a text here (paraphrase sets need --para / $ZC_PARA_DIR / a zc-para dataset)")
     if os.environ.get("ZC_SMOKE") == "1" and "--subset" not in extra: extra += ["--subset", "16"]
+    dl = float(os.environ.get("ZC_DEADLINE") or 0)                     # Kaggle's 12 h session (make_kernel.py): unanswered
+    if dl and "--hard-deadline" not in extra + rest:                    # questions abstained 10 min before the kernel's deadline,
+        extra += ["--hard-deadline", str(int(dl - 600))]                # so the run writes its answers (no fast mode: same results)
     cmd = [sys.executable, os.path.join(HERE, "agent.py"), sp, os.path.join(out, "run")] + rest + extra
     rc = subprocess.run(cmd).returncode
     sys.exit(rc)

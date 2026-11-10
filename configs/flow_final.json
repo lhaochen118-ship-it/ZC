@@ -1,5 +1,5 @@
 {
- "_doc": "Submitted configuration (docs/08 WP10): hybrid flow, full prompt, 2 samples then up to 8 with half of the round-2 samples reasoning first (variant 'think'), vote, abstain below theta. Model: Qwen3.5-9B + soup of 4 LoRA fine-tunes x 0.35 merged at build time.",
+ "_doc": "Submitted configuration (plan 2, 10/11): hybrid flow, full prompt, 2 samples then up to 8 (half of round 2 reasoning first), hints with counted object / thresholds / job & size entities, answer format of the hinted type, flags for period mismatch / unused named periods / unused thresholds, precheck repairs for an unnamed size and an unfiltered unit count, review when the hints say the data does not record what is asked, 1536-token cap, vote, abstain below 0.5. Public 0.9755 / held-out 0.758 (2 seeds, docs/12_PLAN2.md). Model: Qwen3.5-9B + soup of 4 LoRA fine-tunes x 0.35 merged at build time.",
  "flow": "hybrid",
  "pipeline": true,
  "quant": "fp8",
@@ -10,7 +10,7 @@
  "think_map": true,
  "compile_tokens": 6144,
  "max_len": 8192,
- "max_tokens": 512,
+ "max_tokens": 1536,
  "k_fast": 2,
  "k_max": 8,
  "repairs": 2,
@@ -30,5 +30,13 @@
  "escape": "python",
  "q_inflight": 128,
  "think_tokens": 3072,
- "think_rescue": 0
+ "think_rescue": 0,
+ "fmt_fix": 1,
+ "review": 2,
+ "period_flag": 1,
+ "hint_counts": 1,
+ "named_periods_flag": 1,
+ "threshold_flag": 1,
+ "size_check": 1,
+ "unit_check": 1
 }

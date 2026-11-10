@@ -19,14 +19,17 @@ Rules prepare and check; **the model writes the answer program of every question
    shop's tables to canonical tables (orders, lines, purchases, lots, debts …) from the README and value profiles.
 2. **Toolkit** (`src/dm.py`, `src/industry.py`): the rulebook's definitions as tested functions (periods, valid orders,
    revenue, ranking with ties, debt, stock, lots, profit, industry books); "no data" raises `Unanswerable`.
-3. **Hints** (`src/hints.py`): the question's period, entities linked to data values (items, customers, units …), the
-   expected answer type, rulebook terms, data the shop does not record — read by general rules, shown to the model as hints.
+3. **Hints** (`src/hints.py`): the question's period(s), entities linked to data values (items, customers, units, sizes, repair
+   jobs …), the expected answer type, what the question counts and its thresholds, rulebook terms (matched with accents), data
+   the shop does not record — read by general rules, shown to the model as hints.
 4. **Examples** (`src/retrieval.py`): 3 checked (question → program) pairs of other training shops, retrieved by the
    question's skeleton.
 5. **Generation** (`src/hybrid.py`, `src/prompting.py`): Qwen3.5-9B writes `<plan>` + `<code>` (a short program over the
    toolkit). Two samples first; when they disagree, more samples, half of them reasoning first (thinking mode).
-6. **Checks**: precheck before running (unknown names, entities not in the data, periods, safety), execution in a sandbox,
-   repair turns with the error message, postcheck flags (empty / zero results, answer kind).
+6. **Checks**: precheck before running (unknown names, entities not in the data, periods, safety; a size the question does not
+   name, a unit count without its unit filter → repair turn), execution in a sandbox, repair turns with the error message, a
+   review turn when the hints say the shop's data does not record what is asked, postcheck flags (empty / zero results, answer
+   kind, a period / threshold of the question not used by the program); answers wrapped in the hinted answer type.
 7. **Vote + abstain**: answers grouped with the organisers' matching rules; abstain when the top group's share is below
    the threshold (a wrong answer costs a point).
 
@@ -43,8 +46,8 @@ data was used for training; public answers were used only to score offline.
 
 | Set | PA |
 |---|---|
-| Public test, original 1000 questions | 0.939 / 0.930 (two runs) |
-| Public questions rewritten by a model (held out, 1373) | 0.59 |
+| Public test, original 1000 questions | 0.977 / 0.974 (two seeds) |
+| Public questions rewritten by a model (held out, 1373) | 0.61 |
 | Training shops held out of training (1826) | 0.87 |
 
 About 0.6 s / question on 4×L4 (1000 questions ≈ 10 minutes plus model load).

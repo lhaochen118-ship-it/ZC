@@ -32,6 +32,8 @@ def main():
     ap.add_argument("--beta", type=float, default=0.1); ap.add_argument("--sft-weight", type=float, default=0.0)
     ap.add_argument("--base-adapters", default="", help="train on top of these adapters merged into --model first (arms_job.merge_base)")
     ap.add_argument("--base-weights", default=""); ap.add_argument("--search", default="/kaggle/input")
+    ap.add_argument("--resume-from", default="", help="continue a training stopped at the 12 h session deadline: a folder (or "
+                    "'auto' = under --search: an earlier kernel's output mounted with --ks) holding <this run's name>/ckpt/checkpoint-N")
     a = ap.parse_args()
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)
@@ -43,20 +45,39 @@ def main():
         import arms_job
         base = arms_job.merge_base(a)
     cmd = [PY, "-m", "accelerate.commands.launch", "--config_file", cfg, "--num_processes", str(a.gpus), "--main_process_port", "29531"]
+    import deadline
+    ck_dir = os.path.join(a.out, "ckpt"); res_args = []                 # checkpoints in the kept outputs (12 h session limit)
+    if a.resume_from:
+        root = a.search if a.resume_from == "auto" else a.resume_from
+        name = os.path.basename(os.path.normpath(a.out))
+        cands = [deadline.latest_checkpoint(c) for c in glob.glob(os.path.join(root, "**", name, "ckpt"), recursive=True)]
+        cands = [c for c in cands if c]
+        if cands:
+            ck = max(cands, key=lambda p: int(p.rstrip("/").split("-")[-1])); res_args = ["--resume", ck]
+            print(f"[full] resume from {ck}", flush=True)
+        else: print(f"[full] no checkpoint of {name} under {root}: training from the start", flush=True)
     if a.trainer == "dpo":
         cmd += [os.path.join(HERE, "dpo.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
                 "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--beta", str(a.beta),
-                "--sft-weight", str(a.sft_weight), "--metrics", os.path.join(a.out, "train_metrics.json"), "--max-len", str(a.max_len), "--seed", str(a.seed)]
+                "--sft-weight", str(a.sft_weight), "--metrics", os.path.join(a.out, "train_metrics.json"), "--max-len", str(a.max_len), "--seed", str(a.seed),
+                "--ckpt-dir", ck_dir] + res_args
     else:
         cmd += [os.path.join(HERE, "sft.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
                 "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--max-tokens", str(a.budget),
-                "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed)]
+                "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed),
+                "--ckpt-dir", ck_dir] + res_args
     rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "train.log"), "w"), stderr=subprocess.STDOUT).returncode
     print(f"[full] training rc {rc} in {time.time() - t0:.0f}s", flush=True)
     if rc != 0 or not os.path.isfile(f"{tmp}/adapter/adapter_config.json"):
         print("[full] training failed:\n" + open(os.path.join(a.out, "train.log"), errors="ignore").read()[-3000:], flush=True); sys.exit(1)
     shutil.copytree(f"{tmp}/adapter", os.path.join(a.out, "adapter"), dirs_exist_ok=True)
     if base != a.model: shutil.rmtree(base, ignore_errors=True)        # the merged soup (19 GB): the evaluation merges its own
+    try: tm = json.load(open(os.path.join(a.out, "train_metrics.json")))
+    except Exception: tm = {}
+    if tm.get("stopped_early"):                                         # stopped before the 12 h session deadline
+        print(f"[full] PARTIAL at {tm['stopped_early']} (session deadline): resume in a new kernel with --resume-from auto and "
+              f"this kernel's output mounted (--ks); no evaluation", flush=True); sys.exit(4)
+    shutil.rmtree(ck_dir, ignore_errors=True)
     if a.no_eval: return
     if base != a.model: sys.exit("[full] --base-adapters: evaluate with training/soup_job.py (base adapters + this one)")
     t1 = time.time()

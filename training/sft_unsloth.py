@@ -17,6 +17,10 @@ def main():
     ap.add_argument("--no-save", action="store_true"); ap.add_argument("--epochs", type=float, default=1.0)
     ap.add_argument("--max-tokens", type=float, default=0, help="token budget: records subsampled (seeded) to about this many tokens")
     ap.add_argument("--warmup", type=float, default=0.03)
+    ap.add_argument("--ckpt-dir", default="", help="where resumable checkpoints go (a kept output folder); default --out")
+    ap.add_argument("--resume", default="", help="a checkpoint (or a folder holding checkpoint-N) to continue from (training/deadline.py)")
+    ap.add_argument("--save-every", type=int, default=0, help="also checkpoint every N steps (0: only before the session deadline)")
+    ap.add_argument("--deadline-reserve", type=float, default=900, help="seconds before ZC_DEADLINE at which training checkpoints + stops")
     a = ap.parse_args()
     import torch
     from datasets import Dataset
@@ -45,13 +49,17 @@ def main():
             if logs and "loss" in logs: stats["loss"].append(round(float(logs["loss"]), 4))
     import dataclasses
     total = a.max_steps if a.max_steps > 0 else math.ceil(math.ceil(len(recs) / (a.mb * ga)) * a.epochs)
-    want = dict(output_dir=a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr, max_steps=a.max_steps,
-                num_train_epochs=a.epochs, logging_steps=5, save_strategy="no", report_to="none", bf16=True, seed=a.seed, max_length=a.max_len,
+    want = dict(output_dir=a.ckpt_dir or a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr, max_steps=a.max_steps,
+                num_train_epochs=a.epochs, logging_steps=5, save_strategy="steps" if a.save_every else "no", save_steps=a.save_every or 500, save_total_limit=1, report_to="none", bf16=True, seed=a.seed, max_length=a.max_len,
                 completion_only_loss=True, warmup_steps=max(1, int(a.warmup * total)), lr_scheduler_type="cosine", dataset_num_proc=1)
     fields = {f.name for f in dataclasses.fields(SFTConfig)}
-    tr = SFTTrainer(model=model, args=SFTConfig(**{k: v for k, v in want.items() if k in fields}), train_dataset=ds, processing_class=tok, callbacks=[Meter()])
+    import deadline
+    tr = SFTTrainer(model=model, args=SFTConfig(**{k: v for k, v in want.items() if k in fields}), train_dataset=ds, processing_class=tok,
+                    callbacks=[Meter(), deadline.callback(TrainerCallback, a.deadline_reserve, stats)])
     ref = ref_records(a.data, tok, a.max_len, 4); lr0 = ref_loss(model, ref)
-    t1 = time.time(); res = tr.train(); dt = time.time() - t1
+    ck = deadline.latest_checkpoint(a.resume)
+    if a.resume: print(f"[sft] resume from {ck}", flush=True)
+    t1 = time.time(); res = tr.train(resume_from_checkpoint=ck); dt = time.time() - t1
     lr1 = ref_loss(model, ref)
     if a.out and not getattr(a, "no_save", False): model.save_pretrained(a.out); tok.save_pretrained(a.out)
     steady = time.time() - stats.get("t2", t1); steps = res.global_step
@@ -59,7 +67,7 @@ def main():
     m = {"ok": True, "unsloth": True, "mb": a.mb, "ga": ga, "steps": steps, "train_s": round(dt, 1),
          "tok_per_s": round(tps * max(1, steps - 2) / max(steady, 1e-6), 1) if steps > 2 else None,
          "loss_first": stats["loss"][0] if stats["loss"] else None, "loss_last": stats["loss"][-1] if stats["loss"] else None, "records": len(recs), "tokens": ntok,
-         "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2)}
+         "stopped_early": stats.get("stopped_early"), "resumed_from": ck, "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2)}
     print("[sft] METRICS " + json.dumps(m), flush=True)
 
 

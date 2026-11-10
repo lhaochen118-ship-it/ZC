@@ -83,9 +83,19 @@ MULTI = NGPU and sum(gpus_of(j) for j in JOBS) > NGPU                  # jobs th
 NW = 1 if MULTI else max(1, min(len(JOBS), NGPU if NGPU else (os.cpu_count() or 4) - 1))
 TH = str(max(1, (os.cpu_count() or 4) // NW))                        # BLAS threads per job (no oversubscription)
 SUB = {"DATA": DATA, "INPUT": "/kaggle/input", "OUT": R}
+# Kaggle stops a commit session at 12 h and its outputs are then lost (user 10/11): every job gets ZC_DEADLINE (training
+# checkpoints and stops, the agent's --budget ends with abstains), a sequential job that would not finish in time is not
+# started (listed in results/_skipped_jobs.json for a new kernel), a job still running at the deadline is killed so the
+# session ends cleanly and the finished outputs are saved.
+SESSION_S = int(ENV.get("ZC_SESSION_S", str(12 * 3600))); MARGIN_S = int(ENV.get("ZC_SESSION_MARGIN", "2400"))
+DEADLINE = t0 + SESSION_S - MARGIN_S; DURS = []; SKIPPED = []
 def run(ij):
     i, j = ij
-    env = dict(os.environ, OMP_NUM_THREADS=TH, MKL_NUM_THREADS=TH, OPENBLAS_NUM_THREADS=TH, ZC_OUT=R, ZC_DATA=DATA, **ENV)
+    est = max(DURS) if DURS else 0                                     # a sequential job: as long as the longest one so far
+    if DURS and time.time() + est > DEADLINE or time.time() > DEADLINE:
+        SKIPPED.append(" ".join(j)); print(f"SKIPPED (12 h session limit, {(DEADLINE - time.time()) / 3600:.1f} h left, longest job {est / 3600:.1f} h): {' '.join(j)}", flush=True)
+        return "skipped"
+    env = dict(os.environ, OMP_NUM_THREADS=TH, MKL_NUM_THREADS=TH, OPENBLAS_NUM_THREADS=TH, ZC_OUT=R, ZC_DATA=DATA, ZC_DEADLINE=str(int(DEADLINE)), **ENV)
     if NGPU and len(JOBS) > 1 and not MULTI: env["CUDA_VISIBLE_DEVICES"] = str(i %% NGPU)
     def sub(x):                                                        # OUT, OUT/train, DATA/..., INPUT/... (prefix tokens)
         for k, v in SUB.items():
@@ -93,11 +103,21 @@ def run(ij):
         return x
     cmd = [sys.executable, j[0]] + [sub(a) for a in j[1:]]
     t = time.time(); log = os.path.join(L, "_".join(j).replace(".py", "").replace("/", "-")[:120] + ".log")
-    r = subprocess.run(cmd, cwd=C, stdout=open(log, "w"), stderr=subprocess.STDOUT, env=env)
-    print(f"done {' '.join(j)} rc={r.returncode} {time.time()-t:.0f}s", flush=True); return r.returncode
+    p = subprocess.Popen(cmd, cwd=C, stdout=open(log, "w"), stderr=subprocess.STDOUT, env=env, start_new_session=True)
+    try: rc = p.wait(timeout=max(60, DEADLINE + MARGIN_S // 2 - time.time()))
+    except subprocess.TimeoutExpired:                                  # past the deadline: the whole process group goes
+        import signal
+        try: os.killpg(p.pid, signal.SIGKILL)
+        except Exception: p.kill()
+        p.wait(); rc = "killed_at_deadline"
+    DURS.append(time.time() - t)
+    print(f"done {' '.join(j)} rc={rc} {time.time()-t:.0f}s", flush=True); return rc
 print("parallel jobs", NW, "| threads/job", TH, "| sequential (multi-GPU jobs)" if MULTI else "", flush=True)
 with ThreadPoolExecutor(NW) as ex: rcs = list(ex.map(run, enumerate(JOBS)))
 shutil.rmtree(C, ignore_errors=True)
+if SKIPPED:
+    json.dump(SKIPPED, open(os.path.join(R, "_skipped_jobs.json"), "w"), indent=1)
+    print(f"JOBS_SKIPPED_12H {len(SKIPPED)}: run them in a new kernel", flush=True)
 print("EVAL_DONE", rcs, f"{time.time()-t0:.0f}s", flush=True)
 ''' % (json.dumps(jobs), json.dumps(ENV), CODE_TOKEN, CODE_TOKEN, DATA_DS.split("/")[1])
 os.makedirs(kdir, exist_ok=True); open(os.path.join(kdir, "run.py"), "w").write(runner)

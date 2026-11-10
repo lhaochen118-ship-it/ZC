@@ -31,6 +31,10 @@ def parse():
     ap.add_argument("--metrics", default=""); ap.add_argument("--no-save", action="store_true")
     ap.add_argument("--no-gc", action="store_true", help="no gradient checkpointing"); ap.add_argument("--warmup", type=float, default=0.03)
     ap.add_argument("--log-every", type=int, default=1)
+    ap.add_argument("--ckpt-dir", default="", help="where resumable checkpoints go (a kept output folder); default --out")
+    ap.add_argument("--resume", default="", help="a checkpoint (or a folder holding checkpoint-N) to continue from (training/deadline.py)")
+    ap.add_argument("--save-every", type=int, default=0, help="also checkpoint every N steps (0: only before the session deadline)")
+    ap.add_argument("--deadline-reserve", type=float, default=900, help="seconds before ZC_DEADLINE at which training checkpoints + stops")
     return ap.parse_args()
 
 
@@ -140,9 +144,9 @@ def main():
               f"{list(info.get('missing_keys', []))[:5]}; unexpected {len(info.get('unexpected_keys', []))}", flush=True)
     lcfg = LoraConfig(r=a.r, lora_alpha=a.alpha, lora_dropout=a.dropout, target_modules=LM_TARGET, bias="none", task_type="CAUSAL_LM")
     total = a.max_steps if a.max_steps > 0 else math.ceil(math.ceil(len(recs) / (a.mb * world * ga)) * a.epochs)
-    want = dict(output_dir=a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr,
+    want = dict(output_dir=a.ckpt_dir or a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr,
                 num_train_epochs=a.epochs, max_steps=a.max_steps, lr_scheduler_type="cosine", warmup_steps=max(1, int(a.warmup * total)),
-                logging_steps=a.log_every, save_strategy="no", report_to="none", bf16=not cpu, seed=a.seed, max_length=a.max_len,
+                logging_steps=a.log_every, save_strategy="steps" if a.save_every else "no", save_steps=a.save_every or 500, save_total_limit=1, report_to="none", bf16=not cpu, seed=a.seed, max_length=a.max_len,
                 gradient_checkpointing=not a.no_gc, gradient_checkpointing_kwargs={"use_reentrant": False},
                 completion_only_loss=True, dataset_num_proc=1, dataloader_num_workers=2, remove_unused_columns=True,
                 packing=False, padding_free=False)
@@ -161,7 +165,9 @@ def main():
             if logs and "loss" in logs: stats["loss"].append(round(float(logs["loss"]), 4)); stats["steps"].append(state.global_step)
             if rank == 0 and logs: print(f"[sft] step {state.global_step} {logs}", flush=True)
 
-    tr = SFTTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok, peft_config=lcfg, callbacks=[Meter()])
+    import deadline
+    tr = SFTTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok, peft_config=lcfg,
+                    callbacks=[Meter(), deadline.callback(TrainerCallback, a.deadline_reserve, stats)])
     pm = tr.model
     try:
         names = [n for n, _ in pm.named_modules() if n.endswith("lora_A")]
@@ -175,7 +181,9 @@ def main():
     ref = ref_records(a.data, tok, a.max_len, 4)
     lr0 = ref_loss(tr.model, ref) if world == 1 else None             # before FSDP wraps it the model is on CPU / meta: skipped
     t1 = time.time()
-    res = tr.train()
+    ck = deadline.latest_checkpoint(a.resume)
+    if a.resume and rank == 0: print(f"[sft] resume from {ck}", flush=True)
+    res = tr.train(resume_from_checkpoint=ck)
     lr1 = ref_loss(tr.model, ref) if rank == 0 or world > 1 else None
     dt = time.time() - t1
     steps = res.global_step
@@ -184,7 +192,7 @@ def main():
     m = {"ok": True, "world": world, "mb": a.mb, "ga": ga, "max_len": a.max_len, "records": len(recs), "tokens": ntok, "steps": steps,
          "train_s": round(dt, 1), "tok_per_s": round(tok_per_step * max(1, steps - 2) / max(steady, 1e-6), 1) if steps > 2 else None,
          "loss_first": stats["loss"][0] if stats["loss"] else None, "loss_last": stats["loss"][-1] if stats["loss"] else None,
-         "losses": stats["loss"][:200], "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2) if torch.cuda.is_available() else 0.0, **{k: v for k, v in stats.items() if k.startswith(("lora", "trainable", "vision"))}}
+         "losses": stats["loss"][:200], "stopped_early": stats.get("stopped_early"), "resumed_from": ck, "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2) if torch.cuda.is_available() else 0.0, **{k: v for k, v in stats.items() if k.startswith(("lora", "trainable", "vision"))}}
     if world > 1:
         import torch.distributed as dist
         if dist.is_initialized():

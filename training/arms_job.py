@@ -49,12 +49,12 @@ def branch(i, name, files, a, D, base_env):
         if a.hf:
             cmd = [PY, os.path.join(HERE, "sft.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
                    "--max-tokens", str(a.budget), "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--metrics", f"{out}/train_metrics.json",
-                   "--max-len", str(a.max_len), "--seed", str(a.seed)]
+                   "--max-len", str(a.max_len), "--seed", str(a.seed), "--ckpt-dir", f"{out}/ckpt"] + resume_args(a, name)
         else:
             env.update(base_env)
             cmd = [PY, os.path.join(HERE, "sft_unsloth.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
                    "--max-tokens", str(a.budget), "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs),
-                   "--max-len", str(a.max_len), "--seed", str(a.seed)]
+                   "--max-len", str(a.max_len), "--seed", str(a.seed), "--ckpt-dir", f"{out}/ckpt"] + resume_args(a, name)
         rc = subprocess.run(cmd, env=env, stdout=open(f"{out}/train.log", "w"), stderr=subprocess.STDOUT).returncode
         txt = open(f"{out}/train.log", errors="ignore").read()
         m = [l for l in txt.splitlines() if l.startswith("[sft] METRICS ")]
@@ -64,6 +64,11 @@ def branch(i, name, files, a, D, base_env):
             res["error"] = "training failed"; json.dump(res, open(f"{out}/result.json", "w"), indent=1); return res
         shutil.copytree(f"{tmp}/adapter", f"{out}/adapter", dirs_exist_ok=True)
         ad = f"{tmp}/adapter"
+        if (res.get("train") or {}).get("stopped_early"):                # 12 h session: checkpointed before the deadline
+            res["partial"] = True; json.dump(res, open(f"{out}/result.json", "w"), indent=1)
+            print(f"[arms] {name}: PARTIAL at step {res['train']['stopped_early']} (session deadline): resume in a new kernel "
+                  f"with --resume-from <this kernel's output> (checkpoint {out}/ckpt)", flush=True); return res
+        shutil.rmtree(f"{out}/ckpt", ignore_errors=True)                # finished: no checkpoint to keep in the outputs
         if a.no_eval:                                                    # soup members (WP7): adapters only, evaluated merged
             res["merge_s"] = res["eval_s"] = 0; json.dump(res, open(f"{out}/result.json", "w"), indent=1)
             print(f"[arms] {name}: train {res['train_s']}s (no evaluation)", flush=True); return res
@@ -104,6 +109,19 @@ def adapters_root(given, names, search="/kaggle/input"):
     return (pref or good)[0]
 
 
+def resume_args(a, name):
+    """--resume <latest checkpoint of this branch> when --resume-from names a folder (or 'auto' = the mounted inputs) that
+    holds <name>/ckpt/checkpoint-N from an earlier kernel stopped at the session deadline."""
+    if not a.resume_from: return []
+    import deadline
+    root = a.search if a.resume_from == "auto" else a.resume_from
+    cands = [c for c in glob.glob(os.path.join(root, "**", name, "ckpt"), recursive=True) if deadline.latest_checkpoint(c)]
+    if not cands: print(f"[arms] {name}: no checkpoint under {root}: training from the start", flush=True); return []
+    ck = max((deadline.latest_checkpoint(c) for c in cands), key=lambda p: int(p.rstrip("/").split("-")[-1]))
+    print(f"[arms] {name}: resume from {ck}", flush=True)
+    return ["--resume", ck]
+
+
 def merge_base(a):
     """the base adapters merged into a copy of --model (training/merge.py): the model the branches are trained on."""
     names = [x for x in a.base_adapters.split(",") if x]
@@ -142,6 +160,8 @@ def main():
     ap.add_argument("--base-adapters", default="", help="train on top of a merged model: these adapters (names found under "
                     "--search, or directories) merged into --model with --base-weights first (M2: LoRA on the M0 soup)")
     ap.add_argument("--base-weights", default=""); ap.add_argument("--search", default="/kaggle/input")
+    ap.add_argument("--resume-from", default="", help="continue branches stopped at the 12 h session deadline: a folder (or 'auto' ="
+                    " under --search, i.e. an earlier kernel's output mounted with --ks) holding <branch>/ckpt/checkpoint-N")
     a = ap.parse_args()
     os.chdir(ROOT)
     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)

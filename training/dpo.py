@@ -24,6 +24,10 @@ def parse():
     ap.add_argument("--sft-weight", type=float, default=0.0, help="> 0: loss = DPO (sigmoid) + w x NLL of the chosen answer (RPO)")
     ap.add_argument("--metrics", default=""); ap.add_argument("--no-save", action="store_true"); ap.add_argument("--warmup", type=float, default=0.1)
     ap.add_argument("--arch", default="causal", choices=["causal", "vl"]); ap.add_argument("--no-gc", action="store_true")
+    ap.add_argument("--ckpt-dir", default="", help="where resumable checkpoints go (a kept output folder); default --out")
+    ap.add_argument("--resume", default="", help="a checkpoint (or a folder holding checkpoint-N) to continue from (training/deadline.py)")
+    ap.add_argument("--save-every", type=int, default=0, help="also checkpoint every N steps (0: only before the session deadline)")
+    ap.add_argument("--deadline-reserve", type=float, default=900, help="seconds before ZC_DEADLINE at which training checkpoints + stops")
     return ap.parse_args()
 
 
@@ -74,9 +78,9 @@ def main():
     if rank == 0: print(f"[dpo] {type(model).__name__} loaded in {time.time() - t0:.0f}s", flush=True)
     lcfg = LoraConfig(r=a.r, lora_alpha=a.alpha, lora_dropout=a.dropout, target_modules=LM_TARGET, bias="none", task_type="CAUSAL_LM")
     total = a.max_steps if a.max_steps > 0 else math.ceil(math.ceil(len(recs) / (a.mb * world * ga)) * a.epochs)
-    want = dict(output_dir=a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr,
+    want = dict(output_dir=a.ckpt_dir or a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr,
                 num_train_epochs=a.epochs, max_steps=a.max_steps, lr_scheduler_type="cosine", warmup_steps=max(1, int(a.warmup * total)),
-                logging_steps=1, save_strategy="no", report_to="none", bf16=not cpu, seed=a.seed, max_length=a.max_len, beta=a.beta,
+                logging_steps=1, save_strategy="steps" if a.save_every else "no", save_steps=a.save_every or 500, save_total_limit=1, report_to="none", bf16=not cpu, seed=a.seed, max_length=a.max_len, beta=a.beta,
                 truncation_mode="keep_start", gradient_checkpointing=not a.no_gc, gradient_checkpointing_kwargs={"use_reentrant": False},
                 dataset_num_proc=1, dataloader_num_workers=1, remove_unused_columns=False, precompute_ref_log_probs=False)
     if a.sft_weight > 0: want.update(loss_type=["sigmoid", "sft"], loss_weights=[1.0, a.sft_weight])
@@ -98,8 +102,12 @@ def main():
                 if k_ in logs: stats[key].append(round(float(logs[k_]), 4))
             if rank == 0: print(f"[dpo] step {state.global_step} {logs}", flush=True)
 
-    tr = DPOTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok, peft_config=lcfg, callbacks=[Meter()])
-    t1 = time.time(); res = tr.train(); dt = time.time() - t1
+    import deadline
+    tr = DPOTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok, peft_config=lcfg,
+                    callbacks=[Meter(), deadline.callback(TrainerCallback, a.deadline_reserve, stats)])
+    ck = deadline.latest_checkpoint(a.resume)
+    if a.resume and rank == 0: print(f"[dpo] resume from {ck}", flush=True)
+    t1 = time.time(); res = tr.train(resume_from_checkpoint=ck); dt = time.time() - t1
     steps = res.global_step
     steady = (time.time() - stats["t2"]) if "t2" in stats else dt
     m = {"ok": True, "world": world, "mb": a.mb, "ga": ga, "pairs": len(recs), "tokens": ntok, "steps": steps, "train_s": round(dt, 1),
@@ -107,6 +115,7 @@ def main():
          "loss_first": stats["loss"][0] if stats["loss"] else None, "loss_last": stats["loss"][-1] if stats["loss"] else None,
          "margin_last": stats["margin"][-1] if stats["margin"] else None, "acc_last": stats["acc"][-1] if stats["acc"] else None,
          "losses": stats["loss"][:200], "margins": stats["margin"][:200], "beta": a.beta, "lr": a.lr,
+         "stopped_early": stats.get("stopped_early"), "resumed_from": ck,
          "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2) if torch.cuda.is_available() else 0.0}
     if world > 1:
         import torch.distributed as dist

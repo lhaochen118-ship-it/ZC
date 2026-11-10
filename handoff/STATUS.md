@@ -103,6 +103,9 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 
 ## Quyết định của user (10/11)
 
+- **`final_submission/submission.jsonl`** = file nộp public có PA cao nhất (hiện **0.982**: 988 đúng / 6 sai / 6 bỏ, lần chạy vòng 8 `p2r8j`);
+  user nộp thử lên portal để đối chiếu; tự cập nhật bằng `automation/update_final_submission.py` sau mỗi lần chạy có PA cao hơn.
+
 - Trước mắt **tiếp tục thêm luật tổng quát** (hướng R). Kế hoạch 2 có thêm **hướng M** (`docs/12_PLAN2.md` §6): xuất phát từ bản **không có
   luật P2** có public cao nhất (M0 = code `b093d46` + flow_final cũ: 0.939), thử song song nhiều cách cải tiến **mô hình** (mô hình phụ,
   fine-tune lại, dataset ngoài, chưng cất, DPO / RL…) đến khi public gốc = 1.0; không thêm luật ở hướng M.

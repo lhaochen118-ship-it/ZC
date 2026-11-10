@@ -38,6 +38,9 @@ cải tiến mô hình từ bản không luật 0.939 — mô hình phụ, fine-
 không thêm luật)**; công cụ: `tests/list_wrong.py`, `tests/hint_audit.py`, `tests/replay_vote.py`. Kaggle: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU,
 dùng hết slot một acc rồi mới sang acc khác; việc không cần GPU đưa lên phiên CPU.
 
+**`final_submission/submission.jsonl` (user 10/11):** luôn là file nộp public có PA cao nhất đến nay; sau **mỗi** lần chạy GPU có public gốc,
+chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi PA cao hơn; ghi `final_submission/score.json`) rồi commit + push.
+
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 
 - Tự động hoá tối đa; chỉ hỏi việc chỉ user làm được (token, nộp portal, accept rules Kaggle trên web).

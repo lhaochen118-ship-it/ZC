@@ -181,3 +181,19 @@ Code `89243a8` (+ precheck lỗi `size`, `unit`), review 3 (`0b154ac`, chưa ch�
 
 Sau vòng 9: 11 câu public sai ổn định, đều do phiếu tách hoặc lựa chọn của mô hình; các luật ứng viên còn lại không sạch trên held-out
 (ví dụ "câu hỏi nhập hàng mà chương trình dùng hàm bán": dev 0 / 37 đúng nhưng held-out 165 / 249 đúng → loại). Trọng tâm chuyển sang hướng M (§6).
+
+## Hướng M — WP-M6 bộ chọn (10/11)
+
+Dữ liệu huấn luyện = log M0 (code `b093d46`) trên câu DN train không giữ ngoài (`tr_dev_all`, PA 0.990 — trong mẫu), paraphrase của chúng
+(`tr_dev_para`, 0.788) và 3000 câu thầy D3 (`d3sel`, 0.919 — ngoài mẫu: súp không học D3). Mô hình: logistic trên 22 đặc trưng chung của
+mỗi nhóm đáp án (`src/selector.py`), θ chọn trên dữ liệu train. Phát lại log M0 (không tốn GPU):
+
+| Lần chạy M0 | Public: phiếu → bộ chọn | pub_ho | tr_ho |
+|---|---|---|---|
+| pf_wf035_think | 0.939 → 0.939 | 0.592 → 0.610 | 0.873 → 0.884 |
+| final_a | 0.934 → 0.942 | | |
+| final_b | 0.930 → 0.942 | | |
+
+→ M0 + M6: public tb **0.941** (M0 0.934), held-out gộp **0.767** (M0 0.752) → giữ. Chỉ train trên dữ liệu m0dev + m0para: held-out tăng nhưng
+public giảm (−0.8) → dữ liệu ngoài mẫu D3 là then chốt. Bộ chọn huấn luyện trên M0 không chuyển được sang hướng R (j: public −0.6).
+

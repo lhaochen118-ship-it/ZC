@@ -71,7 +71,8 @@ def main():
             ids = ids_of(s); recs = [r for i, r in L.items() if i in ids]
             if not recs: continue
             a, ab = pa(recs, refs, vote_decide); b, ab2 = pa(recs, refs, lambda r: sel.decide(r)[0])
-            line.append(f"{s}: vote {a:.4f} (ab {ab}) -> selector {b:.4f} (ab {ab2})")
+            c, ab3 = pa(recs, refs, sel.rerank)
+            line.append(f"{s}: vote {a:.4f} (ab {ab}) | selector {b:.4f} (ab {ab2}) | rerank {c:.4f} (ab {ab3})")
         print(f"== {run.rstrip('/').split('/')[-1]}: " + " | ".join(line))
     if arg("--out"): sel.save(arg("--out"))
 

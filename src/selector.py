@@ -97,6 +97,18 @@ class Selector:
         if not sc or sc[0][0] < th: return {"type": "abstain"}, (sc[0][0] if sc else 0.0)
         return sc[0][1], sc[0][0]
 
+    def rerank(self, rec, theta_vote=0.5):
+        """the selector chooses the group; the abstain decision stays the flow's own (vote share of that group >= theta_vote):
+        robust when the training logs are easier than the test (in-sample training questions)."""
+        G = groups(rec)
+        if not G: return {"type": "abstain"}
+        lg = rec.get("samples") if isinstance(rec.get("samples"), dict) else {}
+        n = max(1, len(lg.get("samples") or []))
+        X = np.array([group_features(rec, a, s, G) for a, s in G])
+        p = 1 / (1 + np.exp(-(np.c_[np.ones(len(X)), self._z(X)] @ self.w)))
+        k = int(np.argmax(p)); share = sum(0.5 if s.get("flags") else 1.0 for s in G[k][1]) / n
+        return G[k][0] if share >= theta_vote else {"type": "abstain"}
+
     def save(self, path):
         json.dump({"feats": FEATS, "w": self.w.tolist(), "mu": self.mu.tolist(), "sd": self.sd.tolist(), "theta": self.theta, "l2": self.l2},
                   open(path, "w"), indent=1)

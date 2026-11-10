@@ -197,3 +197,8 @@ mỗi nhóm đáp án (`src/selector.py`), θ chọn trên dữ liệu train. Ph
 → M0 + M6: public tb **0.941** (M0 0.934), held-out gộp **0.767** (M0 0.752) → giữ. Chỉ train trên dữ liệu m0dev + m0para: held-out tăng nhưng
 public giảm (−0.8) → dữ liệu ngoài mẫu D3 là then chốt. Bộ chọn huấn luyện trên M0 không chuyển được sang hướng R (j: public −0.6).
 
+
+## Hướng M — M7 / M2 (10/11, đang chạy)
+
+- **M7**: WF1…WF4 mỗi thành viên × 0.35 (WiSE như súp) là một bộ sinh riêng, code M0, `pub_full` + `pub_ho` + `tr_ho` (`automation/jobs/m7a.jobs`, `m7b.jobs`). Đánh giá: gom mẫu của các bộ sinh với log M0 cho cùng câu (phát lại phiếu / bộ chọn), so với M0 (phiếu) và M0 + M6.
+- **M2** (STaR / RFT): `training/data/rft_from_logs.py` lấy mẫu đúng (so đáp án train, chạy thật) của súp M0 trên `tr_dev_all`, `tr_dev_para`, `d3sel`; prompt dựng lại đúng như lúc suy luận (code M0, rulebook public; gợi ý / ví dụ khớp log 100 %). Nhãn A = chính văn bản của mẫu (≤ 480 token, lượt 1, không cờ); nhãn B = chương trình đúng chỉ có nhờ think / lượt sửa / câu dài, viết dạng trả lời thẳng `<plan>…<code>` (học đúng ngay lần đầu, gọn). 3,204 bản ghi: 710 từ câu khó, 2,494 câu dễ. 4 nhánh LoRA huấn luyện **trên súp M0** (`arms_job.py --base-adapters WF1..4 --base-weights 0.0875×4`): RS1 / RS2 = khó + 490 dễ (2 seed), RS3 = khó + 490 D1, RS4 = khó + 245 dễ + 245 D1; ứng viên = súp M0 + trung bình 4 nhánh × 1.0 (`m2c1`) và × 0.5 (`m2c2`) trên `pub_full` + `pub_ho` + `tr_ho` (`automation/jobs/m2rft.jobs`).

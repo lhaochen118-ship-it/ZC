@@ -104,6 +104,27 @@ def adapters_root(given, names, search="/kaggle/input"):
     return (pref or good)[0]
 
 
+def merge_base(a):
+    """the base adapters merged into a copy of --model (training/merge.py): the model the branches are trained on."""
+    names = [x for x in a.base_adapters.split(",") if x]
+    def find(n):
+        if os.path.isfile(os.path.join(n, "adapter_config.json")): return n
+        c = sorted(glob.glob(os.path.join(a.search, "**", n, "adapter", "adapter_config.json"), recursive=True))
+        return os.path.dirname(c[0]) if c else None
+    dirs = [find(n) for n in names]
+    if None in dirs: sys.exit(f"[arms] base adapters not found under {a.search}: {[n for n, d in zip(names, dirs) if d is None]}")
+    w = [float(x) for x in a.base_weights.split(",")] if a.base_weights else [1.0 / len(dirs)] * len(dirs)
+    if len(w) != len(dirs): sys.exit("[arms] one --base-weights entry per base adapter")
+    out = "/tmp/arms_base"; shutil.rmtree(out, ignore_errors=True); os.makedirs(a.out, exist_ok=True); t0 = time.time()
+    rc = subprocess.run([PY, os.path.join(HERE, "merge.py"), "merge", a.model, out, ",".join(dirs), "--weights", ",".join(map(str, w))],
+                        stdout=open(os.path.join(a.out, "base_merge.log"), "w"), stderr=subprocess.STDOUT).returncode
+    if rc != 0: sys.exit(f"[arms] base merge failed (rc {rc}): {a.out}/base_merge.log")
+    json.dump({"base_adapters": dict(zip(names, dirs)), "base_weights": w, "merge_s": round(time.time() - t0)},
+              open(os.path.join(a.out, "base.json"), "w"), indent=1)
+    print(f"[arms] base = {a.model} + {names} x {w} merged in {time.time() - t0:.0f}s", flush=True)
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split"); ap.add_argument("out"); ap.add_argument("--model", required=True)
@@ -118,6 +139,9 @@ def main():
     ap.add_argument("--max-len", type=int, default=3072, help="training sequence length (full-prompt records: 5120 with --mb 2)")
     ap.add_argument("--seed", type=int, default=20261108, help="training seed (record sample and order)")
     ap.add_argument("--no-eval", action="store_true", help="train and save the adapters only (soup members: training/soup_job.py)")
+    ap.add_argument("--base-adapters", default="", help="train on top of a merged model: these adapters (names found under "
+                    "--search, or directories) merged into --model with --base-weights first (M2: LoRA on the M0 soup)")
+    ap.add_argument("--base-weights", default=""); ap.add_argument("--search", default="/kaggle/input")
     a = ap.parse_args()
     os.chdir(ROOT)
     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)
@@ -127,10 +151,13 @@ def main():
     ngpu = int(os.environ.get("ZC_NGPU", "4"))
     if len(arms) * max(1, a.eval_dp) > ngpu and not a.fake_responder: sys.exit(f"{len(arms)} branches x --eval-dp {a.eval_dp} > {ngpu} GPUs")
     base_env = {} if (a.hf or a.adapters_dir or not trained) else unsloth_env()
+    merged = merge_base(a) if a.base_adapters else None
+    if merged: a.model = merged
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(len(arms)) as ex:
         res = list(ex.map(lambda ia: branch(ia[0], ia[1][0], ia[1][1], a, D, base_env), enumerate(arms)))
     json.dump(res, open(os.path.join(a.out, "arms.json"), "w"), indent=1, default=str)
+    if merged: shutil.rmtree(merged, ignore_errors=True)               # 19 GB: the next job of the kernel merges its own copy
     print("[arms] DONE " + json.dumps([{k: r.get(k) for k in ("name", "train_s", "merge_s", "eval_s", "error")} for r in res]), flush=True)
 
 

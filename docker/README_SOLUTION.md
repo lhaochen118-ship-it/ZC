@@ -6,8 +6,9 @@
 |---|---|---|---|
 | [Qwen/Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B) + our LoRA fine-tunes merged into its weights | 9.65B (language model + vision tower + MTP head, all counted; merging adds no parameter) | Apache-2.0 | writes the answer program of every question |
 
-The served weights are the base checkpoint plus a linear "soup" of 4 LoRA fine-tunes scaled by 0.35 (WiSE-FT, Wortsman et
-al. 2022), merged at image build time (`docker/merge_assets.py` with `training/merge.py`; adapters: Kaggle dataset
+The served weights are the base checkpoint plus LoRA deltas merged at image build time (`soup.json`): one fine-tune (WF3)
+scaled by 0.35 (WiSE-FT, Wortsman et al. 2022) and the mean of 4 LoRA branches trained on top of that scaled model (RS1-RS4,
+x 0.25 each), merged (`docker/merge_assets.py` with `training/merge.py`; adapters: Kaggle dataset
 `nhatlong1103/zc-final-adapter`, sha256 of every file in `src/adapter_hashes.json`). vLLM serves them with FP8 weights
 computed at load time. No other model, no external service; the container runs with `--network none`.
 
@@ -37,18 +38,27 @@ Rules prepare and check; **the model writes the answer program of every question
 
 LoRA SFT (r 32, all linear layers of the language model) on the competition's training split only:
 D1 = 2,119 checked (question → program) pairs of the training shops, D2 = paraphrases of those questions written by
-Qwen3.5-9B itself, D2N = accent-free / chat-noise variants; prompts in the inference format. 4 fine-tunes (2 seeds of D1,
-D1 + D2 sample, D1 + D2N sample) averaged and scaled by 0.35 toward the base weights (a single fine-tune over-specialised
-to the training questions' phrasing; the soup + scaling is more robust on rewritten questions). No public or private test
-data was used for training; public answers were used only to score offline.
+Qwen3.5-9B itself, D2N = accent-free / chat-noise variants; prompts in the inference format.
+- WF3: one LoRA fine-tune on D1 + a D2 sample (4,238 records), scaled by 0.35 toward the base weights (the scaling keeps the
+  base model's robustness on rewritten questions). Of 4 such fine-tunes (2 seeds of D1, D1 + D2, D1 + D2N), the one with
+  paraphrases generalised best; averaging all four was weaker (the D1-only ones pull the soup down).
+- RS1-RS4 (self-distillation, STaR / rejection-sampling fine-tuning): the earlier model (the soup of the 4 fine-tunes)
+  answered the training-split questions (training shops not held out, their paraphrases, teacher-written questions about them); its own outputs whose
+  programs ran to the reference answer were kept (710 from questions where its votes split, failed or abstained; a correct
+  program found only by reasoning first or by a repair turn is written as the direct answer), plus easy ones / D1 records;
+  4 LoRA branches (2 seeds, two mixes) trained on top of WF3 x 0.35 and averaged.
+No public or private test data was used for training; public answers were used only to score offline.
 
 ## Results (offline, organisers' matching rules)
 
 | Set | PA |
 |---|---|
-| Public test, original 1000 questions | 0.982 / 0.981 (two seeds) |
-| Public questions rewritten by a model (held out, 1373) | 0.61 |
-| Training shops held out of training (1826) | 0.87 |
+| Public test, original 1000 questions | 0.981 / 0.980 (two seeds) |
+| Public questions rewritten by a model (held out, 1373) | 0.63 |
+| Training shops held out of training (1826) | 0.89 |
+
+(The previous model, a soup of the 4 fine-tunes x 0.35: public 0.982 / 0.981, held out 0.61 / 0.87; the current one is equal
+on the public test within run-to-run noise and better on both held-out sets, the estimate of the private test.)
 
 About 0.6 s / question on 4×L4 (1000 questions ≈ 10 minutes plus model load).
 

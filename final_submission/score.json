@@ -1,9 +1,9 @@
 {
- "pa": 0.982,
- "right": 988,
+ "pa": 0.983,
+ "right": 989,
  "wrong": 6,
- "abstain": 6,
+ "abstain": 5,
  "n": 1000,
- "source": "/tmp/claude-0/-home-user-ZC/1c4611c6-df43-558d-96b3-e7452f3bd1c6/scratchpad/runs/p2r8j/zc-p2r8j-1_out/results/p2r8j/submission.jsonl",
- "updated": "2026-11-10T10:33:55Z"
+ "source": "/tmp/claude-0/-home-user-ZC/1c4611c6-df43-558d-96b3-e7452f3bd1c6/scratchpad/runs/p2r11s34s1/zc-p2r11s34s1-1_out/results/p2r11s34s1/submission.jsonl",
+ "updated": "2026-11-10T18:18:13Z"
 }

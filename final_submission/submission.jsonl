@@ -109,7 +109,7 @@
 {"id": "q_1adddf599009", "type": "number", "answer": 145}
 {"id": "q_1af400957d96", "type": "number", "answer": 211}
 {"id": "q_1bd68f25b288", "type": "unanswerable", "answer": null}
-{"id": "q_1c0046277ff9", "type": "table", "answer": {"columns": ["tho", "hoa_hong"], "rows": [["Đàm Lan An", 9296595], ["Hà Loan Đạt", 7548960], ["Đoàn Bảo Phúc", 5910100], ["Lương Chi Đức", 5737000]]}}
+{"id": "q_1c0046277ff9", "type": "abstain"}
 {"id": "q_1c0ec38b3d82", "type": "number", "answer": 84059600}
 {"id": "q_1c2ff6b4820f", "type": "string", "answer": "Costar Omega 3 1000mg lọ 100 viên"}
 {"id": "q_1c7bef344864", "type": "number", "answer": 5500000}
@@ -559,7 +559,7 @@
 {"id": "q_8c88fcb609eb", "type": "percent", "answer": -41.61}
 {"id": "q_8caa49a3fc7d", "type": "number", "answer": 702100}
 {"id": "q_8cb214a6bdcd", "type": "number", "answer": 94}
-{"id": "q_8ce765944937", "type": "number", "answer": 2756250}
+{"id": "q_8ce765944937", "type": "number", "answer": 14}
 {"id": "q_8d52a75f3314", "type": "string", "answer": "Bùi Hải Linh"}
 {"id": "q_8db0ee0aa5d1", "type": "number", "answer": 926729000}
 {"id": "q_8db445924873", "type": "number", "answer": 69}
@@ -765,7 +765,7 @@
 {"id": "q_c2eaa7985cf2", "type": "percent", "answer": 6.91}
 {"id": "q_c3158f13ca1c", "type": "number", "answer": 200}
 {"id": "q_c33e026f59e7", "type": "string", "answer": "Dầu ăn Simply 2L"}
-{"id": "q_c3439f11c9b0", "type": "abstain"}
+{"id": "q_c3439f11c9b0", "type": "number", "answer": 12913800}
 {"id": "q_c34ede239480", "type": "number", "answer": 74}
 {"id": "q_c3652d93727e", "type": "number", "answer": 282622500}
 {"id": "q_c38425d8aec8", "type": "number", "answer": 98}
@@ -910,7 +910,7 @@
 {"id": "q_eb7f3881e7e9", "type": "date", "answer": "2025-06-28"}
 {"id": "q_ec17ef854d8a", "type": "number", "answer": 233500200}
 {"id": "q_ec61b4f5b9ab", "type": "percent", "answer": -53.1}
-{"id": "q_ec8d9cfa0f6b", "type": "number", "answer": 234644}
+{"id": "q_ec8d9cfa0f6b", "type": "number", "answer": 227956}
 {"id": "q_ec9ca5f0dec1", "type": "number", "answer": 448559000}
 {"id": "q_eced47bf8f4b", "type": "number", "answer": 166285}
 {"id": "q_ed4d0362d039", "type": "unanswerable", "answer": null}
@@ -976,7 +976,7 @@
 {"id": "q_fa92cbe8434c", "type": "number", "answer": 161771}
 {"id": "q_facbc1f20a16", "type": "list", "answer": [427810500, 486590500, 456510000]}
 {"id": "q_fb290d8944ec", "type": "date", "answer": "2025-07-14"}
-{"id": "q_fb409424a396", "type": "abstain"}
+{"id": "q_fb409424a396", "type": "number", "answer": 14}
 {"id": "q_fb4bf09137a7", "type": "boolean", "answer": true}
 {"id": "q_fbaf2023cfb6", "type": "abstain"}
 {"id": "q_fbb0ba502475", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Đào Châu Tâm", 234000], ["Chung Khoa Thảo", 86000], ["Đoàn Hiếu Khánh", 86000], ["Lưu Sơn Hằng", 82000], ["Đàm Hà Phúc", 76667]]}}

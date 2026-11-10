@@ -163,3 +163,17 @@ Câu còn sai ở g (22 ở ≥ 1 seed, 10 ổn định): đếm đơn vị ("ba
 ## Vòng 5 (09–10/11, đang chạy)
 
 Code `89243a8` (+ precheck lỗi `size`, `unit`), review 3 (`0b154ac`, chưa chạy). `p2_i`, `p2_i_s1`, `p2_j`, `p2_j_s1`.
+
+## Vòng 5–7 (10/11) — kết quả
+
+| Cấu hình | Public (seed 0 / 1, tb) | Held-out gộp (tb) | Quyết định |
+|---|---|---|---|
+| `p2_i` = c + kiểm tra lỗi size / unit | 0.972 / 0.977 (0.9745) | 0.759 | giữ (10 / 10 lượt sửa đúng) |
+| `p2_j` = g + cờ ngưỡng + size / unit | 0.977 / 0.974 (0.9755) | 0.758 | **bản nộp** |
+| `p2_l` = j + review 3 | 0.972 | 0.759 | trung tính |
+| `p2_k` = l + 12 mẫu | 0.978 / 0.975 (0.9765) | 0.760 | +0.1 < ngưỡng, chậm 35 % → không đổi |
+| `p2_j` trên code `next_n_days` (vòng 7) | 0.978 / **0.980** (**0.979**) | **0.758** | **giữ: bản nộp hiện tại** |
+| đường container (`predict_flow` + flow_final, code vòng 6) | 0.978 | — | 1,262 s / 1,000 câu |
+
+θ 0.375 (phát lại): public tăng nhưng pub_ho giảm → giữ θ 0.5.
+

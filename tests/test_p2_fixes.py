@@ -132,5 +132,10 @@ check("next_n_days code", code, "next_n_days(120, TODAY)"); check("next_n_days e
 check("expiry until a period", str(dm.until_day("2026-08-08", dm.next_n_days(120, "2026-08-08")).date()), "2026-12-06")
 check("last_n_days unchanged", qparse.parse_period("30 ngày qua bán bao nhiêu", "2026-08-08")[1], "last_n_days(30, TODAY)")
 
+# 14. accent-free 'the': a final question particle ('thế'), a card after 'bằng / qua / quẹt' ('thẻ')
+for q, want in [("thang nay ban duoc bao nhieu tien the?", "tháng này bán được bao nhiêu tiền thế?"),
+                ("thanh toan bang the duoc bao nhieu tien", "thanh toán bằng thẻ được bao nhiêu tiền")]:
+    check(f"clean {q}", nz.clean(q)["clean"].lower(), want.lower())
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

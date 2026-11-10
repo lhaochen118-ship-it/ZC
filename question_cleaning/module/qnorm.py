@@ -511,6 +511,11 @@ class Normalizer:
             elif w == "nhiêu" and prv != "bao": out[i] = _case_like(out[i], "bao nhiêu")   # colloquial 'nhiêu' = 'bao nhiêu'
             elif w == "nay" and typed[i] == "nay" and prv in ("tháng", "th", "tuần", "quý", "kỳ", "đợt"):
                 out[i] = "này"    # 'th nay' -> 'tháng này' ('năm nay', 'hôm nay' are right as they are)
+            elif typed[i].lower() == "the" and restored and i == n - 1:
+                out[i] = "thế"    # final 'the' = question particle 'thế' ('bán được bao nhiêu tiền the?'), not 'thể' / 'thẻ'
+            elif typed[i].lower() == "the" and restored and (prv in ("bằng", "qua", "quẹt", "cà", "trả", "bàng")
+                                                             or nxt.split()[:1] in (["tín"], ["ngân"], ["atm"], ["visa"])):
+                out[i] = "thẻ"    # 'trả bằng the', 'quẹt the': a card
             elif w == "quân" and restored and typed[i] == "quan" and prv not in _TITLES:
                 out[i] = "quán"   # a lone lowercase 'quan' ('doanh thu của quan', 'năm 2025 quan có') is the shop; a name keeps
                                   # its neighbours ('Tạ Sơn Quân' is protected), a title ('khách quân') or 'bình quân'

@@ -1,0 +1,2 @@
+run_kaggle.py public_test OUT/m2w3 --script training/arms_job.py --model Qwen/Qwen3.5-9B --train --arms RS1=m2a.jsonl|seed=31+RS2=m2b.jsonl|seed=32+RS3=m2c.jsonl|seed=33+RS4=m2d.jsonl|seed=34 --data m2 --budget 0 --no-eval --max-len 4608 --mb 2 --base-adapters WF3 --base-weights 0.35
+run_kaggle.py public_test OUT/m2w3j --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WF3,RS1,RS2,RS3,RS4 --weights 0.35,0.25,0.25,0.25,0.25 --search /kaggle --sets pub_full,pub_ho,tr_ho --eval-configs configs/flow_final.json,configs/p2_j_s1.json

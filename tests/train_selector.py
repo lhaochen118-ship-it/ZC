@@ -54,7 +54,9 @@ def main():
     refs = {}
     for p in (os.path.join(ROOT, "data", "raw", "public_gt.jsonl"), os.path.join(ROOT, "data", "raw", "train", "train", "answers.jsonl")):
         if os.path.isfile(p): refs.update(score.load(p))
-    tr_ids = ids_of("tr_dev_all") | ids_of("tr_dev_para")
+    d3 = os.path.join(ROOT, "tests", "splits", "d3sel.answers.jsonl")       # teacher questions of the training shops (D3, not
+    if os.path.isfile(d3): refs.update(score.load(d3))                    # used to train the final soup: out-of-sample)
+    tr_ids = ids_of("tr_dev_all") | ids_of("tr_dev_para") | ids_of("d3sel")
     train = []
     for run in arg("--train").split(","):
         train += [r for i, r in load(run).items() if i in tr_ids and r.get("business_id") not in HO]

@@ -36,6 +36,13 @@ def build(sets, out_split, split_hint, para_dir):
         if not sp: continue
         for l in open(os.path.join(sp, "questions.jsonl"), encoding="utf-8"):
             if l.strip(): q = json.loads(l); Q[q["id"]] = q; src[q["business_id"]] = sp
+    for s in sets:                                                     # a set may ship its own questions (<set>.questions.jsonl,
+        for d in (os.path.join(os.path.dirname(HERE), "tests", "splits"), os.path.join(HERE, "refs", "splits")):   # e.g. teacher
+            p = os.path.join(d, s + ".questions.jsonl")                 # questions of the training shops, track M selector data)
+            if os.path.isfile(p):
+                for l in open(p, encoding="utf-8"):
+                    if l.strip(): q = json.loads(l); Q.setdefault(q["id"], q)
+                break
     para = {}
     for f in ("para_pub.jsonl", "para_train.jsonl"):
         d = para_dir or os.environ.get("ZC_PARA_DIR", "")                # local runs (preflight smoke): ZC_PARA_DIR

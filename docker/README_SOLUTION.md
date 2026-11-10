@@ -46,7 +46,7 @@ data was used for training; public answers were used only to score offline.
 
 | Set | PA |
 |---|---|
-| Public test, original 1000 questions | 0.978 / 0.980 (two seeds) |
+| Public test, original 1000 questions | 0.982 / 0.981 (two seeds) |
 | Public questions rewritten by a model (held out, 1373) | 0.61 |
 | Training shops held out of training (1826) | 0.87 |
 

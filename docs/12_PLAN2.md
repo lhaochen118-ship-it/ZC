@@ -176,4 +176,4 @@ Code `89243a8` (+ precheck lỗi `size`, `unit`), review 3 (`0b154ac`, chưa ch�
 | đường container (`predict_flow` + flow_final, code vòng 6) | 0.978 | — | 1,262 s / 1,000 câu |
 
 θ 0.375 (phát lại): public tăng nhưng pub_ho giảm → giữ θ 0.5.
-
+| `p2_j` trên code làm sạch "the" → thế / thẻ (vòng 8) | **0.982** / 0.981 (**0.9815**) | **0.761** | **giữ: bản nộp hiện tại** |

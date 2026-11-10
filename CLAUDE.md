@@ -47,6 +47,10 @@ chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi
 - Mục tiêu: PA cao nhất trên private test **và nhanh nhất có thể**; tổng tham số mô hình ≤ 15B, offline, ≤ 6 giờ trên
   2×RTX 5090. Tổng quát, không vá theo DN / câu của tập test. Chỉ tạo file nộp khi kết quả tốt.
 - Token Kaggle chỉ ở `~/.kaggle/tok_<username>` (600); container mất khi sang khung chat mới → xin lại user.
+- **Quota GPU Kaggle (user, 10/11 — bắt buộc):** acc có số giờ GPU còn lại **dưới 6 h** → trước khi giao task mới cho nó phải kiểm tra
+  xem còn **đủ giờ chạy task đó** không, rồi mới chạy. Số giờ thật: `python3 automation/quota.py` (= `kaggle quota`; làm mới hằng tuần,
+  W46: 14/11 00:00 UTC). Phiên 4×L4 tốn ~4 h quota mỗi giờ chạy tường. `launch_many.py` (mục plan có `est_h` = giờ tường ước tính) và
+  failover của `fanout.py` tự kiểm tra và từ chối acc không đủ giờ.
 - **Dataset ngoài (user, 08/11):** dataset public là dùng được (kể cả giấy phép nghiên cứu / giáo dục), không cần hỏi;
   chỉ dùng dataset uy tín (hội nghị / tạp chí có hạng hoặc nhiều citation); không bao giờ dùng public / private test của
   cuộc thi để train. Bảng thống kê: `docs/07_DATASETS.md`.

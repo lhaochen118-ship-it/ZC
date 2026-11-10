@@ -95,6 +95,15 @@ while procs:
                 try: mark_quota(json.load(open(os.path.join(work, f"{prefix}-{k2 + 1}", "kernel-metadata.json")))["id"].split("/")[0])
                 except Exception: pass
         cand = [a for a in ALL_ACC if a not in tried[k] and a not in quota_out() and busy.get(a, 0) < 2]
+        if "STATUS=PUSH_FAILED" in log and cand:                       # user rule 10/11: a failover target must have the hours
+            import quota                                                # for this kernel (< 6 h left: only if the task fits)
+            need = quota.need_hours(len(jobs[k::nk]), None, L4 or gpu)
+            fit = []
+            for a in cand:
+                ok, msg = quota.check(a, need + 4 * 2.5 * busy.get(a, 0))   # what this fanout already moved there
+                print(f"{slug}: failover candidate {msg}", flush=True)
+                if ok: fit.append(a)
+            cand = fit
         ds_own = {d.split("/")[0] for d in (DSARG[DSARG.index("--ds") + 1].split(",") if "--ds" in DSARG else []) if "/" in d}
         if ds_own:                                                      # the kernel mounts an account's own private copies
             cand = [a for a in cand if a in ds_own]                     # (adapters, paraphrases): another account cannot read

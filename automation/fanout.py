@@ -96,7 +96,7 @@ while procs:
                 except Exception: pass
         cand = [a for a in ALL_ACC if a not in tried[k] and a not in quota_out() and busy.get(a, 0) < 2]
         ds_own = {d.split("/")[0] for d in (DSARG[DSARG.index("--ds") + 1].split(",") if "--ds" in DSARG else []) if "/" in d}
-        if ds_own - {"nhatlong1103"}:                                   # the kernel mounts an account's own private copies
+        if ds_own:                                                      # the kernel mounts an account's own private copies
             cand = [a for a in cand if a in ds_own]                     # (adapters, paraphrases): another account cannot read
             if "STATUS=PUSH_FAILED" in log and not cand:                # them (09/11: p2r2d moved to anderson1202, no adapters)
                 print(f"{slug}: push failed and its datasets are private to {sorted(ds_own)}: no failover, relaunch elsewhere by hand", flush=True)

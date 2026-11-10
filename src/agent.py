@@ -918,6 +918,7 @@ def build_parser():
     ap.add_argument("--review", type=int, default=0, help="hybrid: model reads suspicious results (M11, WP8): 1 missing data + postcheck flags, 2 missing data only, 3 = 2 + a sample still answering after the review is flagged")
     ap.add_argument("--prefill-plan", type=int, default=0, help="hybrid: plain samples start with '<plan>' already written (the fine-tuned soups otherwise reason in free text and hit the token cap)")
     ap.add_argument("--hint-counts", type=int, default=0, help="hybrid: hints name what the question counts ('mấy bữa' -> ngày) and its thresholds ('từ 10 củ trở lên')")
+    ap.add_argument("--mask-check", type=int, default=0, help="hybrid: precheck error for len() of a True / False Series (counts every row)")
     ap.add_argument("--unit-check", type=int, default=0, help="hybrid: precheck error when the question counts a base unit ('bao nhiêu gói') and item_qty(p) has no filter")
     ap.add_argument("--size-check", type=int, default=0, help="hybrid: precheck error when a size filter is a size the question does not name (size_qty(p, 'L') for 'bao nhiêu lon')")
     ap.add_argument("--threshold-flag", type=int, default=0, help="hybrid: a sample whose program does not use a threshold the question sets (hints 'thresholds') counts as flagged")

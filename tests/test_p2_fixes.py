@@ -137,5 +137,13 @@ for q, want in [("thang nay ban duoc bao nhieu tien the?", "tháng này bán đ�
                 ("thanh toan bang the duoc bao nhieu tien", "thanh toán bằng thẻ được bao nhiêu tiền")]:
     check(f"clean {q}", nz.clean(q)["clean"].lower(), want.lower())
 
+# 15. len() of a boolean mask counts every row
+mk = lambda code: [i["level"] for i in pre.precheck(code, spec, {}, None, None, "2026-04-10", None, False, True) if i["rule"] == "len_mask"]
+check("len of ge", mk('ANSWER = {"type": "number", "answer": len(item_sales(month(2026, 5), by="n_orders").ge(152))}'), ["error"])
+check("len of compare", mk('ANSWER = {"type": "number", "answer": len(item_sales(month(2026, 5), by="n_orders") >= 152)}'), ["error"])
+check("len of notna", mk('ANSWER = {"type": "number", "answer": len(item_sales(month(2026, 5)).where(lambda x: x >= 152).notna())}'), ["error"])
+check("len of filtered", mk('s = item_sales(month(2026, 5), by="n_orders")\nANSWER = {"type": "number", "answer": len(s[s >= 152])}'), [])
+check("sum of mask", mk('ANSWER = {"type": "number", "answer": item_sales(month(2026, 5), by="n_orders").ge(152).sum()}'), [])
+
 for b in bad: print("MISMATCH", b)
 print("PASS" if not bad else "FAIL")

@@ -57,6 +57,20 @@ def _size_args(tree):
     return out
 
 
+_MASK_METHODS = {"ge", "gt", "le", "lt", "eq", "ne", "notna", "isna", "notnull", "isnull", "where", "between", "isin"}
+
+
+def _len_of_mask(tree):
+    """len(<comparison>) or len(<series>.ge(...) / .notna() / .where(...) ...): the length of a boolean mask (all rows); 38 / 38
+    such P2 samples were wrong (public, train dev, held-out)."""
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "len" and n.args:
+            a = n.args[0]
+            if isinstance(a, ast.Compare): return True
+            if isinstance(a, ast.Call) and isinstance(a.func, ast.Attribute) and a.func.attr in _MASK_METHODS: return True
+    return False
+
+
 def _bare_calls(tree, name):
     """calls of name(...) with no keyword filter and only the period argument."""
     return [n for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == name
@@ -92,7 +106,7 @@ def all_periods(src, today):
     return out
 
 
-def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None, question=None, unit_check=False):
+def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None, question=None, unit_check=False, mask_check=False):
     import api_spec
     out = []
     if code is None: return [_issue("error", "format", "no program block (<code> ... </code>) in the output")]
@@ -183,6 +197,9 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
         if asked and _bare_calls(tree, "item_qty"):                     # a bare item_qty(p) adds every unit: 172 / 172 wrong
             out.append(_issue("error", "unit", f"the question counts {asked[0]!r} but item_qty(...) has no filter: it adds every unit",
                               f"item_qty(p, base_unit={asked[0]!r}) (rulebook 'Bán được bao nhiêu <đơn vị>'), or an item / group filter"))
+    if mask_check and _len_of_mask(tree):                               # P2: len() of a True / False Series counts every row
+        out.append(_issue("error", "len_mask", "len(...) of a comparison / mask (x >= n, .ge(n), .notna(), .where(...)) counts every row, not the matches",
+                          "count the matches with (s >= n).sum(), or filter first: len(s[s >= n])"))
     for th in h.get("thresholds") or []:                                 # P2: a threshold the question sets ('ít nhất 187 đơn')
         v = th.get("value")                                             # should appear in the program
         if isinstance(v, (int, float)) and not _uses_number(code, v):

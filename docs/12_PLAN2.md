@@ -177,3 +177,7 @@ Code `89243a8` (+ precheck lỗi `size`, `unit`), review 3 (`0b154ac`, chưa ch�
 
 θ 0.375 (phát lại): public tăng nhưng pub_ho giảm → giữ θ 0.5.
 | `p2_j` trên code làm sạch "the" → thế / thẻ (vòng 8) | **0.982** / 0.981 (**0.9815**) | **0.761** | **giữ: bản nộp hiện tại** |
+| `p2_n` = j + kiểm tra lỗi len(mặt nạ) (vòng 9) | 0.982 / 0.980 (0.981) | 0.759 | trung tính (public không có mẫu như vậy) → không đổi |
+
+Sau vòng 9: 11 câu public sai ổn định, đều do phiếu tách hoặc lựa chọn của mô hình; các luật ứng viên còn lại không sạch trên held-out
+(ví dụ "câu hỏi nhập hàng mà chương trình dùng hàm bán": dev 0 / 37 đúng nhưng held-out 165 / 249 đúng → loại). Trọng tâm chuyển sang hướng M (§6).

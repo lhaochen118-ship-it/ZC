@@ -100,7 +100,7 @@ while procs:
             need = quota.need_hours(len(jobs[k::nk]), None, L4 or gpu)
             fit = []
             for a in cand:
-                ok, msg = quota.check(a, need + 4 * 2.5 * busy.get(a, 0))   # what this fanout already moved there
+                ok, msg = quota.check(a, need + quota.need_hours(1, None, True) * busy.get(a, 0))   # what this fanout already moved there
                 print(f"{slug}: failover candidate {msg}", flush=True)
                 if ok: fit.append(a)
             cand = fit

@@ -2,8 +2,9 @@
 """Kaggle GPU quota of the accounts (`kaggle quota`: used / remaining / refresh time of the weekly 30 h) and the launch rule
 (user 10/11): an account with less than 6 h of GPU left gets a new task only after checking that the task fits in what is left.
 
-Quota hours = wall hours x GPUs of the session: a 4xL4 session costs ~4 quota hours per wall hour (measured 10/11: thnliu
-1.69 h after ~21 min of one 4xL4 kernel; phuongnehe 4.13 h after ~33 min of two). A session that started is not stopped
+Quota hours per wall hour of a 4xL4 session: measured 10/11 over whole kernels ~1.5-2.2 (linhmai24: 4 kernels, 5.75 wall h ->
+8.6 quota h; phuongnehe: 2 kernels, 5.0 wall h -> ~11 h; the charge comes early in a session: 4.13 h after the first ~33 min
+of two kernels); FACTOR = 2.5 stays on the safe side. A session that started is not stopped
 when the quota runs out (accounts at 31-36 h of 30), but a new one must not be started on the hope of that.
 
     remaining(acc) -> hours left (None when the query fails)
@@ -13,6 +14,7 @@ Usage: quota.py [acc,...]   (default: every account with a token) -> one line pe
 import os, sys, json, glob, subprocess
 
 LOW = 6.0                       # below this, a task is launched only when its estimate fits (user rule 10/11)
+FACTOR = 2.5                    # quota hours per wall hour of a 4xL4 session (measured 1.5-2.2, see above); T4 x2: 2
 PER_JOB_WALL_H = 2.5            # default wall time of one job line when the plan gives no estimate (eval of pub_full + held-out
                                 # ~1.3 h, a training job 1.5-4 h): deliberately on the high side
 
@@ -44,7 +46,7 @@ def remaining(acc):
 
 def need_hours(n_jobs, est_wall_h=None, l4=True):
     wall = float(est_wall_h) if est_wall_h else PER_JOB_WALL_H * max(1, int(n_jobs))
-    return wall * (4 if l4 else 2)
+    return wall * (FACTOR if l4 else 2)
 
 
 def check(acc, need, reserved=0.0):

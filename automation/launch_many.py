@@ -8,7 +8,7 @@ Usage: launch_many.py <runs_dir> <plan.json>    plan = [{"acc": "quynhtran35", "
 12 h session limit (user 10/11): est_h > 11 h is split over the account's 2 kernels ("independent": true), run as a chain of
 checkpointed sessions ("checkpointed": true) or refused; inside the kernel make_kernel.py's runner enforces the deadline.
 GPU quota (user rule 10/11, automation/quota.py): before each run the account's quota is read; the run is skipped when the
-account has < 6 h left and the task's estimate (est_h wall hours x 4 GPUs; default 2.5 h per job line) does not fit, or when
+account has < 6 h left and the task's estimate (est_h wall hours x quota.FACTOR; default 2.5 h per job line) does not fit, or when
 the estimate exceeds what is left at all.
 fanout.py is run from this file's repository (its code is what the kernels get)."""
 import os, sys, json, time, subprocess, threading
@@ -51,9 +51,9 @@ def run_acc(runs, items, log):
         args = list(it.get("args", []))
         if it.get("checkpointed") and float(it.get("est_h") or 0) > MAX_WALL_H:
             left = (quota.remaining(it["acc"]) or 0) - reserved          # this part: what the session limit and the quota allow
-            part_h = min(MAX_WALL_H, left / 4 - 0.5)                     # (4 quota h per wall h on 4xL4)
+            part_h = min(MAX_WALL_H, left / quota.FACTOR - 0.5)          # (quota.FACTOR quota h per wall h on 4xL4)
             if part_h < 1: log(f"NOT LAUNCHED: {it['acc']} has {left:.1f} h GPU left: < 1 h for a checkpointed part"); continue
-            need = part_h * 4; ok = True
+            need = part_h * quota.FACTOR; ok = True
             env = f"ZC_SESSION_S={int((part_h + 2400 / 3600) * 3600)}"   # the kernel's own deadline = this part's length
             if "--env" in args: args[args.index("--env") + 1] += "," + env
             else: args += ["--env", env]

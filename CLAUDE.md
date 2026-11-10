@@ -49,7 +49,7 @@ chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi
 - Token Kaggle chỉ ở `~/.kaggle/tok_<username>` (600); container mất khi sang khung chat mới → xin lại user.
 - **Quota GPU Kaggle (user, 10/11 — bắt buộc):** acc có số giờ GPU còn lại **dưới 6 h** → trước khi giao task mới cho nó phải kiểm tra
   xem còn **đủ giờ chạy task đó** không, rồi mới chạy. Số giờ thật: `python3 automation/quota.py` (= `kaggle quota`; làm mới hằng tuần,
-  W46: 14/11 00:00 UTC). Phiên 4×L4 tốn ~4 h quota mỗi giờ chạy tường. `launch_many.py` (mục plan có `est_h` = giờ tường ước tính) và
+  W46: 14/11 00:00 UTC). Phiên 4×L4 tốn ~1.5–2.2 h quota mỗi giờ chạy tường (đo 10/11; tính hệ số 2.5). `launch_many.py` (mục plan có `est_h` = giờ tường ước tính) và
   failover của `fanout.py` tự kiểm tra và từ chối acc không đủ giờ.
 - **Giới hạn 12 h mỗi phiên Kaggle (user, 10/11 — bắt buộc):** phiên commit bị dừng ở 12 h và mất output → tác vụ dài phải chia thành nhiều
   phiên hoặc lưu checkpoint. Đã cài: runner của kernel (`make_kernel.py`) đặt hạn chót = 12 h − 40 phút, truyền `ZC_DEADLINE` cho mọi job,
@@ -57,8 +57,8 @@ chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi
   huấn luyện (`sft.py`, `sft_unsloth.py`, `dpo.py` qua `arms_job.py` / `full_job.py`) lưu checkpoint (LoRA + optimizer + scheduler + RNG)
   vào output rồi dừng trước hạn, nhánh ghi `partial`; kernel sau mount output đó (`--ks`) với `--resume-from auto` để chạy tiếp; đánh giá
   (`eval_flow.py`) nhận `--budget` theo hạn chót. Lập kế hoạch: `launch_many.py` với `est_h` > 11 h → tách các dòng job độc lập ra 2
-  kernel (`"independent": true`), chạy chuỗi checkpoint (`"checkpointed": true`; mỗi phần ≤ min(11 h, quota còn lại / 4)) hoặc từ chối.
-  Test: `tests/test_session_limit.py`. Lưu ý: 4×L4 tốn ~4 h quota mỗi giờ → acc 30 h chạy được ~7 h tường mỗi tuần.
+  kernel (`"independent": true`), chạy chuỗi checkpoint (`"checkpointed": true`; mỗi phần ≤ min(11 h, quota còn lại / 2.5)) hoặc từ chối.
+  Test: `tests/test_session_limit.py`. Lưu ý: 4×L4 tốn ~1.5–2.2 h quota mỗi giờ → acc 30 h chạy được ~12–15 h tường mỗi tuần.
 - **Dataset ngoài (user, 08/11):** dataset public là dùng được (kể cả giấy phép nghiên cứu / giáo dục), không cần hỏi;
   chỉ dùng dataset uy tín (hội nghị / tạp chí có hạng hoặc nhiều citation); không bao giờ dùng public / private test của
   cuộc thi để train. Bảng thống kê: `docs/07_DATASETS.md`.

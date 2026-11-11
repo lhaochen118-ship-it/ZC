@@ -125,6 +125,10 @@ Kaggle → làm phần code / CPU, chạy GPU tiếp khi reset.
 | Vòng 2 GPU (`p2_d/e/f`) | **đang chạy** (09/11 18:50 UTC, code `c49da84`/`d9b30fb`, CPU suite ALL PASS) | | | `huyenco/zc-p2r2d-1`, `huyenco/zc-p2r2e-1`, `phatle1578/zc-p2r2f-1`; gợi ý `counted` / `thresholds`, prefill `<plan>`, đồng nghĩa %; kiểu gợi ý = đáp án 100 % câu có gợi ý (train + public) |
 | WP10 stress (pub_noind, pub_noacc) | không đo được (kernel dừng "STALE CODE" sau restart hàng đợi) → đo trên cấu hình P2 cuối | | | |
 
+### Acc mới (user 11/11, có L4; token trong `~/.kaggle/tok_<username>`)
+
+dinhthinh (còn 10.3 h), hieuho669 (14.4 h), huuhien95 (16.6 h), bichthuy93 (30 h), caohuyen74 (16.1 h) — acc dùng chung (đã có giờ dùng): chỉ đụng kernel `zc-*`; chưa có bản dataset riêng (zc-para, zc-final-adapter, zc-wg-adapters) → tạo khi giao việc.
+
 ### Quota GPU (`automation/quota.py`, 10/11 13:30 UTC; làm mới 14/11 00:00 UTC)
 
 Quy định user 10/11: acc còn < 6 h → chỉ giao task mới khi task vừa số giờ còn lại (4×L4 ≈ 4 h quota / giờ tường).

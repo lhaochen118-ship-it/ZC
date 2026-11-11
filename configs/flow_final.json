@@ -1,5 +1,5 @@
 {
- "_doc": "Submitted configuration (plan 2, 10/11): hybrid flow, full prompt, 2 samples then up to 8 (half of round 2 reasoning first), hints with counted object / thresholds / job & size entities, answer format of the hinted type, flags for period mismatch / unused named periods / unused thresholds, precheck repairs for an unnamed size and an unfiltered unit count, review when the hints say the data does not record what is asked, 1536-token cap, vote, abstain below 0.5. Public 0.9755 / held-out 0.758 (2 seeds, docs/12_PLAN2.md). Model: Qwen3.5-9B + soup of 4 LoRA fine-tunes x 0.35 merged at build time.",
+ "_doc": "Submitted configuration (plan 2, 10/11): hybrid flow, full prompt, 2 samples then up to 8 (half of round 2 reasoning first), hints with counted object / thresholds / job & size entities, answer format of the hinted type, flags for period mismatch / unused named periods / unused thresholds, precheck repairs for an unnamed size and an unfiltered unit count, review when the hints say the data does not record what is asked, 1536-token cap, vote, abstain below 0.5. Public 0.9755 / held-out 0.758 (2 seeds, docs/12_PLAN2.md). Model: Qwen3.5-9B + soup of 4 LoRA fine-tunes x 0.35 merged at build time. | 11/11: + mask_check (len() of a boolean mask -> error -> repair; config O, round 15)",
  "flow": "hybrid",
  "pipeline": true,
  "quant": "fp8",
@@ -38,5 +38,6 @@
  "named_periods_flag": 1,
  "threshold_flag": 1,
  "size_check": 1,
- "unit_check": 1
+ "unit_check": 1,
+ "mask_check": 1
 }

@@ -144,6 +144,9 @@ check("len of compare", mk('ANSWER = {"type": "number", "answer": len(item_sales
 check("len of notna", mk('ANSWER = {"type": "number", "answer": len(item_sales(month(2026, 5)).where(lambda x: x >= 152).notna())}'), ["error"])
 check("len of filtered", mk('s = item_sales(month(2026, 5), by="n_orders")\nANSWER = {"type": "number", "answer": len(s[s >= 152])}'), [])
 check("sum of mask", mk('ANSWER = {"type": "number", "answer": item_sales(month(2026, 5), by="n_orders").ge(152).sum()}'), [])
+check("len of mask tolist", mk('ANSWER = {"type": "number", "answer": len((item_sales(month(2026, 5), by="n_orders") >= 152).tolist())}'), ["error"])
+check("len of list(mask)", mk('ANSWER = {"type": "number", "answer": len(list(item_sales(month(2026, 5), by="n_orders") >= 152))}'), ["error"])
+check("len of filtered tolist", mk('s = item_sales(month(2026, 5), by="n_orders")\nANSWER = {"type": "number", "answer": len(s[s >= 152].tolist())}'), [])
 
 # 16. learned selector (track M, WP-M6): the shares-only feature set saves / loads with its columns and scores any sample count
 import selector as SEL, tempfile

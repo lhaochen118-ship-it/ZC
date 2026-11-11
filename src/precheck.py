@@ -61,11 +61,16 @@ _MASK_METHODS = {"ge", "gt", "le", "lt", "eq", "ne", "notna", "isna", "notnull",
 
 
 def _len_of_mask(tree):
-    """len(<comparison>) or len(<series>.ge(...) / .notna() / .where(...) ...): the length of a boolean mask (all rows); 38 / 38
-    such P2 samples were wrong (public, train dev, held-out)."""
+    """len(<comparison>) or len(<series>.ge(...) / .notna() / .where(...) ...), also through list() / .tolist() / .values: the
+    length of a boolean mask (all rows); 38 / 38 such P2 samples were wrong (public, train dev, held-out)."""
     for n in ast.walk(tree):
         if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "len" and n.args:
             a = n.args[0]
+            for _ in range(3):                                          # len(list(m)), len(m.tolist()), len(m.values): still the mask
+                if isinstance(a, ast.Call) and isinstance(a.func, ast.Name) and a.func.id in ("list", "tuple") and a.args: a = a.args[0]
+                elif isinstance(a, ast.Call) and isinstance(a.func, ast.Attribute) and a.func.attr in ("tolist", "to_list", "to_numpy"): a = a.func.value
+                elif isinstance(a, ast.Attribute) and a.attr == "values": a = a.value
+                else: break
             if isinstance(a, ast.Compare): return True
             if isinstance(a, ast.Call) and isinstance(a.func, ast.Attribute) and a.func.attr in _MASK_METHODS: return True
     return False

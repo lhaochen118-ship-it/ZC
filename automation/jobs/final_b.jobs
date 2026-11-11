@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/final_b --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WF1,WF2,WF3,WF4 --weights 0.0875,0.0875,0.0875,0.0875 --sets pub_full --eval-config configs/e0_full_think_s1.json

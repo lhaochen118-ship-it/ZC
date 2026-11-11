@@ -1,7 +1,7 @@
 # CLAUDE.md — bộ nhớ dự án (Claude Code tự đọc file này mỗi phiên)
 
 Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3-0dny90`** (repo `lhaochen118-ship-it/ZC`).
-**Khung chat mới: đọc `READING_GUIDE.md` trước** (bàn giao: `handoff/STATUS.md`, `handoff/03_HANDOFF.pdf`,
+**Khung chat mới: đọc `READING_GUIDE.md` trước** (trạng thái sống `handoff/STATUS.md`; bản lưu không nằm trong code — log, dữ liệu huấn luyện, sổ kernel — ở `Process/`, xem `Process/README.md`) (bàn giao: `handoff/STATUS.md`, `handoff/03_HANDOFF.pdf`,
 `handoff/01_SCIENTIFIC_FINDINGS.pdf`, `handoff/02_ENGINEERING_OPS_LESSONS.pdf`, `handoff/environment_summary.pdf`).
 
 **Quyết định mới nhất (user, 08/11): hybrid framework = AI Agent sinh code + luật tổng quát hỗ trợ.** Cấm hard code

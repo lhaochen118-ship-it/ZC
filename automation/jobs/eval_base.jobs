@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/eval_base --script training/arms_job.py --model Qwen/Qwen3.5-9B --arms BASE=x --eval-dp 4 --sets quick400,pub_ho

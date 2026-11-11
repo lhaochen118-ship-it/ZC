@@ -1,0 +1,4 @@
+[
+ {"acc": "phuongnehe", "name": "m7c", "jobs": "automation/jobs/m7c.jobs", "est_h": 1.7, "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "phuongnehe/zc-para,phuongnehe/zc-final-adapter", "--no-preflight"]},
+ {"acc": "phuongnehe", "name": "m7d", "jobs": "automation/jobs/m7d.jobs", "est_h": 1.7, "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "phuongnehe/zc-para,phuongnehe/zc-final-adapter", "--no-preflight"]}
+]

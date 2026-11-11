@@ -1,0 +1,1 @@
+[{"acc": "thnliu", "name": "m2rft", "jobs": "automation/jobs/m2rft.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "thnliu/zc-para,thnliu/zc-final-adapter", "--train-data", "m2", "--no-preflight"]}]

@@ -1,0 +1,1 @@
+[{"acc": "anderson1202", "name": "m2g1", "jobs": "automation/jobs/m2g1.jobs", "est_h": 4.3, "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "anderson1202/zc-para,anderson1202/zc-wg-adapters", "--train-data", "m2", "--no-preflight"]}]

@@ -1,8 +1,11 @@
-# automation/jobs — job chuẩn + công cụ
+# automation/jobs — job files (one Kaggle job per line, `run_kaggle.py <split> OUT/<name> ...`)
 
-- `v28.jobs`: đường LLM chuẩn (train + 5 public, seed khác nhau; jobs cách nhau `;`) — điểm xuất phát cho LLM-first.
-- `v30*.jobs`, `v31–v34.jobs`: luồng nộp rule-first trên câu nhiễu / paraphrase (`stress_flow.py --modes …`); `v33.jobs`:
-  stage 1.5 (`canon_llm.py`) riêng.
-- `prepreflight.py "<jobs>"`: chạy `automation/preflight.py`, ghi mark cache để `fanout.py` khởi chạy ngay.
-- `mksub5.sh vNN [vCONS]` (env `S` = scratch có `runs/`, `cache_pub/`): bỏ phiếu 5 lần chạy public của vNN + (tuỳ chọn)
-  consensus → `submissions/`.
+Launched with `automation/launch_many.py <runs_dir> <plan.json>` (plan items: acc, name, jobs, est_h, args) or
+`automation/fanout.py`. Results of every job: `handoff/STATUS.md` (table "Tiến độ P2") and `Process/scores.csv`.
+
+- Track R (submission flow on current code): `p2r1a … p2r16pred` (rounds 1-16), `sc*` (screening on subsets),
+  `cf*` (confirmation, full sets, 2 seeds), `jsel*` (selector training data).
+- Track M (frozen M0 code, worktree `b093d46`): `m0*`, `m7*`, `m2*`, `m4dpo`.
+- Training: `w7f` (WF1-4 members), `wg` (WG1-4), `wg2r` (WG5-8), `d3_*` (teacher data D3), `m2*` / `m4dpo` (RFT / DPO).
+- `final_predict.jobs`, `p2r6pred`, `p2r12pred`, `p2r16pred`: the container path (`--runner predict`).
+- `prepreflight.py "<jobs>"`: runs `automation/preflight.py` and writes the cache mark so `fanout.py` launches at once.

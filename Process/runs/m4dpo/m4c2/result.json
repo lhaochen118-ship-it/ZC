@@ -1,0 +1,20 @@
+{
+ "adapters": {
+  "WF1": "/kaggle/input/datasets/duylnng/zc-final-adapter/WF1/adapter",
+  "WF2": "/kaggle/input/datasets/duylnng/zc-final-adapter/WF2/adapter",
+  "WF3": "/kaggle/input/datasets/duylnng/zc-final-adapter/WF3/adapter",
+  "WF4": "/kaggle/input/datasets/duylnng/zc-final-adapter/WF4/adapter",
+  "m4": "/kaggle/working/results/m4/adapter"
+ },
+ "weights": [
+  0.0875,
+  0.0875,
+  0.0875,
+  0.0875,
+  0.5
+ ],
+ "merge_rc": 0,
+ "merge_s": 55,
+ "eval_rc": 0,
+ "eval_s": 3472
+}

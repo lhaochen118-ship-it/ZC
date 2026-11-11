@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/w7c --script training/arms_job.py --model Qwen/Qwen3.5-9B --train --arms WC1=d1.jsonl|seed=11+WC2=d1.jsonl|seed=12+WC3=d1.jsonl,d2s.jsonl|seed=13+WC4=d1.jsonl,d2ns.jsonl|seed=14 --data w7c --budget 0 --no-eval

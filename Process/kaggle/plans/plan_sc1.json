@@ -1,0 +1,47 @@
+[
+ {
+  "acc": "bichthuy93",
+  "name": "sc1o12",
+  "jobs": "automation/jobs/sc1o12.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "bichthuy93/zc-para,bichthuy93/zc-wg-adapters",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "bichthuy93",
+  "name": "sc1a30",
+  "jobs": "automation/jobs/sc1a30.jobs",
+  "est_h": 0.7,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "bichthuy93/zc-para,bichthuy93/zc-wg-adapters",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "yuan1103",
+  "name": "sc1a40",
+  "jobs": "automation/jobs/sc1a40.jobs",
+  "est_h": 0.7,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "yuan1103/zc-para,yuan1103/zc-wg-adapters",
+   "--no-preflight"
+  ]
+ }
+]

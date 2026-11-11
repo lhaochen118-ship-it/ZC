@@ -1,0 +1,474 @@
+diff --git a/automation/fanout.py b/automation/fanout.py
+index 9877362..846235b 100644
+--- a/automation/fanout.py
++++ b/automation/fanout.py
+@@ -95,6 +95,20 @@ while procs:
+                 try: mark_quota(json.load(open(os.path.join(work, f"{prefix}-{k2 + 1}", "kernel-metadata.json")))["id"].split("/")[0])
+                 except Exception: pass
+         cand = [a for a in ALL_ACC if a not in tried[k] and a not in quota_out() and busy.get(a, 0) < 2]
++        if "STATUS=PUSH_FAILED" in log and cand:                       # user rule 10/11: a failover target must have the hours
++            import quota                                                # for this kernel (< 6 h left: only if the task fits)
++            need = quota.need_hours(len(jobs[k::nk]), None, L4 or gpu)
++            fit = []
++            for a in cand:
++                ok, msg = quota.check(a, need + quota.need_hours(1, None, True) * busy.get(a, 0))   # what this fanout already moved there
++                print(f"{slug}: failover candidate {msg}", flush=True)
++                if ok: fit.append(a)
++            cand = fit
++        ds_own = {d.split("/")[0] for d in (DSARG[DSARG.index("--ds") + 1].split(",") if "--ds" in DSARG else []) if "/" in d}
++        if ds_own:                                                      # the kernel mounts an account's own private copies
++            cand = [a for a in cand if a in ds_own]                     # (adapters, paraphrases): another account cannot read
++            if "STATUS=PUSH_FAILED" in log and not cand:                # them (09/11: p2r2d moved to anderson1202, no adapters)
++                print(f"{slug}: push failed and its datasets are private to {sorted(ds_own)}: no failover, relaunch elsewhere by hand", flush=True)
+         if "STATUS=PUSH_FAILED" in log and cand:
+             acc = cand[0]; tried[k].add(acc); busy[acc] = busy.get(acc, 0) + 1
+             make(os.path.join(work, slug), slug, jobs[k::nk], acc, gpu); time.sleep(40)
+diff --git a/automation/launch_many.py b/automation/launch_many.py
+index ed5d464..a44f62c 100644
+--- a/automation/launch_many.py
++++ b/automation/launch_many.py
+@@ -4,19 +4,73 @@ line: two fanouts at once on one account can overwrite each other's code dataset
+ Each run is registered in <runs>/active_runs.txt for automation/watch_done.py.
+ 
+ Usage: launch_many.py <runs_dir> <plan.json>    plan = [{"acc": "quynhtran35", "name": "e0", "jobs": "automation/jobs/v35_e0.jobs",
+-                                                         "args": ["--ms", "...", "--ks", "...", "--ds", "..."]}, ...]
++                                                         "args": ["--ms", "...", "--ks", "...", "--ds", "..."], "est_h": 3.0}, ...]
++12 h session limit (user 10/11): est_h > 11 h is split over the account's 2 kernels ("independent": true), run as a chain of
++checkpointed sessions ("checkpointed": true) or refused; inside the kernel make_kernel.py's runner enforces the deadline.
++GPU quota (user rule 10/11, automation/quota.py): before each run the account's quota is read; the run is skipped when the
++account has < 6 h left and the task's estimate (est_h wall hours x quota.FACTOR; default 2.5 h per job line) does not fit, or when
++the estimate exceeds what is left at all.
+ fanout.py is run from this file's repository (its code is what the kernels get)."""
+ import os, sys, json, time, subprocess, threading
+ 
+ ROOT = os.environ.get("ZC_LAUNCH_ROOT") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # a frozen worktree may be given
+ 
+ 
++MAX_WALL_H = 11.0          # a Kaggle commit session stops at 12 h and loses its outputs; ~1 h for setup + saving (user 10/11)
++
++
++def kernels_for(it, n_jobs):
++    """(number of kernels, reason) for a plan item under the 12 h session limit: estimate (est_h, wall hours of the whole job
++    list run one after another) <= 11 h -> 1 kernel; longer with independent job lines ("independent": true) -> the lines
++    split over 2 kernels (the account's 2 GPU sessions); a checkpointed training ("checkpointed": true: arms_job / full_job /
++    sft / dpo stop before the deadline with a resumable checkpoint) -> 1 kernel, continued by a new kernel that mounts its
++    output (--ks) with --resume-from auto; else 0 (refused: split the plan)."""
++    import math
++    est = float(it.get("est_h") or 0)
++    if est <= MAX_WALL_H: return 1, f"~{est:.1f} h of the 12 h session" if est else "no estimate (12 h guard in the kernel)"
++    n = math.ceil(est / MAX_WALL_H)
++    if it.get("independent") and n_jobs >= n and n <= 2:
++        return n, f"~{est:.1f} h > {MAX_WALL_H:.0f} h: job lines split over {n} kernels"
++    if it.get("checkpointed"):
++        return 1, (f"~{est:.1f} h > {MAX_WALL_H:.0f} h: part 1 stops at the session deadline with a checkpoint; continue it with a "
++                   f"kernel mounting this one's output (--ks) and --resume-from auto ({n} sessions)")
++    return 0, (f"NOT LAUNCHED: ~{est:.1f} h > {MAX_WALL_H:.0f} h per session (Kaggle stops at 12 h): split the jobs into several plan "
++               f"items / accounts, or mark a checkpointed training \"checkpointed\": true")
++
++
+ def run_acc(runs, items, log):
++    sys.path.insert(0, os.path.join(ROOT, "automation")); import quota
++    reserved = 0.0                                                      # quota hours this launch already gave the account
+     for it in items:
+         name = it["name"]; fl = os.path.join(runs, name + ".fanout.log")
++        jf = it["jobs"] if os.path.isabs(it["jobs"]) else os.path.join(ROOT, it["jobs"])
++        n_jobs = len([l for l in open(jf).read().replace(";", "\n").splitlines() if l.strip()]) if os.path.isfile(jf) else 1
++        nk, why = kernels_for(it, n_jobs)                               # Kaggle's 12 h session limit (user 10/11)
++        log(f"{it['acc']} {name}: {why}")
++        if nk == 0: continue
++        args = list(it.get("args", []))
++        if it.get("checkpointed") and float(it.get("est_h") or 0) > MAX_WALL_H:
++            left = (quota.remaining(it["acc"]) or 0) - reserved          # this part: what the session limit and the quota allow
++            part_h = min(MAX_WALL_H, left / quota.FACTOR - 0.5)          # (quota.FACTOR quota h per wall h on 4xL4)
++            if part_h < 1: log(f"NOT LAUNCHED: {it['acc']} has {left:.1f} h GPU left: < 1 h for a checkpointed part"); continue
++            need = part_h * quota.FACTOR; ok = True
++            env = f"ZC_SESSION_S={int((part_h + 2400 / 3600) * 3600)}"   # the kernel's own deadline = this part's length
++            if "--env" in args: args[args.index("--env") + 1] += "," + env
++            else: args += ["--env", env]
++            log(f"{it['acc']} {name}: checkpointed part of {part_h:.1f} h ({need:.1f} quota h of {left:.1f} left)")
++        else:
++            need = quota.need_hours(n_jobs, it.get("est_h"), l4=True)   # user rule 10/11: < 6 h left -> the task must fit
++            ok, msg = quota.check(it["acc"], need, reserved)
++            log(msg)
++            if not ok and not it.get("force_quota"): continue
++        reserved += need
+         with open(os.path.join(runs, "active_runs.txt"), "a") as f: f.write(name + "\n")
++        rep = os.path.join(runs, ".reported")                          # a run relaunched under an old name: forget the old kernel,
++        if os.path.isfile(rep):                                        # else watch_done.py never reports the new one
++            keep = [l for l in open(rep).read().split() if not l.startswith(name + "/")]
++            open(rep, "w").write("\n".join(keep))
+         cmd = [sys.executable, os.path.join(ROOT, "automation", "fanout.py"), os.path.join(runs, name), "zc-" + name.replace("_", "-"), it["jobs"],
+-               "1", "--accounts", it["acc"], "--l4"] + it.get("args", [])
++               str(nk), "--accounts", it["acc"], "--l4"] + args
+         p = subprocess.Popen(cmd, stdout=open(fl, "w"), stderr=subprocess.STDOUT, cwd=ROOT, start_new_session=True)
+         t0 = time.time()
+         while time.time() - t0 < 900:
+diff --git a/automation/make_kernel.py b/automation/make_kernel.py
+index 3bc5014..02d0c03 100644
+--- a/automation/make_kernel.py
++++ b/automation/make_kernel.py
+@@ -83,9 +83,19 @@ MULTI = NGPU and sum(gpus_of(j) for j in JOBS) > NGPU                  # jobs th
+ NW = 1 if MULTI else max(1, min(len(JOBS), NGPU if NGPU else (os.cpu_count() or 4) - 1))
+ TH = str(max(1, (os.cpu_count() or 4) // NW))                        # BLAS threads per job (no oversubscription)
+ SUB = {"DATA": DATA, "INPUT": "/kaggle/input", "OUT": R}
++# Kaggle stops a commit session at 12 h and its outputs are then lost (user 10/11): every job gets ZC_DEADLINE (training
++# checkpoints and stops, the agent's --budget ends with abstains), a sequential job that would not finish in time is not
++# started (listed in results/_skipped_jobs.json for a new kernel), a job still running at the deadline is killed so the
++# session ends cleanly and the finished outputs are saved.
++SESSION_S = int(ENV.get("ZC_SESSION_S", str(12 * 3600))); MARGIN_S = int(ENV.get("ZC_SESSION_MARGIN", "2400"))
++DEADLINE = t0 + SESSION_S - MARGIN_S; DURS = []; SKIPPED = []
+ def run(ij):
+     i, j = ij
+-    env = dict(os.environ, OMP_NUM_THREADS=TH, MKL_NUM_THREADS=TH, OPENBLAS_NUM_THREADS=TH, ZC_OUT=R, ZC_DATA=DATA, **ENV)
++    est = max(DURS) if DURS else 0                                     # a sequential job: as long as the longest one so far
++    if DURS and time.time() + est > DEADLINE or time.time() > DEADLINE:
++        SKIPPED.append(" ".join(j)); print(f"SKIPPED (12 h session limit, {(DEADLINE - time.time()) / 3600:.1f} h left, longest job {est / 3600:.1f} h): {' '.join(j)}", flush=True)
++        return "skipped"
++    env = dict(os.environ, OMP_NUM_THREADS=TH, MKL_NUM_THREADS=TH, OPENBLAS_NUM_THREADS=TH, ZC_OUT=R, ZC_DATA=DATA, ZC_DEADLINE=str(int(DEADLINE)), **ENV)
+     if NGPU and len(JOBS) > 1 and not MULTI: env["CUDA_VISIBLE_DEVICES"] = str(i %% NGPU)
+     def sub(x):                                                        # OUT, OUT/train, DATA/..., INPUT/... (prefix tokens)
+         for k, v in SUB.items():
+@@ -93,11 +103,21 @@ def run(ij):
+         return x
+     cmd = [sys.executable, j[0]] + [sub(a) for a in j[1:]]
+     t = time.time(); log = os.path.join(L, "_".join(j).replace(".py", "").replace("/", "-")[:120] + ".log")
+-    r = subprocess.run(cmd, cwd=C, stdout=open(log, "w"), stderr=subprocess.STDOUT, env=env)
+-    print(f"done {' '.join(j)} rc={r.returncode} {time.time()-t:.0f}s", flush=True); return r.returncode
++    p = subprocess.Popen(cmd, cwd=C, stdout=open(log, "w"), stderr=subprocess.STDOUT, env=env, start_new_session=True)
++    try: rc = p.wait(timeout=max(60, DEADLINE + MARGIN_S // 2 - time.time()))
++    except subprocess.TimeoutExpired:                                  # past the deadline: the whole process group goes
++        import signal
++        try: os.killpg(p.pid, signal.SIGKILL)
++        except Exception: p.kill()
++        p.wait(); rc = "killed_at_deadline"
++    DURS.append(time.time() - t)
++    print(f"done {' '.join(j)} rc={rc} {time.time()-t:.0f}s", flush=True); return rc
+ print("parallel jobs", NW, "| threads/job", TH, "| sequential (multi-GPU jobs)" if MULTI else "", flush=True)
+ with ThreadPoolExecutor(NW) as ex: rcs = list(ex.map(run, enumerate(JOBS)))
+ shutil.rmtree(C, ignore_errors=True)
++if SKIPPED:
++    json.dump(SKIPPED, open(os.path.join(R, "_skipped_jobs.json"), "w"), indent=1)
++    print(f"JOBS_SKIPPED_12H {len(SKIPPED)}: run them in a new kernel", flush=True)
+ print("EVAL_DONE", rcs, f"{time.time()-t0:.0f}s", flush=True)
+ ''' % (json.dumps(jobs), json.dumps(ENV), CODE_TOKEN, CODE_TOKEN, DATA_DS.split("/")[1])
+ os.makedirs(kdir, exist_ok=True); open(os.path.join(kdir, "run.py"), "w").write(runner)
+diff --git a/src/eval_flow.py b/src/eval_flow.py
+index 5d6414f..be920ab 100644
+--- a/src/eval_flow.py
++++ b/src/eval_flow.py
+@@ -7,7 +7,7 @@ against its original question's reference answer).
+ 
+ Usage: eval_flow.py <split: public_test|train dir> <out> --sets quick400[,pub_full,...] [--para DIR] [-- agent flags...]
+   --para DIR: holds para_pub.jsonl / para_train.jsonl (src/paraphrase_llm.py; Kaggle: <acc>/zc-para; else $ZC_PARA_DIR)"""
+-import os, sys, json, glob, random, shutil, subprocess
++import os, sys, json, glob, random, shutil, subprocess, time
+ HERE = os.path.dirname(os.path.abspath(__file__))
+ sys.path.insert(0, HERE)
+ 
+@@ -36,6 +36,13 @@ def build(sets, out_split, split_hint, para_dir):
+         if not sp: continue
+         for l in open(os.path.join(sp, "questions.jsonl"), encoding="utf-8"):
+             if l.strip(): q = json.loads(l); Q[q["id"]] = q; src[q["business_id"]] = sp
++    for s in sets:                                                     # a set may ship its own questions (<set>.questions.jsonl,
++        for d in (os.path.join(os.path.dirname(HERE), "tests", "splits"), os.path.join(HERE, "refs", "splits")):   # e.g. teacher
++            p = os.path.join(d, s + ".questions.jsonl")                 # questions of the training shops, track M selector data)
++            if os.path.isfile(p):
++                for l in open(p, encoding="utf-8"):
++                    if l.strip(): q = json.loads(l); Q.setdefault(q["id"], q)
++                break
+     para = {}
+     for f in ("para_pub.jsonl", "para_train.jsonl"):
+         d = para_dir or os.environ.get("ZC_PARA_DIR", "")                # local runs (preflight smoke): ZC_PARA_DIR
+diff --git a/training/arms_job.py b/training/arms_job.py
+index e16f73f..cd86eb5 100644
+--- a/training/arms_job.py
++++ b/training/arms_job.py
+@@ -49,12 +49,12 @@ def branch(i, name, files, a, D, base_env):
+         if a.hf:
+             cmd = [PY, os.path.join(HERE, "sft.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
+                    "--max-tokens", str(a.budget), "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--metrics", f"{out}/train_metrics.json",
+-                   "--max-len", str(a.max_len), "--seed", str(a.seed)]
++                   "--max-len", str(a.max_len), "--seed", str(a.seed), "--ckpt-dir", f"{out}/ckpt"] + resume_args(a, name)
+         else:
+             env.update(base_env)
+             cmd = [PY, os.path.join(HERE, "sft_unsloth.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
+                    "--max-tokens", str(a.budget), "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs),
+-                   "--max-len", str(a.max_len), "--seed", str(a.seed)]
++                   "--max-len", str(a.max_len), "--seed", str(a.seed), "--ckpt-dir", f"{out}/ckpt"] + resume_args(a, name)
+         rc = subprocess.run(cmd, env=env, stdout=open(f"{out}/train.log", "w"), stderr=subprocess.STDOUT).returncode
+         txt = open(f"{out}/train.log", errors="ignore").read()
+         m = [l for l in txt.splitlines() if l.startswith("[sft] METRICS ")]
+@@ -64,6 +64,11 @@ def branch(i, name, files, a, D, base_env):
+             res["error"] = "training failed"; json.dump(res, open(f"{out}/result.json", "w"), indent=1); return res
+         shutil.copytree(f"{tmp}/adapter", f"{out}/adapter", dirs_exist_ok=True)
+         ad = f"{tmp}/adapter"
++        if (res.get("train") or {}).get("stopped_early"):                # 12 h session: checkpointed before the deadline
++            res["partial"] = True; json.dump(res, open(f"{out}/result.json", "w"), indent=1)
++            print(f"[arms] {name}: PARTIAL at step {res['train']['stopped_early']} (session deadline): resume in a new kernel "
++                  f"with --resume-from <this kernel's output> (checkpoint {out}/ckpt)", flush=True); return res
++        shutil.rmtree(f"{out}/ckpt", ignore_errors=True)                # finished: no checkpoint to keep in the outputs
+         if a.no_eval:                                                    # soup members (WP7): adapters only, evaluated merged
+             res["merge_s"] = res["eval_s"] = 0; json.dump(res, open(f"{out}/result.json", "w"), indent=1)
+             print(f"[arms] {name}: train {res['train_s']}s (no evaluation)", flush=True); return res
+@@ -104,6 +109,40 @@ def adapters_root(given, names, search="/kaggle/input"):
+     return (pref or good)[0]
+ 
+ 
++def resume_args(a, name):
++    """--resume <latest checkpoint of this branch> when --resume-from names a folder (or 'auto' = the mounted inputs) that
++    holds <name>/ckpt/checkpoint-N from an earlier kernel stopped at the session deadline."""
++    if not a.resume_from: return []
++    import deadline
++    root = a.search if a.resume_from == "auto" else a.resume_from
++    cands = [c for c in glob.glob(os.path.join(root, "**", name, "ckpt"), recursive=True) if deadline.latest_checkpoint(c)]
++    if not cands: print(f"[arms] {name}: no checkpoint under {root}: training from the start", flush=True); return []
++    ck = max((deadline.latest_checkpoint(c) for c in cands), key=lambda p: int(p.rstrip("/").split("-")[-1]))
++    print(f"[arms] {name}: resume from {ck}", flush=True)
++    return ["--resume", ck]
++
++
++def merge_base(a):
++    """the base adapters merged into a copy of --model (training/merge.py): the model the branches are trained on."""
++    names = [x for x in a.base_adapters.split(",") if x]
++    def find(n):
++        if os.path.isfile(os.path.join(n, "adapter_config.json")): return n
++        c = sorted(glob.glob(os.path.join(a.search, "**", n, "adapter", "adapter_config.json"), recursive=True))
++        return os.path.dirname(c[0]) if c else None
++    dirs = [find(n) for n in names]
++    if None in dirs: sys.exit(f"[arms] base adapters not found under {a.search}: {[n for n, d in zip(names, dirs) if d is None]}")
++    w = [float(x) for x in a.base_weights.split(",")] if a.base_weights else [1.0 / len(dirs)] * len(dirs)
++    if len(w) != len(dirs): sys.exit("[arms] one --base-weights entry per base adapter")
++    out = "/tmp/arms_base"; shutil.rmtree(out, ignore_errors=True); os.makedirs(a.out, exist_ok=True); t0 = time.time()
++    rc = subprocess.run([PY, os.path.join(HERE, "merge.py"), "merge", a.model, out, ",".join(dirs), "--weights", ",".join(map(str, w))],
++                        stdout=open(os.path.join(a.out, "base_merge.log"), "w"), stderr=subprocess.STDOUT).returncode
++    if rc != 0: sys.exit(f"[arms] base merge failed (rc {rc}): {a.out}/base_merge.log")
++    json.dump({"base_adapters": dict(zip(names, dirs)), "base_weights": w, "merge_s": round(time.time() - t0)},
++              open(os.path.join(a.out, "base.json"), "w"), indent=1)
++    print(f"[arms] base = {a.model} + {names} x {w} merged in {time.time() - t0:.0f}s", flush=True)
++    return out
++
++
+ def main():
+     ap = argparse.ArgumentParser()
+     ap.add_argument("split"); ap.add_argument("out"); ap.add_argument("--model", required=True)
+@@ -118,6 +157,11 @@ def main():
+     ap.add_argument("--max-len", type=int, default=3072, help="training sequence length (full-prompt records: 5120 with --mb 2)")
+     ap.add_argument("--seed", type=int, default=20261108, help="training seed (record sample and order)")
+     ap.add_argument("--no-eval", action="store_true", help="train and save the adapters only (soup members: training/soup_job.py)")
++    ap.add_argument("--base-adapters", default="", help="train on top of a merged model: these adapters (names found under "
++                    "--search, or directories) merged into --model with --base-weights first (M2: LoRA on the M0 soup)")
++    ap.add_argument("--base-weights", default=""); ap.add_argument("--search", default="/kaggle/input")
++    ap.add_argument("--resume-from", default="", help="continue branches stopped at the 12 h session deadline: a folder (or 'auto' ="
++                    " under --search, i.e. an earlier kernel's output mounted with --ks) holding <branch>/ckpt/checkpoint-N")
+     a = ap.parse_args()
+     os.chdir(ROOT)
+     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)
+@@ -127,10 +171,13 @@ def main():
+     ngpu = int(os.environ.get("ZC_NGPU", "4"))
+     if len(arms) * max(1, a.eval_dp) > ngpu and not a.fake_responder: sys.exit(f"{len(arms)} branches x --eval-dp {a.eval_dp} > {ngpu} GPUs")
+     base_env = {} if (a.hf or a.adapters_dir or not trained) else unsloth_env()
++    merged = merge_base(a) if a.base_adapters else None
++    if merged: a.model = merged
+     from concurrent.futures import ThreadPoolExecutor
+     with ThreadPoolExecutor(len(arms)) as ex:
+         res = list(ex.map(lambda ia: branch(ia[0], ia[1][0], ia[1][1], a, D, base_env), enumerate(arms)))
+     json.dump(res, open(os.path.join(a.out, "arms.json"), "w"), indent=1, default=str)
++    if merged: shutil.rmtree(merged, ignore_errors=True)               # 19 GB: the next job of the kernel merges its own copy
+     print("[arms] DONE " + json.dumps([{k: r.get(k) for k in ("name", "train_s", "merge_s", "eval_s", "error")} for r in res]), flush=True)
+ 
+ 
+diff --git a/training/full_job.py b/training/full_job.py
+index 0dd6759..b2c000a 100644
+--- a/training/full_job.py
++++ b/training/full_job.py
+@@ -7,7 +7,10 @@ OUT/: adapter/ (published for the Docker build: docker/fetch_assets.sh merges it
+ Usage (Kaggle job): run_kaggle.py public_test OUT/full --script training/full_job.py --model Qwen/Qwen3.5-9B --train
+         --files d1.jsonl,d2.jsonl,... [--data sft] [--r 64 --alpha 128 --lr 1e-4 --epochs 1 --budget 0] [--mb 8 --eff-batch 64]
+         [--sets quick400,pub_full] [--eval-config configs/e0.json] [--subset N] [--no-eval]
+-       (smoke: --budget 3e5 --subset 40 checks FSDP save -> merge -> evaluation end to end)"""
++       (smoke: --budget 3e5 --subset 40 checks FSDP save -> merge -> evaluation end to end)
++       [--trainer dpo --beta 0.1 --sft-weight 0.2] (M4: pairs from training/data/dpo_from_logs.py)
++       [--base-adapters WF1,WF2,WF3,WF4 --base-weights 0.0875,... --no-eval] (train on top of the merged soup; evaluate with
++       training/soup_job.py --adapters WF1,...,<this run's name> --search /kaggle)"""
+ import os, sys, json, time, glob, shutil, argparse, subprocess
+ 
+ HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
+@@ -25,22 +28,58 @@ def main():
+     ap.add_argument("--sets", default="quick400,pub_full"); ap.add_argument("--eval-config", default="configs/e0.json")
+     ap.add_argument("--max-len", type=int, default=3072); ap.add_argument("--seed", type=int, default=20261108)
+     ap.add_argument("--no-eval", action="store_true"); ap.add_argument("--subset", type=int, default=0, help="evaluation: first N questions per shop")
++    ap.add_argument("--trainer", default="sft", choices=["sft", "dpo"], help="dpo: training/dpo.py on (chosen, rejected) pairs (M4)")
++    ap.add_argument("--beta", type=float, default=0.1); ap.add_argument("--sft-weight", type=float, default=0.0)
++    ap.add_argument("--base-adapters", default="", help="train on top of these adapters merged into --model first (arms_job.merge_base)")
++    ap.add_argument("--base-weights", default=""); ap.add_argument("--search", default="/kaggle/input")
++    ap.add_argument("--resume-from", default="", help="continue a training stopped at the 12 h session deadline: a folder (or "
++                    "'auto' = under --search: an earlier kernel's output mounted with --ks) holding <this run's name>/ckpt/checkpoint-N")
+     a = ap.parse_args()
+     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
+     D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)
+     data = ",".join(os.path.join(D, f) for f in a.files.split(","))
+     tmp = "/tmp/full_" + os.path.basename(os.path.normpath(a.out)); os.makedirs(tmp, exist_ok=True)   # one folder per job
+     cfg = os.path.join(HERE, f"fsdp{a.gpus}.yaml")
+-    cmd = [PY, "-m", "accelerate.commands.launch", "--config_file", cfg, "--num_processes", str(a.gpus), "--main_process_port", "29531",
+-           os.path.join(HERE, "sft.py"), "--model", a.model, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
+-           "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--max-tokens", str(a.budget),
+-           "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed)]
++    base = a.model
++    if a.base_adapters:                                                 # M2 / M4: the new LoRA learns on top of the merged soup
++        import arms_job
++        base = arms_job.merge_base(a)
++    cmd = [PY, "-m", "accelerate.commands.launch", "--config_file", cfg, "--num_processes", str(a.gpus), "--main_process_port", "29531"]
++    import deadline
++    ck_dir = os.path.join(a.out, "ckpt"); res_args = []                 # checkpoints in the kept outputs (12 h session limit)
++    if a.resume_from:
++        root = a.search if a.resume_from == "auto" else a.resume_from
++        name = os.path.basename(os.path.normpath(a.out))
++        cands = [deadline.latest_checkpoint(c) for c in glob.glob(os.path.join(root, "**", name, "ckpt"), recursive=True)]
++        cands = [c for c in cands if c]
++        if cands:
++            ck = max(cands, key=lambda p: int(p.rstrip("/").split("-")[-1])); res_args = ["--resume", ck]
++            print(f"[full] resume from {ck}", flush=True)
++        else: print(f"[full] no checkpoint of {name} under {root}: training from the start", flush=True)
++    if a.trainer == "dpo":
++        cmd += [os.path.join(HERE, "dpo.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
++                "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--beta", str(a.beta),
++                "--sft-weight", str(a.sft_weight), "--metrics", os.path.join(a.out, "train_metrics.json"), "--max-len", str(a.max_len), "--seed", str(a.seed),
++                "--ckpt-dir", ck_dir] + res_args
++    else:
++        cmd += [os.path.join(HERE, "sft.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
++                "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--max-tokens", str(a.budget),
++                "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed),
++                "--ckpt-dir", ck_dir] + res_args
+     rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "train.log"), "w"), stderr=subprocess.STDOUT).returncode
+     print(f"[full] training rc {rc} in {time.time() - t0:.0f}s", flush=True)
+     if rc != 0 or not os.path.isfile(f"{tmp}/adapter/adapter_config.json"):
+         print("[full] training failed:\n" + open(os.path.join(a.out, "train.log"), errors="ignore").read()[-3000:], flush=True); sys.exit(1)
+     shutil.copytree(f"{tmp}/adapter", os.path.join(a.out, "adapter"), dirs_exist_ok=True)
++    if base != a.model: shutil.rmtree(base, ignore_errors=True)        # the merged soup (19 GB): the evaluation merges its own
++    try: tm = json.load(open(os.path.join(a.out, "train_metrics.json")))
++    except Exception: tm = {}
++    if tm.get("stopped_early"):                                         # stopped before the 12 h session deadline
++        print(f"[full] PARTIAL at {tm['stopped_early']} (session deadline): resume in a new kernel with --resume-from auto and "
++              f"this kernel's output mounted (--ks); no evaluation", flush=True); sys.exit(4)
++    shutil.rmtree(ck_dir, ignore_errors=True)
+     if a.no_eval: return
++    if base != a.model: sys.exit("[full] --base-adapters: evaluate with training/soup_job.py (base adapters + this one)")
+     t1 = time.time()
+     rc = subprocess.run([PY, os.path.join(HERE, "merge.py"), "merge", a.model, f"{tmp}/merged", f"{tmp}/adapter"],
+                         stdout=open(os.path.join(a.out, "merge.log"), "w"), stderr=subprocess.STDOUT).returncode
+diff --git a/training/sft.py b/training/sft.py
+index 3eeadc9..f12e1f2 100644
+--- a/training/sft.py
++++ b/training/sft.py
+@@ -31,6 +31,10 @@ def parse():
+     ap.add_argument("--metrics", default=""); ap.add_argument("--no-save", action="store_true")
+     ap.add_argument("--no-gc", action="store_true", help="no gradient checkpointing"); ap.add_argument("--warmup", type=float, default=0.03)
+     ap.add_argument("--log-every", type=int, default=1)
++    ap.add_argument("--ckpt-dir", default="", help="where resumable checkpoints go (a kept output folder); default --out")
++    ap.add_argument("--resume", default="", help="a checkpoint (or a folder holding checkpoint-N) to continue from (training/deadline.py)")
++    ap.add_argument("--save-every", type=int, default=0, help="also checkpoint every N steps (0: only before the session deadline)")
++    ap.add_argument("--deadline-reserve", type=float, default=900, help="seconds before ZC_DEADLINE at which training checkpoints + stops")
+     return ap.parse_args()
+ 
+ 
+@@ -98,8 +102,10 @@ class TorchLogProb:
+         lsm = torch.log_softmax(logits, -1)
+         lp = lsm.gather(-1, targets[:, None]).squeeze(-1)
+         ent = -(lsm.exp() * lsm).sum(-1) if "entropy" in outputs else None
++        lss = torch.logsumexp(2 * lsm, -1) if "log_sum_sq_probs" in outputs else None
++        ml = logits.mean(-1) if "mean_logits" in outputs else None      # DPO logs the mean logit of each side
+         top1 = (logits.argmax(-1) == targets) if "is_top1" in outputs else None
+-        return lp, ent, None, None, top1
++        return lp, ent, lss, ml, top1
+ 
+ 
+ def main():
+@@ -138,9 +144,9 @@ def main():
+               f"{list(info.get('missing_keys', []))[:5]}; unexpected {len(info.get('unexpected_keys', []))}", flush=True)
+     lcfg = LoraConfig(r=a.r, lora_alpha=a.alpha, lora_dropout=a.dropout, target_modules=LM_TARGET, bias="none", task_type="CAUSAL_LM")
+     total = a.max_steps if a.max_steps > 0 else math.ceil(math.ceil(len(recs) / (a.mb * world * ga)) * a.epochs)
+-    want = dict(output_dir=a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr,
++    want = dict(output_dir=a.ckpt_dir or a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr,
+                 num_train_epochs=a.epochs, max_steps=a.max_steps, lr_scheduler_type="cosine", warmup_steps=max(1, int(a.warmup * total)),
+-                logging_steps=a.log_every, save_strategy="no", report_to="none", bf16=not cpu, seed=a.seed, max_length=a.max_len,
++                logging_steps=a.log_every, save_strategy="steps" if a.save_every else "no", save_steps=a.save_every or 500, save_total_limit=1, report_to="none", bf16=not cpu, seed=a.seed, max_length=a.max_len,
+                 gradient_checkpointing=not a.no_gc, gradient_checkpointing_kwargs={"use_reentrant": False},
+                 completion_only_loss=True, dataset_num_proc=1, dataloader_num_workers=2, remove_unused_columns=True,
+                 packing=False, padding_free=False)
+@@ -159,7 +165,9 @@ def main():
+             if logs and "loss" in logs: stats["loss"].append(round(float(logs["loss"]), 4)); stats["steps"].append(state.global_step)
+             if rank == 0 and logs: print(f"[sft] step {state.global_step} {logs}", flush=True)
+ 
+-    tr = SFTTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok, peft_config=lcfg, callbacks=[Meter()])
++    import deadline
++    tr = SFTTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok, peft_config=lcfg,
++                    callbacks=[Meter(), deadline.callback(TrainerCallback, a.deadline_reserve, stats)])
+     pm = tr.model
+     try:
+         names = [n for n, _ in pm.named_modules() if n.endswith("lora_A")]
+@@ -173,7 +181,9 @@ def main():
+     ref = ref_records(a.data, tok, a.max_len, 4)
+     lr0 = ref_loss(tr.model, ref) if world == 1 else None             # before FSDP wraps it the model is on CPU / meta: skipped
+     t1 = time.time()
+-    res = tr.train()
++    ck = deadline.latest_checkpoint(a.resume)
++    if a.resume and rank == 0: print(f"[sft] resume from {ck}", flush=True)
++    res = tr.train(resume_from_checkpoint=ck)
+     lr1 = ref_loss(tr.model, ref) if rank == 0 or world > 1 else None
+     dt = time.time() - t1
+     steps = res.global_step
+@@ -182,7 +192,7 @@ def main():
+     m = {"ok": True, "world": world, "mb": a.mb, "ga": ga, "max_len": a.max_len, "records": len(recs), "tokens": ntok, "steps": steps,
+          "train_s": round(dt, 1), "tok_per_s": round(tok_per_step * max(1, steps - 2) / max(steady, 1e-6), 1) if steps > 2 else None,
+          "loss_first": stats["loss"][0] if stats["loss"] else None, "loss_last": stats["loss"][-1] if stats["loss"] else None,
+-         "losses": stats["loss"][:200], "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2) if torch.cuda.is_available() else 0.0, **{k: v for k, v in stats.items() if k.startswith(("lora", "trainable", "vision"))}}
++         "losses": stats["loss"][:200], "stopped_early": stats.get("stopped_early"), "resumed_from": ck, "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2) if torch.cuda.is_available() else 0.0, **{k: v for k, v in stats.items() if k.startswith(("lora", "trainable", "vision"))}}
+     if world > 1:
+         import torch.distributed as dist
+         if dist.is_initialized():
+diff --git a/training/sft_unsloth.py b/training/sft_unsloth.py
+index 9a04c3d..d2b460e 100644
+--- a/training/sft_unsloth.py
++++ b/training/sft_unsloth.py
+@@ -17,6 +17,10 @@ def main():
+     ap.add_argument("--no-save", action="store_true"); ap.add_argument("--epochs", type=float, default=1.0)
+     ap.add_argument("--max-tokens", type=float, default=0, help="token budget: records subsampled (seeded) to about this many tokens")
+     ap.add_argument("--warmup", type=float, default=0.03)
++    ap.add_argument("--ckpt-dir", default="", help="where resumable checkpoints go (a kept output folder); default --out")
++    ap.add_argument("--resume", default="", help="a checkpoint (or a folder holding checkpoint-N) to continue from (training/deadline.py)")
++    ap.add_argument("--save-every", type=int, default=0, help="also checkpoint every N steps (0: only before the session deadline)")
++    ap.add_argument("--deadline-reserve", type=float, default=900, help="seconds before ZC_DEADLINE at which training checkpoints + stops")
+     a = ap.parse_args()
+     import torch
+     from datasets import Dataset
+@@ -45,13 +49,17 @@ def main():
+             if logs and "loss" in logs: stats["loss"].append(round(float(logs["loss"]), 4))
+     import dataclasses
+     total = a.max_steps if a.max_steps > 0 else math.ceil(math.ceil(len(recs) / (a.mb * ga)) * a.epochs)
+-    want = dict(output_dir=a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr, max_steps=a.max_steps,
+-                num_train_epochs=a.epochs, logging_steps=5, save_strategy="no", report_to="none", bf16=True, seed=a.seed, max_length=a.max_len,
++    want = dict(output_dir=a.ckpt_dir or a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr, max_steps=a.max_steps,
++                num_train_epochs=a.epochs, logging_steps=5, save_strategy="steps" if a.save_every else "no", save_steps=a.save_every or 500, save_total_limit=1, report_to="none", bf16=True, seed=a.seed, max_length=a.max_len,
+                 completion_only_loss=True, warmup_steps=max(1, int(a.warmup * total)), lr_scheduler_type="cosine", dataset_num_proc=1)
+     fields = {f.name for f in dataclasses.fields(SFTConfig)}
+-    tr = SFTTrainer(model=model, args=SFTConfig(**{k: v for k, v in want.items() if k in fields}), train_dataset=ds, processing_class=tok, callbacks=[Meter()])
++    import deadline
++    tr = SFTTrainer(model=model, args=SFTConfig(**{k: v for k, v in want.items() if k in fields}), train_dataset=ds, processing_class=tok,
++                    callbacks=[Meter(), deadline.callback(TrainerCallback, a.deadline_reserve, stats)])
+     ref = ref_records(a.data, tok, a.max_len, 4); lr0 = ref_loss(model, ref)
+-    t1 = time.time(); res = tr.train(); dt = time.time() - t1
++    ck = deadline.latest_checkpoint(a.resume)
++    if a.resume: print(f"[sft] resume from {ck}", flush=True)
++    t1 = time.time(); res = tr.train(resume_from_checkpoint=ck); dt = time.time() - t1
+     lr1 = ref_loss(model, ref)
+     if a.out and not getattr(a, "no_save", False): model.save_pretrained(a.out); tok.save_pretrained(a.out)
+     steady = time.time() - stats.get("t2", t1); steps = res.global_step
+@@ -59,7 +67,7 @@ def main():
+     m = {"ok": True, "unsloth": True, "mb": a.mb, "ga": ga, "steps": steps, "train_s": round(dt, 1),
+          "tok_per_s": round(tps * max(1, steps - 2) / max(steady, 1e-6), 1) if steps > 2 else None,
+          "loss_first": stats["loss"][0] if stats["loss"] else None, "loss_last": stats["loss"][-1] if stats["loss"] else None, "records": len(recs), "tokens": ntok,
+-         "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2)}
++         "stopped_early": stats.get("stopped_early"), "resumed_from": ck, "ref_loss_before": lr0, "ref_loss_after": lr1, "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 2)}
+     print("[sft] METRICS " + json.dumps(m), flush=True)
+ 
+ 

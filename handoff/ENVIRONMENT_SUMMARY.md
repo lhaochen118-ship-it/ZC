@@ -1,4 +1,4 @@
-# Environment Summary — DataMate (cập nhật 08/11/2026)
+# Environment Summary — DataMate (cập nhật 11/11/2026)
 
 *Cấu hình các môi trường dự án dùng. Bài học vận hành ở PDF 2; vận hành Kaggle chi tiết ở `docs/02_KAGGLE_OPS.md`.*
 
@@ -6,46 +6,44 @@
 
 | Mục | Giá trị |
 |---|---|
-| Máy | 4 nhân CPU, 15 GB RAM, **không GPU, không Docker daemon**; ~24 GB đĩa trống (hạn mức riêng) |
-| Python | 3.13; pandas 3.x, numpy 2.x, openpyxl, python-calamine, kaggle CLI |
-| PDF | `pip install markdown xhtml2pdf` (mất khi đổi container); `automation/md2pdf.py`, font DejaVu |
+| Máy | 4 nhân CPU, 15 GB RAM, **không GPU, không Docker daemon**; hạn mức đĩa riêng (~40 GB; `df` "Avail 0" = hết hạn mức) |
+| Python | 3.13; pandas 3.x, numpy 2.x, openpyxl, python-calamine, kaggle CLI 2.2.5; trl 1.15 / peft 0.21 / transformers 5.17 / torch CPU (test huấn luyện trên mô hình tí hon) |
+| PDF | `pip install markdown xhtml2pdf` (mất khi đổi container); `python3 automation/md2pdf.py <in.md> <out.pdf>` |
 | vLLM | không có — test CPU dùng mô hình giả (`--fake-responder`) |
 | Repo | `/home/user/ZC`, branch `claude/datamate-v3-0dny90` |
-| Scratch | thư mục scratchpad của phiên (`runs/`, `cache_train/`, `cache_pub/`, `ana/`) — **mất khi sang khung chat mới** |
-| Token Kaggle | `~/.kaggle/tok_<username>` (chmod 600); xin lại user mỗi khung chat |
-| Tác vụ nền | trần 2 giờ; container có thể khởi động lại giữa phiên (tiến trình nền mất) |
+| Scratch | thư mục scratchpad của phiên (`runs/`, `cache_train/`, `cache_pub/`, `canon/`, worktree) — **mất khi sang khung chat mới**; bản lưu cần thiết ở `Process/` |
+| Token Kaggle | `~/.kaggle/tok_<username>` (chmod 600), 24 acc; xin lại user mỗi container; username từ token: `KAGGLE_API_TOKEN=... kaggle config view` |
+| Tác vụ nền | trần 2 giờ (watcher `--max 115` rồi bật lại); container có thể khởi động lại giữa phiên → `automation/resume.py` |
 
 Dựng lại sau khi mất container:
 ```bash
-kaggle datasets download nhatlong1103/zc-2026 -p data/raw --unzip
+kaggle datasets download nhatlong1103/zc-2026 -p data/raw --unzip      # + data/raw/public_gt.jsonl (user gửi)
 python3 src/ingest.py data/raw/train/train <S>/cache_train 4
 python3 src/ingest.py data/raw/public_test/public_test <S>/cache_pub 4
+python3 tests/build_canon.py data/raw/train/train <S>/cache_train <S>/canon      # bảng chuẩn (dữ liệu RFT / DPO)
+for f in Process/train_data/wg/*.gz; do mkdir -p training/data/out/wg; gunzip -c $f > training/data/out/wg/$(basename ${f%.gz}); done
 ```
-Đáp án public (`data/raw/public_gt.jsonl`): user gửi (`score_1.jsonl`). Paraphrase: `kaggle datasets download <acc>/zc-para`.
 
 ## 2. Kaggle (nơi chạy GPU)
 
 | Mục | Giá trị |
 |---|---|
 | Máy | `NvidiaL4` → **4×L4** (22.5 GB / GPU, không NVLink), 48 CPU; không internet |
-| Điều kiện L4 | `competition_sources: ["gemma-4-developer-agent"]` + acc đã accept rules trên web |
+| Điều kiện L4 | `competition_sources: ["gemma-4-developer-agent"]` + acc đã accept rules trên web (push lỗi "accept this competition's rules" nếu chưa) |
 | Mô hình | Kaggle Model `danbth/qwen3-5-9b/transformers/default/1` (bf16, FP8 online `--quant fp8`), kiểm sha256 |
-| Thư viện | `nhatlong1103/zc-assets` (wheels vLLM 0.32 + deps); code đẩy theo kernel |
-| Dữ liệu | `nhatlong1103/zc-2026`; paraphrase / câu chờ: `<acc>/zc-para`, `<acc>/zc-pend` (private, mỗi acc một bản) |
-| Song song | `--dp 4` + `--pipeline` (work stealing theo DN) |
-| Đo được | ~200 token sinh / s / GPU; bận 84–94 %; KV ≈ 201k token / GPU (`--gpu-util 0.92`) |
-| Thời gian | LLM 1 lần chạy: public 1000 câu ≈ 55–75 phút, train 3000 câu ≈ 65–70 phút; luồng nộp v34 trên 2065 paraphrase: 3.1 h; chi phí cố định mỗi phiên: cài wheels 180–315 s, chép 9B 50–89 s, nạp vLLM 274–280 s; đầu ra ngắn ≥ 5.5–7 prompt / s / L4 (v33) |
-| Giới hạn | 2 phiên GPU + 5 CPU đồng thời / acc; **30 giờ GPU / tuần / acc, tính theo GPU**; reset thứ Bảy 00:00 UTC |
+| Thư viện | `nhatlong1103/zc-assets` (wheels vLLM 0.32), `yeshenhi/zc-train-wheels` (huấn luyện: unsloth, trl, peft); code đẩy theo kernel (`<acc>/zc-code`) |
+| Dữ liệu | `nhatlong1103/zc-2026`; riêng mỗi acc: `zc-para`, `zc-final-adapter`, `zc-wg-adapters` (`Process/kaggle/datasets_by_account.txt`) |
+| Thời gian | đánh giá đủ tập (pub_full + pub_ho + tr_ho = 4,199 câu) ~60–75 phút + cài 7 phút + gộp 2–10 phút; tập con sàng lọc ~35–40 phút; luồng nộp 1,000 câu ~22 phút; huấn luyện 4 nhánh LoRA 14.7M token ~5 h (1 nhánh / GPU, unsloth) |
+| Giới hạn | 2 phiên GPU + 5 CPU / acc; **30 h GPU / tuần / acc** (4×L4 ≈ 1.5–2.2 h quota / giờ tường); làm mới thứ Bảy 00:00 UTC; phiên commit ≤ 12 h |
 
-### Tài khoản (08/11)
+### Tài khoản (11/11; quota: `python3 automation/quota.py`)
 
-| Acc | Loại | Tình trạng tuần W46 (từ 07/11) |
-|---|---|---|
-| quynhtran35, phatle1578 | L4 | chưa dùng |
-| yuan1103 | L4 | đã dùng ~15 h (v33, v34) |
-| yeshenhi, mxuanquy | chỉ T4 (không chạy được Qwen3.5-9B FP8) | — |
-| nhatlong1103 | chỉ đăng dataset | — |
-| **N1–N4 (cần thêm, lý tưởng N5)** | L4 (đã accept rules `gemma-4-developer-agent`, đã xác minh số điện thoại) | cần trước sáng 11/11 — `docs/08_MASTER_PLAN.md` §9 |
+| Nhóm | Acc |
+|---|---|
+| L4, còn giờ đến 14/11 | bichthuy93, phuongnehe, caohuyen74, hieuho669, huuhien95, dinhthinh, loinguyentran, linhmai24 |
+| L4, < 6 h / hết | anderson1202, duylnng, thnliu, yuan1103, synchan5704, lelynhan, huyenco, mucnokieu, nguyenhoa99, nguynduylm, phatle1578, quynhle07, quynhtran35 |
+| không L4 | mxuanquy (chưa accept rules), yeshenhi (chỉ T4), nguyenmanh0404 |
+| chỉ dataset | nhatlong1103 (dữ liệu, adapter nộp) |
 
 Acc dùng chung với dự án khác: chỉ thao tác kernel `zc-*`. `automation/accounts.json`: danh sách acc không có L4.
 
@@ -54,7 +52,7 @@ Acc dùng chung với dự án khác: chỉ thao tác kernel `zc-*`. `automation
 | Mục | Giá trị |
 |---|---|
 | Phần cứng | 2×RTX 5090 (32 GB), ≤ 6 giờ, `--network none`, `/data` chỉ đọc, kết quả `/result` |
-| Image | `docker/Dockerfile`: `vllm/vllm-openai:v0.32.0`, pandas 2.3.3, numpy 2.1.3, openpyxl, python-calamine; trọng số trong image |
-| Chạy | `docker/predict.sh` → `src/predict_flow.py` (ngân sách 20400 s, gộp kết quả mỗi 20 s) |
+| Image | `docker/Dockerfile`: `vllm/vllm-openai:v0.32.0`, pandas 2.3.3, numpy 2.1.3, openpyxl, python-calamine; trọng số gộp lúc build (`docker/merge_assets.py`, `soup.json`) |
+| Chạy | `docker/predict.sh` → `src/predict_flow.py --config configs/flow_final.json` (ngân sách 20,400 s, gộp kết quả mỗi 20 s) |
 | Hướng dẫn | `docker/SETUP_DOCKER.md` (`fetch_assets.sh` → `build.sh` → `run_public_test.sh` → `export_image.sh`), `docker/README_SOLUTION.md` |
-| Chưa làm | build + đo trên GPU thật (user làm); luồng sẽ đổi sang LLM-first trước khi build bản cuối |
+| Đã kiểm | đường container trên Kaggle 4×L4 (0.986); build + chạy trên GPU thật: user làm 15/11 |

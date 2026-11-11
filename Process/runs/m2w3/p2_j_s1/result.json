@@ -1,0 +1,21 @@
+{
+ "adapters": {
+  "WF3": "/kaggle/input/datasets/thnliu/zc-final-adapter/WF3/adapter",
+  "RS1": "/kaggle/working/results/m2w3/RS1/adapter",
+  "RS2": "/kaggle/working/results/m2w3/RS2/adapter",
+  "RS3": "/kaggle/working/results/m2w3/RS3/adapter",
+  "RS4": "/kaggle/working/results/m2w3/RS4/adapter"
+ },
+ "weights": [
+  0.35,
+  0.25,
+  0.25,
+  0.25,
+  0.25
+ ],
+ "merge_rc": 0,
+ "merge_s": 64,
+ "config": "configs/p2_j_s1.json",
+ "eval_rc": 0,
+ "eval_s": 4489
+}

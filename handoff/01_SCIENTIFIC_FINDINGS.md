@@ -1,133 +1,104 @@
-# PDF 1 — Scientific Findings (DataMate, đến 08/11/2026)
+# PDF 1 — Scientific Findings (DataMate, đến 11/11/2026)
 
-*Phạm vi: đóng góp, ý nghĩa, kết quả tích cực và tiêu cực, bằng chứng, điều kiện kiểm chứng. Kinh nghiệm kỹ thuật /
-vận hành ở PDF 2; tiến độ, vị trí file và việc tiếp theo ở PDF 3. Số liệu gốc: `EXPERIMENT_LOG.md` entry 0–27.*
+*Phạm vi: đóng góp, ý nghĩa khoa học, kết quả tích cực và tiêu cực, bằng chứng, điều kiện kiểm chứng. Kinh nghiệm kỹ thuật /
+vận hành ở PDF 2; tiến độ, vị trí file và việc tiếp theo ở PDF 3. Số liệu: `EXPERIMENT_LOG.md` (kế hoạch 1),
+`Process/history/STATUS_full_until_2026-11-11.md` (từng vòng kế hoạch 2), `Process/scores.csv` (mọi lần chạy).*
 
 ## 1. Bài toán và thước đo
 
-- Hỏi đáp tiếng Việt trên dữ liệu bảng bẩn (CSV, Excel nhiều sheet, SQLite), **mỗi DN một cấu trúc**, kèm rulebook
-  (doanh thu, đơn hợp lệ, nợ, tồn, lô, mục ngành riêng). PA = (đúng − sai) / N.
-- Train: 30 DN, 3000 câu có đáp án. Public: 14 DN mới, 1000 câu; đáp án public có ở `data/raw/public_gt.jsonl` (user
-  cung cấp, chỉ dùng để chấm). Private: DN và cách hỏi chưa thấy.
-- **Ba thước đo, ý nghĩa khác nhau:**
-- (1) Train / public gốc: đo trong mẫu (luật được viết từ chính các câu này).
-- (2) Biến đổi bề mặt: câu không dấu, nhiễu chat, README xoá trắng, đổi tên cột + xáo cột (`tests/eval_split.py --perturb-*`).
-- (3) **Paraphrase bằng LLM** (`src/paraphrase_llm.py`, 3 biến thể / câu, kiểm giữ số / ngày / mã / tên): đo khả năng đọc
-     cách hỏi mới — gần private nhất. k=0 public = dev (được phân tích lỗi); k=1,2 public và mọi paraphrase train = held-out.
+- Hỏi đáp tiếng Việt trên dữ liệu bảng bẩn (CSV / Excel / SQLite), mỗi DN một cấu trúc, rulebook nghiệp vụ.
+  **PA = (đúng − sai) / N**, bỏ trả lời = 0. Train 30 DN / 3,000 câu; public 14 DN / 1,000 câu; private: DN và cách hỏi mới.
+- Thước đo quyết định (giữ suốt kế hoạch 2): **public gốc** (dev, được phân tích lỗi) và **held-out** — `pub_ho` (1,373
+  paraphrase câu public, k = 1, 2), `tr_ho` (1,826 câu của 6 DN train giữ ngoài huấn luyện); gộp = trung bình theo số câu.
+  Nhiễu một lần chạy: public ±0.4, held-out gộp ±0.3 → mọi quyết định dùng ≥ 2 seed.
+- Quy tắc giữ / bỏ (`docs/12_PLAN2.md` §4): giữ khi public tăng ≥ 0.3 (một lần hoặc trung bình) và held-out gộp không giảm > 0.3;
+  sửa lỗi hiển nhiên được giữ nếu không kém đi; cải tiến tăng public mà giảm held-out → loại.
 
-## 2. Hai kiến trúc đã xây và so sánh
+## 2. Kiến trúc cuối: hybrid framework (Agent sinh code + luật hỗ trợ)
 
-| | Đường LLM (v3, đến v28) | Đường luật (rule-first, v30–v34) |
+Mọi câu: gợi ý tổng quát (kỳ, thực thể, kiểu đáp án, từ rulebook, câu đã làm sạch) + ví dụ truy hồi → **mô hình viết chương
+trình** trên toolkit nghiệp vụ đã kiểm (`dm`, `industry`) → kiểm tra trước khi chạy (precheck: lỗi → lượt sửa) → chạy sandbox →
+cờ sau khi chạy → vòng 2 (thêm mẫu, nửa "think") → **bỏ phiếu**, bỏ trả lời khi phiếu < 0.5. Không luật nào tự viết đáp án.
+
+| Mốc | Public gốc | Held-out gộp |
 |---|---|---|
-| Ánh xạ schema | LLM viết chương trình ánh xạ / DN → bảng chuẩn C; code kiểm; đồng thuận giữa các lần chạy | `automap`: README + từ điển tên cột + hồ sơ giá trị + đẳng thức tiền |
-| Hiểu câu + sinh code | LLM viết K chương trình 1 dòng trên toolkit; luật `qparse` là một phiếu (qw 4) | `qnorm` làm sạch + `qparse` mẫu regex → chương trình; LLM chỉ cho câu luật bỏ lại |
-| Tính toán | toolkit `dm.Shop` / `industry` (Python) | như bên trái |
-| Abstain | bỏ phiếu, ngưỡng | luật không đọc được → LLM; LLM: ngưỡng phiếu 0.75 |
-| Public gốc | **0.921** (v28) | **1.000** (v30) |
-| Train | 0.9897 | 1.000 |
-
-**Đóng góp dùng chung cho cả hai** (giữ nguyên trong kiến trúc tiếp theo):
-
-1. **Chuẩn hoá theo DN, không theo câu**: chi phí ánh xạ theo số DN; chương trình trả lời chỉ ~1 dòng.
-2. **Toolkit nghiệp vụ đã kiểm chứng** (`src/dm.py`, `src/industry.py`): mọi định nghĩa rulebook là hàm có test; LLM không
-   tự tính. Oracle (ánh xạ tham chiếu + chương trình đúng): 2967 / 1 / 32 trên train.
-3. **Kiểm tra nội dung ánh xạ theo bất biến rulebook** (`canon.secondary_checks`): doanh thu = tổng dòng, ghi nợ ⇒ còn nợ,
-   biển số khớp sổ, giá vốn ≠ 0…; 0 báo động giả trên 36 ánh xạ tham chiếu train.
-4. **Đồng thuận ánh xạ giữa các lần chạy** (`src/consensus.py`): gỡ "may rủi ánh xạ" (cùng cấu hình chỉ 80–89 % câu giống).
+| Kế hoạch 1, M0 (súp WF1–4 × 0.35, không luật P2) | 0.934 (tb 5 lần) | 0.752 |
+| Hướng R vòng 8 (+ luật tổng quát P2, súp cũ) | 0.9815 | 0.761 |
+| Bản nộp 11/11: O + WG1 × 0.35 | **0.9855** (container 0.986) | **0.778** |
 
 ## 3. Kết quả tích cực
 
-### 3.1 Đường LLM (train LOO, rồi public)
+### 3.1 Hướng R — luật tổng quát làm ngữ cảnh / kiểm tra (16 vòng, 0.934 → 0.9815 với cùng mô hình)
 
-| Bản | Train | Public | Thay đổi chính |
+- **Sửa gợi ý / làm sạch câu là đòn bẩy lớn nhất** (vòng 1: +3.1 public): lỗi "máy / mấy" ở 27 câu, từ rulebook khớp có dấu, mẫu
+  "N ngày tới", "the" → thế / thẻ khi câu không dấu, khôi phục dấu từng từ có bigram hỗ trợ.
+- **Trần token 512 → 1536** (10.7 % mẫu bị cắt ở 512): +0.2 public, held-out không giảm (với luồng R).
+- **Kiểm tra lỗi có "tín hiệu sạch"** (chỉ chạm mẫu sai trên mọi log): `size` (54 + 114 mẫu, 0 đúng), `unit` (71 + 104), `len_mask`
+  (`len()` của mặt nạ True / False; 69 mẫu cuối trên 20 lần chạy, 0 đúng). Áp dụng như lỗi → lượt sửa. Phương pháp chọn kiểm tra này
+  (đo trên log có sẵn, chỉ nhận khi không chạm mẫu đúng) là đóng góp có thể tái dùng.
+- Cờ cảnh báo (period, named-periods, threshold) giảm trọng số phiếu thay vì chặn: +0.2–0.5.
+
+### 3.2 Hướng M — cải tiến phía mô hình (không thêm luật; từ M0 = 0.934 / 0.752)
+
+| Gói | Ý tưởng | Kết quả | Quyết định |
 |---|---|---|---|
-| v1 (LLM viết pandas mỗi câu) | ≈0.45 | — | bỏ |
-| v3 đầu | 0.810 | — | ánh xạ theo DN + toolkit |
-| v4b → v11 → v20 | 0.955 → 0.975 → 0.991 | 0.63–0.69 (portal) | kiểm tra ánh xạ, budget forcing, grounding |
-| v25 (5 lần chạy) | 0.9893 | 0.903 (chấm cục bộ) | toolkit ngành, kiểm tra mới |
-| **v28** (8 lần chạy + đồng thuận) | 0.9897 | **0.921** (921 / 69 / 10) | slot chủ đề trong đồng thuận |
+| **M7** | mỗi thành viên súp chạy như bộ sinh riêng | WF3 (D1 + mẫu D2) × 0.35: **0.951 / 0.759**; WF1 / WF2 (chỉ D1): 0.924 / 0.931 | **thành viên có paraphrase > súp 4 thành viên** |
+| M6 | bộ chọn đáp án học được (logistic, 13 đặc trưng tỉ lệ bất biến số mẫu; train trên log câu train / paraphrase / D3) | M0: public 0.934 → **0.944**, held-out 0.752 → **0.767** | giữ cho M; trên luồng R: public −0.1…−0.8 → không dùng |
+| M2 | RFT / STaR: SFT trên chương trình đúng của chính mô hình (710 câu khó + câu dễ), LoRA **học trên** súp | M0: 0.939 / 0.768 (+0.5 / +1.6); trên WF3 + R: +0.05 / +0.3; trên WG1: −0.6 public | giúp mô hình yếu, không giúp mô hình đã mạnh |
+| M4 | DPO theo phản hồi thực thi (871 cặp đúng / sai của chính súp) | 0.935 / 0.749 | loại (khớp cặp, margin 9.2, không tổng quát) |
+| — | trần 1536 trên luồng M0 | public +0.55, held-out −1.0 | loại (khác hướng R) |
 
-Phát hiện định lượng: Qwen3.5-9B > Qwen3-14B-AWQ (0.889 vs 0.751); pipeline không rào chắn nhanh 2.2×; grounding (mẫu nhắc
-mặt hàng không có trong câu sai 85 %); bỏ phiếu 1 → 3 lần chạy: 0.93–0.97 → 0.98.
+### 3.3 Mô hình nộp: dữ liệu paraphrase là đòn bẩy (vòng 10–16, cùng luồng R)
 
-### 3.2 Đường luật
-
-- Train 3000 / 3000, public 1000 / 1000 (chấm nghiêm, cả pandas 2.3.3 + calamine của image).
-- Biến đổi bề mặt (luật một mình): đổi tên cột + xáo cột 1.000 / 1.000; README trắng train 1.000, public 0.993; không dấu
-  0.989; nhiễu chat 0.966–0.978; toàn luồng (luật + LLM) trên nhiễu 0.989–0.996.
-
-### 3.3 Paraphrase (held-out, toàn luồng có LLM, chấm theo đáp án câu gốc)
-
-| Luồng | Public dev k=0 | Public held-out k=1,2 | Train held-out |
+| Mô hình × 0.35 (luồng J / O) | Public tb | Held-out gộp tb | Seed |
 |---|---|---|---|
-| Luật một mình | ≈0.51 (cả 3 biến thể) | | ≈0.67 |
-| v31 luật + LLM | 0.640 | 0.559 | 0.752 |
-| + ngưỡng tin cậy 0.75 | 0.660 | 0.579 | 0.768 |
-| v32 (sửa chung 05/11) | 0.681 | 0.584 | 0.780 |
-| **v34 + stage 1.5** (LLM viết lại câu, luật đọc lại) | 0.676 | **0.602** | ~0.801 (ước lượng) |
+| súp WF1–4 (cũ) | 0.9815 | 0.761 | 2 |
+| WF3 (D1 + 2,119 paraphrase) | 0.979 | 0.773 | 3 |
+| WF3 + RFT trên WF3 | 0.9805 | 0.776 | 2 |
+| súp WF3 + WF4 | 0.977 | 0.769 | 3 |
+| **WG1 (D1 + 3,818 paraphrase)** | **0.985** (J), **0.9855** (O) | 0.776 / 0.778 | 3 / 2 |
+| WG2 (D1 + D2 + D2N) | 0.979 | **0.782** | 1 |
+| WG3 (= WG1, seed khác) | 0.983 | 0.768 | 1 |
+| WG1 × 0.40 | 0.986 | 0.780 | 2 |
+| WG1 × 0.40 + k 12 | 0.9825 | 0.784 | 2 |
 
-Bỏ các paraphrase đổi kỳ thời gian (gần như luôn đổi nghĩa): dev 0.814, held-out 0.712, train 0.829 (v32).
-Stage 1.5: luật đọc câu viết lại đúng 90 % (train) / 84 % (public held-out) khi trả lời — cao hơn LLM trả lời trực tiếp
-(~77 %).
+Kết luận: (1) nhiều paraphrase hơn → tổng quát tốt hơn ở cả public lẫn held-out; (2) **súp không hơn thành viên tốt nhất** (4 lần
+thử); (3) chất lượng phụ thuộc seed huấn luyện (WG1 vs WG3: 0.8 điểm public cùng dữ liệu); (4) α 0.35–0.40 ổn định; (5) trộn câu
+RFT vào SFT từ mô hình gốc (WG4) làm held-out giảm (0.754), RFT chỉ có ích khi học chồng lên mô hình đã fine-tune và còn yếu.
 
-## 4. Kết quả tiêu cực và hạn chế (trung thực)
+## 4. Kết quả tiêu cực và hạn chế
 
-1. **Điểm 1.000 của đường luật là trong mẫu.** Các mẫu `qparse` / `automap` được viết từ lỗi trên train và public. Trên
-   cách hỏi mới, luật một mình chỉ ~0.67 (train) và ~0.51 (public). Đây là lý do user quyết định chuyển sang LLM-first
-   (PDF 3 §2.1): luật trả lời thẳng không tổng quát cho private; luật chỉ còn hỗ trợ Agent.
-2. **Train không dự báo public** ở đường LLM (0.99 vs 0.63–0.69 trên portal ở v13–v20): ngành mới, quy ước dữ liệu mới,
-   từ địa phương. Sau khi có toolkit ngành + kiểm tra mới: 0.92.
-3. **Điểm portal không so được giữa các đợt**: v23 = 0.87 rồi file lai X2 (v23 + 6 câu) = 0.756 → đáp án / tập chấm portal
-   đã đổi. Chỉ so các file chấm cùng đợt.
-4. **Paraphrase làm thước đo có nhiễu**: một phần "sai" là paraphrase đổi nghĩa (đổi kỳ, đổi đại lượng). 12 / 13 câu sai của
-   luật trên câu viết lại (dev k=0) thuộc loại này. Thước đo dưới-ước lượng độ chính xác thật.
-5. **Không tất định**: ánh xạ LLM khác nhau giữa các lần chạy; `VLLM_BATCH_INVARIANT=1` không chạy với Qwen3.5.
-6. **Chưa đo**: đường LLM thuần (không luật) trên paraphrase held-out; thời gian trên 2×RTX 5090.
+1. **Chưa đạt điều kiện dừng 100 %**: còn 3 câu sai ổn định (chọn sai hàm: bỉm size M theo bịch, bình quân trên phiếu thu, nhập về
+   N viên) + ~10 câu phiếu tách đổi theo seed → public trần thực tế ~0.985–0.99 với hệ hiện tại.
+2. **Held-out paraphrase public còn thấp (0.64)**: một phần là paraphrase đổi nghĩa (đổi kỳ / đại lượng) nên số này dưới-ước lượng;
+   tr_ho (DN chưa thấy, câu gốc) 0.88 là ước lượng gần private nhất.
+3. **Bộ chọn học được không chuyển được** giữa luồng / mô hình (trên luồng R public giảm mọi lần) → cần train lại trên log của đúng
+   cấu hình, và cần log câu train ngoài mẫu (D3) để không bỏ trả lời quá tay.
+4. **Sàng lọc trên tập con 400 câu nhiễu ±0.6**: ×0.40 và k12 hơn +1.2 trên tập con nhưng chỉ +0.2 / +0.6 trên đủ tập → tập con
+   chỉ dùng để loại.
+5. Điểm 1.000 của đường luật kế hoạch 1 là trong mẫu (paraphrase chỉ 0.51–0.67) → lý do chuyển sang hybrid.
 
-### Đã thử và không giữ
+### Đã thử và không giữ (kế hoạch 2)
 
-| Thử | Kết quả |
-|---|---|
-| LLM làm sạch câu | 70 % từ đúng (luật 99.8 %) |
-| Bỏ phiếu chéo ánh xạ (vote2 / vote3) | 0.964 / 0.942 < top1 0.967 |
-| FP8 KV cache, MTP speculative | không chạy / chỉ −6 % thời gian |
-| Ngưỡng "câu lạ" (novelty) để chuyển câu cho LLM | câu public gốc cũng "lạ" → không tách được |
-| "tháng trước" đứng một mình = tháng liền trước | 0 đúng / 3 sai (paraphrase đổi kỳ) |
-| Bỏ dòng Voucher / phí ship khỏi doanh thu (v24) | portal tụt; giữ trong doanh thu đúng với đáp án BTC |
+prefill `<plan>` (0.898), θ 0.375 (public +, pub_ho −), review 3 / k 12 (trung tính, chậm hơn), cờ raw-pandas / base-unit / hàm nhập
+(không sạch), DPO, RFT trên WG1, súp WF3 + WF4 / WG1 + WG3 / WG1 + WG2, WG1 × 0.30, bộ chọn trên luồng R.
 
 ## 5. Ý nghĩa khoa học
 
-- Với ≤ 15B tham số, **đặt ngữ nghĩa vào code kiểm chứng và giao LLM việc hẹp** (viết ánh xạ / chương trình 1 dòng) tốt hơn
-  hẳn để LLM tự phân tích (0.45 → 0.99 train). Đòn bẩy lớn nhất là ánh xạ dữ liệu đúng.
-- **Độ chính xác trong mẫu không phải bằng chứng tổng quát hoá**: hệ luật đạt 100 % trên mọi câu đã thấy nhưng ~0.5–0.67
-  trên cách hỏi mới. Cần thước đo held-out (paraphrase, biến đổi dữ liệu) ngay từ đầu.
-- **Chuẩn hoá cách hỏi bằng LLM rồi cho bộ đọc chính xác đọc lại** (stage 1.5) cho độ chính xác cao hơn LLM tự sinh
-  chương trình trên cùng câu — gợi ý cho LLM-first: LLM viết lại câu + truy hồi ví dụ đã kiểm có thể tăng độ chính xác.
-- Bất biến rulebook là cách tổng quát phát hiện ánh xạ sai không cần nhãn.
+- Với mô hình ≤ 10B, **ngữ nghĩa trong code kiểm chứng + LLM viết chương trình ngắn** đạt 0.986 public / 0.88 trên DN chưa thấy;
+  luật không trả lời thẳng mà nâng chất lượng ngữ cảnh (gợi ý, làm sạch) và kiểm tra lỗi → +5 điểm.
+- **Đa dạng cách hỏi trong dữ liệu fine-tune** (paraphrase do chính mô hình viết, kiểm giữ kỳ) quan trọng hơn kỹ thuật huấn luyện
+  phức tạp (DPO, RFT, súp) cho tổng quát hoá cách hỏi mới.
+- **Chọn kiểm tra bằng "tín hiệu sạch" trên log** cho phép thêm luật tổng quát mà không làm hại held-out.
+- Đánh giá có nhiễu lớn giữa các lần chạy (±0.4 public) → mọi kết luận cần ≥ 2 seed và thước đo held-out cố định.
 
-## 6. Tổng quan tài liệu và dataset (08/11; chi tiết `docs/06_HYBRID_FRAMEWORK.md` §3, `docs/07_DATASETS.md`)
+## 6. Điều kiện kiểm chứng
 
-- **Hệ gần bài toán nhất: DS-STAR** (agent khoa học dữ liệu trên nhiều file khác định dạng, đứng đầu DABStep): mô tả dữ
-  liệu do agent viết + Planner → Coder → Verifier lặp; bỏ mô tả dữ liệu thì bài khó tụt mạnh. → thiếu ở ta: data card.
-- **Text-to-SQL mạnh nhất** (ReFoRCE, CHASE-SQL, XiYan-SQL, CHESS): ngữ cảnh schema / giá trị giàu, nhiều ứng viên đa
-  dạng + chọn, tự sửa theo lỗi thực thi, bỏ phiếu. Ta đã có bỏ phiếu + sửa; thiếu đa dạng prompt và chọn có lý do.
-- **Mô hình nhỏ đạt mức lớn nhờ dữ liệu + huấn luyện:** OmniSQL (SynSQL-2.5M, 7B / 14B fine-tune), Arctic-Text2SQL-R1
-  (RL thưởng chỉ theo đúng khi thực thi; 7B 68.5 BIRD test), chưng cất CoT có kiểm thực thi (rejection sampling).
-- **Abstain:** TrustSQL (chấm có phạt như PA: nhiều phương pháp không vượt "luôn từ chối" khi phạt nặng); selective
-  prediction: self-consistency một mình không đủ, cần kết hợp tín hiệu + hiệu chỉnh.
-- **Tiếng Việt:** ViText2SQL (VinAI; PhoBERT > XLM-R, tách từ giúp ích).
-- **Dataset:** 35 dataset uy tín (text-to-SQL + pandas / phân tích dữ liệu) đã thống kê; ưu tiên loại public không cần xin
-  phép. Gần DataMate nhất: InfiAgent-DABench, DABstep, TableBench, DataBench; lớn nhất cho chưng cất: SynSQL-2.5M.
-- **Lưu ý thước đo:** benchmark công khai có nhiều lỗi nhãn (CIDR 2026) → số leaderboard chỉ tham khảo; với ta, thước
-  đo quyết định là held-out paraphrase.
-
-## 7. Điều kiện kiểm chứng
-
-| Kết luận | Lệnh | Điều kiện |
-|---|---|---|
-| Train / public / biến đổi bề mặt | `S=<scratch> WORKERS=3 bash tests/eval_all.sh` (`quick` = chỉ gốc) | CPU, cache ingest; ~1–2 h đủ bộ |
-| Oracle 2967 / 1 / 32 | `python3 tests/eval_lib.py data/raw/train/train <cache_train> --show 0 --clean question_cleaning/train_questions_clean.jsonl` | CPU |
-| Kiểm tra ánh xạ không báo nhầm | `python3 tests/test_plausibility.py data/raw/train/train <cache_train>` → `0 flagged` | CPU |
-| Luật trên paraphrase | `python3 tests/eval_split.py <split> <cache> <ref> --map auto --perturb-q para:<file>` | file paraphrase từ `<acc>/zc-para` |
-| Toàn luồng trên paraphrase | `automation/jobs/v34.jobs` (Kaggle 4×L4, ~3.1 h) rồi chấm `flow/submission.jsonl` theo k | quota GPU |
-| Đường LLM public 0.921 | `submissions/v28/submission.jsonl` chấm với `public_gt.jsonl` (`src/score.py`) | — |
+| Kết luận | Cách kiểm |
+|---|---|
+| Điểm mọi lần chạy | `Process/scores.csv` (tính lại: script ở PDF 2 §4 hoặc `tests/pool_gens.py <log dirs>`) |
+| Bản nộp O + WG1 | `Process/runs/p2r15o*`, `p2r16pred` (logs + submission nén); chấm `python3 src/score.py data/raw/public_gt.jsonl <submission>` |
+| Phát lại bỏ phiếu / bộ chọn không GPU | `python3 tests/pool_gens.py <run>[,<run>] --selector src/refs/selector/selector_m0_inv.json` |
+| Tín hiệu sạch của một kiểm tra | quét log `Process/runs/*` như PDF 2 §4 (đếm mẫu bị chạm theo đúng / sai) |
+| Huấn luyện lại WG1 | `automation/jobs/wg.jobs` (dữ liệu `Process/train_data/wg/*.gz`), ~5 h trên 4×L4 |
+| Toàn bộ test CPU | `bash tests/run_all.sh` → `ALL PASS` |

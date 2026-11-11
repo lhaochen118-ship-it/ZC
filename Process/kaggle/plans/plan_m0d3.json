@@ -1,0 +1,1 @@
+[{"acc": "nguyenhoa99", "name": "m0d3", "jobs": "automation/jobs/m0d3.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nguyenhoa99/zc-para,nguyenhoa99/zc-final-adapter", "--no-preflight"]}]

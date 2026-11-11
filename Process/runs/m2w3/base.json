@@ -1,0 +1,9 @@
+{
+ "base_adapters": {
+  "WF3": "/kaggle/input/datasets/thnliu/zc-final-adapter/WF3/adapter"
+ },
+ "base_weights": [
+  0.35
+ ],
+ "merge_s": 88
+}

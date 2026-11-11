@@ -1,69 +1,61 @@
-# READING_GUIDE — cách đọc repository và việc tiếp theo
+# READING_GUIDE — cách đọc repository và việc tiếp theo (cập nhật 11/11/2026)
 
-Cho Agent (hoặc người) nhận dự án ở khung chat mới. Đọc theo thứ tự, dừng khi đủ cho việc đang làm.
+Cho Agent nhận dự án ở khung chat mới. Đọc theo thứ tự, dừng khi đủ cho việc đang làm.
 
-## 1. Bắt buộc (≈ 15 phút)
+## 0. Năm phút đầu
+
+1. Tạo routine tự tiếp tục mỗi giờ (`create_trigger`, lời nhắc trong `CLAUDE.md`) và **xin user token Kaggle** (24 acc).
+2. `handoff/STATUS.md` → bản nộp hiện tại, kernel đang chạy, việc tiếp theo theo thứ tự.
+3. Dựng lại môi trường: `handoff/ENVIRONMENT_SUMMARY.md` §1 + `Process/README.md` (dữ liệu, cache, log nén, dữ liệu huấn luyện).
+
+## 1. Bắt buộc
 
 | # | File | Để biết |
 |---|---|---|
-| 1 | `CLAUDE.md` | Nguyên tắc user đã chốt, cổng kiểm tra trước khi chạy, playbook GPU |
-| 2 | `handoff/STATUS.md` | Trạng thái sống, quyết định mới nhất (08/11: hybrid framework; việc tiếp theo = triển khai `docs/08`) |
-| 3 | `handoff/03_HANDOFF.pdf` | Mục tiêu, quyết định, vị trí code / dữ liệu / kết quả, **các bước tiếp theo** |
-| 4 | `docs/08_MASTER_PLAN.md` | **Kế hoạch + đặc tả triển khai (user đã duyệt; việc của khung chat mới là làm đúng theo nó)**: luồng, file / hàm, định dạng, ngữ pháp, tool, thuật toán chọn, cờ, huấn luyện, gói việc WP0–WP12, lịch / quota, quy tắc quyết định |
-| 4a | `docs/09_OPTIONS_DEEP_DIVE.md` | Phương án đào sâu: tool cho Agent (T1–T9), ngữ pháp DSL, mô hình phụ (embedding, bộ kiểm), chưng cất (gộp nhánh, on-policy), ưu tiên P0–P2, căn cứ từ log lỗi |
-| 4b | `docs/06_HYBRID_FRAMEWORK.md` | **Thiết kế hybrid framework**: ranh giới được / cấm, luồng 8 bước, tham khảo paper, hướng cải tiến, giao thức khi trả lời sai, kế hoạch E0–E5 |
-| 5 | `handoff/environment_summary.pdf` | Container, Kaggle (máy, acc, quota), máy chấm / Docker |
+| 1 | `CLAUDE.md` | quy định user (hybrid, chạy tự động, quota < 6 h, phiên ≤ 12 h, `final_submission`, cổng kiểm tra trước khi chạy, playbook GPU) |
+| 2 | `handoff/STATUS.md` | trạng thái sống + bước tiếp theo |
+| 3 | `handoff/03_HANDOFF.pdf` | mục tiêu, quyết định, vị trí code / dữ liệu / kết quả |
+| 4 | `docs/13_TASK_AFTER_PLAN1.md` | nhiệm vụ hiện tại (nguyên văn user): lặp đến public 100 %, held-out không giảm |
+| 5 | `docs/12_PLAN2.md` | kế hoạch 2: hướng R / M, gói việc, **quy tắc giữ / bỏ §4**, kết quả từng vòng |
 
 ## 2. Khi cần hiểu sâu
 
 | File | Khi nào đọc |
 |---|---|
-| `handoff/01_SCIENTIFIC_FINDINGS.pdf` | Trước khi đề xuất hướng mới: cái gì hiệu quả, cái gì thất bại, bằng chứng |
-| `handoff/02_ENGINEERING_OPS_LESSONS.pdf` | Trước khi sửa code / chạy Kaggle: lỗi đã gặp và cách tránh |
-| `docs/03_WORKFLOW.md` (PDF: `docs/RESEARCH_WORKFLOW.pdf`) | Quy trình làm việc; §5 vòng lặp LLM-first |
-| `docs/00_TASK.md`, `docs/ZAIC_REQUIREMENTS.md` (gốc `ZAIC.docx`) | Đề bài, luật chấm, yêu cầu user |
-| `docs/04_DECISION_V3.md` | Thiết kế đường LLM (ánh xạ theo DN + toolkit) — nền của LLM-first |
-| `docs/02_KAGGLE_OPS.md`, `docs/05_GPU_OPTIMIZATION.md` | Vận hành Kaggle, tối ưu GPU |
-| `docs/07_DATASETS.md` | Quy tắc dùng dataset ngoài + bảng 35 dataset (citation, hội nghị, truy cập) |
-| `EXPERIMENT_LOG.md` | Số liệu từng bản: entry 0–19 đường LLM, 20–27 đường luật + paraphrase |
-| `tests/README.md` | Bộ test CPU và lệnh đánh giá |
+| `handoff/01_SCIENTIFIC_FINDINGS.pdf` | trước khi đề xuất hướng mới: cái gì hiệu quả / thất bại, bằng chứng |
+| `handoff/02_ENGINEERING_OPS_LESSONS.pdf` | trước khi sửa code / chạy Kaggle: lỗi đã gặp, công cụ mới (quota, 12 h, checkpoint) |
+| `handoff/environment_summary.pdf` | máy, acc, quota, Docker |
+| `docs/03_WORKFLOW.md` (PDF `docs/RESEARCH_WORKFLOW.pdf`) | quy trình: vòng lặp, sàng lọc → xác nhận, git, bàn giao |
+| `docs/10_ERROR_ANALYSIS.md`, `docs/11_LITERATURE.md` | taxonomy lỗi 7 nhóm, tài liệu ngoài và gói việc tương ứng |
+| `docs/06_HYBRID_FRAMEWORK.md`, `docs/08_MASTER_PLAN.md`, `docs/09_OPTIONS_DEEP_DIVE.md` | thiết kế luồng hybrid và kế hoạch 1 (đã xong) |
+| `docs/00_TASK.md`, `docs/ZAIC_REQUIREMENTS.md` (gốc `ZAIC.docx`) | đề bài, luật chấm |
+| `docs/02_KAGGLE_OPS.md`, `docs/05_GPU_OPTIMIZATION.md`, `docs/07_DATASETS.md` | vận hành Kaggle, tối ưu GPU, dataset ngoài |
+| `EXPERIMENT_LOG.md` | số liệu kế hoạch 1 (entry 0–47); kế hoạch 2: `Process/history/`, `Process/scores.csv` |
+| `tests/README.md` | bộ test CPU, lệnh đánh giá |
 
-Các `handoff/*.md` và `docs/03_WORKFLOW.md` là nguồn của PDF cùng tên: sửa `.md` rồi
+Các `handoff/*.md`, `docs/03_WORKFLOW.md` là nguồn của PDF cùng tên: sửa `.md` rồi
 `python3 automation/md2pdf.py <in.md> <out.pdf>` (cần `pip install markdown xhtml2pdf`).
 
 ## 3. Bản đồ mã nguồn
 
-**Đường LLM (giữ, là nền của luồng mới)**
-1. `src/ingest.py` — đọc file thô (CSV / Excel / SQLite) → bảng thô + card mô tả; cache theo DN.
-2. `src/agent.py` — CLI (`build_parser`), prompt, engine vLLM; `src/pipeline.py` — ánh xạ theo DN, sinh K chương trình,
-   bỏ phiếu, sửa lỗi, work stealing; `src/fewshot.py` — truy hồi ví dụ train đã kiểm.
-3. `src/canon.py` — chạy chương trình ánh xạ an toàn, `secondary_checks`, `warning_penalty`; `src/consensus.py` — đồng
-   thuận ánh xạ giữa các lần chạy.
-4. `src/dm.py`, `src/industry.py` — toolkit nghiệp vụ (mọi định nghĩa rulebook), `CANON_DOC` cho prompt.
-5. `src/vote.py` — bỏ phiếu nhiều lần chạy + ngưỡng tin cậy; `src/score.py`, `src/report.py` — chấm.
+- **Luồng nộp**: `src/predict_flow.py` (lối vào Docker) → `src/agent.py --flow hybrid` (`build_parser` = mọi cờ; cấu hình
+  `configs/flow_final.json`) → `src/hybrid.py` (gợi ý → prompt → mẫu → precheck → sandbox → cờ → vòng 2 → phiếu) trên
+  `src/pipeline.py` (vLLM từng request, work stealing, `--hard-deadline`).
+- **Ngữ cảnh / luật tổng quát**: `src/hints.py` (kỳ, thực thể, kiểu đáp án, từ rulebook), `src/qnorm.py` (làm sạch câu),
+  `src/qparse.py` (kỳ thời gian), `src/retrieval.py` (ví dụ đã kiểm), `src/prompting.py`, `src/shopctx.py`, `src/automap.py` / `src/ingest.py` (schema).
+- **Tính toán / kiểm tra**: `src/dm.py`, `src/industry.py` (toolkit nghiệp vụ), `src/precheck.py` (lỗi → lượt sửa: size / unit / len_mask),
+  `src/tools.py` (cờ sau khi chạy), `src/canon.py` (chạy chương trình an toàn), `src/sqlesc.py` (nhánh SQL / DuckDB).
+- **Mô hình phụ**: `src/selector.py` (bộ chọn học được; `src/refs/selector/`).
+- **Huấn luyện** (`training/README.md`): `training/data/*` (nhà máy dữ liệu D1–D4T, `rft_from_logs.py`, `dpo_from_logs.py`),
+  `sft_unsloth.py` / `sft.py` / `dpo.py` (checkpoint + resume: `deadline.py`), `arms_job.py` (4 nhánh / phiên, `--base-adapters`),
+  `full_job.py` (FSDP), `soup_job.py` (gộp + đánh giá, `--runner predict` = đường container), `merge.py`.
+- **Vận hành**: `automation/launch_many.py` (plan → kernel, kiểm quota / 12 h), `fanout.py`, `make_kernel.py` (runner + hạn chót),
+  `run_kernel.py`, `watch_done.py` (watcher nền), `resume.py` (gắn lại sau khởi động lại), `quota.py`,
+  `update_final_submission.py`, `set_final_model.py`; `automation/jobs/` (job), `docker/` (bài nộp).
+- **Đánh giá / phân tích**: `src/eval_flow.py` (tập `tests/splits/`), `src/score.py`, `tests/list_wrong.py`, `tests/pool_gens.py`,
+  `tests/replay_vote.py`, `tests/train_selector.py`, `tests/hint_audit.py`; test CPU: `bash tests/run_all.sh`.
 
-**Đường luật (không trả lời thẳng nữa; `automap`, `qnorm`, nhận diện ý định giữ làm ngữ cảnh cho Agent)**
-`src/rules_first.py` (stage 1), `src/automap.py` (ánh xạ theo luật), `src/qnorm.py` (làm sạch câu), `src/qparse.py`
-(mẫu câu → chương trình), `src/canon_llm.py` (stage 1.5), `src/predict_flow.py` (luồng nộp hiện tại), `src/merge_sub.py`.
+## 4. Việc tiếp theo
 
-**Đánh giá tổng quát hoá**: `src/paraphrase_llm.py`, `src/perturb.py`, `src/stress_flow.py`, `tests/eval_split.py`,
-`tests/eval_all.sh`.
-
-**Vận hành**: `src/run_kaggle.py` (chạy trong kernel), `automation/fanout.py` (cửa vào Kaggle), `automation/preflight.py`,
-`automation/run_kernel.py` (`--attach`), `automation/jobs/` (job chuẩn), `docker/` (bài nộp), `submissions/` (v28 LLM,
-v30 luật), `goldkey/devset.py` (37 câu đã kiểm, chỉ chấm).
-
-## 4. Việc tiếp theo (user đã duyệt 08/11) — chạy tự động đến khi xong, không dừng, không hỏi; hết hạn mức Claude (5 giờ) thì tạm dừng và tự chạy tiếp khi reset (`CLAUDE.md`)
-
-**Triển khai code đúng theo `docs/08_MASTER_PLAN.md`**: gói việc §8 theo thứ tự WP0 → WP12 (bảng tóm tắt ở
-`handoff/03_HANDOFF.pdf` §5), đặc tả kỹ thuật §5 (file, hàm, định dạng, prompt, ngữ pháp, tool, thuật toán chọn, cờ CLI,
-huấn luyện, Docker), quy tắc quyết định §10, lịch / quota §9, thứ tự cắt khi thiếu thời gian ở cuối §8. Sau mỗi gói việc:
-cập nhật `handoff/STATUS.md` + `EXPERIMENT_LOG.md`, commit + push.
-
-## 5. Không được làm
-
-- Không luật sinh thẳng code / đáp án mà không qua mô hình (user, 08/11). Luật tổng quát làm ngữ cảnh / gợi ý (ý định,
-  schema, làm sạch câu, toolkit, kiểm tra) thì **được** — `handoff/03_HANDOFF.md` §2.1.
-- Không fix theo id DN / câu; không đưa đáp án public (kể cả `goldkey/devset.py`) vào `src/` hay prompt; không train trên test.
-- Không đưa token vào code, commit, prompt hay báo cáo; không đụng kernel không phải `zc-*`.
-- Không đẩy kernel khi chưa `PREFLIGHT OK`; không `pkill -f` theo mẫu có trong chính lệnh.
+Theo `handoff/STATUS.md` §4: (1) kết quả WG5–8 → sàng lọc → xác nhận → đổi mô hình nộp nếu đạt; (2) đợt quota mới 14/11;
+(3) chốt bản nộp + đường container trước 15/11, báo user build Docker; sau mỗi bước cập nhật STATUS, commit + push.

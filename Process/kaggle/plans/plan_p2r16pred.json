@@ -1,0 +1,1 @@
+[{"acc": "loinguyentran", "name": "p2r16pred", "jobs": "automation/jobs/p2r16pred.jobs", "est_h": 1.0, "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,loinguyentran/zc-wg-1", "--no-preflight"]}]

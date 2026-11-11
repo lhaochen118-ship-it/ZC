@@ -1,0 +1,1 @@
+[{"acc": "quynhle07", "name": "pfwf05think", "jobs": "automation/jobs/pf_wf05_think.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para,quynhle07/zc-adapters-wf", "--no-preflight"]}]

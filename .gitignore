@@ -26,3 +26,8 @@ handoff/fonts/
 training/data/out/*.jsonl
 training/data/out/*/
 !training/data/out/smoke/
+
+# handoff archive (compressed logs / data of the key runs; see Process/README.md)
+!Process/
+!Process/runs/
+!Process/runs/**

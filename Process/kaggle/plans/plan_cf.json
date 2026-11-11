@@ -1,0 +1,62 @@
+[
+ {
+  "acc": "bichthuy93",
+  "name": "cf40",
+  "jobs": "automation/jobs/cf40.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "bichthuy93/zc-para,bichthuy93/zc-wg-adapters",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "thnliu",
+  "name": "cf40s1",
+  "jobs": "automation/jobs/cf40s1.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "thnliu/zc-para,thnliu/zc-wg-adapters",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "huuhien95",
+  "name": "cf40k12",
+  "jobs": "automation/jobs/cf40k12.jobs",
+  "est_h": 2.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huuhien95/zc-para,huuhien95/zc-wg-adapters",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "huuhien95",
+  "name": "cf40k12s1",
+  "jobs": "automation/jobs/cf40k12s1.jobs",
+  "est_h": 2.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huuhien95/zc-para,huuhien95/zc-wg-adapters",
+   "--no-preflight"
+  ]
+ }
+]

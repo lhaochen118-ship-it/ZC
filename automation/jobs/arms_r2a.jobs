@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/arms_r2a --script training/arms_job.py --model Qwen/Qwen3.5-9B --train --arms B3S=d1.jsonl,d3self.jsonl+B3Q35=d1.jsonl,d3q35.jsonl+B3OSS=d1.jsonl,d3oss.jsonl+B3G31=d1.jsonl,d3g31.jsonl --data r2a --budget 4e6 --sets quick400,pub_ho

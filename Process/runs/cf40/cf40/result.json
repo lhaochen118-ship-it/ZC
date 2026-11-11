@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "WG1": "/kaggle/input/datasets/bichthuy93/zc-wg-adapters/WG1/adapter"
+ },
+ "weights": [
+  0.4
+ ],
+ "merge_rc": 0,
+ "merge_s": 103,
+ "eval_rc": 0,
+ "eval_s": 3749
+}

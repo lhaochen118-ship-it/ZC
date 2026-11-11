@@ -1,6 +1,6 @@
 # 03 — Quy trình làm việc
 
-*Cập nhật 08/11/2026 (§5 thay bằng vòng lặp LLM-first + held-out; §1b acc mới). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
+*Cập nhật 11/11/2026 (§5 vòng lặp kế hoạch 2: public gốc + held-out, sàng lọc → xác nhận; §1b quota / 12 h; §7 bàn giao qua `Process/`). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
 tối đa trên private test, trong 6 giờ, tái lập được".*
 
 ## 1. Nguyên tắc chung
@@ -28,9 +28,10 @@ và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
 
 - Dùng **tất cả** acc được cấp. Token chỉ ở `~/.kaggle/tok_<username>` (quyền 600), không đưa vào code, prompt, GitHub
   hay báo cáo; kiểm tra kết nối bằng `kaggle competitions list`. Khung chat mới phải xin lại token.
-- Acc và quota mới nhất: `handoff/ENVIRONMENT_SUMMARY.md` §2 (08/11: L4 quynhtran35, yuan1103, phatle1578; T4
-  yeshenhi, mxuanquy). **Quota 30 giờ GPU / tuần / acc, tính theo GPU** (phiên 4×L4 = 4 h quota / giờ), reset thứ Bảy
-  00:00 UTC. Acc dùng chung với dự án khác: không đụng kernel không phải `zc-*`.
+- Acc và quota mới nhất: `handoff/ENVIRONMENT_SUMMARY.md` §2 và `python3 automation/quota.py` (24 acc, 11/11). **Quota 30 giờ GPU /
+  tuần / acc** (phiên 4×L4 ≈ 1.5–2.2 h quota / giờ tường), làm mới thứ Bảy 00:00 UTC. **Acc < 6 h: kiểm đủ giờ trước khi giao task**
+  (tự động trong `launch_many.py`). **Phiên ≤ 12 h**: runner tự đặt hạn chót, huấn luyện tự lưu checkpoint (`CLAUDE.md`).
+  Acc dùng chung với dự án khác: không đụng kernel không phải `zc-*`.
 - **Dồn luồng lên một acc**: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU cùng lúc; hết slot mới sang acc khác.
   Mỗi phiên GPU = 4×L4 (24 GB/GPU, 96 GB phân tán, không phải một GPU 96 GB); không có L4 → 2×T4.
 - **Kẹt hàng đợi:** không có đầu ra sau ~8 phút (L4 / CPU) hoặc ~10 phút (T4) → kiểm trạng thái; L4 kẹt hàng đợi → ngắt,
@@ -56,11 +57,11 @@ và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
 - **Không chủ động kiểm tra kernel.** Sau khi khởi chạy, bật một watcher nền:
 
   ```bash
-  python3 automation/watch_done.py <runs> --max 100
+  python3 automation/watch_done.py <runs> --max 115
   ```
 
   chạy bằng Bash `run_in_background`. Nó thoát (→ Claude được báo ngay) khi **bất kỳ** kernel nào xong, in tên kernel và
-  trạng thái; xử lý xong thì bật lại. Hết 100 phút thì in `WATCH_TIMEOUT` để bật lại (tác vụ nền có trần ~2 giờ).
+  trạng thái; xử lý xong thì bật lại. Hết 115 phút thì in `WATCH_TIMEOUT` để bật lại (tác vụ nền có trần ~2 giờ).
 - **Tìm thông tin:** chỉ đọc văn bản / paper (alphaXiv, web), **không đọc code repo của người khác**.
 - **Dữ liệu lớn:** chỉ đọc cấu trúc và vài dòng (`head`, `python -c` in shape/cột), không in cả file.
 - Log dài: chỉ đọc tóm tắt (`score.py` theo nhóm, `--errors N`).
@@ -72,29 +73,32 @@ và từ chối khởi chạy nếu chưa qua. Chi tiết: `CLAUDE.md`.
 - Kết quả mới để file mới (`results/<run>/…`), không ghi đè kết quả cũ.
 - Không commit token, dữ liệu sinh ra lớn, cache (`.gitignore`).
 
-## 5. Vòng lặp hiện tại (từ 08/11: LLM-first, đo bằng held-out)
+## 5. Vòng lặp hiện tại (kế hoạch 2, từ 09/11: đến public gốc 100 %, held-out không giảm)
 
-User chốt (08/11): hybrid — cấm luật sinh thẳng code / đáp án không qua mô hình; được dùng luật tổng quát (ý định, schema,
-làm sạch câu, toolkit, kiểm tra) làm ngữ cảnh cho Agent; LLM hiểu câu, phân tích schema, sinh code; code
-tính toán và kiểm tra; abstain theo logic + độ tin cậy (`handoff/03_HANDOFF.md` §2). Vòng lặp:
+Hybrid (user 08/11): mô hình viết chương trình trả lời mọi câu; luật tổng quát chỉ làm ngữ cảnh / kiểm tra. Vòng lặp
+(`docs/13_TASK_AFTER_PLAN1.md`, `docs/12_PLAN2.md`):
 
-1. **Thước đo cố định trước khi sửa**: public gốc (`public_gt.jsonl`), train, paraphrase public k=0 (dev) / k=1,2
-   (held-out), paraphrase train (held-out), biến đổi dữ liệu (đổi tên cột, README trắng). Chấm bằng `src/score.py`.
-2. **Phân tích lỗi chỉ trên dev** (train + paraphrase k=0 public), theo nhóm (ánh xạ, đọc câu, toolkit, abstain).
-3. **Sửa bằng cơ chế chung** (prompt, ví dụ truy hồi, kiểm tra, toolkit đã kiểm) + test; không mẫu theo câu / DN.
-4. Ước lượng offline trên đầu ra đã có khi được; preflight; chạy Kaggle; **giữ khi held-out cải thiện** và thời gian
-   ước lượng trên 2×5090 ≤ 6 h; ghi `EXPERIMENT_LOG.md` (kể cả kết quả âm).
-5. File nộp: `automation/make_submission.py` → `submissions/vNN/` + README → push → báo user.
+1. **Thước đo cố định**: public gốc (`pub_full`, chấm với `data/raw/public_gt.jsonl`), held-out `pub_ho` (paraphrase public) +
+   `tr_ho` (6 DN train giữ ngoài) → báo cả hai ở mọi mốc; tập con sàng lọc `pub_ho400`, `tr_ho400`.
+2. **Phân tích lỗi trên public gốc / train** (`tests/list_wrong.py`, taxonomy 7 nhóm `docs/10`); held-out chỉ xem tổng.
+3. **Sửa bằng cơ chế chung** (gợi ý, làm sạch, kiểm tra có tín hiệu sạch trên mọi log, toolkit) hoặc **phía mô hình** (dữ liệu
+   fine-tune, thành viên, bộ chọn) + test; không mẫu theo câu / DN.
+4. **Ước lượng offline** trên log có sẵn khi được (`tests/pool_gens.py`, `replay_vote.py`, quét tín hiệu sạch).
+5. **Sàng lọc** (một ứng viên / kernel, song song nhiều acc, tập con, ~40 phút) → **xác nhận** đủ tập 2 seed → giữ / bỏ theo §4
+   `docs/12` (public ↑ ≥ 0.3, held-out gộp không ↓ > 0.3).
+6. Sau mỗi lần chạy có public: `automation/update_final_submission.py <run>`; đổi mô hình nộp: `automation/set_final_model.py
+   --publish` + chạy đường container; ghi `handoff/STATUS.md` (+ `Process/scores.csv` khi bàn giao), commit + push.
 
 ## 6. Nhiễu của điểm public
 
-- Các lần chạy cùng cấu hình chỉ giống nhau 80–89 % câu (mẫu ánh xạ LLM không tái lập). Điểm public dao động **±0.03**
-  chỉ vì may rủi ánh xạ → một lần nộp không đủ để kết luận một sửa đổi tốt / xấu nếu chênh lệch < 0.03.
+- Luồng hybrid hiện tại: một lần chạy dao động public **±0.4 điểm**, held-out gộp ±0.3; chất lượng còn phụ thuộc seed huấn luyện
+  (cùng dữ liệu: 0.991 vs 0.983) → mọi quyết định ≥ 2 seed; tập con 400 câu nhiễu ±0.6 (chỉ để loại).
 - Ưu tiên các sửa giảm phương sai (ổn định ánh xạ, bỏ phiếu biết ánh xạ) trước các sửa tăng trung bình nhỏ.
 
 ## 7. Chuyển khung chat
 
-- Trước khi đóng: commit + push mọi thứ; chép job / script khỏi scratch vào repo (`automation/jobs/`); cập nhật
-  `handoff/STATUS.md`, `EXPERIMENT_LOG.md`, ba PDF bàn giao (`handoff/01_*.pdf`, `02_*.pdf`, `03_HANDOFF.pdf`), `handoff/environment_summary.pdf`;
-  tắt routine tự chạy.
-- Khung mới: đọc `READING_GUIDE.md` → `CLAUDE.md` → `handoff/STATUS.md`; xin token; tải lại output kernel đang chạy.
+- Trước khi đóng: commit + push mọi thứ; lưu vào `Process/` những gì không nằm trong git (log nén của lần chạy then chốt, dữ liệu huấn
+  luyện nén, plan khởi chạy, sổ kernel, quota, bản vá worktree; `Process/README.md`); cập nhật `handoff/STATUS.md`, ba PDF bàn giao,
+  `handoff/environment_summary.pdf`, `docs/RESEARCH_WORKFLOW.pdf`, `READING_GUIDE.md`; tắt routine tự chạy của phiên cũ.
+- Khung mới: đọc `READING_GUIDE.md` → `CLAUDE.md` → `handoff/STATUS.md`; xin token; tạo routine mỗi giờ; tải output kernel đang chạy
+  (`Process/kaggle/kernels.csv`).

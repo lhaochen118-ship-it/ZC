@@ -1,0 +1,1 @@
+[{"acc": "phatle1578", "name": "pfs4035think", "jobs": "automation/jobs/pf_s4_035_think.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "phatle1578/zc-para,phatle1578/zc-soup4", "--no-preflight"]}]

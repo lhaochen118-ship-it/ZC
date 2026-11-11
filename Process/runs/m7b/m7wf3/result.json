@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "WF3": "/kaggle/input/datasets/phuongnehe/zc-final-adapter/WF3/adapter"
+ },
+ "weights": [
+  0.35
+ ],
+ "merge_rc": 0,
+ "merge_s": 88,
+ "eval_rc": 0,
+ "eval_s": 3880
+}

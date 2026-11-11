@@ -1,0 +1,14 @@
+{
+ "adapters": {
+  "WG1": "/kaggle/input/datasets/yuan1103/zc-wg-adapters/WG1/adapter",
+  "WG2": "/kaggle/input/datasets/yuan1103/zc-wg-adapters/WG2/adapter"
+ },
+ "weights": [
+  0.175,
+  0.175
+ ],
+ "merge_rc": 0,
+ "merge_s": 906,
+ "eval_rc": 0,
+ "eval_s": 4007
+}

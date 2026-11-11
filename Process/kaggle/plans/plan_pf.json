@@ -1,0 +1,8 @@
+[
+ {"acc": "quynhtran35", "name": "pfbase", "jobs": "automation/jobs/pf_base.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhtran35/zc-para", "--no-preflight"]},
+ {"acc": "mucnokieu", "name": "pfwc05", "jobs": "automation/jobs/pf_wc05.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "mucnokieu/zc-para,mucnokieu/zc-adapters-m1", "--no-preflight"]},
+ {"acc": "mucnokieu", "name": "pfwc05think", "jobs": "automation/jobs/pf_wc05_think.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "mucnokieu/zc-para,mucnokieu/zc-adapters-m1", "--no-preflight"]},
+ {"acc": "phatle1578", "name": "pfs4035", "jobs": "automation/jobs/pf_s4_035.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "phatle1578/zc-para,phatle1578/zc-soup4", "--no-preflight"]},
+ {"acc": "huyenco", "name": "pfwc035", "jobs": "automation/jobs/pf_wc035.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "huyenco/zc-para,huyenco/zc-adapters-wc", "--no-preflight"]},
+ {"acc": "quynhle07", "name": "pfwf05", "jobs": "automation/jobs/pf_wf05.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para,quynhle07/zc-adapters-wf", "--no-preflight"]}
+]

@@ -1,0 +1,4 @@
+[
+ {"acc": "quynhle07", "name": "qd4gemma", "jobs": "automation/jobs/qd4_gemma.jobs", "args": ["--ms", "google/gemma-4/transformers/gemma-4-12b-it/2", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para"]},
+ {"acc": "quynhtran35", "name": "qd4qwen", "jobs": "automation/jobs/qd4_qwen.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhtran35/zc-para"]}
+]

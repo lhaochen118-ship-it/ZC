@@ -1,2 +1,0 @@
-run_kaggle.py public_test OUT/final_noind --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WF1,WF2,WF3,WF4 --weights 0.0875,0.0875,0.0875,0.0875 --sets pub_noind --eval-config configs/e0_full_think_noind.json
-run_kaggle.py public_test OUT/final_noacc --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WF1,WF2,WF3,WF4 --weights 0.0875,0.0875,0.0875,0.0875 --sets pub_noacc --eval-config configs/e0_full_think.json

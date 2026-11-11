@@ -1,0 +1,4 @@
+[
+ {"acc": "synchan5704", "name": "armsr2a", "jobs": "automation/jobs/arms_r2a.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "synchan5704/zc-para", "--train-data", "r2a", "--no-preflight"]},
+ {"acc": "quynhle07", "name": "armsr2b", "jobs": "automation/jobs/arms_r2b.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "quynhle07/zc-para", "--train-data", "r2b", "--no-preflight"]}
+]

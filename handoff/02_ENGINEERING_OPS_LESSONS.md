@@ -1,4 +1,4 @@
-# PDF 2 — Engineering & Operations Lessons (DataMate, đến 08/11/2026)
+# PDF 2 — Engineering & Operations Lessons (DataMate, đến 11/11/2026)
 
 *Phạm vi: kinh nghiệm lập trình, cấu hình môi trường, quản lý Kaggle, tổ chức thử nghiệm, lỗi đã gặp và cách sửa,
 bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạng thái và việc tiếp theo ở PDF 3; cấu hình máy ở
@@ -59,8 +59,9 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 - `python3 automation/fanout.py <runs/vNN> zc-vNN <jobs> <n_kernel> --accounts <acc> --l4 --ds <acc>/<dataset>
   --ms danbth/qwen3-5-9b/transformers/default/1 --ks nhatlong1103/zc-assets`: tự preflight (cache theo hash code + jobs),
   tạo kernel, đẩy, failover khi hết quota / đủ 2 phiên, kéo kết quả về `<runs>/<slug>_out`.
-- **Quota tính theo GPU**: một phiên 4×L4 tiêu ~4 giờ quota mỗi giờ chạy; 30 h / tuần / acc ≈ 7.5 h phiên 4×L4. Tuần reset
-  thứ Bảy 00:00 UTC (đã xác nhận 07/11). `~/.cache/zc_quota.json` ghi acc đã cạn trong tuần.
+- **Quota**: `kaggle quota` (CLI 2.2.5) cho số giờ thật (`automation/quota.py`); đo trên cả kernel: phiên 4×L4 tốn ~1.5–2.2 h
+  quota / giờ tường (tính dồn đầu phiên; hệ số an toàn 2.5); 30 h / tuần / acc ≈ 12–15 h tường. Làm mới thứ Bảy 00:00 UTC. Phiên
+  đã chạy không bị dừng khi vượt 30 h (acc 31–36 h), nhưng không được đẩy phiên mới dựa vào điều đó (quy định user).
 - Trọng số từ Kaggle Model (`--ms`), `run_kaggle.py` kiểm sha256 với `src/model_hashes.json`, copy có khoá + `.complete`.
 - Dataset private không chia sẻ được giữa acc → mỗi acc một bản (`<acc>/zc-para`, `<acc>/zc-pend`).
 - Kernel CPU (`ZC_NO_VLLM=1`) không có `nvidia-smi` → monitor GPU phải bọc try.
@@ -86,7 +87,7 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
   luật lấy câu khỏi LLM khi độ chính xác held-out ≥ ~85 %. Ghi cả kết quả âm (`EXPERIMENT_LOG.md`).
 - **Phân tích không tốn GPU trước**: đo chính sách mới bằng đầu ra đã có (ví dụ v33: so luật trên câu viết lại với đáp án
   v32 trên cùng câu chờ) → chỉ chạy GPU để xác nhận (v34 khớp ước lượng: 0.602 vs 0.600).
-- File nộp: `automation/make_submission.py` (kiểm định dạng) → `submissions/vNN/` + README → push ngay.
+- File nộp: `automation/update_final_submission.py <run_dir>` → `final_submission/` (chỉ thay khi public PA cao hơn) → push ngay.
 
 ## 5. Bài học chiến lược
 
@@ -102,3 +103,51 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
   cách hỏi mới. User yêu cầu: luật không sinh thẳng đáp án, chỉ hỗ trợ Agent (PDF 3 §2.1).
 - Tin điểm train / một lần nộp portal để chọn bản (portal nhiễu ±0.03, đáp án portal từng đổi).
 - Trả lời user dài và quá lạc quan: user cần câu trả lời ngắn, trung thực về giới hạn (ví dụ "100 % là trong mẫu").
+
+## 6. Bài học kế hoạch 2 (09–11/11)
+
+### 6.1 Hạ tầng thêm mới (đều có test CPU)
+
+| Thành phần | Việc | Ghi chú |
+|---|---|---|
+| `automation/quota.py` | quota thật mỗi acc, `check(acc, need)`; `launch_many.py` từ chối acc < 6 h không đủ giờ (quy định user) | đã chặn đúng lelynhan 0.37 h khi M4 cần 18 h |
+| `make_kernel.py` runner | hạn chót 12 h − 40 phút, `ZC_DEADLINE` cho mọi job, bỏ job tuần tự không kịp (`_skipped_jobs.json`), giết job quá hạn | `tests/test_session_limit.py` (phiên giả 40 s) |
+| `training/deadline.py` + `sft*.py`, `dpo.py` | checkpoint (LoRA + optimizer + scheduler + RNG) trước hạn, `--resume` / `--resume-from auto` | thử CPU trên mô hình tí hon: dừng 1/4 → tiếp 2–4 |
+| `agent --hard-deadline` | bỏ trả lời câu còn lại đúng lúc hết giờ, **không** chế độ nhanh | `--budget` cũ bật k = 1 khi ước lượng đầu lượt bi quan → đổi kết quả dù còn xa hạn: không dùng cho đánh giá |
+| `arms_job.py --base-adapters` | LoRA học chồng lên súp / thành viên đã gộp | M2, M4 |
+| `training/dpo.py`, `full_job.py --trainer dpo` | TRL 1.15 DPO + PEFT, FSDP 4 GPU | 1 L4 không đủ cho cặp DPO 9B; `fused_lm_head` của TRL cần stub torch trên CPU (`ZC_TORCH_LOGPROB=1`) |
+| `training/data/rft_from_logs.py`, `dpo_from_logs.py` | dữ liệu RFT / DPO từ log; dựng lại prompt đúng như lúc suy luận | eval dùng **rulebook public** (tập cha): dựng bằng rulebook train làm gợi ý khác ở 7/200 câu |
+| `src/selector.py`, `tests/train_selector.py`, `tests/pool_gens.py` | bộ chọn học được, phát lại / gộp mẫu nhiều lần chạy không GPU | đặc trưng đếm lệch khi gộp → dùng `FEATS_INV` |
+| `automation/set_final_model.py` | đổi mô hình nộp một bước (dataset + `soup.json` + `src/adapter_hashes.json`) | `kaggle datasets version` thay toàn bộ file của dataset |
+| `automation/update_final_submission.py` | `final_submission/` = file public PA cao nhất | chạy sau mỗi lần có public |
+
+### 6.2 Lỗi / sự cố kế hoạch 2
+
+| Sự cố | Sửa / bài học |
+|---|---|
+| Ổ đĩa phiên đầy (0 MB) khi tải output → file job rỗng, output WG thiếu | dọn scratch tái tạo được (test, adapter nhánh cũ), tải lại output (`kaggle kernels output <id> -p <dir>`); theo dõi `df` trước khi tải lớn |
+| Container khởi động lại giữa đêm | token / scratch còn; `automation/resume.py <runs>` gắn lại mọi kernel chưa xong, rồi bật lại watcher |
+| Tải output bị ngắt (proxy BrokenPipe) | tải lại; kiểm đủ `submission.jsonl` + `result.json` trước khi chấm |
+| Acc mới chưa accept luật cuộc thi | push lỗi "accept this competition's rules" → `automation/accounts.json` `no_l4`; nhờ user accept |
+| Failover sang acc không đọc được dataset private | `fanout.py`: không failover khi `--ds` là bản riêng của acc khác |
+| Tên dataset < 6 ký tự (`zc-wg`) | Kaggle từ chối: dùng ≥ 6 ký tự (`zc-wg-adapters`) |
+| `kaggle datasets create` lỗi "slugs and hashlink are all null" (phuongnehe) | lỗi phía Kaggle; chuyển acc khác |
+| Chấm điểm `score.py` | thứ tự đối số `score.py <refs> <preds>` (đảo → 0.976 thay vì 0.982) |
+| `sleep` dài / poll trạng thái | dùng watcher nền `automation/watch_done.py --max 115` (trần 2 h → bật lại khi `WATCH_TIMEOUT`) |
+
+### 6.3 Tổ chức thử nghiệm nhanh (user 11/11: "nhanh nhất mà không ảnh hưởng nhiều độ chính xác")
+
+- **Một ứng viên / kernel, song song nhiều acc** (2 phiên GPU / acc) thay vì nhiều job tuần tự trong một kernel.
+- **Sàng lọc** trên `pub_full,pub_ho400,tr_ho400` (~35–40 phút) → **xác nhận** đủ tập (`pub_full,pub_ho,tr_ho`, ~70 phút) 2 seed
+  cho ứng viên dẫn đầu. Tập con nhiễu ±0.6 → chỉ để loại.
+- Phát lại offline trước khi tốn GPU (bộ chọn, ngưỡng, kiểm tra mới: `pool_gens.py`, quét log tìm tín hiệu sạch).
+- Cùng một lần gộp mô hình đánh giá nhiều cấu hình: `soup_job.py --eval-configs a,b`.
+- Chi phí cố định mỗi kernel: cài vLLM ~7 phút, gộp adapter 2–10 phút.
+
+### 6.4 Quét "tín hiệu sạch" cho một kiểm tra mới (mẫu)
+
+```python
+# cho mọi logs.jsonl ở Process/runs/*: với mỗi mẫu, nếu rule(code) bắn -> đếm theo (tập, đúng/sai) của đáp án cuối
+# nhận rule khi không mẫu đúng nào bị chạm trên mọi tập (dev + held-out, held-out chỉ xem tổng)
+```
+(Mã đầy đủ: lịch sử phiên ở commit "Precheck len_mask also through list() / .tolist()" — `src/precheck.py::_len_of_mask`.)

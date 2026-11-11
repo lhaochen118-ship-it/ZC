@@ -1,2 +1,0 @@
-run_kaggle.py public_test OUT/soup4q --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters A1,B3S,B3OSS,A2T64 --sets quick400,pub_ho
-run_kaggle.py public_test OUT/soup8q --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters A1,B3S,B3OSS,A2T64,B3G31,B3MIX,A2,B3Q35 --sets quick400,pub_ho

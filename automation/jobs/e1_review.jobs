@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/e1_review --script eval_flow.py --sets quick400,pub_ho --model Qwen/Qwen3.5-9B --dp 4 --config configs/e0_full.json --cache /tmp/zc_cache --review 1

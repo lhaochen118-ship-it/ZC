@@ -1,0 +1,1 @@
+[{"acc": "duylnng", "name": "m4dpo", "jobs": "automation/jobs/m4dpo.jobs", "est_h": 4.5, "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "duylnng/zc-para,duylnng/zc-final-adapter", "--train-data", "m4", "--no-preflight"]}]

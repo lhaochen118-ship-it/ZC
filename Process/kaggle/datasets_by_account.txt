@@ -1,14 +1,14 @@
 anderson1202: anderson1202/zc-code anderson1202/zc-wg-adapters anderson1202/zc-para 
 bichthuy93: bichthuy93/zc-code bichthuy93/zc-wg-adapters bichthuy93/zc-para 
-caohuyen74: 
-dinhthinh: 
+caohuyen74: caohuyen74/zc-para caohuyen74/zc-eval-adapters 
+dinhthinh: dinhthinh/zc-para dinhthinh/zc-eval-adapters 
 duylnng: duylnng/zc-code duylnng/zc-wg-adapters duylnng/zc-final-adapter duylnng/zc-para 
-hieuho669: 
-huuhien95: huuhien95/zc-code huuhien95/zc-wg-adapters huuhien95/zc-para 
+hieuho669: hieuho669/zc-para hieuho669/zc-eval-adapters 
+huuhien95: huuhien95/zc-code huuhien95/zc-wg-adapters huuhien95/zc-para huuhien95/zc-wg78-adapters 
 huyenco: huyenco/zc-code huyenco/zc-final-adapter huyenco/zc-adapters-wc2 huyenco/zc-adapters-wc huyenco/zc-para 
 lelynhan: lelynhan/zc-code lelynhan/zc-final-adapter lelynhan/zc-para 
 linhmai24: linhmai24/zc-code linhmai24/zc-wg-adapters linhmai24/zc-final-adapter linhmai24/zc-para 
-loinguyentran: loinguyentran/zc-code loinguyentran/zc-final-adapter loinguyentran/zc-para 
+loinguyentran: loinguyentran/zc-code loinguyentran/zc-final-adapter loinguyentran/zc-para loinguyentran/zc-eval-adapters 
 mucnokieu: mucnokieu/zc-adapters-m1 mucnokieu/zc-para mucnokieu/zc-code mucnokieu/zc-final-adapter 
 mxuanquy: mxuanquy/zc-code 
 nguyenhoa99: nguyenhoa99/zc-adapters-r2 nguyenhoa99/zc-adapters-r1 nguyenhoa99/zc-code nguyenhoa99/zc-para nguyenhoa99/zc-final-adapter 
@@ -22,3 +22,4 @@ synchan5704: synchan5704/zc-para synchan5704/zc-code synchan5704/zc-adapters-wc8
 thnliu: thnliu/zc-code thnliu/zc-wg-adapters thnliu/zc-final-adapter thnliu/zc-para 
 yeshenhi: yeshenhi/zc-code 
 yuan1103: yuan1103/zc-code yuan1103/zc-para yuan1103/zc-wg-adapters yuan1103/zc-pend 
+# 12/11: zc-eval-adapters = WG1 (submitted, sha256 in src/adapter_hashes.json) + WG5-8 (bichthuy93/zc-wg2r-1); zc-wg78-adapters = WG7 + WG8

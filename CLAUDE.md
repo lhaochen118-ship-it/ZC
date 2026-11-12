@@ -53,6 +53,7 @@ chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi
   xem còn **đủ giờ chạy task đó** không, rồi mới chạy. Số giờ thật: `python3 automation/quota.py` (= `kaggle quota`; làm mới hằng tuần,
   W46: 14/11 00:00 UTC). Phiên 4×L4 tốn ~1.5–2.2 h quota mỗi giờ chạy tường (đo 10/11; tính hệ số 2.5). `launch_many.py` (mục plan có `est_h` = giờ tường ước tính) và
   failover của `fanout.py` tự kiểm tra và từ chối acc không đủ giờ.
+- **Tốc độ trước, không tiết kiệm acc / GPU (user 12/11 — bắt buộc):** thiết kế luồng và chia việc sao cho ra kết quả nhanh nhất: mỗi nhánh huấn luyện một acc, FSDP trên cả 4 GPU (`training/full_job.py`, ~1.75k tok/s, 14.7M token ≈ 2.4 h), nối checkpoint qua nhiều acc khi một acc không đủ giờ (tải output → đăng dataset ở acc kế → `--resume-from`), chia tập đánh giá ra nhiều phiên / acc chạy song song, dùng 2 phiên GPU mỗi acc. **Trước khi chạy** kiểm số giờ GPU còn lại (`automation/quota.py`; đo 12/11: 4×L4 ≈ 2.0–2.2 h quota / giờ tường) có đủ chạy xong task không; không đủ → tối ưu bằng các cách trên để giảm giờ chạy; vẫn không đủ → tìm giải pháp khác; không có giải pháp thì **không chạy**.
 - **Giới hạn 12 h mỗi phiên Kaggle (user, 10/11 — bắt buộc):** phiên commit bị dừng ở 12 h và mất output → tác vụ dài phải chia thành nhiều
   phiên hoặc lưu checkpoint. Đã cài: runner của kernel (`make_kernel.py`) đặt hạn chót = 12 h − 40 phút, truyền `ZC_DEADLINE` cho mọi job,
   không bắt đầu job tuần tự không kịp (ghi `results/_skipped_jobs.json` → chạy ở kernel mới), dừng job quá hạn để output đã xong được lưu;

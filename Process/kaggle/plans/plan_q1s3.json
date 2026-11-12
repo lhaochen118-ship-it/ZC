@@ -3,7 +3,7 @@
   "acc": "caotienminh1",
   "name": "q1s3a35",
   "jobs": "automation/jobs/q1s3a35.jobs",
-  "est_h": 1.6,
+  "est_h": 0.8,
   "args": [
    "--ms",
    "danbth/qwen3-5-9b/transformers/default/1",
@@ -18,7 +18,7 @@
   "acc": "caotienminh1",
   "name": "q1s3a70",
   "jobs": "automation/jobs/q1s3a70.jobs",
-  "est_h": 1.6,
+  "est_h": 0.8,
   "args": [
    "--ms",
    "danbth/qwen3-5-9b/transformers/default/1",

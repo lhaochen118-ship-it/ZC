@@ -32,19 +32,19 @@
   còn lại là phiếu tách thay đổi theo seed).
 - Hướng R (luật tổng quát, 16 vòng) và hướng M (mô hình, từ M0 = 0.939): kết quả và quyết định ở `handoff/01_SCIENTIFIC_FINDINGS.pdf`.
 
-## 4. Việc tiếp theo (theo thứ tự)
+## 4. Việc tiếp theo (theo thứ tự; cập nhật 12/11 04:40 UTC)
 
-1. **WG5–8** (khi `zc-wg2r-1` xong): đăng adapter thành dataset riêng trên acc đánh giá (như `zc-wg-adapters`), **sàng lọc** mỗi nhánh × 0.35
-   với cấu hình O trên `pub_full,pub_ho400,tr_ho400` (một nhánh / kernel, song song nhiều acc, ~40 phút; mốc O + WG1: public 0.9855,
-   tập con 0.746) → nhánh nào hơn → **xác nhận** đủ tập (`pub_full,pub_ho,tr_ho`) 2 seed → nếu public tb ↑ ≥ 0.3 và held-out gộp không
-   giảm > 0.3 (§4 `docs/12_PLAN2.md`): đổi mô hình nộp bằng `automation/set_final_model.py --publish` + chạy đường container
-   (`automation/jobs/p2r16pred.jobs` mẫu) + cập nhật README_SOLUTION / STATUS.
-2. **Quota làm mới 14/11 00:00 UTC** (24 acc × 30 h): đợt lớn cuối — thêm seed / nhánh huấn luyện kiểu WG1 (dữ liệu D1 + D2 là đòn bẩy đã
-   chứng minh), đánh giá nhiều seed của ứng viên tốt nhất; mọi lần chạy có public → `update_final_submission.py` + commit.
-3. Ý tưởng chưa thử còn lại (ưu tiên): bộ chọn huấn luyện trên log của WG1 (cần log WG1 trên `tr_dev_all,d3sel,tr_dev_para`); thêm
-   paraphrase train (D2 mới bằng `src/paraphrase_llm.py`) cho nhánh mới; kiểm tra tổng quát cho 3 câu chọn sai hàm (chỉ nếu tín hiệu sạch
-   trên mọi log, như `len_mask`).
-4. Trước 15/11: chốt bản nộp, chạy đường container lần cuối, cập nhật `docker/README_SOLUTION.md`, báo user build.
+1. **Cấu hình P** (`hieuho669/zc-p2r17p-1`, `dinhthinh/zc-p2r17ps1-1`, xong ~06:15 UTC): chấm (`Process/scores.csv`), so cặp với O cùng seed
+   (`p2r15o` 0.986 / 0.780, `p2r15os1` 0.985 / 0.776); `update_final_submission.py` cho cả hai lần chạy. Đạt §4 (public tb ↑ ≥ 0.3, held-out gộp
+   không giảm > 0.3) → `configs/flow_final.json` = P, chạy đường container (`--runner predict`, mẫu `automation/jobs/p2r16pred.jobs`) trên acc còn
+   giờ, cập nhật `docker/README_SOLUTION.md`. Không đạt → giữ O; xem từng kiểm tra trong log (`turn.precheck` có `count_by` / `size_unused` / `ticket_avg`).
+2. **14/11 00:06 UTC** (đã hẹn `send_later`): quota làm mới → huấn luyện **WG9–12** (`automation/jobs/wg3r.jobs`, plan `plan_wg3r.json`, ~7.5 h):
+   WG9 / WG10 = D1 + `d2mix_full` (1,909 D2 + 1,909 D2b, cùng tỉ lệ WG1) seed 31 / 32; WG11 = D1 + D2 + D2b, ngân sách 21M token; WG12 = D1 + D2 + D2b,
+   14.7M token. Rồi sàng lọc (× 0.35, `pub_full,pub_ho400,tr_ho400`) → xác nhận đủ tập 2 seed nhánh hơn WG1.
+3. Trước 15/11: chốt bản nộp, đường container lần cuối, `docker/README_SOLUTION.md`, báo user build.
+
+Đã thử 12/11 (không giữ): WG5–8 (seed 25 / 26, r 64, lr 1e-4) — không nhánh nào hơn WG1 ở public. Ý tưởng chưa làm: tài liệu API thiếu
+`purchased_qty_base` ("nhập về bao nhiêu viên"; đổi mọi prompt → cần đo riêng); bộ chọn học trên log WG1 (bộ chọn J từng bị loại: public −0.1…−0.8).
 
 ## 5. Kaggle lúc bàn giao (`python3 automation/quota.py`; snapshot `Process/kaggle/quota_2026-11-11.txt`)
 

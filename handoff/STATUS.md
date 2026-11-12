@@ -21,7 +21,7 @@
 | `bichthuy93/zc-wg2r-1` | huấn luyện WG5–8: **xong** (66 bước / nhánh, loss tham chiếu 0.0001–0.003); adapter tải về scratch, WG7 + WG8 đăng thành `huuhien95/zc-wg78-adapters` | — |
 | `zc-sc3wg5…8-1` (bichthuy93, huuhien95) | sàng lọc WG5–8: **xong** — public 0.979 / 0.985 / 0.973 / 0.978, held-out tập con 0.7575 / 0.7463 / 0.7588 / 0.75 (mốc WG1 0.9855 / 0.746) → không nhánh nào hơn WG1 ở public, giữ WG1 (`docs/12_PLAN2.md` vòng 17) | — |
 | `caohuyen74/zc-ptr2-1` | paraphrase train mới: **xong** (12,000 → 11,292 giữ; `Process/train_data/ptr2/`) → **D2b** 3,742 bản ghi (k 2–3; `Process/train_data/wg/d2b_full.jsonl.gz`) | nhánh kiểu WG1 trên D1 + D2 + D2b sau khi quota làm mới 14/11 00:00 UTC |
-| (chờ test CPU) `hieuho669/zc-p2r17p-1`, `dinhthinh/zc-p2r17ps1-1` | **cấu hình P** = O + `count_check` + `size_use_check` + `ticket_avg_check` (vòng 17, `docs/12_PLAN2.md`; tín hiệu sạch trên log dev 0 đúng / 417 sai) + WG1 × 0.35, đủ tập, seed 0 / 1 (cùng seed với O) | so cặp với O (0.986 / 0.985; held-out 0.780 / 0.776) theo §4 |
+| `hieuho669/zc-p2r17p-1`, `dinhthinh/zc-p2r17ps1-1` (12/11 04:38 UTC, ~1.6 h; test CPU ALL PASS) | **cấu hình P** = O + `count_check` + `size_use_check` + `ticket_avg_check` (vòng 17, `docs/12_PLAN2.md`; tín hiệu sạch trên log dev 0 đúng / 417 sai) + WG1 × 0.35, đủ tập, seed 0 / 1 (cùng seed với O) | so cặp với O (0.986 / 0.985; held-out 0.780 / 0.776) theo §4 |
 
 ## 3. Tiến độ kế hoạch
 

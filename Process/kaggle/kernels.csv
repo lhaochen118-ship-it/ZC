@@ -192,4 +192,8 @@ qs7,duckzuykobip/zc-qs7-1,RUNNING?,launched 12/11 15:34
 q1s3a35,caotienminh1/zc-q1s3a35-1,DONE:complete,STATUS=DONE:complete
 q1s3a70,caotienminh1/zc-q1s3a70-1,DONE:complete,STATUS=DONE:complete
 q1s5a35,hai1108/zc-q1s5a35-1,DONE:complete,STATUS=DONE:complete
-q1s5a70,namhunhh/zc-q1s5a70-1,RUNNING?,launched 12/11 16:29
+q1s5a70,namhunhh/zc-q1s5a70-1,DONE:complete,STATUS=DONE:complete
+rq5_tr_dev_all,namhunhh/zc-rq5-tr-dev-all-1,RUNNING?,launched 12/11 17:19
+rq5_d3sel,namhunhh/zc-rq5-d3sel-1,RUNNING?,launched 12/11 17:19
+rq5_tr_dev_para_a,caotienminh1/zc-rq5-tr-dev-para-a-1,RUNNING?,launched 12/11 17:19
+rq5_tr_dev_para_b,caotienminh1/zc-rq5-tr-dev-para-b-1,RUNNING?,launched 12/11 17:19

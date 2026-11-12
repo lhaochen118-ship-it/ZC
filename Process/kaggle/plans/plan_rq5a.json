@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "namhunhh",
+  "name": "rq5_tr_dev_all",
+  "jobs": "automation/jobs/rq5_tr_dev_all.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "namhunhh/zc-para,namhunhh/zc-qs5-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "namhunhh",
+  "name": "rq5_d3sel",
+  "jobs": "automation/jobs/rq5_d3sel.jobs",
+  "est_h": 1.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "namhunhh/zc-para,namhunhh/zc-qs5-adapter",
+   "--no-preflight"
+  ]
+ }
+]

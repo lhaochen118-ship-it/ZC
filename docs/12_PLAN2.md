@@ -240,3 +240,16 @@ Không có tín hiệu sạch (không làm): bỉm size M "mấy bịch" (`size_
 `purchased_qty_base` nhưng tài liệu API không nêu — sửa tài liệu API đổi mọi prompt: để sau, cần đo riêng).
 Cấu hình **P** = O + ba cờ (`configs/flow_p.json`, seed 1: `configs/p2_p_s1.json`); test CPU `tests/test_p2_fixes.py` §15b–d.
 Đo: P + WG1 × 0.35 đủ tập 2 seed (cùng seed với `p2r15o` / `p2r15os1` → so cặp), quy tắc giữ §4.
+
+**Sàng lọc WG5–8** (12/11, cấu hình O, × 0.35, `pub_full` + `pub_ho400` + `tr_ho400`; mốc O + WG1: 0.9855 / tập con 0.746):
+
+| Nhánh | Khác WG1 | Public | pub_ho400 / tr_ho400 (tb) | Kết luận |
+|---|---|---|---|---|
+| WG5 | seed 25 | 0.979 | 0.635 / 0.88 (0.7575) | public thấp hơn |
+| WG6 | seed 26 | 0.985 | 0.625 / 0.8675 (0.7463) | bằng WG1 |
+| WG7 | r 64, α 128 | 0.973 | 0.635 / 0.8825 (0.7588) | public thấp hơn |
+| WG8 | lr 1e-4 | 0.978 | 0.63 / 0.87 (0.75) | public thấp hơn |
+
+Không nhánh nào hơn WG1 ở public → không xác nhận, giữ WG1. Cùng dữ liệu, public dao động 0.973–0.985 theo seed / siêu tham số
+(WG1 0.9855 là đỉnh); held-out tập con dao động 0.746–0.759 (nhiễu ±1). Đòn bẩy còn lại phía mô hình: dữ liệu mới (D2b, 3,742 paraphrase
+kiểu "lịch sự" / "đổi cấu trúc" từ `ptr2`) — huấn luyện sau khi quota làm mới 14/11 (một phiên 4×L4 ~5.5 h ≈ 10–12 h quota, không acc nào đủ trước đó).

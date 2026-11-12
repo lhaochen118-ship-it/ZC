@@ -19,9 +19,8 @@
 | Kernel | Việc | Khi xong |
 |---|---|---|
 | `bichthuy93/zc-wg2r-1` | huấn luyện WG5–8: **xong** (66 bước / nhánh, loss tham chiếu 0.0001–0.003); adapter tải về scratch, WG7 + WG8 đăng thành `huuhien95/zc-wg78-adapters` | — |
-| `bichthuy93/zc-sc3wg5-1`, `zc-sc3wg6-1` (12/11 03:37 UTC) | sàng lọc WG5 / WG6 × 0.35, cấu hình O, `pub_full,pub_ho400,tr_ho400` (adapter mount thẳng từ output `zc-wg2r-1`) | so với O + WG1: public 0.9855, tập con 0.746 → nhánh hơn thì xác nhận đủ tập 2 seed |
-| `huuhien95/zc-sc3wg7-1`, `zc-sc3wg8-1` (12/11 03:39 UTC) | sàng lọc WG7 / WG8 (như trên; `huuhien95/zc-wg78-adapters`) | như trên |
-| `caohuyen74/zc-ptr2-1` (12/11 03:41 UTC) | paraphrase câu train mới (`paraphrase_llm.py --n 4`; giữ k = 2, 3: kiểu "lịch sự" / "đổi cấu trúc", D2 cũ chỉ có k = 0, 1) | dựng D2b (`training/data/d2_paraphrase.py`) → nhánh kiểu WG1 trên D1 + D2 + D2b sau khi quota làm mới 14/11 |
+| `zc-sc3wg5…8-1` (bichthuy93, huuhien95) | sàng lọc WG5–8: **xong** — public 0.979 / 0.985 / 0.973 / 0.978, held-out tập con 0.7575 / 0.7463 / 0.7588 / 0.75 (mốc WG1 0.9855 / 0.746) → không nhánh nào hơn WG1 ở public, giữ WG1 (`docs/12_PLAN2.md` vòng 17) | — |
+| `caohuyen74/zc-ptr2-1` | paraphrase train mới: **xong** (12,000 → 11,292 giữ; `Process/train_data/ptr2/`) → **D2b** 3,742 bản ghi (k 2–3; `Process/train_data/wg/d2b_full.jsonl.gz`) | nhánh kiểu WG1 trên D1 + D2 + D2b sau khi quota làm mới 14/11 00:00 UTC |
 | (chờ test CPU) `hieuho669/zc-p2r17p-1`, `dinhthinh/zc-p2r17ps1-1` | **cấu hình P** = O + `count_check` + `size_use_check` + `ticket_avg_check` (vòng 17, `docs/12_PLAN2.md`; tín hiệu sạch trên log dev 0 đúng / 417 sai) + WG1 × 0.35, đủ tập, seed 0 / 1 (cùng seed với O) | so cặp với O (0.986 / 0.985; held-out 0.780 / 0.776) theo §4 |
 
 ## 3. Tiến độ kế hoạch

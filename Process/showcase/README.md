@@ -1,6 +1,6 @@
 # Showcase repo figures
 
-Sources of the figures in the public showcase repo `nhatlong113/ZAIC-2026` (`assets/*.png`, light + dark variants).
+Sources of the figures in the public showcase repo `nhatlong113/ZAIC-2026` (`assets/*.png`, light + dark variants; v2, 12/11: public 0.994 = container run of P).
 
 ```bash
 python3 gen.py out                               # writes out/<figure>-<theme>.html (one SVG each)

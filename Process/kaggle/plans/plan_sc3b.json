@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "huuhien95",
+  "name": "sc3wg7",
+  "jobs": "automation/jobs/sc3wg7.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huuhien95/zc-para,huuhien95/zc-wg78-adapters",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "huuhien95",
+  "name": "sc3wg8",
+  "jobs": "automation/jobs/sc3wg8.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huuhien95/zc-para,huuhien95/zc-wg78-adapters",
+   "--no-preflight"
+  ]
+ }
+]

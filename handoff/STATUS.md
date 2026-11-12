@@ -18,7 +18,10 @@
 
 | Kernel | Việc | Khi xong |
 |---|---|---|
-| `bichthuy93/zc-wg2r-1` (bắt đầu 09:03 UTC 11/11, ~5.5 h) | huấn luyện WG5–8 (kiểu WG1: WG5 / WG6 seed 25 / 26, WG7 r 64, WG8 lr 1e-4; `automation/jobs/wg2r.jobs`) | tải output: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_bichthuy93) kaggle kernels output bichthuy93/zc-wg2r-1 -p <dir>`; adapter ở `results/wg2r/WG*/adapter/` → làm theo §4 bước 1 |
+| `bichthuy93/zc-wg2r-1` | huấn luyện WG5–8: **xong** (66 bước / nhánh, loss tham chiếu 0.0001–0.003); adapter tải về scratch, WG7 + WG8 đăng thành `huuhien95/zc-wg78-adapters` | — |
+| `bichthuy93/zc-sc3wg5-1`, `zc-sc3wg6-1` (12/11 03:37 UTC) | sàng lọc WG5 / WG6 × 0.35, cấu hình O, `pub_full,pub_ho400,tr_ho400` (adapter mount thẳng từ output `zc-wg2r-1`) | so với O + WG1: public 0.9855, tập con 0.746 → nhánh hơn thì xác nhận đủ tập 2 seed |
+| `huuhien95/zc-sc3wg7-1`, `zc-sc3wg8-1` (12/11 03:39 UTC) | sàng lọc WG7 / WG8 (như trên; `huuhien95/zc-wg78-adapters`) | như trên |
+| `caohuyen74/zc-ptr2-1` (12/11 03:41 UTC) | paraphrase câu train mới (`paraphrase_llm.py --n 4`; giữ k = 2, 3: kiểu "lịch sự" / "đổi cấu trúc", D2 cũ chỉ có k = 0, 1) | dựng D2b (`training/data/d2_paraphrase.py`) → nhánh kiểu WG1 trên D1 + D2 + D2b sau khi quota làm mới 14/11 |
 
 ## 3. Tiến độ kế hoạch
 

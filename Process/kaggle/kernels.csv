@@ -142,7 +142,7 @@ w7c,quynhtran35/zc-w7c-1,DONE:complete,STATUS=DONE:complete
 w7c2,synchan5704/zc-w7c2-1,DONE:complete,STATUS=DONE:complete
 w7f,quynhle07/zc-w7f-1,DONE:complete,STATUS=DONE:complete
 wg,loinguyentran/zc-wg-1,DONE:complete,STATUS=DONE:complete
-wg2r,bichthuy93/zc-wg2r-1,RUNNING?,09:03:24 kernel RUNNING (GPU granted)
+wg2r,bichthuy93/zc-wg2r-1,DONE:complete,STATUS=DONE:complete
 wheels,yeshenhi/zc-train-wheels,DONE:complete,STATUS=DONE:complete
 wisea035,nguyenhoa99/zc-wisea035-1,DONE:complete,STATUS=DONE:complete
 wisea07,nguyenhoa99/zc-wisea07-1,DONE:complete,STATUS=DONE:complete
@@ -152,3 +152,8 @@ wisewc035,huyenco/zc-wisewc035-1,DONE:complete,STATUS=DONE:complete
 wisewc05,huyenco/zc-wisewc05-1,DONE:complete,STATUS=DONE:complete
 wisewc07,huyenco/zc-wisewc07-1,DONE:complete,STATUS=DONE:complete
 wisewf05,quynhle07/zc-wisewf05-1,DONE:complete,STATUS=DONE:complete
+sc3wg5,bichthuy93/zc-sc3wg5-1,RUNNING?,launched 12/11
+sc3wg6,bichthuy93/zc-sc3wg6-1,RUNNING?,launched 12/11
+sc3wg7,huuhien95/zc-sc3wg7-1,RUNNING?,launched 12/11
+sc3wg8,huuhien95/zc-sc3wg8-1,RUNNING?,launched 12/11
+ptr2,caohuyen74/zc-ptr2-1,RUNNING?,launched 12/11

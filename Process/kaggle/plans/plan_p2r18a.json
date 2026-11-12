@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "bichthuy93",
+  "name": "p2r18wg10",
+  "jobs": "automation/jobs/p2r18wg10.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight",
+   "--ds",
+   "bichthuy93/zc-para,bichthuy93/zc-wg10-adapter"
+  ]
+ },
+ {
+  "acc": "linhmai24",
+  "name": "p2r18wg9",
+  "jobs": "automation/jobs/p2r18wg9.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight",
+   "--ds",
+   "linhmai24/zc-para,linhmai24/zc-wg9-adapter"
+  ]
+ }
+]

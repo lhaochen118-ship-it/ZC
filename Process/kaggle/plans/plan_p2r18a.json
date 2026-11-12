@@ -28,5 +28,20 @@
    "--ds",
    "linhmai24/zc-para,linhmai24/zc-wg9-adapter"
   ]
+ },
+ {
+  "acc": "loinguyentran",
+  "name": "p2r18wg12",
+  "jobs": "automation/jobs/p2r18wg12.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight",
+   "--ds",
+   "loinguyentran/zc-para,loinguyentran/zc-wg12-adapter"
+  ]
  }
 ]

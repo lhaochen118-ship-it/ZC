@@ -3,16 +3,16 @@
 *Cập nhật 2026-11-11 13:00 UTC (bàn giao sang khung chat mới). Lịch sử đầy đủ từng vòng (16 vòng R + hướng M):
 `Process/history/STATUS_full_until_2026-11-11.md`; điểm mọi lần chạy: `Process/scores.csv`.*
 
-## 1. Bản nộp hiện tại (chốt 11/11 04:55 UTC)
+## 1. Bản nộp hiện tại (chốt 12/11 07:40 UTC)
 
 | Thành phần | Giá trị |
 |---|---|
-| Luồng | `configs/flow_final.json` = **O** = J + `mask_check` (hybrid, prompt full, k 2 → 8, round 2 think, review 2, period / named-periods / threshold flag, size / unit / len_mask check, fmt_fix, hint_counts, trần 1536 token) |
-| Mô hình | Qwen3.5-9B + **WG1 × 0.35** (LoRA trên D1 + toàn bộ D2 paraphrase) — `soup.json` trong dataset `nhatlong1103/zc-final-adapter`, sha256 ở `src/adapter_hashes.json` |
-| Public gốc (eval, 2 seed) | **0.986 / 0.985** (tb 0.9855); đường container (`predict_flow.py`, lối vào Docker) **0.986** (992 / 6 / 2), 1,000 câu trong 111 s gộp + 1,172 s trả lời trên 4×L4 |
-| Held-out | pub_ho 0.644 / 0.636, tr_ho 0.882 / 0.881 → gộp tb **0.778** |
-| `final_submission/submission.jsonl` | file public PA cao nhất từng đạt: **0.991** (994 / 3 / 3, J + WG1 seed 0) — luật user 10/11: chỉ thay khi PA cao hơn (`automation/update_final_submission.py`) |
-| Docker | `docker/` sẵn sàng; user tự build 15/11, nộp trước **16/11 23:59 GMT+7** (`docker/SETUP_DOCKER.md`) |
+| Luồng | `configs/flow_final.json` = **P** = O + `count_check` + `size_use_check` + `ticket_avg_check` (vòng 17, `docs/12_PLAN2.md`); O cũ ở `configs/flow_o.json` |
+| Mô hình | Qwen3.5-9B + **WG1 × 0.35** (`nhatlong1103/zc-final-adapter`, sha256 `src/adapter_hashes.json`) — không đổi |
+| Public gốc (eval, 3 seed) | **0.993 / 0.994 / 0.993** (tb 0.9933; O 0.986); đường container (`predict_flow.py`) **0.994** (995 / 1 / 4), 1,000 câu: gộp 90 s + trả lời 1,168 s trên 4×L4 |
+| Held-out | gộp 0.7718 / 0.7743 / 0.7784 (tb 0.7748; O 0.7784, −0.36 — quy về nguyên nhân ≈ −0.01, phần còn lại là nhiễu chạy lại; ngoại lệ ghi ở `docs/12_PLAN2.md` vòng 17) |
+| `final_submission/submission.jsonl` | **0.994** (995 / 1 / 4, P seed 1) |
+| Docker | `docker/` sẵn sàng (README_SOLUTION cập nhật P); user build 15/11, nộp trước **16/11 23:59 GMT+7** |
 
 ## 2. Đang chạy lúc bàn giao
 
@@ -21,8 +21,7 @@
 | `bichthuy93/zc-wg2r-1` | huấn luyện WG5–8: **xong** (66 bước / nhánh, loss tham chiếu 0.0001–0.003); adapter tải về scratch, WG7 + WG8 đăng thành `huuhien95/zc-wg78-adapters` | — |
 | `zc-sc3wg5…8-1` (bichthuy93, huuhien95) | sàng lọc WG5–8: **xong** — public 0.979 / 0.985 / 0.973 / 0.978, held-out tập con 0.7575 / 0.7463 / 0.7588 / 0.75 (mốc WG1 0.9855 / 0.746) → không nhánh nào hơn WG1 ở public, giữ WG1 (`docs/12_PLAN2.md` vòng 17) | — |
 | `caohuyen74/zc-ptr2-1` | paraphrase train mới: **xong** (12,000 → 11,292 giữ; `Process/train_data/ptr2/`) → **D2b** 3,742 bản ghi (k 2–3; `Process/train_data/wg/d2b_full.jsonl.gz`) | nhánh kiểu WG1 trên D1 + D2 + D2b sau khi quota làm mới 14/11 00:00 UTC |
-| `hieuho669/zc-p2r17p-1`, `dinhthinh/zc-p2r17ps1-1` | **cấu hình P** + WG1: **xong** — public 0.993 / 0.994 (tb 0.9935, O 0.9855), held-out gộp 0.7718 / 0.7743 (tb 0.7731, O 0.7776: −0.46; quy về nguyên nhân: câu bị kiểm tra chạm −1/−1/+1/0, phần còn lại là nhiễu chạy lại, `docs/12_PLAN2.md` vòng 17); `final_submission` = 0.994 | — |
-| `caohuyen74/zc-p2r17ps2-1`, `loinguyentran/zc-p2r17os2-1`, `bichthuy93/zc-p2r17pred-1` (12/11 06:03 UTC) | seed 2 của P và O (đủ tập) + đường container với P | tb 3 seed P vs O → đổi `flow_final.json` = P nếu held-out không giảm > 0.3 |
+| P seed 0 / 1 / 2, O seed 2, đường container P (`hieuho669`, `dinhthinh`, `caohuyen74`, `loinguyentran`, `bichthuy93`) | **xong** — số ở §1 | — |
 
 ## 3. Tiến độ kế hoạch
 
@@ -39,10 +38,7 @@ Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp +
 
 ## 4. Việc tiếp theo (theo thứ tự; cập nhật 12/11 04:40 UTC)
 
-1. **Cấu hình P** (`hieuho669/zc-p2r17p-1`, `dinhthinh/zc-p2r17ps1-1`, xong ~06:15 UTC): chấm (`Process/scores.csv`), so cặp với O cùng seed
-   (`p2r15o` 0.986 / 0.780, `p2r15os1` 0.985 / 0.776); `update_final_submission.py` cho cả hai lần chạy. Đạt §4 (public tb ↑ ≥ 0.3, held-out gộp
-   không giảm > 0.3) → `configs/flow_final.json` = P, chạy đường container (`--runner predict`, mẫu `automation/jobs/p2r16pred.jobs`) trên acc còn
-   giờ, cập nhật `docker/README_SOLUTION.md`. Không đạt → giữ O; xem từng kiểm tra trong log (`turn.precheck` có `count_by` / `size_unused` / `ticket_avg`).
+1. ~~Cấu hình P~~: **xong, P là cấu hình nộp** (§1).
 2. **14/11 00:06 UTC** (đã hẹn `send_later`): quota làm mới → huấn luyện **WG9–12** (`automation/jobs/wg3r.jobs`, plan `plan_wg3r.json`, ~7.5 h):
    WG9 / WG10 = D1 + `d2mix_full` (1,909 D2 + 1,909 D2b, cùng tỉ lệ WG1) seed 31 / 32; WG11 = D1 + D2 + D2b, ngân sách 21M token; WG12 = D1 + D2 + D2b,
    14.7M token. Rồi sàng lọc (× 0.35, `pub_full,pub_ho400,tr_ho400`) → xác nhận đủ tập 2 seed nhánh hơn WG1.

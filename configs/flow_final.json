@@ -1,5 +1,5 @@
 {
- "_doc": "Submitted configuration (plan 2, 10/11): hybrid flow, full prompt, 2 samples then up to 8 (half of round 2 reasoning first), hints with counted object / thresholds / job & size entities, answer format of the hinted type, flags for period mismatch / unused named periods / unused thresholds, precheck repairs for an unnamed size and an unfiltered unit count, review when the hints say the data does not record what is asked, 1536-token cap, vote, abstain below 0.5. Public 0.9755 / held-out 0.758 (2 seeds, docs/12_PLAN2.md). Model: Qwen3.5-9B + soup of 4 LoRA fine-tunes x 0.35 merged at build time. | 11/11: + mask_check (len() of a boolean mask -> error -> repair; config O, round 15)",
+ "_doc": "Submitted configuration (12/11) = P: config O (configs/flow_o.json: hybrid flow, full prompt, 2 -> 8 samples, round 2 think, review, period / named-periods / threshold flags, size / unit / len_mask prechecks, 1536-token cap, vote, abstain < 0.5) + three prechecks with clean signals on every dev log: count_check (a counting question must not use a money by= metric), size_use_check (a catalogue size the question names must filter the program), ticket_avg_check (aov() in a ticket industry -> avg_ticket). Model: Qwen3.5-9B + WG1 x 0.35. Public 0.993 / 0.994 / 0.993 (3 seeds; O 0.986 / 0.985 / 0.987), held-out combined 0.7718 / 0.7743 / 0.7784 (O 0.7796 / 0.7755 / 0.7802); container path 0.994.",
  "flow": "hybrid",
  "pipeline": true,
  "quant": "fp8",
@@ -39,5 +39,8 @@
  "threshold_flag": 1,
  "size_check": 1,
  "unit_check": 1,
- "mask_check": 1
+ "mask_check": 1,
+ "count_check": 1,
+ "size_use_check": 1,
+ "ticket_avg_check": 1
 }

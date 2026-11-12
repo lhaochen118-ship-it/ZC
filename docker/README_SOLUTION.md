@@ -47,12 +47,14 @@ No public or private test data was used for training; public answers were used o
 
 | Set | PA |
 |---|---|
-| Public test, original 1000 questions | 0.986 / 0.985 (two seeds; without the mask check 0.991 / 0.981 / 0.984) |
-| Public questions rewritten by a model (held out, 1373) | 0.64 |
+| Public test, original 1000 questions | 0.993 / 0.994 / 0.993 (three seeds; container path 0.994; before the three checks below 0.986 / 0.985 / 0.987) |
+| Public questions rewritten by a model (held out, 1373) | 0.63–0.64 |
 | Training shops held out of training (1826) | 0.88 |
 
 (The first submitted model, a soup of 4 fine-tunes x 0.35: public 0.982 / 0.981, held out 0.61 / 0.87.) The flow also
-treats `len()` of a True / False mask as an error and asks for a repair (`mask_check`).
+treats `len()` of a True / False mask as an error and asks for a repair (`mask_check`), and (12/11) three more prechecks: a counting
+question must not use a money metric (`count_check`), a catalogue size the question names must filter the program (`size_use_check`),
+`aov()` in a shop whose industry counts tickets is replaced by `avg_ticket()` (`ticket_avg_check`).
 
 ## Run
 

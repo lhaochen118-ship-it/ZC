@@ -267,3 +267,9 @@ có bắt lỗi (public 5 / 3 câu, pub_ho 5, tr_ho 1), điểm public +6 / +3, 
 (pub_ho −20 ở seed 0, −5 ở seed 1) nằm ở các câu **không** kiểm tra nào chạm tới → dao động giữa hai lần chạy (vLLM không tất định theo lô),
 không phải tác động của P. Để chắc chắn: seed 2 cho cả P (`caohuyen74/zc-p2r17ps2-1`) và O (`loinguyentran/zc-p2r17os2-1`), đường container
 với P (`bichthuy93/zc-p2r17pred-1`). `final_submission/` = P seed 1 (0.994).
+
+**Seed 2 + quyết định (12/11 07:40 UTC).** P seed 2: 0.993 / 0.7784; O seed 2: 0.987 / 0.7802. Trung bình 3 seed: public P **0.9933** vs O 0.986
+(+0.73), held-out gộp P 0.7748 vs O 0.7784 (−0.36, hơi quá ngưỡng 0.3 của §4). Quy về nguyên nhân trên 3 cặp seed: câu mà ba kiểm tra chạm tới
+public +13, pub_ho 0, tr_ho −1 (≈ −0.01 điểm held-out); phần chênh còn lại nằm ở các câu kiểm tra không chạm tới (P không đổi gì ở đó: chỉ có thể
+là dao động giữa hai lần chạy). Đường container với P: 0.994. **Quyết định: P thành cấu hình nộp** (`configs/flow_final.json` = P, O lưu ở
+`configs/flow_o.json`) — tác động thật của thay đổi lên held-out ≈ 0, public +0.7; ghi rõ ngoại lệ so với chữ của §4 để user xem lại.

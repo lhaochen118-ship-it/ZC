@@ -9,6 +9,7 @@
 | Máy | 4 nhân CPU, 15 GB RAM, **không GPU, không Docker daemon**; hạn mức đĩa riêng (~40 GB; `df` "Avail 0" = hết hạn mức) |
 | Python | 3.13; pandas 3.x, numpy 2.x, openpyxl, python-calamine, kaggle CLI 2.2.5; trl 1.15 / peft 0.21 / transformers 5.17 / torch CPU (test huấn luyện trên mô hình tí hon) |
 | PDF | `pip install markdown xhtml2pdf` (mất khi đổi container); `python3 automation/md2pdf.py <in.md> <out.pdf>` |
+| Gói phải cài lại mỗi container | `pip install kaggle==2.2.5 xgrammar` (`tests/test_grammar.py` cần xgrammar; thiếu → `run_all.sh` dừng ở test_grammar) |
 | vLLM | không có — test CPU dùng mô hình giả (`--fake-responder`) |
 | Repo | `/home/user/ZC`, branch `claude/datamate-v3-0dny90` |
 | Scratch | thư mục scratchpad của phiên (`runs/`, `cache_train/`, `cache_pub/`, `canon/`, worktree) — **mất khi sang khung chat mới**; bản lưu cần thiết ở `Process/` |

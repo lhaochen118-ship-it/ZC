@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/p2r17ps2 --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WG1 --weights 0.35 --sets pub_full,pub_ho,tr_ho --eval-config configs/p2_p_s2.json

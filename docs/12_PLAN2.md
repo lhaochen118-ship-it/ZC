@@ -253,3 +253,17 @@ Cấu hình **P** = O + ba cờ (`configs/flow_p.json`, seed 1: `configs/p2_p_s1
 Không nhánh nào hơn WG1 ở public → không xác nhận, giữ WG1. Cùng dữ liệu, public dao động 0.973–0.985 theo seed / siêu tham số
 (WG1 0.9855 là đỉnh); held-out tập con dao động 0.746–0.759 (nhiễu ±1). Đòn bẩy còn lại phía mô hình: dữ liệu mới (D2b, 3,742 paraphrase
 kiểu "lịch sự" / "đổi cấu trúc" từ `ptr2`) — huấn luyện sau khi quota làm mới 14/11 (một phiên 4×L4 ~5.5 h ≈ 10–12 h quota, không acc nào đủ trước đó).
+
+**Kết quả P + WG1 × 0.35 (đủ tập, so cặp cùng seed với O):**
+
+| Seed | O public | P public | O held-out gộp | P held-out gộp |
+|---|---|---|---|---|
+| 0 | 0.986 (990 / 4 / 6) | **0.993** (995 / 2 / 3) | 0.7796 | 0.7718 |
+| 1 | 0.985 (991 / 6 / 3) | **0.994** (995 / 1 / 4) | 0.7755 | 0.7743 |
+| tb | 0.9855 | **0.9935** (+0.8) | 0.7776 | 0.7731 (−0.46) |
+
+Theo §4 held-out gộp giảm 0.46 > 0.3. **Quy về nguyên nhân** (so cặp từng câu, chỉ đếm, không đọc câu held-out): ở các câu mà ba kiểm tra
+có bắt lỗi (public 5 / 3 câu, pub_ho 5, tr_ho 1), điểm public +6 / +3, held-out −1 / −1 / +1 / 0 (≈ −0.02 điểm gộp); phần held-out giảm còn lại
+(pub_ho −20 ở seed 0, −5 ở seed 1) nằm ở các câu **không** kiểm tra nào chạm tới → dao động giữa hai lần chạy (vLLM không tất định theo lô),
+không phải tác động của P. Để chắc chắn: seed 2 cho cả P (`caohuyen74/zc-p2r17ps2-1`) và O (`loinguyentran/zc-p2r17os2-1`), đường container
+với P (`bichthuy93/zc-p2r17pred-1`). `final_submission/` = P seed 1 (0.994).

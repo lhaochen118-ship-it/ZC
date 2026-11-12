@@ -29,3 +29,17 @@ theo chữ câu) — mô hình phải tự học kỳ thời gian, thực thể,
 | Q4 | So với P (public / held-out, 2 seed); thắng → đường container → đổi bản nộp; báo user, lập kế hoạch tiếp | 13/11 |
 
 Mốc cần vượt: hướng M (không luật kế hoạch 2) WF3 + bộ chọn 0.954 / 0.775; mục tiêu tiến sát P (0.993 / 0.775).
+
+## Kết quả (12/11)
+
+| Mô hình (cấu hình Q, thuần) | Public | pub_ho400 / tr_ho400 (tb) |
+|---|---|---|
+| Q0: WG1 × 0.35 (huấn luyện có gợi ý), đủ tập | 0.841 | gộp đủ tập 0.719 (pub_ho 0.5375, tr_ho 0.855) |
+| QS1 (D1p + D2p) × 0.35 / × 0.70 | 0.859 / 0.841 | 0.668 / 0.676 |
+| QS2 (D1p + D2mix p) × 0.35 / × 0.70 | 0.871 / 0.848 | 0.668 / 0.681 |
+| QS4 (= QS1 seed khác) × 0.35 / × 0.70 | 0.867 / 0.835 | 0.670 / **0.714** |
+
+Học sinh chỉ học lại dữ liệu cũ không gợi ý: +2–3 public so với Q0, held-out ≈; α lớn hơn: public ↓, held-out ↑. Lỗi còn lại là đúng phần
+module gợi ý làm (kỳ viết tắt 'Th 12/25', 'T4/2025' → quý; 'o đờ' = đơn; tên giá trị; hàm tự bịa). Hướng tiếp: **chưng cất module gợi ý
+vào đầu ra** (`pure_records.py --self-hints`: nhãn bắt đầu bằng `<hints>` mà luật đọc được từ chính câu đó; lúc suy luận mô hình tự viết,
+không luật nào chạy) — QS8 = QS1 + tự gợi ý, QS7 = D1 + D2 / D2N + tự gợi ý (12/11 15:35). Đang chạy: QS3 (sàng lọc), QS5 / QS6 (huấn luyện).

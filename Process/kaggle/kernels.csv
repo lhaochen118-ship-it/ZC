@@ -167,7 +167,7 @@ wg10f,dinhthinh/zc-wg10f-1,DONE:complete,STATUS=DONE:complete
 wg11f,caohuyen74/zc-wg11f-1,DONE:complete,STATUS=DONE:complete
 wg12f,huuhien95/zc-wg12f-1,DONE:complete,STATUS=DONE:complete
 qs1,hai1108/zc-qs1-1,RUNNING?,launched 12/11 11:54
-qs2,nguyenmanh0404/zc-qs2-1,RUNNING?,launched 12/11 11:54
+qs2,nguyenmanh0404/zc-qs2-1,DONE:complete,STATUS=DONE:complete
 qs3,caotienminh1/zc-qs3-1,RUNNING?,launched 12/11 11:54
 qs4,duckzuykobip/zc-qs4-1,RUNNING?,launched 12/11 11:54
 q0wg1_nofound,namhunhh/zc-q0wg1-1,DONE:complete,adapter dir not found (single-folder dataset unwrapped by Kaggle)
@@ -181,3 +181,5 @@ p2r18wg12,loinguyentran/zc-p2r18wg12-1,DONE:complete,STATUS=DONE:complete
 p2r18wg11,namhunhh/zc-p2r18wg11-1,DONE:complete,STATUS=DONE:complete
 qs5,hai1108/zc-qs5-1,RUNNING?,launched 12/11 13:44
 qs6,nguyenmanh0404/zc-qs6-1,RUNNING?,launched 12/11 13:44
+q1s2a35,nguyenmanh0404/zc-q1s2a35-1,RUNNING?,launched 12/11 14:36
+q1s2a70,namhunhh/zc-q1s2a70-1,RUNNING?,launched 12/11 14:39

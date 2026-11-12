@@ -76,12 +76,13 @@ class HybridPipeline(pipeline.Pipeline):
         st = {"q": q, "b": b, "t": time.time(), "samples": [], "pending": 0, "round": 1, "done": done, "ctx": ctx, "can": can, "prio": prio}
         if ctx is None:
             st.update(hints={}, examples=[], error="no canonical tables"); return self.finish(st)
-        h = ctx.hints(q["question"], q["as_of_date"])
+        pure = bool(int(getattr(a, "pure", 0) or 0))                     # pure model (user 12/11): no rule-read hints anywhere
+        h = {} if pure else ctx.hints(q["question"], q["as_of_date"])   # (prompt, retrieval, prechecks, flags, review)
         st["hints"] = h
         excl = set(self.excl) | {b}                                     # never the shop's own checked examples (honest on train shops)
         exs = self.bank.retrieve(q["question"], h, k=int(a.shots), exclude_bids=excl, exclude_ids={q["id"]})
         st["examples"] = [e.get("id") for e in exs]
-        shown = h if getattr(a, "hints", 1) else None
+        shown = h if getattr(a, "hints", 1) and not pure else None
         st["msgs"] = {v: ctx.messages(q["question"], q["as_of_date"], exs, shown, v) for v in set(self.variants) | {"direct"}}
         st["qkey"] = dm.key(h.get("clean") or q["question"])
         k1 = 1 if self.k_now < a.k else max(1, int(a.k_fast))
@@ -133,7 +134,7 @@ class HybridPipeline(pipeline.Pipeline):
             if not r.get("ok"):
                 self.stats["exec_error"] += 1
                 return retry(f"The program failed:\n{str(r.get('error'))[:700]}" + repair_hint(r.get("error"), self.spec))
-            k_asked = top_k_asked(st["qkey"])
+            k_asked = None if int(getattr(a, "pure", 0) or 0) else top_k_asked(st["qkey"])   # pure: no question-reading rule
             if int(getattr(a, "fmt_fix", 0) or 0):                     # P2: the wrapping of the hinted answer type ([5] -> 5)
                 fixed = fmt_fix(r["answer"], st["hints"].get("answer_type"))
                 if fixed is not r["answer"]: turn["fmt_fix"] = True; r = dict(r, answer=fixed)

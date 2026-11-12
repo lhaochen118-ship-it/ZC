@@ -1,0 +1,62 @@
+[
+ {
+  "acc": "hai1108",
+  "name": "qs1",
+  "jobs": "automation/jobs/qs1.jobs",
+  "est_h": 2.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels",
+   "--train-data",
+   "pure",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "nguyenmanh0404",
+  "name": "qs2",
+  "jobs": "automation/jobs/qs2.jobs",
+  "est_h": 2.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels",
+   "--train-data",
+   "pure",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "caotienminh1",
+  "name": "qs3",
+  "jobs": "automation/jobs/qs3.jobs",
+  "est_h": 3.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels",
+   "--train-data",
+   "pure",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "duckzuykobip",
+  "name": "qs4",
+  "jobs": "automation/jobs/qs4.jobs",
+  "est_h": 2.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels",
+   "--train-data",
+   "pure",
+   "--no-preflight"
+  ]
+ }
+]

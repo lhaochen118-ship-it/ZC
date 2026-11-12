@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "namhunhh",
+  "name": "q0wg1",
+  "jobs": "automation/jobs/q0wg1.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "namhunhh/zc-para,namhunhh/zc-wg1-adapter",
+   "--no-preflight"
+  ]
+ }
+]

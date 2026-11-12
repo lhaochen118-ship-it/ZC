@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/q0wg1 --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WG1 --weights 0.35 --sets pub_full,pub_ho,tr_ho --eval-config configs/flow_pure.json

@@ -922,6 +922,7 @@ def build_parser():
     ap.add_argument("--hint-counts", type=int, default=0, help="hybrid: hints name what the question counts ('mấy bữa' -> ngày) and its thresholds ('từ 10 củ trở lên')")
     ap.add_argument("--mask-check", type=int, default=0, help="hybrid: precheck error for len() of a True / False Series (counts every row)")
     ap.add_argument("--size-use-check", type=int, default=0, help="hybrid: precheck error when the hints name a catalogue size ('sữa bột số 4') and the program does not filter by it")
+    ap.add_argument("--pure", type=int, default=0, help="hybrid: pure model (user 12/11): no rule-read hints in the prompt, the example retrieval (question text only), the prechecks or the flags; only the toolkit API / execution feedback")
     ap.add_argument("--ticket-avg-check", type=int, default=0, help="hybrid: precheck error for aov(p) in a shop whose industry counts tickets (avg_ticket: revenue / tickets with money)")
     ap.add_argument("--count-check", type=int, default=0, help="hybrid: precheck error when the question counts something (hints 'counted', no money word) and a by= function uses a money metric (weekday_avg(p, d) = revenue)")
     ap.add_argument("--unit-check", type=int, default=0, help="hybrid: precheck error when the question counts a base unit ('bao nhiêu gói') and item_qty(p) has no filter")

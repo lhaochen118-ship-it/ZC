@@ -1,0 +1,21 @@
+[
+ {
+  "acc": "hai1108",
+  "name": "qs10p2",
+  "jobs": "automation/jobs/qs10r.jobs",
+  "est_h": 3.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels",
+   "--train-data",
+   "pure",
+   "--ds",
+   "hai1108/zc-qs10-ckpt",
+   "--env",
+   "ZC_SESSION_S=12960,ZC_SESSION_MARGIN=900",
+   "--no-preflight"
+  ]
+ }
+]

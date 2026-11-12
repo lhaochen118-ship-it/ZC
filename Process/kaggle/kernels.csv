@@ -204,6 +204,7 @@ q1s6a35,nguyenmanh0404/zc-q1s6a35-1,DONE:complete,STATUS=DONE:complete
 q1s6a70,nguyenmanh0404/zc-q1s6a70-1,DONE:complete,STATUS=DONE:complete
 q1s7a35,duckzuykobip/zc-q1s7a35-1,DONE:complete,STATUS=DONE:complete
 q1s7a70,duckzuykobip/zc-q1s7a70-1,DONE:complete,STATUS=DONE:complete
-qs10p1,nguyenmanh0404/zc-qs10p1-1,RUNNING?,launched 12/11 20:08 (part 1 of a checkpoint chain)
+qs10p1,nguyenmanh0404/zc-qs10p1-1,DONE:partial,checkpoint-59 of 119 (stopped at the session deadline as designed)
 q1s9a35,caotienminh1/zc-q1s9a35-1,DONE:complete,STATUS=DONE:complete
 q1s9a70,caotienminh1/zc-q1s9a70-1,DONE:complete,STATUS=DONE:complete
+qs10p2,hai1108/zc-qs10p2-1,RUNNING?,launched 12/11 22:43 (part 2: resume from hai1108/zc-qs10-ckpt checkpoint-59)

@@ -22,6 +22,7 @@
 | `zc-sc3wg5…8-1` (bichthuy93, huuhien95) | sàng lọc WG5–8: **xong** — public 0.979 / 0.985 / 0.973 / 0.978, held-out tập con 0.7575 / 0.7463 / 0.7588 / 0.75 (mốc WG1 0.9855 / 0.746) → không nhánh nào hơn WG1 ở public, giữ WG1 (`docs/12_PLAN2.md` vòng 17) | — |
 | `caohuyen74/zc-ptr2-1` | paraphrase train mới: **xong** (12,000 → 11,292 giữ; `Process/train_data/ptr2/`) → **D2b** 3,742 bản ghi (k 2–3; `Process/train_data/wg/d2b_full.jsonl.gz`) | nhánh kiểu WG1 trên D1 + D2 + D2b sau khi quota làm mới 14/11 00:00 UTC |
 | P seed 0 / 1 / 2, O seed 2, đường container P (`hieuho669`, `dinhthinh`, `caohuyen74`, `loinguyentran`, `bichthuy93`) | **xong** — số ở §1 | — |
+| `caohuyen74/zc-wg3r-1` (12/11 ~09:00 UTC, phần 1 / ~3 của chuỗi checkpoint) | huấn luyện **WG9–12** (`wg3r.jobs`) trên quota còn lại của tuần (mất khi làm mới): phiên ngắn `ZC_SESSION_S=12960` (3.6 h) → lưu checkpoint (LoRA + optimizer + RNG) rồi dừng | tải output → đăng dataset `<acc>/zc-wg3r-ckpt` trên acc kế (huuhien95 7.55 h, dinhthinh / hieuho669 7.97 h) → phần 2 cùng job + `--resume-from /kaggle/input` (ZC_SESSION_S theo quota) → đến khi 4 nhánh xong |
 
 ## 3. Tiến độ kế hoạch
 

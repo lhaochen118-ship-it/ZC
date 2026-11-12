@@ -1,0 +1,19 @@
+[
+ {
+  "acc": "caohuyen74",
+  "name": "wg3r",
+  "jobs": "automation/jobs/wg3r.jobs",
+  "est_h": 3.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels",
+   "--train-data",
+   "wg",
+   "--env",
+   "ZC_SESSION_S=12960",
+   "--no-preflight"
+  ]
+ }
+]

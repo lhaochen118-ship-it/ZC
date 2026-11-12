@@ -197,7 +197,7 @@ rq5_tr_dev_all,namhunhh/zc-rq5-tr-dev-all-1,DONE:complete,STATUS=DONE:complete
 rq5_d3sel,namhunhh/zc-rq5-d3sel-1,DONE:complete,STATUS=DONE:complete
 rq5_tr_dev_para_a,caotienminh1/zc-rq5-tr-dev-para-a-1,DONE:complete,STATUS=DONE:complete
 rq5_tr_dev_para_b,caotienminh1/zc-rq5-tr-dev-para-b-1,DONE:complete,STATUS=DONE:complete
-qs9,caotienminh1/zc-qs9-1,RUNNING?,launched 12/11 18:21
+qs9,caotienminh1/zc-qs9-1,DONE:complete,STATUS=DONE:complete
 q1s8a35,hai1108/zc-q1s8a35-1,DONE:complete,STATUS=DONE:complete
 q1s8a70,hai1108/zc-q1s8a70-1,DONE:complete,STATUS=DONE:complete
 q1s6a35,nguyenmanh0404/zc-q1s6a35-1,DONE:complete,STATUS=DONE:complete
@@ -205,3 +205,5 @@ q1s6a70,nguyenmanh0404/zc-q1s6a70-1,DONE:complete,STATUS=DONE:complete
 q1s7a35,duckzuykobip/zc-q1s7a35-1,DONE:complete,STATUS=DONE:complete
 q1s7a70,duckzuykobip/zc-q1s7a70-1,DONE:complete,STATUS=DONE:complete
 qs10p1,nguyenmanh0404/zc-qs10p1-1,RUNNING?,launched 12/11 20:08 (part 1 of a checkpoint chain)
+q1s9a35,caotienminh1/zc-q1s9a35-1,RUNNING?,launched 12/11 21:42
+q1s9a70,caotienminh1/zc-q1s9a70-1,RUNNING?,launched 12/11 21:42

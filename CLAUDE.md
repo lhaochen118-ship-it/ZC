@@ -38,6 +38,8 @@ cải tiến mô hình từ bản không luật 0.939 — mô hình phụ, fine-
 không thêm luật)**; công cụ: `tests/list_wrong.py`, `tests/hint_audit.py`, `tests/replay_vote.py`. Kaggle: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU,
 dùng hết slot một acc rồi mới sang acc khác; việc không cần GPU đưa lên phiên CPU.
 
+**Quyết định user 12/11:** không cần chờ public 100 % mới dừng. Triển khai **hết kế hoạch hiện tại** (`handoff/STATUS.md` §4: P seed 2 + đường container → chốt cấu hình nộp; WG9–12 sau quota 14/11 → sàng lọc / xác nhận; chốt bản nộp + Docker trước 15/11), rồi **dừng lại cùng user phân tích và xây dựng kế hoạch mới** phát triển mô hình hướng tới score = 1, sau đó mới chạy thử nghiệm tiếp.
+
 **`final_submission/submission.jsonl` (user 10/11):** luôn là file nộp public có PA cao nhất đến nay; sau **mỗi** lần chạy GPU có public gốc,
 chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi PA cao hơn; ghi `final_submission/score.json`) rồi commit + push.
 

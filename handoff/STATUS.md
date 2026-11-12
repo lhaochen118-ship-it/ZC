@@ -33,6 +33,10 @@
   còn lại là phiếu tách thay đổi theo seed).
 - Hướng R (luật tổng quát, 16 vòng) và hướng M (mô hình, từ M0 = 0.939): kết quả và quyết định ở `handoff/01_SCIENTIFIC_FINDINGS.pdf`.
 
+## 3b. Quyết định user 12/11
+
+Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp + Docker), rồi cùng user phân tích và lập kế hoạch mới (mô hình → score = 1).
+
 ## 4. Việc tiếp theo (theo thứ tự; cập nhật 12/11 04:40 UTC)
 
 1. **Cấu hình P** (`hieuho669/zc-p2r17p-1`, `dinhthinh/zc-p2r17ps1-1`, xong ~06:15 UTC): chấm (`Process/scores.csv`), so cặp với O cùng seed

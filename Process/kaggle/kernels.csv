@@ -169,7 +169,7 @@ wg12f,huuhien95/zc-wg12f-1,DONE:complete,STATUS=DONE:complete
 qs1,hai1108/zc-qs1-1,DONE:complete,STATUS=DONE:complete
 qs2,nguyenmanh0404/zc-qs2-1,DONE:complete,STATUS=DONE:complete
 qs3,caotienminh1/zc-qs3-1,RUNNING?,launched 12/11 11:54
-qs4,duckzuykobip/zc-qs4-1,RUNNING?,launched 12/11 11:54
+qs4,duckzuykobip/zc-qs4-1,DONE:complete,STATUS=DONE:complete
 q0wg1_nofound,namhunhh/zc-q0wg1-1,DONE:complete,adapter dir not found (single-folder dataset unwrapped by Kaggle)
 p2r18wg9_nofound,linhmai24/zc-p2r18wg9-1,DONE:complete,adapter dir not found (single-folder dataset unwrapped by Kaggle)
 p2r18wg10_nofound,bichthuy93/zc-p2r18wg10-1,DONE:complete,adapter dir not found (single-folder dataset unwrapped by Kaggle)
@@ -185,3 +185,5 @@ q1s2a35,nguyenmanh0404/zc-q1s2a35-1,RUNNING?,launched 12/11 14:36
 q1s2a70,namhunhh/zc-q1s2a70-1,RUNNING?,launched 12/11 14:39
 q1s1a35,hai1108/zc-q1s1a35-1,RUNNING?,launched 12/11 14:39
 q1s1a70,namhunhh/zc-q1s1a70-1,RUNNING?,launched 12/11 14:40
+q1s4a35,duckzuykobip/zc-q1s4a35-1,RUNNING?,launched 12/11 14:46
+q1s4a70,duckzuykobip/zc-q1s4a70-1,RUNNING?,launched 12/11 14:46

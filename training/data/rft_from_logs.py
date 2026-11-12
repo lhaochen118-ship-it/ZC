@@ -57,14 +57,14 @@ def prompt_of(r, a, bank, by_id, stats):
     """the direct-variant prompt of the logged question, rebuilt as at inference (hints / examples checked against the log)."""
     lg = r.get("samples") if isinstance(r.get("samples"), dict) else {}
     c = common.ctx(a.split, a.cache, a.canon_dir, r["business_id"], a.mode)
-    h = c.hints(r["question"], r["as_of_date"])
+    h = {} if a.pure else c.hints(r["question"], r["as_of_date"])     # pure flow (--pure 1): no hints in prompt or retrieval
     if json.dumps(h, sort_keys=True, default=str) != json.dumps(lg.get("hints") or {}, sort_keys=True, default=str): stats["hints_differ"] += 1
     exs = bank.retrieve(r["question"], h, k=a.shots, exclude_bids={r["business_id"]}, exclude_ids={r["id"]})
     want = list(lg.get("examples") or [])
     if [e.get("id") for e in exs] != want:
         stats["examples_differ"] += 1
         if all(i in by_id for i in want): exs = [by_id[i] for i in want]  # the logged examples win
-    return c.messages(r["question"], r["as_of_date"], exs, h, "direct")
+    return c.messages(r["question"], r["as_of_date"], exs, None if a.pure else h, "direct")
 
 
 def load_logs(paths):
@@ -85,6 +85,7 @@ def main():
     ap.add_argument("--per-hard", type=int, default=2); ap.add_argument("--easy-frac", type=float, default=0.3)
     ap.add_argument("--max-ntok", type=int, default=480, help="drop samples longer than this (truncation risk at 512)")
     ap.add_argument("--seed", type=int, default=20261110); ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--pure", action="store_true", help="logs of the pure flow (src/hybrid.py --pure 1): prompts without hints, retrieval by the question text")
     a = ap.parse_args()
     import score, retrieval
     t0 = time.time()

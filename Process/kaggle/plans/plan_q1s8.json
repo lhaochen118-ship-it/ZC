@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "hai1108",
+  "name": "q1s8a35",
+  "jobs": "automation/jobs/q1s8a35.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,hai1108/zc-qs8-1",
+   "--ds",
+   "hai1108/zc-para",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "hai1108",
+  "name": "q1s8a70",
+  "jobs": "automation/jobs/q1s8a70.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,hai1108/zc-qs8-1",
+   "--ds",
+   "hai1108/zc-para",
+   "--no-preflight"
+  ]
+ }
+]

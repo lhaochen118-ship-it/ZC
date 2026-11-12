@@ -23,6 +23,8 @@
 | `caohuyen74/zc-ptr2-1` | paraphrase train mới: **xong** (12,000 → 11,292 giữ; `Process/train_data/ptr2/`) → **D2b** 3,742 bản ghi (k 2–3; `Process/train_data/wg/d2b_full.jsonl.gz`) | nhánh kiểu WG1 trên D1 + D2 + D2b sau khi quota làm mới 14/11 00:00 UTC |
 | P seed 0 / 1 / 2, O seed 2, đường container P (`hieuho669`, `dinhthinh`, `caohuyen74`, `loinguyentran`, `bichthuy93`) | **xong** — số ở §1 | — |
 | `hieuho669/zc-wg9f-1`, `dinhthinh/zc-wg10f-1`, `caohuyen74/zc-wg11f-1`, `huuhien95/zc-wg12f-1` (12/11 09:05 UTC) | huấn luyện **WG9–12 song song, mỗi nhánh một acc, FSDP 4 GPU** (`training/full_job.py`, ~2k tok/s; r 32 α 64 lr 2e-4, mb 4 × 4 GPU × ga 4 = 64; WG9 / WG10 D1 + d2mix seed 31 / 32, WG11 D1 + D2 + D2b 21M token, WG12 D1 + D2 + D2b 14.7M) — user 12/11: không tiết kiệm acc, ra kết quả nhanh nhất; thay chuỗi checkpoint 1 GPU / nhánh (~8 h) | ~2.5–3.5 h → adapter ở `results/WG*/adapter` → đánh giá **đủ tập** seed 0 ngay (× 0.35, cấu hình P) trên bichthuy93 / linhmai24 / loinguyentran; seed 1 sau quota 14/11 |
+| WG9 / WG10 / WG12 **xong** (FSDP 1.71–1.75k tok/s, 2.4 h); WG11 đang chạy | đánh giá đủ tập với **P** × 0.35 seed 0: `linhmai24/zc-p2r18wg9-1`, `bichthuy93/zc-p2r18wg10-1`, `loinguyentran/zc-p2r18wg12-1` (12/11 11:54) | so với P + WG1 (0.993–0.994 / 0.772–0.778) |
+| **Hướng thuần (user 12/11, `docs/14_PURE_MODEL_PLAN.md`)** | Q0 = WG1 với cấu hình Q (`namhunhh/zc-q0wg1-1`); học sinh thuần QS1–4 (FSDP, mỗi nhánh 1 acc mới: `hai1108/zc-qs1-1`, `nguyenmanh0404/zc-qs2-1`, `caotienminh1/zc-qs3-1`, `duckzuykobip/zc-qs4-1`), 12/11 11:54 | Q0 ~1.6 h; QS ~2.8–3.6 h → đánh giá cấu hình Q đủ tập trên chính acc đó |
 
 ## 3. Tiến độ kế hoạch
 

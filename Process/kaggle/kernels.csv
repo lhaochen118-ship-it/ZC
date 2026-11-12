@@ -162,7 +162,15 @@ p2r17ps1,dinhthinh/zc-p2r17ps1-1,DONE:complete,STATUS=DONE:complete
 p2r17ps2,caohuyen74/zc-p2r17ps2-1,DONE:complete,STATUS=DONE:complete
 p2r17os2,loinguyentran/zc-p2r17os2-1,DONE:complete,STATUS=DONE:complete
 p2r17pred,bichthuy93/zc-p2r17pred-1,DONE:complete,STATUS=DONE:complete
-wg9f,hieuho669/zc-wg9f-1,RUNNING?,launched 12/11 09:05
-wg10f,dinhthinh/zc-wg10f-1,RUNNING?,launched 12/11 09:05
+wg9f,hieuho669/zc-wg9f-1,DONE:complete,STATUS=DONE:complete
+wg10f,dinhthinh/zc-wg10f-1,DONE:complete,STATUS=DONE:complete
 wg11f,caohuyen74/zc-wg11f-1,RUNNING?,launched 12/11 09:05
-wg12f,huuhien95/zc-wg12f-1,RUNNING?,launched 12/11 09:05
+wg12f,huuhien95/zc-wg12f-1,DONE:complete,STATUS=DONE:complete
+qs1,hai1108/zc-qs1-1,RUNNING?,launched 12/11 11:54
+qs2,nguyenmanh0404/zc-qs2-1,RUNNING?,launched 12/11 11:54
+qs3,caotienminh1/zc-qs3-1,RUNNING?,launched 12/11 11:54
+qs4,duckzuykobip/zc-qs4-1,RUNNING?,launched 12/11 11:54
+q0wg1,namhunhh/zc-q0wg1-1,RUNNING?,launched 12/11 11:54
+p2r18wg9,linhmai24/zc-p2r18wg9-1,RUNNING?,launched 12/11 11:54
+p2r18wg10,bichthuy93/zc-p2r18wg10-1,RUNNING?,launched 12/11 11:54
+p2r18wg12,loinguyentran/zc-p2r18wg12-1,RUNNING?,launched 12/11 11:54

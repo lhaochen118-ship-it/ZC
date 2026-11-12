@@ -97,6 +97,40 @@ def _uses_number(code, v):
     return False
 
 
+MONEY_Q = r"\b(?:tien|doanh thu|dthu|doanh so|gia tri|von|loi nhuan|lai|lo|hoa hong|chi phi|thu nhap|gia)\b"
+MONEY_BY = {"revenue", "amount", "aov", "profit", "commission"}
+
+
+def _money_by(tree, by):
+    """calls of a toolkit function with a by= metric whose metric is money: by='revenue' / 'amount' ... or no by= where the
+    default is money (weekday_avg(p, 2) averages revenue). -> [(function, metric, non-money options)]"""
+    out = []
+    for n in ast.walk(tree):
+        if not isinstance(n, ast.Call) or not isinstance(n.func, ast.Name) or n.func.id not in by: continue
+        e = by[n.func.id]; opts = list(e.get("by") or [])
+        if not opts: continue
+        dflt = next((p.get("default") for p in e["params"] if p["name"] == "by"), None)
+        kw = next((k for k in n.keywords if k.arg == "by"), None)
+        pos = [p["name"] for p in e["params"]].index("by") if any(p["name"] == "by" for p in e["params"]) else None
+        if kw is not None: metric = kw.value.value if isinstance(kw.value, ast.Constant) else None
+        elif pos is not None and len(n.args) > pos: metric = n.args[pos].value if isinstance(n.args[pos], ast.Constant) else None
+        else: metric = dflt
+        alts = [o for o in opts if o not in MONEY_BY]
+        if metric in MONEY_BY and alts: out.append((n.func.id, metric, alts))
+    return out
+
+
+def _size_used(tree, v):
+    """the program counts a size: a size_qty(...) call, or a string constant naming the size ('Số 4', '4' after 'size' / 'số')."""
+    k = " ".join(dm.key(v).split()); bare = re.sub(r"^(?:size|so|co)\s+", "", k).strip()
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "size_qty": return True
+        if isinstance(n, ast.Constant) and isinstance(n.value, str):
+            c = " ".join(dm.key(n.value).split())
+            if c in (k, bare) or re.search(r"\b(?:size|so|co)\s*" + re.escape(bare) + r"\b", c): return True
+    return False
+
+
 def all_periods(src, today):
     """{(from, to)} of every period expression of a program (source text or parsed tree); None if it does not parse."""
     import pandas as pd
@@ -111,7 +145,8 @@ def all_periods(src, today):
     return out
 
 
-def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None, question=None, unit_check=False, mask_check=False):
+def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None, question=None, unit_check=False, mask_check=False,
+             count_check=False, size_use_check=False, industry_doc=None):
     import api_spec
     out = []
     if code is None: return [_issue("error", "format", "no program block (<code> ... </code>) in the output")]
@@ -205,6 +240,23 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
     if mask_check and _len_of_mask(tree):                               # P2: len() of a True / False Series counts every row
         out.append(_issue("error", "len_mask", "len(...) of a comparison / mask (x >= n, .ge(n), .notna(), .where(...)) counts every row, not the matches",
                           "count the matches with (s >= n).sum(), or filter first: len(s[s >= n])"))
+    if size_use_check and question is not None:                          # P2: a catalogue size the question names ('sữa bột số 4',
+        for v in [e.get("data_value") for e in h.get("entities") or [] if e.get("kind") == "size" and e.get("data_value")]:   # hints:
+            if not _size_used(tree, v):                                 # size column) must filter the program (84 / 84 dev samples
+                out.append(_issue("error", "size_unused", f"the question names the size {v!r} (size column of the catalogue) but the "   # wrong)
+                                  "program does not filter by it", f"size_qty(p, {v!r}, group=...) counts the items of that size"))
+                break
+    if industry_doc and "avg_ticket" in industry_doc and any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "aov"
+                                                             for n in ast.walk(tree)):   # P2: a shop that counts tickets (lượt xe):
+        out.append(_issue("error", "ticket_avg", "aov(...) divides by every ticket, warranty tickets included; the money of one ticket "   # 140 / 140
+                          "in this shop is avg_ticket(p): revenue / tickets with money (rulebook)", "avg_ticket(p)"))         # dev samples wrong
+    if count_check and question is not None and h.get("counted"):     # P2: a question that counts ('mấy lượt xe', 'bao nhiêu % tổng số
+        qk = " " + " ".join(dm.key(str(question) + " " + str(h.get("clean") or "")).split()) + " "   # máy') and asks no money
+        if not re.search(MONEY_Q, qk):                                  # must not rank / average by money (192 / 192 dev samples wrong)
+            for fn, metric, alts in _money_by(tree, by):
+                out.append(_issue("error", "count_by", f"the question counts {h['counted']!r} but {fn}(...) uses by={metric!r} (money)",
+                                  f"{fn}(..., by={alts[0]!r})" + (f" (count options: {alts})" if len(alts) > 1 else "")))
+                break
     for th in h.get("thresholds") or []:                                 # P2: a threshold the question sets ('ít nhất 187 đơn')
         v = th.get("value")                                             # should appear in the program
         if isinstance(v, (int, float)) and not _uses_number(code, v):

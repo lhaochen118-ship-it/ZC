@@ -223,3 +223,20 @@ WF3 (0.979 / 0.773) → WF3 + RFT (0.9805 / 0.776) → **WG1 = LoRA trên D1 + t
 `mask_check`** (`len()` của mặt nạ → lỗi → sửa; tín hiệu sạch 69 / 0) + WG1: **0.9855 / 0.778** (2 seed; container 0.986). Không giữ:
 súp WF3 + WF4, WG1 + WG3, WG1 + WG2; RFT trên WG1 (−0.6); WG1 × 0.30; × 0.40 (+0.05 / +0.2, chưa đạt §4); × 0.40 + k12 (−0.3 / +0.6).
 Đang chạy lúc bàn giao: WG5–8 (`bichthuy93/zc-wg2r-1`). Việc tiếp theo: `handoff/STATUS.md` §4.
+
+## Vòng 17 (12/11) — phân tích lỗi của O + WG1 và ba kiểm tra mới (cấu hình P)
+
+Phân tích lỗi (`tests/list_wrong.py` trên `p2r15o`, `p2r15os1`; 15 câu sai / bỏ ở ít nhất một seed, 4 câu sai ổn định). Lọc các nhóm
+có **tín hiệu sạch** bằng cách chạy lại `precheck` trên chương trình cuối của **mọi mẫu** trong mọi log dev đã lưu (`Process/runs/*`:
+pub_full, tr_dev_all, d3sel, tr_dev_para; 115,250 mẫu; không đọc held-out):
+
+| Kiểm tra (cờ) | Quy tắc tổng quát | Mẫu bị bắt: đúng / sai | Câu public liên quan |
+|---|---|---|---|
+| `count_check` | câu **đếm** (gợi ý `counted`: 'mấy lượt xe', 'bao nhiêu % tổng số máy') không nêu tiền mà hàm `by=` dùng thước đo tiền (mặc định `revenue` của `weekday_avg`, `device_share`) → lỗi → lượt sửa (gợi ý `by='orders'` / `'qty'`) | 0 / 192 | trung bình mỗi thứ Tư mấy lượt xe; mỗi thứ 3 bao nhiêu lượt xe; Samsung % tổng số máy |
+| `size_use_check` | gợi ý nêu **size của danh mục** ('sữa bột số 4', cột size) mà chương trình không gọi `size_qty` / không nêu size → lỗi → sửa | 0 / 85 | sữa bột số 4 (ổn định sai 405 thay vì 44) |
+| `ticket_avg_check` | DN ngành có phiếu (toolkit `avg_ticket`, ngành sửa xe): `aov(p)` chia cho mọi phiếu kể cả bảo hành; tiền một phiếu theo rulebook = `avg_ticket(p)` → lỗi → sửa | 0 / 140 | bình quân 1 phiếu thu tiền (ổn định sai) |
+
+Không có tín hiệu sạch (không làm): bỉm size M "mấy bịch" (`size_qty` + đơn vị: 208 đúng / 55 sai); "nhập về bao nhiêu viên" (toolkit có
+`purchased_qty_base` nhưng tài liệu API không nêu — sửa tài liệu API đổi mọi prompt: để sau, cần đo riêng).
+Cấu hình **P** = O + ba cờ (`configs/flow_p.json`, seed 1: `configs/p2_p_s1.json`); test CPU `tests/test_p2_fixes.py` §15b–d.
+Đo: P + WG1 × 0.35 đủ tập 2 seed (cùng seed với `p2r15o` / `p2r15os1` → so cặp), quy tắc giữ §4.

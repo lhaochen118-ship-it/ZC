@@ -115,10 +115,12 @@ class HybridPipeline(pipeline.Pipeline):
             code = out["code"]
             if out["escape"] == "sql" and code is not None:          # the query becomes a program first (a SQL text is no Python)
                 code = sql_program(code, (st["hints"] or {}).get("answer_type"))
-            uc = bool(int(getattr(a, "unit_check", 0) or 0))
+            uc = bool(int(getattr(a, "unit_check", 0) or 0)); cc = bool(int(getattr(a, "count_check", 0) or 0))
+            su = bool(int(getattr(a, "size_use_check", 0) or 0))
             iss = pre.precheck(code, self.spec, st["hints"], ctx.entity_values, out["escape"], q["as_of_date"],
-                               q["question"] if (int(getattr(a, "size_check", 0) or 0) or uc) else None, uc,
-                               bool(int(getattr(a, "mask_check", 0) or 0)))
+                               q["question"] if (int(getattr(a, "size_check", 0) or 0) or uc or cc or su) else None, uc,
+                               bool(int(getattr(a, "mask_check", 0) or 0)), cc, su,
+                               getattr(ctx, "industry_doc", None) if int(getattr(a, "ticket_avg_check", 0) or 0) else None)
             turn["precheck"] = [f"{i['level']}:{i['rule']}:{i['msg'][:120]}" for i in iss]
             if pre.errors(iss):
                 self.stats["precheck_error"] += 1

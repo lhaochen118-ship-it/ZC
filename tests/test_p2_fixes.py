@@ -148,6 +148,41 @@ check("len of mask tolist", mk('ANSWER = {"type": "number", "answer": len((item_
 check("len of list(mask)", mk('ANSWER = {"type": "number", "answer": len(list(item_sales(month(2026, 5), by="n_orders") >= 152))}'), ["error"])
 check("len of filtered tolist", mk('s = item_sales(month(2026, 5), by="n_orders")\nANSWER = {"type": "number", "answer": len(s[s >= 152].tolist())}'), [])
 
+# 15b. a question that counts (hints 'counted') and names no money must not use a money metric (count_check)
+import hints as _H, dm as _dm
+def cb(code, q):
+    h = {"counted": _H.counted(" ".join(_dm.key(q).split())), "clean": q}
+    return [i["level"] for i in pre.precheck(code, spec, h, None, None, "2026-04-10", q, False, False, True) if i["rule"] == "count_by"]
+check("count weekday default", cb('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), 2)}', "tháng 3 trung bình mỗi thứ Tư có mấy lượt xe"), ["error"])
+check("count weekday revenue kw", cb('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), weekday=2, by="revenue")}', "tháng 3 trung bình thứ Tư bao nhiêu đơn"), ["error"])
+check("count weekday orders", cb('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), weekday=2, by="orders")}', "tháng 3 trung bình mỗi thứ Tư có mấy lượt xe"), [])
+check("count share default", cb('ANSWER = {"type": "percent", "answer": device_share(month(2025, 10), brand="Oppo")}', "tháng 10 Oppo chiếm bao nhiêu % tổng số máy bán ra"), ["error"])
+check("count share qty", cb('ANSWER = {"type": "percent", "answer": device_share(month(2025, 10), brand="Oppo", by="qty")}', "tháng 10 Oppo chiếm bao nhiêu % tổng số máy bán ra"), [])
+check("money word keeps revenue", cb('ANSWER = {"type": "string", "answer": rank(staff_sales(month(2025, 2), by="revenue"), 1)[0]}', "trong số người bán, ai có doanh thu cao nhất tháng 2, bao nhiêu khách"), [])
+check("no count no check", cb('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), 2)}', "tháng 3 trung bình mỗi thứ Tư bán được bao nhiêu tiền"), [])
+check("count check off", [i["rule"] for i in pre.precheck('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), 2)}', spec,
+      {"counted": "đơn"}, None, None, "2026-04-10", "thứ Tư mấy đơn", False, False) if i["rule"] == "count_by"], [])
+
+# 15c. a catalogue size the question names must filter the program (size_use_check)
+def su(code, size):
+    h = {"entities": [{"kind": "size", "data_value": size}]}
+    return [i["level"] for i in pre.precheck(code, spec, h, None, None, "2026-06-30", "bán bao nhiêu lon sữa bột " + size, False, False, False, True) if i["rule"] == "size_unused"]
+check("size ignored", su('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY), group="sữa bột")}', "Số 4"), ["error"])
+check("size digit elsewhere", su('ANSWER = {"type": "number", "answer": item_qty(month(2026, 4), group="sữa bột")}', "Số 4"), ["error"])
+check("size_qty used", su('ANSWER = {"type": "number", "answer": size_qty(this_month(TODAY), "Số 4", group="sữa bột")}', "Số 4"), [])
+check("size in a filter", su('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY), where=lambda x: x["size"] == "Size M")}', "Size M"), [])
+check("size check off", [i["rule"] for i in pre.precheck('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY))}', spec,
+      {"entities": [{"kind": "size", "data_value": "Số 4"}]}, None, None, "2026-06-30", "số 4", False, False) if i["rule"] == "size_unused"], [])
+
+# 15d. a shop whose industry counts tickets (toolkit avg_ticket): aov() is not the money of one ticket (ticket_avg_check)
+import industry as _ind
+ta = lambda code, doc: [i["rule"] for i in pre.precheck(code, spec, {}, None, None, "2026-04-10", None, False, False, False, False, doc) if i["rule"] == "ticket_avg"]
+check("aov in a ticket shop", ta('ANSWER = {"type": "number", "answer": aov(month(2026, 1))}', _ind.INDUSTRY_API["sửa xe"]), ["ticket_avg"])
+check("aov filtered in a ticket shop", ta('ANSWER = {"type": "number", "answer": aov(month(2026, 1), staff="An")}', _ind.INDUSTRY_API["sửa xe"]), ["ticket_avg"])
+check("avg_ticket in a ticket shop", ta('ANSWER = {"type": "number", "answer": avg_ticket(month(2026, 1))}', _ind.INDUSTRY_API["sửa xe"]), [])
+check("aov in another shop", ta('ANSWER = {"type": "number", "answer": aov(month(2026, 1))}', _ind.INDUSTRY_API["mẹ và bé"]), [])
+check("aov, check off", ta('ANSWER = {"type": "number", "answer": aov(month(2026, 1))}', None), [])
+
 # 16. learned selector (track M, WP-M6): the shares-only feature set saves / loads with its columns and scores any sample count
 import selector as SEL, tempfile
 def _rec(i, answers):

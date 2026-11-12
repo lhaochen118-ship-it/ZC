@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "WG11": "/kaggle/input/datasets/namhunhh/zc-wg11-adapter/WG11/adapter"
+ },
+ "weights": [
+  0.35
+ ],
+ "merge_rc": 0,
+ "merge_s": 95,
+ "eval_rc": 0,
+ "eval_s": 3337
+}

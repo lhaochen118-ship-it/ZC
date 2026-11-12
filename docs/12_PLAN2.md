@@ -273,3 +273,15 @@ với P (`bichthuy93/zc-p2r17pred-1`). `final_submission/` = P seed 1 (0.994).
 public +13, pub_ho 0, tr_ho −1 (≈ −0.01 điểm held-out); phần chênh còn lại nằm ở các câu kiểm tra không chạm tới (P không đổi gì ở đó: chỉ có thể
 là dao động giữa hai lần chạy). Đường container với P: 0.994. **Quyết định: P thành cấu hình nộp** (`configs/flow_final.json` = P, O lưu ở
 `configs/flow_o.json`) — tác động thật của thay đổi lên held-out ≈ 0, public +0.7; ghi rõ ngoại lệ so với chữ của §4 để user xem lại.
+
+**WG9–12** (12/11, FSDP 4 GPU / nhánh, mỗi nhánh một acc; đánh giá với P × 0.35, đủ tập, seed 0; mốc P + WG1 seed 0: 0.993 / 0.7718, tb 3 seed 0.9933 / 0.7748):
+
+| Nhánh | Dữ liệu | Public | pub_ho / tr_ho | Held-out gộp |
+|---|---|---|---|---|
+| WG9 | D1 + d2mix (½ D2 + ½ D2b), seed 31 | 0.986 | 0.6264 / 0.8894 | 0.7765 |
+| WG10 | như WG9, seed 32 | 0.988 | 0.6315 / 0.8779 | 0.7721 |
+| WG11 | D1 + D2 + D2b, 21M token | 0.987 | **0.6453 / 0.8883** | **0.784** |
+| WG12 | D1 + D2 + D2b, 14.7M token | 0.987 | 0.6329 / 0.8883 | 0.7787 |
+
+D2b (paraphrase kiểu câu mới) nâng held-out (WG11 +0.9 so với tb P + WG1), tr_ho 0.878–0.889 (P + WG1 0.880–0.884); public 0.986–0.988 < 0.993 → theo §4
+không đổi mô hình nộp (public phải tăng). WG11 là ứng viên tổng quát tốt nhất nếu ưu tiên held-out.

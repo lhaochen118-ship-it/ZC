@@ -170,7 +170,11 @@ qs1,hai1108/zc-qs1-1,RUNNING?,launched 12/11 11:54
 qs2,nguyenmanh0404/zc-qs2-1,RUNNING?,launched 12/11 11:54
 qs3,caotienminh1/zc-qs3-1,RUNNING?,launched 12/11 11:54
 qs4,duckzuykobip/zc-qs4-1,RUNNING?,launched 12/11 11:54
-q0wg1,namhunhh/zc-q0wg1-1,RUNNING?,launched 12/11 11:54
-p2r18wg9,linhmai24/zc-p2r18wg9-1,RUNNING?,launched 12/11 11:54
-p2r18wg10,bichthuy93/zc-p2r18wg10-1,RUNNING?,launched 12/11 11:54
-p2r18wg12,loinguyentran/zc-p2r18wg12-1,RUNNING?,launched 12/11 11:54
+q0wg1_nofound,namhunhh/zc-q0wg1-1,DONE:complete,adapter dir not found (single-folder dataset unwrapped by Kaggle)
+p2r18wg9_nofound,linhmai24/zc-p2r18wg9-1,DONE:complete,adapter dir not found (single-folder dataset unwrapped by Kaggle)
+p2r18wg10_nofound,bichthuy93/zc-p2r18wg10-1,DONE:complete,adapter dir not found (single-folder dataset unwrapped by Kaggle)
+p2r18wg12_nofound,loinguyentran/zc-p2r18wg12-1,DONE:complete,adapter dir not found (single-folder dataset unwrapped by Kaggle)
+q0wg1,namhunhh/zc-q0wg1-1,RUNNING?,relaunched 12/11 12:14
+p2r18wg9,linhmai24/zc-p2r18wg9-1,RUNNING?,relaunched 12/11 12:14
+p2r18wg10,bichthuy93/zc-p2r18wg10-1,RUNNING?,relaunched 12/11 12:14
+p2r18wg12,loinguyentran/zc-p2r18wg12-1,RUNNING?,relaunched 12/11 12:14

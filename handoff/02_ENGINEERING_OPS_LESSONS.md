@@ -130,6 +130,7 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 | Tải output bị ngắt (proxy BrokenPipe) | tải lại; kiểm đủ `submission.jsonl` + `result.json` trước khi chấm |
 | Acc mới chưa accept luật cuộc thi | push lỗi "accept this competition's rules" → `automation/accounts.json` `no_l4`; nhờ user accept |
 | Failover sang acc không đọc được dataset private | `fanout.py`: không failover khi `--ds` là bản riêng của acc khác |
+| Dataset chỉ có **một** thư mục gốc (`WG9/adapter/...`, đăng `-r zip`) | Kaggle gỡ lớp thư mục đó → file nằm ở `adapter/...`, `soup_job` báo "adapters not found" (12/11, 4 kernel mất 13 phút) | luôn thêm một thư mục phụ (`info/README.txt`) cạnh thư mục adapter; dataset ≥ 2 thư mục giữ nguyên cấu trúc |
 | Tên dataset < 6 ký tự (`zc-wg`) | Kaggle từ chối: dùng ≥ 6 ký tự (`zc-wg-adapters`) |
 | `kaggle datasets create` lỗi "slugs and hashlink are all null" (phuongnehe) | lỗi phía Kaggle; chuyển acc khác |
 | Chấm điểm `score.py` | thứ tự đối số `score.py <refs> <preds>` (đảo → 0.976 thay vì 0.982) |

@@ -43,3 +43,17 @@ Học sinh chỉ học lại dữ liệu cũ không gợi ý: +2–3 public so v
 module gợi ý làm (kỳ viết tắt 'Th 12/25', 'T4/2025' → quý; 'o đờ' = đơn; tên giá trị; hàm tự bịa). Hướng tiếp: **chưng cất module gợi ý
 vào đầu ra** (`pure_records.py --self-hints`: nhãn bắt đầu bằng `<hints>` mà luật đọc được từ chính câu đó; lúc suy luận mô hình tự viết,
 không luật nào chạy) — QS8 = QS1 + tự gợi ý, QS7 = D1 + D2 / D2N + tự gợi ý (12/11 15:35). Đang chạy: QS3 (sàng lọc), QS5 / QS6 (huấn luyện).
+
+**Cập nhật 12/11 20:10** (sàng lọc, cấu hình Q):
+
+| Mô hình | Dữ liệu | × 0.35: public / held-out tập con | × 0.70 |
+|---|---|---|---|
+| QS3 | D1p + D2p + D2bp | 0.868 / 0.691 | 0.838 / 0.694 |
+| QS5 | D1p + D2p + D2Np (câu nhiễu) | 0.874 / 0.678 | 0.874 / 0.703 |
+| QS6 | D1p + D2p + D2bp + D2Np, 26M | 0.885 / 0.700 | 0.875 / **0.7125** |
+| QS8 | tự gợi ý, D1 + D2 (= QS1 + tự gợi ý) | 0.877 / 0.658 | 0.863 / 0.691 |
+| **QS7** | **tự gợi ý, D1 + ½ D2 + ½ D2N** | **0.905** / 0.656 | 0.893 / 0.689 |
+
+Tự gợi ý + câu nhiễu = public thuần cao nhất (0.905, +4.6 so với QS1; P có luật 0.993). Câu nhiễu (D2N) giúp cả public lẫn held-out;
+tự gợi ý giúp public (+1.8–2.2 so với cùng dữ liệu). Huấn luyện vòng 2: QS9 (D1p + D2p + D2Np + RFT của QS5, không tự gợi ý) và
+**QS10** (tự gợi ý + D1 + RFT + ⅓ D2 / ⅓ D2b / ⅓ D2N, 26M token; chuỗi checkpoint qua acc, phần 1 nguyenmanh0404).

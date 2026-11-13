@@ -1,0 +1,8 @@
+[
+ {"acc": "yuan1103", "name": "plrlpf", "jobs": "automation/jobs/plrlpf.jobs", "est_h": 0.7,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "yuan1103/zc-para,yuan1103/zc-wg-adapters", "--no-preflight"]},
+ {"acc": "linhmai24", "name": "plrlho", "jobs": "automation/jobs/plrlho.jobs", "est_h": 0.7,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "linhmai24/zc-para,linhmai24/zc-wg-adapters", "--no-preflight"]},
+ {"acc": "duylnng", "name": "lrl1i", "jobs": "automation/jobs/lrl1i.jobs", "est_h": 0.6,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--train-data", "lrl1", "--no-preflight"]}
+]

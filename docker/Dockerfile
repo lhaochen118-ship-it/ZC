@@ -24,6 +24,6 @@ COPY src/ /app/src/
 COPY configs/ /app/configs/
 COPY docker/predict.sh /app/predict.sh
 COPY --from=merge /w/model/ /models/${MODEL_NAME}/
-RUN chmod +x /app/predict.sh && python3 -c "import sys; sys.path.insert(0, '/app/src'); import ingest, dm, qparse, qnorm, automap, industry, canon, fewshot, score, agent, pipeline, merge_sub, predict_flow, vote, api_spec, grammar, hints, prompting, retrieval, shopctx, tools, precheck, hybrid, confidence, sqlesc, duckdb; print('agent import OK')"
+RUN chmod +x /app/predict.sh && python3 -c "import sys; sys.path.insert(0, '/app/src'); import ingest, dm, qparse, qnorm, automap, industry, canon, fewshot, score, agent, pipeline, merge_sub, predict_flow, vote, api_spec, grammar, hints, prompting, retrieval, shopctx, tools, precheck, hybrid, confidence, sqlesc, units, lrl, lrl_gen, selector, duckdb; print('agent import OK')"
 ENV MODEL=/models/${MODEL_NAME} HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 VLLM_NO_USAGE_STATS=1 DO_NOT_TRACK=1 PYTHONHASHSEED=0
 ENTRYPOINT ["/app/predict.sh"]

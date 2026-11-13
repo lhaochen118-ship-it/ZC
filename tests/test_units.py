@@ -5,7 +5,8 @@
     units are kept (one per row), each verified on the shop's own data;
  2. src/units.py: load / bind / verify / block / spec entries; an unsafe unit is refused;
  3. the flow: agent --units -> the unit appears in # SHOP FUNCTIONS, precheck knows its name, and a program calling it runs on the
-    CPU workers (answer = the unit's value).
+    CPU workers (answer = the unit's value);
+ 4. predict_flow.prepare_units: a writer over the config's units_max_s is killed and the run goes on without units.
 Usage: test_units.py <public_split> <scratch>"""
 import os, sys, json, shutil, subprocess
 HERE = os.path.dirname(os.path.abspath(__file__)); SRC = os.path.join(HERE, "..", "src")
@@ -75,4 +76,13 @@ assert logs and all(x["final"].get("type") == "number" for x in logs), [x["final
 pre = [t.get("precheck") for x in logs for s in x["samples"]["samples"] for t in s["turns"]]
 assert not any(p and any(str(i).startswith("error:name") for i in p) for p in pre), pre[:3]
 print(f"[3] flow: {len(logs)} questions answered by a program calling the unit {name}", flush=True)
+
+# 4. the container path (predict_flow.prepare_units): a writer slower than the config's cap is killed (process group) and the run
+#    goes on without units
+import time, predict_flow
+SLOW = os.path.join(scratch, "slow_writer.py"); open(SLOW, "w").write("import time\ndef responder(conv):\n    time.sleep(120)\n    return '{}'\n")
+cfg = os.path.join(scratch, "cfg_units_cap.json"); json.dump({"units_gen": 1, "units_samples": 1, "units_max_s": 4}, open(cfg, "w"))
+t = time.time(); uv = predict_flow.prepare_units(cfg, mini, os.path.join(scratch, "units_cap"), "/fake/model", lambda *m: None, SLOW)
+assert uv is None and time.time() - t < 60, (uv, time.time() - t)
+print(f"[4] writer over its time cap killed after {time.time() - t:.0f}s, run continues without units", flush=True)
 print("test_units PASS")

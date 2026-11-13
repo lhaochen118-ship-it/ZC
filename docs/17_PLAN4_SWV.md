@@ -30,7 +30,7 @@ Phát hiện quyết định thiết kế:
 | Vai | Làm gì | Học từ đâu | Chạy khi nào | Đo |
 |---|---|---|---|---|
 | **S** mô hình giải | câu + ngữ cảnh → `<spec>` + chương trình trên toolkit / C / T | trọng số (LoRA): kỹ năng ổn định (văn phong, kỳ, nhiễu, API, không trả lời được) + **đọc và dùng đơn vị luật trong prompt** | mỗi câu | S một mình trên mọi bộ |
-| **W** mô hình viết luật | dòng rulebook / README / dữ liệu của split mới → **đơn vị luật thực thi được**: `{name, triggers, definition, signature, code (hàm Python trên C dùng primitive toolkit), tests}`; chỉ giữ đơn vị chạy được trên dữ liệu DN, không suy biến | Qwen gốc + ví dụ mẫu là cặp (dòng rulebook train/public ↔ hàm toolkit đã cài: `dm.py`, `industry.py`) | mỗi split một lần, trước khi trả lời (chỉ đọc đầu vào, không đáp án) | `pub_noindH`, `tr_newterm`: S+W so S và S + hàm thật (trần) |
+| **W** mô hình viết luật | dòng rulebook / README / dữ liệu của split mới → **đơn vị luật thực thi được**: `{name, triggers, definition, signature, code (hàm Python trên C dùng primitive toolkit), tests}`; chỉ giữ đơn vị chạy được trên dữ liệu DN, không suy biến | trọng số của S (bản gộp trong image: hai mô hình 9.65B vượt 15B; `"units_model": "base"` = Qwen gốc chỉ để so sánh, G0g) + ví dụ mẫu là cặp (dòng rulebook train/public ↔ hàm toolkit đã cài: `dm.py`, `industry.py`) | mỗi split một lần, trước khi trả lời (chỉ đọc đầu vào, không đáp án) | `pub_noindH`, `tr_newterm`: S+W so S và S + hàm thật (trần) |
 | **V** bộ chọn học được | mỗi nhóm đáp án ứng viên của một câu → xác suất đúng → chọn nhóm + quyết định bỏ trả lời | mô hình nhỏ (hồi quy logistic / cây tăng cường) trên đặc trưng chung (tỉ lệ phiếu, đồng thuận `<spec>`, cờ, số lượt sửa, lỗi chạy, biến thể prompt, độ dài) — **học từ log của S trên DN train**, không luật viết tay | sau khi các mẫu của câu xong | AUROC; PA held-out so bỏ phiếu thường |
 
 **Còn giữ (hạ tầng, user cho phép 08/11, không phát triển thêm):** ingest / automap (đọc dữ liệu, schema), toolkit `dm` (định nghĩa chung
@@ -123,4 +123,12 @@ bằng `;` (một `#` nuốt phần còn lại), sai tên bảng, NaN. **Lưu ý
 G0e (0.036 … −0.107) **chưa khác biệt có ý nghĩa** với không có W (−0.036). Sửa: `code` = mảng dòng (schema), bỏ `import toolkit`,
 chỉ nhận hàm khi ≥ 2 mẫu chạy được cho cùng kết quả. Hướng còn lại nếu W vẫn ≈ 0: V bỏ trả lời khi câu ngành không có hàm đáng tin
 (học từ log, không luật viết tay) để không mất điểm ở ngành mới.
+
+**13/11 21:40 — W dùng trọng số của S; giới hạn thời gian; đo tách W (đợt 00:05).** Image chỉ chứa trọng số đã gộp của S (một mô hình
+9.65B; thêm Qwen gốc thì vượt 15B) → W mặc định = mô hình S (`"units_model": "solver"`, `eval_flow` / `predict_flow` cùng một đường);
+`"base"` giữ cho so sánh. `prepare_units` có trần `units_max_s` (mặc định 2700 s): shard nào quá trần bị giết cả nhóm tiến trình (cả
+engine vLLM), chạy tiếp S + V không đơn vị (`tests/test_units.py` [4]). Image kiểm import thêm `units`, `lrl`, `lrl_gen`, `selector`.
+Đo thêm ở đợt 00:05 (`plan_w14c.json`, v3a × 0.70): **e0hv** S + V không W (`configs/flow_sv_h.json`, `pub_noindH` + `tr_newterm`) = mốc đúng
+cho W (E0 chưa có V); **g0hf** W = S; **g0hg** W = Qwen gốc (`flow_swv_hb.json`); **g0htra / g0htrb** `tr_ho400c` với hàm ngành ẩn, không W / có W
+(375 câu: tập lớn hơn để thấy tác dụng W); **g1v3apf2** S + W + V trên `pub_full` với W mới (điểm public của đường container).
 

@@ -121,7 +121,11 @@ def main():
     if opt("--config") and "--units" not in rest + extra:               # plan 4 W: the model writes this split's rule units first
         import predict_flow                                             # (from the eval split's rulebook / shop data, no answer)
         fake = extra[extra.index("--fake-responder") + 1] if "--fake-responder" in extra else ""
-        uv = predict_flow.prepare_units(opt("--config"), sp, out, os.environ.get("ZC_BASE_MODEL") or opt("--model"), lambda *m: print(*m, flush=True),
+        wm = opt("--model")                                             # the writer = the solver's merged weights (as in the image:
+        try:                                                            # one 9.65B model fits the 15B budget, two do not); "units_model":
+            if json.load(open(opt("--config"), encoding="utf-8")).get("units_model") == "base": wm = os.environ.get("ZC_BASE_MODEL") or wm   # "base" for studies
+        except Exception: pass
+        uv = predict_flow.prepare_units(opt("--config"), sp, out, wm, lambda *m: print(*m, flush=True),
                                         os.environ.get("ZC_UNITS_FAKE", ""), opt("--cache"))
         if uv: extra += ["--units", uv]
     cmd = [sys.executable, os.path.join(HERE, "agent.py"), sp, os.path.join(out, "run")] + rest + extra

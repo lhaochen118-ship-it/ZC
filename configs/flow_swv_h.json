@@ -49,5 +49,6 @@
  "units_gen": 1,
  "units_samples": 5,
  "hide_api": "industry",
- "units_think": 0
+ "units_think": 0,
+ "units_model": "solver"
 }

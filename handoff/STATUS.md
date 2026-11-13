@@ -33,7 +33,7 @@ chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 
 **Tiến độ kế hoạch 4 (`docs/17_PLAN4_SWV.md`):** V1 xong (held-out +1.8 khi phát lại); W1 xong (`src/units.py`, `lrl_gen --mode unit`); E0 xong
 (`pub_noindH`: Q −0.16, Q2 −0.04 — toàn bộ điểm ngành trước đây là của `industry.py`); G0 xong (S + W + V: 0.036); S1 xong
 (`training/data/out/v4/v4_mix.jsonl` 3150 bản ghi ~8.9M token: UD 1312, RFT 788, DR 250, replay 800 — trong `.gitignore`, dựng lại:
-`ud_units.py`, `rft_from_logs.py` trên log `c1a/c1b`, `v4_mix.py`). **Đợt 00:05:** `Process/kaggle/plans/plan_w14b.json` (v3b, v4 seed 1 / 2) + `plan_w14c.json` (G0f: W mới trên `pub_noindH` / `tr_newterm`; G1 v3a held-out) + WR30 phần 4 (`chain_next.py <S>/runs wr30p3b WR30 anderson1202 wr30p4 automation/jobs/wr30r.jobs --train-data all30`).
+`ud_units.py`, `rft_from_logs.py` trên log `c1a/c1b`, `v4_mix.py`). **Đợt 00:05:** `Process/kaggle/plans/plan_w14b.json` (v3b, v4 seed 1 / 2) + `plan_w14c.json` (7 kernel: G0f W = S; G0g W = Qwen gốc; e0hv S + V không W; g0htra / g0htrb `tr_ho400c` ẩn hàm ngành không / có W; G1 v3a held-out; g1v3apf2 `pub_full` W mới) + WR30 phần 4 (`chain_next.py <S>/runs wr30p3b WR30 anderson1202 wr30p4 automation/jobs/wr30r.jobs --train-data all30`).
 
 **Kết quả đánh giá v3a (13/11, `Process/scores_p3.csv`)** — held-out gộp = PA theo số câu trên `pub_ho400c` (348) + `tr_ho400c` (375) + `pub_noind` (112) + `tr_newterm` (54):
 

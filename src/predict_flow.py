@@ -77,13 +77,21 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
             "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0))] + \
            (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
     ng = 1 if fake else max(1, n_gpus())                               # one shard of the rows per GPU, in parallel
-    if ng == 1: rcs = [run(base, log)]
-    else:
-        procs = [subprocess.Popen(base + ["--shard", f"{i}/{ng}"], env=dict(os.environ, CUDA_VISIBLE_DEVICES=str(i)),
-                                  stdout=open(os.path.join(out, f"shard{i}.log"), "w"), stderr=subprocess.STDOUT) for i in range(ng)]
-        rcs = [p.wait() for p in procs]
-        for i in range(ng):
-            for l in open(os.path.join(out, f"shard{i}.log"), encoding="utf-8", errors="replace").readlines()[-3:]: log(f"units shard {i}: {l.rstrip()}")
+    lim = float(c.get("units_max_s", 2700) or 2700)                    # the writer's time cap (a private test with many new rows must
+    procs = [subprocess.Popen(base + (["--shard", f"{i}/{ng}"] if ng > 1 else []),   # not eat the solver's budget): a shard still
+                              env=dict(os.environ, **({"CUDA_VISIBLE_DEVICES": str(i)} if ng > 1 else {})),   # running then is killed
+                              stdout=open(os.path.join(out, f"shard{i}.log"), "w"), stderr=subprocess.STDOUT,   # with its vLLM engine
+                              start_new_session=True) for i in range(ng)]                                     # (process group) and
+    rcs = []                                                           # the run goes on with the units of the shards that finished
+    for i, p in enumerate(procs):
+        try: rcs.append(p.wait(timeout=max(1.0, t + lim - time.time())))
+        except subprocess.TimeoutExpired:
+            import signal
+            try: os.killpg(p.pid, signal.SIGKILL)
+            except Exception: p.kill()
+            p.wait(); rcs.append("timeout"); log(f"units shard {i}: killed at the {lim:.0f}s cap")
+    for i in range(ng):
+        for l in open(os.path.join(out, f"shard{i}.log"), encoding="utf-8", errors="replace").readlines()[-3:]: log(f"units shard {i}: {l.rstrip()}")
     f = os.path.join(out, "cards_unit.jsonl")
     if ng > 1:                                                         # merge the shards' units
         with open(f, "w", encoding="utf-8") as w:

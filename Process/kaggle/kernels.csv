@@ -213,8 +213,9 @@ q1s10a70,namhunhh/zc-q1s10a70-1,DONE:complete,public 0.896 / held-out subsets 0.
 wr30p1,duckzuykobip/zc-wr30p1-1,DONE:failed,NCCL all-gather hung at step 0 (rank 2 behind; 30 min default timeout); moved to the 14/11 00:00 wave on one account
 lrl0a,hai1108/zc-lrl0a-1,DONE:partial,pub_compile ok (111 cards); 3 jobs died on a parallel pip install race
 lrl0b,loinguyentran/zc-lrl0b-1,DONE:partial,3 jobs died on the pip race; induce1 ran but its think hit the 2048-token cap (no JSON)
-v3ap1,bichthuy93/zc-v3ap1-1,RUNNING?,launched 13/11 04:29 (WP3-03 SFT v3a pure: spec labels + period / noise style data; part 1 of a chain)
+v3ap1,bichthuy93/zc-v3ap1-1,DONE:partial,checkpoint-22 of 77 (session deadline as designed; 16.7M tokens, 1.72k tok/s)
 pj,namhunhh/zc-pj-1,DONE:complete,pub_ho_clean 1171/1373 tr_ho_clean 1711
 lrl0c,hai1108/zc-lrl0c-1,RUNNING?,launched 13/11 04:41 (rerun of lrl0a parts after the pip race + newterm)
 lrl0d,loinguyentran/zc-lrl0d-1,RUNNING?,launched 13/11 04:53 (rerun translit + induce with a 6144-token think cap)
-p3pbase,hieuho669/zc-p3pbase-1,RUNNING?,launched 13/11 05:06 (P + WG1 x0.35 on pub_ho400c / tr_ho400c with the fixed per-shop rulebook)
+p3pbase,hieuho669/zc-p3pbase-1,DONE:complete,P+WG1 x0.35: pub_ho400c 0.6983 tr_ho400c 0.9227 (per-shop rulebook fix)
+v3ap2,duckzuykobip/zc-v3ap2-1,RUNNING?,launched 13/11 05:42 (v3a part 2 from checkpoint-22 of 77)

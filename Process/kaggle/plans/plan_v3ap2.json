@@ -1,0 +1,21 @@
+[
+ {
+  "acc": "duckzuykobip",
+  "name": "v3ap2",
+  "jobs": "automation/jobs/v3ar.jobs",
+  "est_h": 1.79,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels",
+   "--ds",
+   "duckzuykobip/zc-v3ap2-ck",
+   "--env",
+   "ZC_SESSION_S=6443,ZC_SESSION_MARGIN=900",
+   "--no-preflight",
+   "--train-data",
+   "v3a"
+  ]
+ }
+]

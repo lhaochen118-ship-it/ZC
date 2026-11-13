@@ -244,4 +244,4 @@ Công cụ: TRL (`GRPOTrainer`, `DPOTrainer`), verl (RL quy mô lớn), DSPy (t�
 | QS10 × 0.70 (thuần) | — | 0.525 → 0.6063 | 0.8625 → 0.9093 |
 | QS6 × 0.70 (thuần) | — | 0.5475 → 0.5805 | 0.8775 → 0.912 |
 
-~10 điểm của `pub_ho` cũ là nhãn nhiễu; khoảng cách thật thuần ↔ P ở câu kiểu public ≈ 8 điểm, ở câu train ≈ 1 điểm.
+Đo lại P với rulebook theo DN (`p3pbase`, `tests/splits/*400c` là tập con sạch; cột tập con ghi `pub_ho400`/`tr_ho400` trong `Process/scores.csv` khi tên là *400c*): **pub_ho400c 0.6983, tr_ho400c 0.9227** — mốc của mọi so sánh từ đây. ~10 điểm của `pub_ho` cũ là nhãn nhiễu; khoảng cách thật thuần ↔ P ở câu kiểu public ≈ 8 điểm, ở câu train ≈ 1 điểm.

@@ -1,0 +1,8 @@
+[
+ {"acc": "linhmai24", "name": "v3b", "jobs": "automation/jobs/v3b.jobs", "est_h": 3.6,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--train-data", "v3bm", "--no-preflight"]},
+ {"acc": "yuan1103", "name": "v4s1", "jobs": "automation/jobs/v4s1.jobs", "est_h": 1.9,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "yuan1103/zc-v3a-adapter", "--train-data", "v4", "--no-preflight"]},
+ {"acc": "thnliu", "name": "v4s2", "jobs": "automation/jobs/v4s2.jobs", "est_h": 1.9,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "thnliu/zc-v3a-adapter", "--train-data", "v4", "--no-preflight"]}
+]

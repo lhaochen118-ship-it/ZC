@@ -22,14 +22,17 @@ chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 
 | Held-out | gộp 0.7748; **sạch (đo 13/11, rulebook theo DN): `pub_ho400c` 0.6983, `tr_ho400c` 0.9227** — mốc so sánh kế hoạch 3 |
 | Docker | `docker/` sẵn sàng; user build 15/11; hạn nộp **16/11 23:59 GMT+7** |
 
-## 2. Kernel đang chạy (13/11 15:20 UTC; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`)
+## 2. Kernel đang chạy (13/11 17:40 UTC; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`) — kế hoạch 4
 
 | Kernel | Việc | Sau khi xong |
 |---|---|---|
-| ~~`phuongnehe/zc-v3b-1`~~ | **v3b hỏng 15:25**: đủ 87 / 87 bước (3 h 06) rồi pha reference-loss FSDP hết bộ nhớ ở một số rank → NCCL treo → không lưu adapter. Đã sửa `training/sft.py` (reference-loss chỉ khi 1 GPU) | **huấn luyện lại v3b ở đợt 14/11 00:00** (một acc, `automation/jobs/v3b.jobs`, ~3.5 h) → đánh giá Q / Q2 |
-| `phuongnehe/zc-wr30p3b-1` | WR30 phần 3 **chạy lại bằng code đã sửa** (15:33) từ checkpoint-55 / 117 (bản `zc-wr30p3-1` code cũ đã huỷ: nếu train xong sẽ vướng đúng lỗi của v3b) | phần còn lại (nếu dừng theo hạn phiên) ở đợt 00:00: `chain_next.py <S>/runs wr30p3b WR30 <acc> wr30p4 automation/jobs/wr30r.jobs --train-data all30`; xong → đánh giá như P |
-| `yuan1103/zc-plrlpf-1`, `linhmai24/zc-plrlho-1` | **P + LRL** (`configs/p3_plrl.json` = `flow_final` + lớp luật; WG1 × 0.35) trên `pub_full` / held-out 4 tập | `python3 Process/tools/score_p3.py plrl <2 output>`; so P (0.994 / 0.8403) |
-| `duylnng/zc-lrl1i-1` | quy nạp thẻ vòng 1 (480 ca sai / bỏ của Q2 v3a × 0.70 trên `tr_dev_para_a/b`, 4 shard) | `tests/lrl_accept.py scan` (thẻ check) trên log `c1a/c1b` + log cũ; thẻ nội dung: lọc chặt rồi A/B |
+| `phuongnehe/zc-wr30p3b-1` | WR30 phần 3 (dự phòng, user 13/11) từ checkpoint-55 / 117, code đã sửa | đủ 117 bước → adapter WR30 (chỉ dự phòng); chưa đủ → phần 4 ở đợt 00:05 |
+| `caohuyen74/zc-g0hb-1` | G0b: S + W (5 mẫu có suy nghĩ / dòng, tự nhất quán, 4 GPU) + V trên `pub_noindH` + `tr_newterm` | so G0 (W bản 1): `pub_noindH` 0.036 |
+
+**Tiến độ kế hoạch 4 (`docs/17_PLAN4_SWV.md`):** V1 xong (held-out +1.8 khi phát lại); W1 xong (`src/units.py`, `lrl_gen --mode unit`); E0 xong
+(`pub_noindH`: Q −0.16, Q2 −0.04 — toàn bộ điểm ngành trước đây là của `industry.py`); G0 xong (S + W + V: 0.036); S1 xong
+(`training/data/out/v4/v4_mix.jsonl` 3150 bản ghi ~8.9M token: UD 1312, RFT 788, DR 250, replay 800 — trong `.gitignore`, dựng lại:
+`ud_units.py`, `rft_from_logs.py` trên log `c1a/c1b`, `v4_mix.py`). **Đợt 00:05:** `Process/kaggle/plans/plan_w14b.json` (v3b, v4 seed 1 / 2).
 
 **Kết quả đánh giá v3a (13/11, `Process/scores_p3.csv`)** — held-out gộp = PA theo số câu trên `pub_ho400c` (348) + `tr_ho400c` (375) + `pub_noind` (112) + `tr_newterm` (54):
 

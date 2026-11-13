@@ -194,7 +194,9 @@ UNIT_EXAMPLES = """## Ví dụ 1 — dòng rulebook: | Khách sộp nhất | kh�
 {"name": "so_dot_giao", "signature": "so_dot_giao(p)", "doc": "số đợt giao có ngày giao trong kỳ p (mỗi đợt của mỗi đơn)", "triggers": ["đợt giao", "chuyến giao", "dot giao"], "code": "def so_dot_giao(p):\n    g = C[\"deliveries\"].copy()\n    g[\"delivery_date\"] = pd.to_datetime(g[\"delivery_date\"]).dt.normalize()\n    g = g[p.mask(g[\"delivery_date\"])]\n    return int(g[[\"order_id\", \"trip_no\"]].drop_duplicates().shape[0])"}
 ## Ví dụ 4 — dòng rulebook: | Mặt hàng được ưa chuộng nhất | mặt hàng có mặt trong nhiều đơn nhất trong kỳ |
 {"name": "hang_ua_chuong", "signature": "hang_ua_chuong(p, k=1)", "doc": "k mặt hàng có mặt trong nhiều đơn nhất trong kỳ p", "triggers": ["ưa chuộng", "ua chuong", "được chuộng"], "code": "def hang_ua_chuong(p, k=1):\n    return rank(item_sales(p, by=\"n_orders\"), k)"}
-## Ví dụ 5 — dòng rulebook: | Làm tròn | tiền làm tròn đến đồng |
+## Ví dụ 5 — dòng rulebook: | Độ tập trung hàng bán | phần trăm số lượng bán của k mặt hàng bán nhiều nhất trên tổng số lượng bán trong kỳ |
+{"name": "do_tap_trung_hang", "signature": "do_tap_trung_hang(p, k=3)", "doc": "% số lượng bán của k mặt hàng bán nhiều nhất trong kỳ p (số phần trăm)", "triggers": ["độ tập trung", "tap trung hang"], "code": "def do_tap_trung_hang(p, k=3):\n    sl = item_sales(p, by=\"qty\")\n    return pct(sl.sort_values(ascending=False).head(k).sum(), sl.sum())"}
+## Ví dụ 6 — dòng rulebook: | Làm tròn | tiền làm tròn đến đồng |
 {"name": null}"""
 
 
@@ -275,7 +277,9 @@ def unit_items(split, cache):
                  "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không đọc file. Nếu dòng này không phải một đại lượng tính được "
                  "(chỉ là cách ghi, cách làm tròn...) thì name = null và code rỗng. Trả lời bằng MỘT đối tượng JSON: plan (vài câu ngắn: "
                  "bảng / cột dùng, cách tính), name, signature, doc, triggers, code = MẢNG các dòng mã (mỗi dòng một phần tử, thụt lề 4 dấu "
-                 "cách, không dồn nhiều lệnh vào một dòng). Hàm toolkit, C, T, pd, np, re đã có sẵn: không import chúng.")
+                 "cách, không dồn nhiều lệnh vào một dòng). Hàm toolkit, C, T, pd, np, re đã có sẵn: không import chúng. Hàm trả về MỘT giá trị "
+                 "đúng dạng đáp án: một số (tiền, số đếm; tỉ lệ / phần trăm là SỐ PHẦN TRĂM, dùng pct(phần, tổng)), hoặc bảng / danh sách "
+                 "khi thuật ngữ là xếp hạng; không trả dict gộp nhiều đại lượng.")
             items.append(({"bid": b, "term": term, "definition": definition, "section": sec, "rulebook": __import__("lrl").rb_key(rb)}, u))
     return items
 
@@ -348,39 +352,77 @@ def to_cards(mode, items, texts, names):
     return out
 
 
-def verify_units(cands, split, cache, min_agree=2):
-    """per (shop, term): every candidate unit is run on the shop's data (src/units.py); among those that run with a non-degenerate
-    result, the one whose results on the test periods most candidates share is kept (self-consistency over the samples; ties ->
-    the earliest sample, temperature 0)."""
+def check_units(cands, split, cache):
+    """run every not yet checked candidate unit on its shop's data (src/units.py verify): sets u['_ok'], u['_why'] (and '_sig')."""
     import units, ingest, automap
+    for u in cands:
+        if "_ok" in u: continue
+        b = u["bid"]
+        if b not in _SHOPS:
+            try:
+                bp = os.path.join(cache or "", b + ".pkl")
+                biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", b))
+                _SHOPS[b] = (automap.build(biz)[0], automap.parse_readme(biz.readme).get("data_end"), biz.tables)
+            except Exception as e: _SHOPS[b] = None; print(f"[unit] {b}: {type(e).__name__}: {e}", flush=True)
+        if _SHOPS[b] is None: u["_ok"], u["_why"] = False, "shop data unavailable"; continue
+        ok, why, sample = units.verify(u, *_SHOPS[b])
+        u["_ok"], u["_why"] = ok, why
+        if ok: u["verified"] = {"sample": str(sample)[:200]}
+
+
+def select_units(cands, min_agree=2):
+    """per (shop, term), among the candidates that ran with a non-degenerate result: the one whose results on the test periods most
+    candidates share (self-consistency over the samples; ties -> fewer errors, then the earliest sample = temperature 0); kept when
+    at least min_agree candidates share it. Returns (units, {row: why not})."""
     from collections import defaultdict, Counter
-    out, done, fails, shops = [], set(), {}, {}
-    good = defaultdict(list)
+    good, fails, out = defaultdict(list), {}, []
     for u in cands:
         k = (u["bid"], u["term"])
-        if u["bid"] not in shops and u["bid"] in _SHOPS: shops[u["bid"]] = _SHOPS[u["bid"]]
-        if u["bid"] not in shops:
-            try:
-                bp = os.path.join(cache or "", u["bid"] + ".pkl")
-                biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", u["bid"]))
-                C = automap.build(biz)[0]; de = automap.parse_readme(biz.readme).get("data_end")
-                shops[u["bid"]] = (C, de, biz.tables)
-            except Exception as e: shops[u["bid"]] = None; print(f"[unit] {u['bid']}: {type(e).__name__}: {e}", flush=True)
-        if shops[u["bid"]] is None: continue
-        C, de, T = shops[u["bid"]]
-        ok, why, sample = units.verify(u, C, de, T)
-        if ok:
-            u["verified"] = {"sample": str(sample)[:200]}; good[k].append(u)
-        else: fails.setdefault(k, why)
+        if u.get("_ok"): good[k].append(u)
+        else: fails.setdefault(k, u.get("_why") or "not checked")
     for k, us in good.items():
         votes = Counter(u.get("_sig") for u in us)
-        best = max(us, key=lambda u: (votes[u.get("_sig")], -us.index(u)))
+        best = max(us, key=lambda u: (votes[u.get("_sig")], -u.get("_nerr", 0), -us.index(u)))
         if votes[best.get("_sig")] < min_agree: fails[k] = f"no agreement ({votes[best.get('_sig')]} / {len(us)} runnable samples)"; continue
-        best["verified"]["agree"] = f"{votes[best.get('_sig')]}/{len(us)} runnable samples"
-        best.pop("_sig", None); out.append(best); done.add(k)
-    print(f"[unit] {len(out)} units verified for {len({u['bid'] for u in out})} shops; {len([k for k in fails if k not in done])} rows without a "
-          f"working unit", flush=True)
+        fails.pop(k, None)
+        b = {x: y for x, y in best.items() if not x.startswith("_")}
+        b["verified"] = dict(best.get("verified") or {}, agree=f"{votes[best.get('_sig')]}/{len(us)} runnable samples")
+        out.append(b)
+    return out, fails
+
+
+def verify_units(cands, split, cache, min_agree=2):
+    check_units(cands, split, cache)
+    out, fails = select_units(cands, min_agree)
+    print(f"[unit] {len(out)} units verified for {len({u['bid'] for u in out})} shops; {len(fails)} rows without a working unit", flush=True)
     return out
+
+
+def repair_convs(cands, prompts, sel, min_agree, k):
+    """self-debugging round (execution feedback): for each row without a selected unit and with fewer than min_agree runnable
+    candidates, one failed candidate (a runtime error first: closer to working than a syntax error) is shown back to the writer
+    with the error it raised on the shop's data -> k new samples. Returns (items, convs)."""
+    from collections import defaultdict
+    done = {(u["bid"], u["term"]) for u in sel}
+    rows = defaultdict(list)
+    for u in cands: rows[(u["bid"], u["term"])].append(u)
+    items, convs = [], []
+    for key, us in rows.items():
+        if key in done or key not in prompts or sum(1 for u in us if u.get("_ok")) >= min_agree: continue
+        bad = [u for u in us if not u.get("_ok")]
+        if not bad: continue
+        u = min(bad, key=lambda x: (str(x.get("_why", "")).startswith("syntax"), bad.index(x)))
+        meta, prompt = prompts[key]
+        prev = json.dumps({"name": u["name"], "signature": u.get("signature"), "doc": u.get("doc"), "triggers": u.get("triggers"),
+                           "code": u["code"].split("\n")}, ensure_ascii=False)
+        fix = (f"Chạy hàm này trên dữ liệu của cửa hàng: {u.get('_why')}. Sửa hàm: đúng tên bảng / cột có ở phần DỮ LIỆU, p là Period "
+               "(p.mask(cột ngày) cho mặt nạ, p.start, p.end; không dùng p[...]), kỳ không có dữ liệu thì trả 0 hoặc bảng rỗng chứ không lỗi. "
+               "Trả lời lại bằng MỘT đối tượng JSON cùng dạng.")
+        for _ in range(k):
+            items.append((meta, prompt))
+            convs.append([{"role": "system", "content": SYS}, {"role": "user", "content": prompt}, {"role": "assistant", "content": prev},
+                          {"role": "user", "content": fix}])
+    return items, convs
 
 
 def main():
@@ -390,6 +432,7 @@ def main():
     ap.add_argument("--max-len", type=int, default=8192); ap.add_argument("--fake-responder", default="")
     ap.add_argument("--shard", default=""); ap.add_argument("--samples", type=int, default=3, help="unit: samples per rulebook row")
     ap.add_argument("--think-units", type=int, default=0, help="unit: the writer reasons first (4096-token cap)")
+    ap.add_argument("--unit-repairs", type=int, default=1, help="unit: self-debugging rounds (a failed function + its error -> new samples)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     names = api_names()
     if a.mode == "compile": items = compile_items(a.split)
@@ -413,34 +456,55 @@ def main():
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
     think = a.mode == "induce" or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
                                                                         # lrl0c reasoned past the cap (13/11); the task is simple
-    if a.fake_responder:
-        g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
-        texts = [g["responder"](c) for c in convs]
-    elif convs:
-        sys.argv = [sys.argv[0]]; import agent
-        eng = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
-                                              gpu_util=0.9, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0, prefix_budget=0))
-        temp = 0.7 if a.mode == "translit" else 0.0
-        temps = [temp] * len(convs)
-        if a.mode == "unit": temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
-        mt = (4096 if a.mode == "unit" else 6144) if think else (2560 if a.mode == "unit" else 900)   # unit: the writer often reasons in
-        js = UNIT_SCHEMA if a.mode == "unit" and not think else None   # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
-        try: texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], mt, think=think, json_schema=js)
+    eng = [None]
+    mt = (4096 if a.mode == "unit" else 6144) if think else (2560 if a.mode == "unit" else 900)   # unit: the writer often reasons in
+    js = UNIT_SCHEMA if a.mode == "unit" and not think else None       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
+                                                                        # too few: 199 / 199 induction answers of lrl0b reasoned past the cap
+    def generate(convs, temps, seed0):                                  # without reaching their JSON (13/11)
+        if not convs: return []
+        if a.fake_responder:
+            g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
+            return [g["responder"](c) for c in convs]
+        if eng[0] is None:
+            sys.argv = [sys.argv[0]]; import agent
+            eng[0] = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
+                                                     gpu_util=0.9, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0, prefix_budget=0))
+        seeds = [seed0 + i for i in range(len(convs))]
+        try: return eng[0].gen(convs, temps, seeds, mt, think=think, json_schema=js)[0]
         except Exception as e:                                          # a schema this vLLM / xgrammar refuses: unconstrained
             if js is None: raise
             print(f"[lrl_gen] constrained JSON unavailable ({type(e).__name__}: {str(e)[:200]}): unconstrained", flush=True)
-            texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], mt, think=think)
-        # too few: 199 / 199 induction answers of lrl0b reasoned past the cap without reaching their JSON (13/11)
-    else: texts = []
+            return eng[0].gen(convs, temps, seeds, mt, think=think)[0]
+    temps = [0.7 if a.mode == "translit" else 0.0] * len(convs)
+    if a.mode == "unit": temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
+    texts = generate(convs, temps, 4242)
     cards = to_cards(a.mode, items, texts, names)
-    if a.mode == "unit": cards = verify_units(cards, a.split, a.cache, 2 if a.samples >= 3 else 1)
+    rep = {}
+    if a.mode == "unit":
+        ma = 2 if a.samples >= 3 else 1
+        prompts = {(m["bid"], m["term"]): (m, u) for m, u in items}
+        check_units(cards, a.split, a.cache)
+        sel, fails = select_units(cards, ma)
+        for r in range(max(0, a.unit_repairs)):                        # self-debugging: execution errors back to the writer
+            it2, cv2 = repair_convs(cards, prompts, sel, ma, max(2, min(3, a.samples)))
+            if not cv2: break
+            k2 = max(2, min(3, a.samples))
+            tx2 = generate(cv2, [0.0 if i % k2 == 0 else 0.7 for i in range(len(cv2))], 90000 + 1000 * r)
+            new = to_cards("unit", it2, tx2, names)
+            check_units(new, a.split, a.cache); cards += new
+            n0 = len(sel); sel, fails = select_units(cards, ma)
+            rep[f"repair{r + 1}"] = {"rows": len(cv2) // k2, "parsed": len(new), "units_before": n0, "units_after": len(sel)}
+            print(f"[unit] repair round {r + 1}: {len(cv2) // k2} rows, {len(new)} parsed -> units {n0} -> {len(sel)}", flush=True)
+            items, texts = items + it2, texts + tx2
+        print(f"[unit] {len(sel)} units verified for {len({u['bid'] for u in sel})} shops; {len(fails)} rows without a working unit", flush=True)
+        cards = sel
     tag = a.mode + (("_" + a.shard.replace("/", "of")) if a.shard else "")
     with open(os.path.join(a.out, f"cards_{tag}.jsonl"), "w", encoding="utf-8") as f:
         for c in cards: f.write(json.dumps(c, ensure_ascii=False) + "\n")
     with open(os.path.join(a.out, f"raw_{tag}.jsonl"), "w", encoding="utf-8") as f:
         for (meta, _), t in zip(items, texts): f.write(json.dumps({"meta": meta, "text": (t or "")[-3000:]}, ensure_ascii=False, default=str) + "\n")
     summ = {"mode": a.mode, "items": len(items), "cards": len(cards), "with_hint": sum(bool(c.get("code_hint")) for c in cards),
-            "with_check": sum(bool(c.get("check")) for c in cards), "s": round(time.time() - t0)}
+            "with_check": sum(bool(c.get("check")) for c in cards), "s": round(time.time() - t0), **rep}
     json.dump(summ, open(os.path.join(a.out, f"summary_{tag}.json"), "w"), indent=1)
     print("LRL_GEN", json.dumps(summ), flush=True)
 

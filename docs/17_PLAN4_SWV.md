@@ -129,6 +129,18 @@ chỉ nhận hàm khi ≥ 2 mẫu chạy được cho cùng kết quả. Hướn
 `"base"` giữ cho so sánh. `prepare_units` có trần `units_max_s` (mặc định 2700 s): shard nào quá trần bị giết cả nhóm tiến trình (cả
 engine vLLM), chạy tiếp S + V không đơn vị (`tests/test_units.py` [4]). Image kiểm import thêm `units`, `lrl`, `lrl_gen`, `selector`.
 Đo thêm ở đợt 00:05 (`plan_w14c.json`, v3a × 0.70): **e0hv** S + V không W (`configs/flow_sv_h.json`, `pub_noindH` + `tr_newterm`) = mốc đúng
-cho W (E0 chưa có V); **g0hf** W = S; **g0hg** W = Qwen gốc (`flow_swv_hb.json`); **g0htra / g0htrb** `tr_ho400c` với hàm ngành ẩn, không W / có W
-(375 câu: tập lớn hơn để thấy tác dụng W); **g1v3apf2** S + W + V trên `pub_full` với W mới (điểm public của đường container).
+cho W (E0 chưa có V); **g0hf** W = S; **g0hg** W = Qwen gốc (`flow_swv_hb.json`); **e0hvp / g0hfp** không W / có W trên `pub_ind` (269 câu gốc public của 5 DN có mục ngành) + `pub_hoind` (345 câu
+paraphrase của các DN đó, held-out) với hàm ngành ẩn — tập 614 câu để thấy tác dụng W (rulebook train không có mục ngành nào: `tr_ho400c` ẩn hàm
+ngành giống hệt bản thường, nên không dùng); **g1v3apf2** S + W + V trên `pub_full` với W mới (điểm public của đường container).
+
+**13/11 22:20 — đo W trực tiếp (offline, chỉ để phân tích) + W tự sửa lỗi.** So 12 hàm G0e giữ lại với hàm ngành tham chiếu (`industry.py`, chỉ dùng
+làm thước đo) trên 24 tháng: `tien_giam_voucher` 24 / 24, `khach_thanh_vien_moi_thang` 24 / 24, `phi_ship` 23 / 24 đúng; `thu_may_cu` trả dict
+hai đại lượng (đúng một trong hai), `tyle_bao_hanh` ra tỉ lệ 0.034 thay vì số phần trăm 3.39, `so_xe` lệch (431 / 387), hàm điểm lỗi
+`TypeError` ở mọi kỳ. Trên mẫu thô G0e: phần lớn mẫu hỏng do cú pháp (mã một dòng — G0f đã sửa bằng mảng dòng) và lỗi API (`p[...]`,
+`pd.to_datetime` trên bảng). Sửa (chung, không theo DN): (1) `units.verify` chạy trên 12 tháng cuối + toàn kỳ (13 kỳ, chữ ký tự nhất quán
+sắc hơn), lỗi ngoài `Unanswerable` ở > ¼ số kỳ → loại, dict nhiều đại lượng tên biến → loại; (2) **vòng tự sửa** (`--unit-repairs 1`,
+cấu hình `units_repairs`): hàng chưa có hàm được chọn → một mẫu hỏng + lỗi thật khi chạy trên dữ liệu DN đưa lại cho W → 3 mẫu mới →
+kiểm + chọn lại (Chen et al. 2023, self-debugging); (3) câu lệnh: một giá trị đúng dạng đáp án, phần trăm = số phần trăm (`pct`),
+ví dụ mẫu thêm một hàm tỉ lệ. Kiểm lại 12 hàm G0e bằng bộ kiểm mới: loại đúng 2 hàm sai (dict, lỗi 13 / 13 kỳ). `tests/test_units.py`
+(mô hình giả): vòng tự sửa 1 → 4 hàm.
 

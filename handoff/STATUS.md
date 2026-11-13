@@ -33,7 +33,7 @@ chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 
 **Tiến độ kế hoạch 4 (`docs/17_PLAN4_SWV.md`):** V1 xong (held-out +1.8 khi phát lại); W1 xong (`src/units.py`, `lrl_gen --mode unit`); E0 xong
 (`pub_noindH`: Q −0.16, Q2 −0.04 — toàn bộ điểm ngành trước đây là của `industry.py`); G0 xong (S + W + V: 0.036); S1 xong
 (`training/data/out/v4/v4_mix.jsonl` 3150 bản ghi ~8.9M token: UD 1312, RFT 788, DR 250, replay 800 — trong `.gitignore`, dựng lại:
-`ud_units.py`, `rft_from_logs.py` trên log `c1a/c1b`, `v4_mix.py`). **Đợt 00:05:** `Process/kaggle/plans/plan_w14b.json` (v3b, v4 seed 1 / 2) + `plan_w14c.json` (7 kernel: G0f W = S; G0g W = Qwen gốc; e0hv S + V không W; g0htra / g0htrb `tr_ho400c` ẩn hàm ngành không / có W; G1 v3a held-out; g1v3apf2 `pub_full` W mới) + WR30 phần 4 (`chain_next.py <S>/runs wr30p3b WR30 anderson1202 wr30p4 automation/jobs/wr30r.jobs --train-data all30`).
+`ud_units.py`, `rft_from_logs.py` trên log `c1a/c1b`, `v4_mix.py`). **Đợt 00:05:** `Process/kaggle/plans/plan_w14b.json` (v3b, v4 seed 1 / 2) + `plan_w14c.json` (7 kernel: G0f W = S; G0g W = Qwen gốc; e0hv S + V không W; e0hvp / g0hfp `pub_ind` + `pub_hoind` (614 câu DN ngành) ẩn hàm ngành không / có W; G1 v3a held-out; g1v3apf2 `pub_full` W mới) + WR30 phần 4 (`chain_next.py <S>/runs wr30p3b WR30 anderson1202 wr30p4 automation/jobs/wr30r.jobs --train-data all30`).
 
 **Kết quả đánh giá v3a (13/11, `Process/scores_p3.csv`)** — held-out gộp = PA theo số câu trên `pub_ho400c` (348) + `tr_ho400c` (375) + `pub_noind` (112) + `tr_newterm` (54):
 
@@ -67,6 +67,13 @@ A/B thẻ nội dung vòng 0: không thẻ 0.864, có thẻ 0.854 → nhận 1 t
 P + LRL đo xong: public 0.983, held-out gộp 0.8268 (< P) — không theo tiếp. Thứ tự: V1 (bộ chọn học được, CPU) + W1 (đơn vị luật thực thi
 được) + S1 (dữ liệu v4) tối 13/11; E0 (`pub_noindH` mốc) trên acc còn quota; đợt 14/11 00:05: S2 v3b, S3 v4 × 2 seed, W2 → G1 → V2 → R1 →
 G2 → F1 → F2 → D1 (container 15/11 12:00 UTC). Kế hoạch 3 (`docs/16`) dừng ở WP3-06 (vòng học luật thẻ văn xuôi: bỏ vì không có ích).
+
+**Sau huấn luyện (≈ 02:00–04:00 UTC 14/11):** adapter `V4S1` / `V4S2` / `V3B` (output `<S>/runs/<tên>`) →
+`python3 automation/publish_many.py <dir>/adapter V4S1 zc-v4s1-adapter huuhien95,caohuyen74` (V4S2 → namhunhh,phuongnehe; V3B →
+linhmai24,caohuyen74) → `launch_many.py Process/kaggle/plans/plan_g1v4.json` (9 kernel: `pub_full`, held-out, ẩn hàm ngành
+`pub_noind,tr_newterm,pub_ind,pub_hoind`; S = V3A × 0.70 + V4 × 1.0) → `score_p3.py` → chọn S → V2 (bộ chọn học lại trên log
+`tr_dev_para_a/b` của S cuối) → F1: `configs/flow_final.json` = cấu hình S–W–V (P giữ ở `configs/flow_p_final.json`), `set_final_model.py`
+→ F2 → D1.
 
 ## 4b. (cũ, kế hoạch 3 — đã thay bằng §4)
 

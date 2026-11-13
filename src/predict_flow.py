@@ -74,7 +74,8 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     if not int(c.get("units_gen", 0) or 0): return None
     out = os.path.join(work, "units"); os.makedirs(out, exist_ok=True); t = time.time()
     base = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unit", "--quant", "fp8",
-            "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0))] + \
+            "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0)),
+            "--unit-repairs", str(int(c.get("units_repairs", 1)))] + \
            (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
     ng = 1 if fake else max(1, n_gpus())                               # one shard of the rows per GPU, in parallel
     lim = float(c.get("units_max_s", 2700) or 2700)                    # the writer's time cap (a private test with many new rows must

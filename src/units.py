@@ -9,7 +9,7 @@ Unit (one JSON line of cards_unit*.jsonl):
 
   load(paths) -> [unit]                         every unit of the files (one per (bid, term), the first that verified)
   bind(g, units)                                exec each unit's def in the program namespace g (toolkit + C + T already in g)
-  verify(unit, C, data_end, T=None) -> (ok, why, sample)   exec + call on the shop's data (last month of data, the whole data)
+  verify(unit, C, data_end, T=None) -> (ok, why, sample)   exec + call on the shop's data (the last 12 months of data, the whole data)
   block(units) -> str                           '# SHOP FUNCTIONS' prompt block (signature + definition)
   spec_entries(units) -> [dict]                 api_spec-like entries so that precheck knows the names and their parameters"""
 import ast, json, math, os, re, glob
@@ -78,6 +78,12 @@ def _degenerate(v):
     except Exception: return True
 
 
+def _named_parts(v):
+    """a dict of several named quantities ({'tien_thu_may_cu': .., 'khach_phai_tra': ..}: G0e) instead of one value; a dict keyed by
+    data values (names from the shop's tables) is a ranking and stays valid."""
+    return isinstance(v, dict) and len(v) >= 2 and all(isinstance(k, str) and re.fullmatch(r"[a-z_][a-z0-9_]*", k) for k in v)
+
+
 def _zero(v):
     try:
         import numpy as np
@@ -94,10 +100,12 @@ def _params(code):
     return out
 
 
-def verify(unit, C, data_end, T=None, timeout=20):
-    """run the unit on the shop's data: (ok, why, sample result). Periods tried: the last month of the data, the whole data
-    (from its first day); a required parameter other than the period makes the unit unverifiable here (kept only if it binds)."""
-    import dm, pandas as pd
+def verify(unit, C, data_end, T=None, timeout=20, months=12, budget=40.0):
+    """run the unit on the shop's data: (ok, why, sample result). Periods tried: each of the last `months` months of the data and the
+    whole data (from ~3 years back): more periods make the self-consistency signature sharper and catch a unit that only fails on
+    some months (G0e: TypeError on 14 / 24 months). Unanswerable on a period is a valid outcome; any other exception on more than a
+    quarter of the periods rejects the unit. A required parameter other than the period makes the unit unverifiable here."""
+    import dm, pandas as pd, time as _t
     ok, why = safe_code(unit.get("code") or "")
     if not ok: return False, why, None
     end = pd.Timestamp(data_end) if data_end else None
@@ -107,29 +115,36 @@ def verify(unit, C, data_end, T=None, timeout=20):
     if bind(g, [unit]) != [unit["name"]]: return False, "does not define its function", None
     f = g[unit["name"]]; ps = _params(unit["code"])
     req = [p["name"] for p in ps if p["required"]]
-    periods = [dm.month(end.year, end.month), dm.between(pd.Timestamp(end) - pd.Timedelta(days=365 * 3), end)]
-    results, errs = [], []
+    if len(req) > 1: return False, f"needs arguments {req[1:]} besides the period: not checkable", None
+    periods = [dm.between(pd.Timestamp(end) - pd.Timedelta(days=365 * 3), end)]
+    if req:
+        for i in range(months):
+            k = end.year * 12 + end.month - 1 - i
+            periods.insert(i, dm.month(k // 12, k % 12 + 1))
+    results, errs, t0 = [], [], _t.time()
     import signal
     def _alarm(*_): raise TimeoutError("unit ran too long")
     for P in periods:
+        if _t.time() - t0 > budget and results: break                  # a slow unit: what ran so far decides
         try:
             old = signal.signal(signal.SIGALRM, _alarm); signal.alarm(timeout)
-            try:
-                if not req: v = f()
-                elif len(req) == 1: v = f(P)
-                else: return False, f"needs arguments {req[1:]} besides the period: not checkable", None
+            try: v = f(P) if req else f()
             finally: signal.alarm(0); signal.signal(signal.SIGALRM, old)
             results.append(v)
-        except dm.Unanswerable as e: errs.append(f"Unanswerable: {e}")
-        except Exception as e: errs.append(f"{type(e).__name__}: {str(e)[:160]}")
-    if not results: return False, "; ".join(errs)[:300] or "no result", None
-    good = [v for v in results if not _degenerate(v)]
-    if not good: return False, "degenerate result (None / NaN / empty)", None
+        except dm.Unanswerable as e: results.append(None)
+        except Exception as e: errs.append(f"{type(e).__name__}: {str(e)[:160]}"); results.append(("E", type(e).__name__))
+    n = len(results)
+    if errs and (len(errs) * 4 > n or len(errs) == n): return False, f"errors on {len(errs)} / {n} periods: {errs[0]}"[:300], None
+    vals = [v for v in results if not (isinstance(v, tuple) and v[:1] == ("E",))]
+    if any(_named_parts(v) for v in vals): return False, "returns a dict of several named quantities: one value expected (a number, or a table / list for a ranking)", None
+    good = [v for v in vals if not _degenerate(v)]
+    if not good: return False, "degenerate result (None / NaN / empty) on every period", None
     if all(_zero(v) for v in good): return False, "zero on every test period", None
     s = good[-1]
     try: s = s if isinstance(s, (int, float, str, bool)) else (s.head(3).to_dict() if hasattr(s, "head") else list(s)[:3])
     except Exception: s = str(s)[:120]
     unit["_sig"] = signature(results)                                  # what the unit computes on the test periods (self-consistency)
+    unit["_nerr"] = len(errs)
     return True, "ok", s
 
 
@@ -138,7 +153,8 @@ def signature(results):
     out = []
     for v in results:
         try:
-            if isinstance(v, bool): out.append(("b", v))
+            if v is None or isinstance(v, tuple) and v[:1] == ("E",): out.append(("-",))
+            elif isinstance(v, bool): out.append(("b", v))
             elif isinstance(v, (int, float)) or type(v).__module__.startswith("numpy") and hasattr(v, "__float__"): out.append(("n", round(float(v), 2)))
             elif hasattr(v, "to_dict") and hasattr(v, "head"): out.append(("t", str(list(v.head(5).to_dict().items()))[:200]))
             elif isinstance(v, (list, tuple, set)): out.append(("l", tuple(str(x)[:30] for x in list(v)[:5]), len(v)))

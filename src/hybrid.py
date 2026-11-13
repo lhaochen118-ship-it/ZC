@@ -68,7 +68,7 @@ class HybridPipeline(pipeline.Pipeline):
                 c.hint_opts = {"counts_hints": bool(int(getattr(self.a, "hint_counts", 0) or 0))}
                 if self.units_all:                                     # the units of this shop that run on its data
                     import units as unitsmod
-                    ok = [u for u in unitsmod.for_shop(self.units_all, b) if unitsmod.verify(u, d["C"], d.get("data_end"), self.bizs[b].tables)[0]]
+                    ok = [u for u in unitsmod.for_shop(self.units_all, b) if unitsmod.verify(u, d["C"], d.get("data_end"), self.bizs[b].tables, months=1)[0]]
                     c.units = ok[:unitsmod.MAX_UNITS]
                     if c.units:
                         c.business = c.business + "\n\n" + unitsmod.block(c.units)

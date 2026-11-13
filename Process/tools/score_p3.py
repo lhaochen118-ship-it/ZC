@@ -2,13 +2,15 @@
 """Plan 3 scores of one system (docs/16 §5): PA on pub_full, pub_ho400c, tr_ho400c, pub_noind, tr_newterm from one or more
 submission files (shards of the same system in different kernels), the held-out combined = question-weighted PA over the
 held-out sets present (pub_ho400c + tr_ho400c + pub_noind + tr_newterm), appended to Process/scores_p3.csv.
+pub_ind / pub_hoind (plan 4): the industry shops' questions, original / paraphrased.
 Usage: score_p3.py <name> <submission.jsonl or run dir>[,...] [--no-csv]"""
 import os, sys, json, glob, csv, time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 import score
 
-SETS = ("pub_full", "pub_ho400c", "tr_ho400c", "pub_noind", "tr_newterm")
+SETS = ("pub_full", "pub_ho400c", "tr_ho400c", "pub_noind", "tr_newterm", "pub_ind", "pub_hoind")   # last two: the 5 industry shops
+                                                                       # (plan 4 W, hidden industry functions; not in the combined)
 HELD = ("pub_ho400c", "tr_ho400c", "pub_noind", "tr_newterm")
 
 
@@ -46,6 +48,12 @@ def main():
         f = os.path.join(ROOT, "Process", "scores_p3.csv")
         cols = ["run", "time"] + [x for s in SETS for x in (s, s + "_n", s + "_cwa")] + ["held_combined"]
         new = not os.path.isfile(f)
+        if not new:                                                    # older file with fewer columns: rewrite it under the new header
+            old = list(csv.DictReader(open(f, encoding="utf-8")))
+            if old and set(cols) - set(old[0].keys()):
+                with open(f, "w", newline="", encoding="utf-8") as fh:
+                    w = csv.DictWriter(fh, fieldnames=cols); w.writeheader()
+                    for r in old: w.writerow({k: r.get(k, "") for k in cols})
         with open(f, "a", newline="", encoding="utf-8") as fh:
             w = csv.DictWriter(fh, fieldnames=cols)
             if new: w.writeheader()

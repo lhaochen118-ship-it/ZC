@@ -23,7 +23,7 @@ open(os.path.join(mini, "questions.jsonl"), "w", encoding="utf-8").writelines(qs
 WRITER = os.path.join(scratch, "fake_writer.py")
 open(WRITER, "w").write('''import json, re, zlib
 def responder(conv):
-    u = conv[-1]["content"]
+    u = conv[1]["content"]                                         # the row's prompt (a repair conversation ends with the error)
     term = re.findall(r"# DÒNG RULEBOOK CẦN VIẾT HÀM.*?\\n\\| (.*?) \\|", u, re.S)[0]
     h = zlib.crc32((term + str(len(conv))).encode()) % 4
     name = "u_" + str(zlib.crc32(term.encode()) % 100000)

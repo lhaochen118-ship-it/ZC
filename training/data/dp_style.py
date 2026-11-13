@@ -141,15 +141,25 @@ def noise_table(d):
     return {k: Counter({y: n for y, n in c.items() if n >= 2}) for k, c in pairs.items() if sum(c.values()) >= 3}
 
 
-def add_noise(q, table, rng, p=0.4, cap=4):
-    """q with 1-cap words / phrases replaced by noisy forms (never names: capitalised words, never numbers)."""
+def literals(program):
+    """lowercase string values of a program (item / group / customer names ...): words inside them are never rewritten."""
+    return [x.lower() for t in re.findall(r'"([^"]{2,})"|\'([^\']{2,})\'', program or "") for x in t if x]
+
+
+def protected(low, lits):
+    return any(low in l or any(w in l for w in low.split() if len(w) > 2) for l in lits)
+
+
+def add_noise(q, table, rng, p=0.4, cap=4, lits=()):
+    """q with 1-cap words / phrases replaced by noisy forms (never names: capitalised words, words of the program's values,
+    never numbers)."""
     toks = q.split(" "); idx = []
     i = 0
     while i < len(toks):
         for n in (3, 2, 1):
             if i + n > len(toks): continue
             ph = " ".join(toks[i:i + n]); low = ph.lower().strip(",.?!")
-            if low in table and table[low] and not any(t[:1].isupper() or re.search(r"\d", t) for t in toks[i:i + n]):
+            if low in table and table[low] and not protected(low, lits) and not any(t[:1].isupper() or re.search(r"\d", t) for t in toks[i:i + n]):
                 idx.append((i, n, low)); i += n; break
         else: i += 1
     if not idx: return None
@@ -177,10 +187,12 @@ def translit_table(path):
     return dict(tab)
 
 
-def add_translit(q, tab, rng):
-    """q with one Vietnamese word (whole word, not in a name) replaced by a loanword form of it; None when none occurs."""
+def add_translit(q, tab, rng, lits=()):
+    """q with one Vietnamese word (whole word, not in a name / a value of the program) replaced by a loanword form of it;
+    None when none occurs (13/11: 120 / 3096 replacements fell inside item names before this check)."""
     low = q.lower(); hits = []
     for vi, forms in tab.items():
+        if protected(vi, lits): continue
         for m in re.finditer(r"(?<!\w)" + re.escape(vi) + r"(?!\w)", low):
             if not q[m.start():m.start() + 1].isupper(): hits.append((m.start(), m.end(), forms))
     if not hits: return None
@@ -216,9 +228,10 @@ def main():
             kind = kinds[(zlib.crc32(r["id"].encode()) + i) % len(kinds)] if len(kinds) > 1 else kinds[0]   # reproducible (not hash())
             q0 = r["question"]; nq = None
             if kind in ("period", "both"): nq = rewrite_periods(q0, sp, today, rng)
-            if kind == "translit": nq = add_translit(q0, ttab, rng) if ttab else None
+            lits = literals(r.get("program"))
+            if kind == "translit": nq = add_translit(q0, ttab, rng, lits) if ttab else None
             if kind == "both" and nq is None: kind = "noise"
-            if kind in ("noise", "both") and table: nq = add_noise(nq or q0, table, rng)
+            if kind in ("noise", "both") and table: nq = add_noise(nq or q0, table, rng, lits=lits)
             if not nq or nq == q0 or (r["business_id"], nq) in seen: stat["unchanged_" + kind] += 1; continue
             seen.add((r["business_id"], nq)); stat[kind] += 1
             base = r["id"].split("~")[0]

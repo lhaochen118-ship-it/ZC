@@ -102,3 +102,7 @@ Q2 **−0.0357** (36 / 40 / 36) — so với 0.821 / 0.830 khi còn toolkit ngà
 `industry.py`**; với ngành mới thật (private) hệ thuần gần như trả lời sai hết → W (hàm do mô hình viết từ rulebook ngành) + V (bỏ trả lời
 khi không chắc) là phần quyết định. G0 (S + W + V trên `pub_noindH`) đang chạy.
 
+**13/11 18:20 — G0b (W có suy nghĩ, 5 mẫu, tự nhất quán):** `pub_noindH` **−0.036** (42 / 46 / 24) — kém G0 (0.036): 317 / 389 mẫu suy nghĩ chưa
+đóng `</think>` ở trần 4096 token → W chỉ có hàm cho dev_012 / dev_013, không có cho 2 cửa hàng điện thoại. Sửa: bỏ suy nghĩ, giữ 5 mẫu +
+tự nhất quán, prompt của W thêm 2 dòng dữ liệu mẫu mỗi bảng (C và T: nhãn, đơn vị, mã thật). **G0c** chạy trên phuongnehe.
+

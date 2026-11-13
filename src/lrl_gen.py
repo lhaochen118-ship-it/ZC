@@ -198,14 +198,26 @@ UNIT_EXAMPLES = """## Ví dụ 1 — dòng rulebook: | Khách sộp nhất | kh�
 {"name": null}"""
 
 
-def _tables_card(C, T, max_chars=2500):
+def _rows(df, n=2, width=160):
+    """n example rows of a table as 'col=value' text (the writer sees real labels, units, codes)."""
+    try:
+        cols = [c for c in df.columns if not str(c).startswith("_")][:14]
+        sub = df[cols].dropna(how="all").head(200)
+        sub = sub.sample(min(n, len(sub)), random_state=0) if len(sub) else sub
+        return ["  " + "; ".join(f"{c}={str(v)[:24]}" for c, v in r.items() if str(v) not in ("nan", "None", "NaT"))[:width] for _, r in sub.iterrows()]
+    except Exception: return []
+
+
+def _tables_card(C, T, max_chars=4500):
     import prompting
-    out = "## C (bảng chuẩn)\n" + prompting.compact_card(C, "", max_chars=1500)
-    raw = []
+    out = ["## C (bảng chuẩn)", prompting.compact_card(C, "", max_chars=1500)]
+    for t, df in (C or {}).items():
+        if hasattr(df, "columns") and t not in ("orders", "lines"): out += [f"C[{t!r}] ví dụ:"] + _rows(df)
+    out.append("## T (bảng gốc)")
     for t, df in (T or {}).items():
         cols = [str(c) for c in getattr(df, "columns", []) if not str(c).startswith("_")][:25]
-        raw.append(f"T[{t!r}] ({len(df)} dòng): {', '.join(cols)}")
-    return (out + "\n## T (bảng gốc)\n" + "\n".join(raw))[:max_chars]
+        out.append(f"T[{t!r}] ({len(df)} dòng): {', '.join(cols)}"); out += _rows(df)
+    return "\n".join(out)[:max_chars]
 
 
 def unit_items(split, cache):

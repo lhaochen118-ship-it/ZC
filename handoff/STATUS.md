@@ -28,7 +28,7 @@ chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 
 |---|---|---|
 | ~~`phuongnehe/zc-wr30p3b-1`~~ | WR30 phần 3 **xong 17:39**: dừng theo hạn phiên ở bước 102 / 117 (3.4k tok/s, loss 0.0066), checkpoint-102 | **đợt 00:05:** phần 4 (15 bước ≈ 35 phút): `python3 automation/chain_next.py <S>/runs wr30p3b WR30 <acc mới> wr30p4 automation/jobs/wr30r.jobs --train-data all30` |
 | ~~`anderson1202/zc-g1v3apf-1`~~ | S + W + V (v3a × 0.70) trên `pub_full`: **0.919** | mốc public của hệ mới |
-| `namhunhh/zc-g0hd-1` | G0d: S + W (trần 2560 token, không khuôn mã, import an toàn) + V trên `pub_noindH` | G0 0.036 / G0b −0.036 / G0c −0.107 (W không ra JSON) |
+| `huuhien95/zc-g0he-1` | G0e: S + W (JSON có ràng buộc, `plan` ≤ 700 ký tự) + V trên `pub_noindH` | G0 0.036 / G0b −0.036 / G0c −0.107 / G0d 0.009 (W ra JSON ở 17 / 125 đầu ra) |
 
 **Tiến độ kế hoạch 4 (`docs/17_PLAN4_SWV.md`):** V1 xong (held-out +1.8 khi phát lại); W1 xong (`src/units.py`, `lrl_gen --mode unit`); E0 xong
 (`pub_noindH`: Q −0.16, Q2 −0.04 — toàn bộ điểm ngành trước đây là của `industry.py`); G0 xong (S + W + V: 0.036); S1 xong

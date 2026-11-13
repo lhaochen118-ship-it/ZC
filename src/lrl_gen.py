@@ -6,6 +6,7 @@ which reads TRAINING answers only):
   compile   P2: every row of the split's rulebook.md -> a card (triggers = how an owner may say the term, content, toolkit hint)
   aliases   P3: categorical values of each shop's canonical tables -> cards of the ways an owner may write them (per shop)
   translit  loanwords of the toolkit / rulebook vocabulary and how they are typed as they sound in Vietnamese (data + cards)
+  newterm   DR / tr_newterm: a checked (question, program) -> a new rulebook term, its row and the question using it
   induce    P1: cases where the model answered TRAINING questions wrongly (training/data/lrl_cases.py) -> candidate general
             rules (accepted later only by tests/lrl_accept.py: checks on logged samples, A/B runs on other shops)
 
@@ -69,7 +70,7 @@ def card(kind, triggers, content, hint, names, source, **extra):
     trig = [str(t).strip() for t in (triggers or []) if str(t).strip() and len(str(t)) <= 60][:16]
     if not trig or not content: return None
     c = {"kind": kind, "trigger": {"words": trig}, "content": str(content).strip()[:400], "code_hint": valid_hint(hint, names), "source": source}
-    c["trigger"].update({k: v for k, v in extra.items() if k in ("bid", "industry", "section") and v})
+    c["trigger"].update({k: v for k, v in extra.items() if k in ("bid", "industry", "section", "rulebook") and v})
     if extra.get("check"): c["check"] = valid_check(extra["check"])
     c["id"] = "R" + hashlib.sha1(json.dumps([kind, trig, c["content"], c["code_hint"]], ensure_ascii=False).encode()).hexdigest()[:8]
     return c
@@ -79,6 +80,8 @@ def card(kind, triggers, content, hint, names, source, **extra):
 def compile_items(split):
     import hints as hintsmod, agent
     rb = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
+    import lrl
+    rk = lrl.rb_key(rb)
     secs = agent.rulebook_sections(rb); items = []
     seen = set()
     for k, (term, definition) in hintsmod.rulebook_rows(rb).items():
@@ -90,7 +93,7 @@ def compile_items(split):
              "ngữ này: từ đồng nghĩa, cách nói thân mật, viết tắt, viết không dấu], \"content\": \"một câu: thuật ngữ nghĩa là gì và tính "
              "thế nào\", \"code_hint\": \"lời gọi toolkit với đúng tham số luật này cần, ví dụ revenue(p, payment=\\\"chuyển khoản\\\"); "
              "null nếu không có hàm nào hợp\"}")
-        items.append(({"term": term, "definition": definition, "section": sec}, u))
+        items.append(({"term": term, "definition": definition, "section": sec, "rulebook": rk}, u))
     return items
 
 
@@ -156,6 +159,22 @@ def translit_items(split):
     return [({"k": k}, u) for k in range(4)]
 
 
+def newterm_items(recs):
+    """DR / tr_newterm (docs/16 §3): a checked (question, program) -> a NEW business term for what the program computes, the rulebook
+    row defining it (consistent with the program) and the question rewritten with the term. Labels stay the program's answer."""
+    items = []
+    for r in recs:
+        u = ("Dưới đây là một câu hỏi của chủ cửa hàng và chương trình (toolkit bên dưới) trả lời đúng câu đó. Hãy NGHĨ RA một thuật ngữ "
+             "nghiệp vụ MỚI (2-5 từ, chưa có trong toolkit, như một cửa hàng tự đặt trong rulebook của mình) cho đại lượng / cách tính mà "
+             "chương trình làm, viết một dòng rulebook định nghĩa CHÍNH XÁC thuật ngữ đó theo dữ liệu (khớp đúng chương trình: kỳ, lọc, "
+             "cách tính), rồi viết lại câu hỏi dùng thuật ngữ mới thay cho phần mô tả cách tính (giữ nguyên kỳ thời gian, tên hàng, số).\n\n"
+             f"# TOOLKIT\n{api_doc()}\n\n# CÂU HỎI (hôm nay = {r['as_of_date']})\n{r['question']}\n\n# CHƯƠNG TRÌNH\n{r['program']}\n\n"
+             "JSON: {\"term\": \"...\", \"definition\": \"...\", \"question\": \"...\"}")
+        items.append(({"id": r["id"], "business_id": r["business_id"], "as_of_date": r["as_of_date"], "program": r["program"],
+                       "orig_question": r["question"], "answer": r.get("answer")}, u))
+    return items
+
+
 def induce_items(cases):
     items = []
     for c in cases:
@@ -182,7 +201,7 @@ def to_cards(mode, items, texts, names):
         if mode == "compile" and isinstance(j, dict):
             trig = list(j.get("triggers") or []) + [meta["term"]]
             c = card("definition", trig, f"{meta['term']}: {j.get('content') or meta['definition']}", j.get("code_hint"), names,
-                     "rulebook:" + meta["term"], section=meta.get("section"))
+                     "rulebook:" + meta["term"], section=meta.get("section"), rulebook=meta.get("rulebook"))
             if c: c["rule"] = meta["definition"][:400]; out.append(c)
         elif mode == "aliases" and isinstance(j, dict):
             p = CAT_PARAM.get(meta["col"])
@@ -197,6 +216,10 @@ def to_cards(mode, items, texts, names):
                 c = card("lexicon", e["phonetic"], f"'{e['phonetic'][0]}' là cách đọc '{e.get('english')}' = {e.get('vietnamese')}", None, names,
                          "translit:" + str(e.get("english")))
                 if c: c["translit"] = {"english": e.get("english"), "vietnamese": e.get("vietnamese"), "phonetic": e["phonetic"]}; out.append(c)
+        elif mode == "newterm" and isinstance(j, dict):
+            t, d, q = (str(j.get(k) or "").strip() for k in ("term", "definition", "question"))
+            if t and d and q and t.lower() in q.lower() and 2 <= len(t.split()) <= 6 and q != meta["orig_question"]:
+                out.append(dict(meta, term=t, definition=d, question=q, row=f"| {t} | {d} |"))
         elif mode == "induce":
             for e in (j if isinstance(j, list) else [j]):
                 if not isinstance(e, dict): continue
@@ -219,6 +242,9 @@ def main():
         vf = a.cases if (a.cases and os.path.isfile(a.cases)) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), "") if a.cases else ""
         items = alias_items(a.split, a.cache, vf)
     elif a.mode == "translit": items = translit_items(a.split)
+    elif a.mode == "newterm":
+        p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
+        items = newterm_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
     elif a.mode == "induce":
         p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
         items = induce_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
@@ -227,7 +253,7 @@ def main():
         i, n = map(int, a.shard.split("/")); items = items[i::n]
     if os.environ.get("ZC_SMOKE") == "1": items = items[:8]
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
-    think = a.mode == "induce"
+    think = a.mode in ("induce", "newterm")
     if a.fake_responder:
         g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
         texts = [g["responder"](c) for c in convs]

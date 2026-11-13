@@ -214,3 +214,4 @@ wr30p1,duckzuykobip/zc-wr30p1-1,RUNNING?,launched 13/11 04:14 (WP3-04 part 1 of 
 lrl0a,hai1108/zc-lrl0a-1,RUNNING?,launched 13/11 04:22 (WP3-02: compile rulebooks + value aliases)
 lrl0b,loinguyentran/zc-lrl0b-1,RUNNING?,launched 13/11 04:22 (WP3-02: translit + induction round 0)
 v3ap1,bichthuy93/zc-v3ap1-1,RUNNING?,launched 13/11 04:29 (WP3-03 SFT v3a pure: spec labels + period / noise style data; part 1 of a chain)
+pj,namhunhh/zc-pj-1,RUNNING?,launched 13/11 (WP3-00: paraphrase equivalence judge -> pub_ho_clean / tr_ho_clean)

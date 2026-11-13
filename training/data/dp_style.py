@@ -162,17 +162,45 @@ def add_noise(q, table, rng, p=0.4, cap=4):
     return " ".join(toks)
 
 
+def translit_table(path):
+    """Vietnamese word -> spoken / written loanword forms, from the model's own list (src/lrl_gen.py --mode translit): 'đơn hàng' ->
+    ['order', <how it is typed as it sounds>]. Forms of 1-2 characters and identical pairs are dropped."""
+    tab = defaultdict(list)
+    if not path or not os.path.isfile(path): return {}
+    for l in open(path, encoding="utf-8"):
+        c = json.loads(l); t = c.get("translit") or {}
+        vi = str(t.get("vietnamese") or "").strip().lower()
+        if not vi or len(vi) < 2: continue
+        for f in [t.get("english")] + list(t.get("phonetic") or []):
+            f = str(f or "").strip()
+            if len(f) >= 3 and f.lower() != vi and f not in tab[vi]: tab[vi].append(f)
+    return dict(tab)
+
+
+def add_translit(q, tab, rng):
+    """q with one Vietnamese word (whole word, not in a name) replaced by a loanword form of it; None when none occurs."""
+    low = q.lower(); hits = []
+    for vi, forms in tab.items():
+        for m in re.finditer(r"(?<!\w)" + re.escape(vi) + r"(?!\w)", low):
+            if not q[m.start():m.start() + 1].isupper(): hits.append((m.start(), m.end(), forms))
+    if not hits: return None
+    s, e, forms = rng.choice(hits)
+    return q[:s] + rng.choice(forms) + q[e:]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split"); ap.add_argument("cache"); ap.add_argument("canon_dir"); ap.add_argument("inputs"); ap.add_argument("out")
     ap.add_argument("--vilexnorm", default=""); ap.add_argument("--kinds", default="period,noise,both"); ap.add_argument("--per", type=int, default=1)
     ap.add_argument("--seed", type=int, default=20261113); ap.add_argument("--mode", default="full"); ap.add_argument("--k", type=int, default=3)
     ap.add_argument("--spec", action="store_true"); ap.add_argument("--limit", type=int, default=0); ap.add_argument("--all-shops", action="store_true")
+    ap.add_argument("--translit", default="", help="cards_translit.jsonl of src/lrl_gen.py: kind 'translit' replaces a word by a loanword form")
     a = ap.parse_args()
     import retrieval
     import datetime as dt
     rng = random.Random(a.seed); t0 = time.time()
     table = noise_table(a.vilexnorm) if a.vilexnorm else {}
+    ttab = translit_table(a.translit)
     kinds = [k for k in a.kinds.split(",") if k]
     bank = retrieval.Bank.load(include_holdout=a.all_shops)
     src = []
@@ -188,6 +216,7 @@ def main():
             kind = kinds[(zlib.crc32(r["id"].encode()) + i) % len(kinds)] if len(kinds) > 1 else kinds[0]   # reproducible (not hash())
             q0 = r["question"]; nq = None
             if kind in ("period", "both"): nq = rewrite_periods(q0, sp, today, rng)
+            if kind == "translit": nq = add_translit(q0, ttab, rng) if ttab else None
             if kind == "both" and nq is None: kind = "noise"
             if kind in ("noise", "both") and table: nq = add_noise(nq or q0, table, rng)
             if not nq or nq == q0 or (r["business_id"], nq) in seen: stat["unchanged_" + kind] += 1; continue

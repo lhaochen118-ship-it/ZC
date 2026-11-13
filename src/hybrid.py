@@ -96,8 +96,8 @@ class HybridPipeline(pipeline.Pipeline):
         exs = self.bank.retrieve(q["question"], h, k=int(a.shots), exclude_bids=excl, exclude_ids={q["id"]})
         st["examples"] = [e.get("id") for e in exs]
         shown = h if getattr(a, "hints", 1) and not pure else None
-        cards = self.lib.match(q["question"], bid=b, industry=(ctx.ind or (None, None, None))[2] if ctx.ind else None,
-                               k=int(getattr(a, "lrl_k", 6) or 6)) if self.lib is not None else []
+        cards = self.lib.match(q["question"], bid=b, industry=ctx.ind[2] if ctx.ind else None, k=int(getattr(a, "lrl_k", 6) or 6),
+                               rulebook=lrl.rb_key(ctx.rulebook)) if self.lib is not None else []
         st["cards"] = cards; st["rule_ids"] = [c.get("id") for c in cards]
         rules = lrl.render(cards)
         st["msgs"] = {v: ctx.messages(q["question"], q["as_of_date"], exs, shown, v, rules) for v in set(self.variants) | {"direct"}}

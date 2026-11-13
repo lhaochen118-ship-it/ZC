@@ -39,6 +39,17 @@
 
 Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp + Docker), rồi cùng user phân tích và lập kế hoạch mới (mô hình → score = 1).
 
+## 3c. Tiến độ P3 (kế hoạch 3, `docs/16_PLAN3_LEARNED_RULES.md`, user duyệt 13/11)
+
+| Gói | Trạng thái (13/11 UTC) |
+|---|---|
+| WP3-00 sửa đo + dữ liệu v3 | rulebook theo DN khi đo (`tr_ho` dùng rulebook train); `<spec>` từ chương trình; dữ liệu phong cách 5368 bản ghi (kỳ viết tắt 19.1 %, ViLexNorm); mix v3a 4919 bản ghi ≈ 12M token |
+| WP3-01 lớp luật | `src/lrl.py` (thẻ, khớp, `# RULES`, check → lượt sửa), `src/lrl_gen.py` (compile / aliases / translit / induce), `tests/test_lrl.py` PASS |
+| WP3-02 sinh thẻ vòng 0 | `hai1108/zc-lrl0a-1` (compile train + public, bí danh), `loinguyentran/zc-lrl0b-1` (phiên âm, quy nạp 598 ca train) — 04:22 |
+| WP3-03 SFT v3a | chuỗi checkpoint: phần 1 `bichthuy93/zc-v3ap1-1` (04:29, phiên 1.5 h) → phần 2 caotienminh1 (`automation/chain_next.py`) |
+| WP3-04 P refit 30 DN (WR30) | D1 2681 + D2 4818; chuỗi: phần 1 `duckzuykobip/zc-wr30p1-1` (04:14, phiên 2.4 h) → phần 2 linhmai24 → đánh giá `configs/p3_pbh.json` (bank 30 DN) |
+| WP3-05 … 10 | chờ |
+
 ## 4. Việc tiếp theo (theo thứ tự; cập nhật 13/11 01:30 UTC)
 
 1. ~~Cấu hình P~~: **xong, P là cấu hình nộp** (§1).

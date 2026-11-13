@@ -23,11 +23,23 @@ def key(s):
     return " ".join(re.findall(r"[^\W_]+", dm.strip_accents(str(s or "")).lower()))
 
 
+def akey(s):
+    """lowercase words WITH accents (short triggers must match their accents: 'hãng' is not 'hàng')."""
+    import unicodedata
+    return " ".join(re.findall(r"[^\W_]+", unicodedata.normalize("NFC", str(s or "")).lower()))
+
+
+def _short(k): return " " not in k and len(k) < 6
+
+
 def _trig_keys(c):
+    """(matching form, accented?) of each trigger: long triggers accent-free, short single words with their accents."""
     out = []
     for w in ((c.get("trigger") or {}).get("words") or []):
         k = key(w)
-        if len(k) >= 2 and k not in out: out.append(k)
+        if len(k) < 2: continue
+        e = (akey(w), True) if _short(k) and akey(w) != k else (k, False)
+        if e not in out: out.append(e)
     return out
 
 
@@ -47,16 +59,18 @@ class Library:
 
     def __len__(self): return len(self.cards)
 
-    def match(self, question, bid=None, industry=None, k=MAX_CARDS):
+    def match(self, question, bid=None, industry=None, k=MAX_CARDS, rulebook=None):
         """cards whose trigger words occur in the question (whole words, accent-free), longest trigger first; a shop card (P3)
-        only for its shop, an industry card only for that industry."""
-        q = " " + key(question) + " "
+        only for its shop, an industry card only for that industry, a compiled rulebook card (P2) only for shops read under that
+        rulebook (rulebook = rb_key(text) of the shop's rulebook)."""
+        q = " " + key(question) + " "; qa = " " + akey(question) + " "
         hits = []
         for c in self.cards:
             t = c.get("trigger") or {}
             if t.get("bid") and bid and t["bid"] != bid: continue
+            if t.get("rulebook") and rulebook and t["rulebook"] != rulebook: continue
             if t.get("industry") and industry and t["industry"] != industry: continue
-            best = max((len(w) for w in c["_keys"] if f" {w} " in q), default=0)
+            best = max((len(w) for w, acc in c["_keys"] if f" {w} " in (qa if acc else q)), default=0)
             if best: hits.append((best, c.get("kind") == "check", c))
         hits.sort(key=lambda x: (-x[0], x[1]))
         out, seen = [], set()
@@ -81,6 +95,12 @@ class Library:
             except Exception:
                 continue
         return out
+
+
+def rb_key(text):
+    """the key of a rulebook (compiled cards belong to it)."""
+    import hashlib
+    return hashlib.sha1(" ".join(str(text or "").split()).encode("utf-8")).hexdigest()[:10]
 
 
 def render(cards):

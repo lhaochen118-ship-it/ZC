@@ -47,7 +47,8 @@ Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp +
 3. **Hướng thuần** (`docs/14_PURE_MODEL_PLAN.md`): QS10 đang sàng lọc (`namhunhh/zc-q1s10a35-1`, `zc-q1s10a70-1`) → ghi điểm, so với QS7 / P;
    nếu QS10 (hoặc QS7) đáng giữ → xác nhận đủ tập 2 seed sau khi quota làm mới **14/11 00:00 UTC** (hiện mọi acc < 6.3 h).
 4. Bản nộp: **P + WG1 × 0.35** (`configs/flow_final.json`, container 0.994, `final_submission/`); `docker/README_SOLUTION.md` đã cập nhật.
-   Trước 15/11: kiểm lại một lần (hash adapter, `predict.sh` mặc định `flow_final.json`), báo user build Docker 15/11.
+   **Kiểm 13/11 01:40:** `nhatlong1103/zc-final-adapter` tải về khớp sha256 `src/adapter_hashes.json` (WG1 + `soup.json` × 0.35), `predict.sh`
+   mặc định `flow_final.json` (P: count / size_use / ticket_avg bật) → sẵn sàng; báo user build Docker 15/11.
 5. Xong các mục trên → **dừng, cùng user phân tích và lập kế hoạch mới** hướng tới score = 1 (quyết định user 12/11).
 
 Đã thử 12/11 (không giữ): WG5–8 (seed 25 / 26, r 64, lr 1e-4) — không nhánh nào hơn WG1 ở public. Ý tưởng chưa làm: tài liệu API thiếu

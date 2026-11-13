@@ -217,3 +217,4 @@ v3ap1,bichthuy93/zc-v3ap1-1,RUNNING?,launched 13/11 04:29 (WP3-03 SFT v3a pure: 
 pj,namhunhh/zc-pj-1,DONE:complete,pub_ho_clean 1171/1373 tr_ho_clean 1711
 lrl0c,hai1108/zc-lrl0c-1,RUNNING?,launched 13/11 04:41 (rerun of lrl0a parts after the pip race + newterm)
 lrl0d,loinguyentran/zc-lrl0d-1,RUNNING?,launched 13/11 04:53 (rerun translit + induce with a 6144-token think cap)
+p3pbase,hieuho669/zc-p3pbase-1,RUNNING?,launched 13/11 05:06 (P + WG1 x0.35 on pub_ho400c / tr_ho400c with the fixed per-shop rulebook)

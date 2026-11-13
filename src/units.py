@@ -15,6 +15,7 @@ Unit (one JSON line of cards_unit*.jsonl):
 import ast, json, math, os, re, glob
 
 MAX_UNITS = 12
+SAFE_MODS = {"re", "math", "datetime", "collections", "itertools", "statistics", "functools", "decimal", "calendar", "pandas", "numpy"}
 
 
 def load(paths):
@@ -44,7 +45,10 @@ def safe_code(code):
     if len(defs) != 1 or any(not isinstance(n, (ast.FunctionDef, ast.Expr)) for n in tree.body):
         return False, "one top-level function definition expected"
     for n in ast.walk(tree):
-        if isinstance(n, (ast.Import, ast.ImportFrom, ast.Global, ast.Nonlocal)): return False, "import / global not allowed"
+        if isinstance(n, (ast.Import, ast.ImportFrom)):
+            mods = [a.name.split(".")[0] for a in n.names] if isinstance(n, ast.Import) else [(n.module or "").split(".")[0]]
+            if any(m not in SAFE_MODS for m in mods): return False, f"import of {mods} not allowed"
+        if isinstance(n, (ast.Global, ast.Nonlocal)): return False, "global not allowed"
         if isinstance(n, ast.Name) and n.id in ("open", "exec", "eval", "compile", "__import__", "globals", "locals", "input", "breakpoint"):
             return False, f"{n.id} not allowed"
         if isinstance(n, ast.Attribute) and n.attr.startswith("__"): return False, "dunder access not allowed"

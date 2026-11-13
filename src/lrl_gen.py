@@ -220,6 +220,9 @@ def _tables_card(C, T, max_chars=4500):
     return "\n".join(out)[:max_chars]
 
 
+_SHOPS = {}                                                             # bid -> (C, data_end, T) of the shops unit_items built
+
+
 def unit_items(split, cache):
     """per shop of the split: the rows of its rulebook industry section + the rows its rulebook has that neither the training
     nor the public rulebook has (shopctx.rule_changes) -> a prompt asking for ONE function over the shop's tables (or null)."""
@@ -233,7 +236,6 @@ def unit_items(split, cache):
         try:
             bp = os.path.join(cache or "", b + ".pkl")
             biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", b))
-            C = automap.build(biz)[0]
         except Exception as e:
             print(f"[unit] {b}: {type(e).__name__}: {e}", flush=True); continue
         rows = []
@@ -246,6 +248,11 @@ def unit_items(split, cache):
                 except OSError: pass
             rows += [(t, d, "mới") for k, (t, d) in hintsmod.rulebook_rows(rb).items() if k not in known]
         except Exception as e: print(f"[unit] {b}: new rows unavailable ({type(e).__name__}: {e})", flush=True)
+        if not rows: continue                                           # no industry section, no new row: nothing to write
+        try:
+            C = automap.build(biz)[0]; _SHOPS[b] = (C, automap.parse_readme(biz.readme).get("data_end"), biz.tables)
+        except Exception as e:
+            print(f"[unit] {b}: automap {type(e).__name__}: {e}", flush=True); continue
         seen = set(); card = _tables_card(C, biz.tables)
         for term, definition, sec in rows:
             if term in seen: continue
@@ -254,9 +261,9 @@ def unit_items(split, cache):
                  f"# DÒNG RULEBOOK CẦN VIẾT HÀM (mục '{sec}')\n| {term} | {definition} |\n\n"
                  "Viết MỘT hàm Python tính đúng thuật ngữ này trên dữ liệu của cửa hàng: dùng hàm toolkit khi có hàm hợp, nếu không thì pandas "
                  "trên C hoặc T (đúng tên bảng / cột có ở trên). Tham số đầu là kỳ p (Period: p.mask(series), p.start, p.end) khi thuật ngữ "
-                 "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không import, không đọc file. Nếu dòng này không phải một đại lượng "
-                 "tính được (chỉ là cách ghi, cách làm tròn...) trả {\"name\": null}. JSON: {\"name\": \"ten_ham_khong_dau\", \"signature\": "
-                 "\"ten_ham(p, ...)\", \"doc\": \"một câu\", \"triggers\": [\"3-8 cụm từ chủ cửa hàng dùng\"], \"code\": \"def ten_ham(p, ...):\\n    ...\"}")
+                 "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không đọc file. Nếu dòng này không phải một đại lượng tính được "
+                 "(chỉ là cách ghi, cách làm tròn...) trả {\"name\": null}. Trả lời ngay bằng MỘT đối tượng JSON cùng dạng các ví dụ "
+                 "(khoá name, signature, doc, triggers, code), không giải thích trước.")
             items.append(({"bid": b, "term": term, "definition": definition, "section": sec, "rulebook": __import__("lrl").rb_key(rb)}, u))
     return items
 
@@ -338,6 +345,7 @@ def verify_units(cands, split, cache):
     good = defaultdict(list)
     for u in cands:
         k = (u["bid"], u["term"])
+        if u["bid"] not in shops and u["bid"] in _SHOPS: shops[u["bid"]] = _SHOPS[u["bid"]]
         if u["bid"] not in shops:
             try:
                 bp = os.path.join(cache or "", u["bid"] + ".pkl")
@@ -401,7 +409,8 @@ def main():
         temp = 0.7 if a.mode == "translit" else 0.0
         temps = [temp] * len(convs)
         if a.mode == "unit": temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
-        texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], (4096 if a.mode == "unit" else 6144) if think else 900, think=think)   # 2048 was
+        mt = (4096 if a.mode == "unit" else 6144) if think else (2560 if a.mode == "unit" else 900)   # unit: the writer often reasons in
+        texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], mt, think=think)   # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap without reaching their JSON (13/11)
     else: texts = []
     cards = to_cards(a.mode, items, texts, names)

@@ -106,3 +106,10 @@ khi không chắc) là phần quyết định. G0 (S + W + V trên `pub_noindH`)
 đóng `</think>` ở trần 4096 token → W chỉ có hàm cho dev_012 / dev_013, không có cho 2 cửa hàng điện thoại. Sửa: bỏ suy nghĩ, giữ 5 mẫu +
 tự nhất quán, prompt của W thêm 2 dòng dữ liệu mẫu mỗi bảng (C và T: nhãn, đơn vị, mã thật). **G0c** chạy trên phuongnehe.
 
+**13/11 19:20 — G0c** (W không suy nghĩ, 5 mẫu): `pub_noindH` **−0.107**; chỉ 19 hàm (4 cho DN ngành). Tái hiện trên máy: 33 / 50 đầu ra của W
+không có JSON (mô hình vẫn lập luận bằng văn xuôi tới trần 900 token), một số chép nguyên khuôn `def ten_ham(p, ...)` của câu lệnh, `import re`
+bị chặn; automap chạy cho mọi DN (15 phút). Sửa: trần 2560 token cho W, câu lệnh không còn khuôn mã, cho phép import thư viện an toàn,
+automap chỉ cho DN có dòng cần viết (dùng lại khi kiểm). Ghi nhận: S + W + V v3a trên public 0.919 (W cũ có suy nghĩ, 10 hàm, 1125 s).
+**G0d** (`pub_noindH`) chạy trên namhunhh. Lỗi public còn lại của S + W + V v3a: 26 sai không mẫu nào đúng (năng lực S, 24 dùng `month(...)`),
+18 có mẫu đúng (V), 2 bỏ.
+

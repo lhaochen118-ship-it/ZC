@@ -1,0 +1,4 @@
+[
+ {"acc": "namhunhh", "name": "g0hd", "jobs": "automation/jobs/g0hd.jobs", "est_h": 0.5,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "namhunhh/zc-v3a-adapter", "--no-preflight"]}
+]

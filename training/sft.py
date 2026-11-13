@@ -188,7 +188,10 @@ def main():
     res = tr.train(resume_from_checkpoint=ck)
     # not after a deadline stop (13/11 v3a part 3: the FSDP reference pass ran out of memory on one rank right after the
     # deadline checkpoint, the other ranks waited 10 min on NCCL, the job exited 1 without train_metrics.json)
-    lr1 = ref_loss(tr.model, ref) if (rank == 0 or world > 1) and not stats.get("stopped_early") else None
+    # one GPU only (13/11 v3b: 87 / 87 steps done, then the FSDP reference pass ran out of memory on SOME ranks: rank 2 went
+    # on to the all_reduce below while the others still all-gathered parameters for the forward -> NCCL timeout, no adapter
+    # saved, 3 h lost; v3a part 4 survived only because every rank ran out of memory). The value is a diagnostic.
+    lr1 = ref_loss(tr.model, ref) if world == 1 and not stats.get("stopped_early") else None
     dt = time.time() - t1
     steps = res.global_step
     tok_per_step = a.mb * ga * world * (ntok / max(1, len(recs)))

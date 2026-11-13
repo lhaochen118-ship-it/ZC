@@ -57,6 +57,8 @@ def build(sets, out_split, split_hint, para_dir):
     for s in sets: ids += [i for i in split_ids(s) if i not in ids]
     rows, miss = [], []
     for i in ids:
+        if "~" in i and i in Q:                                         # a set's own variant question (<set>.questions.jsonl,
+            rows.append(dict(Q[i])); continue                          # e.g. tr_newterm '<id>~n0'): its text as given
         base, _, var = i.partition("~")
         q = Q.get(base)
         if q is None: miss.append(i); continue
@@ -77,6 +79,21 @@ def build(sets, out_split, split_hint, para_dir):
         os.makedirs(os.path.join(out_split, "rulebooks"), exist_ok=True)  # shop keeps the training rulebook (hybrid.rulebook_for)
         for b in sorted({r["business_id"] for r in rows if src.get(r["business_id"]) == tr}):
             shutil.copy(os.path.join(tr, "rulebook.md"), os.path.join(out_split, "rulebooks", b + ".md"))
+    extra_rows = {}                                                     # a set may add rulebook rows for some shops (tr_newterm:
+    for s in sets:                                                      # new business terms defined in the shop's rulebook, as a
+        for d in (os.path.join(os.path.dirname(HERE), "tests", "splits"), os.path.join(HERE, "refs", "splits")):   # new industry
+            p = os.path.join(d, s + ".rulebook_rows.jsonl")             # of the private test would)
+            if os.path.isfile(p):
+                for l in open(p, encoding="utf-8"):
+                    if l.strip(): r = json.loads(l); extra_rows.setdefault(r["business_id"], []).append(r["row"])
+                break
+    for b, rws in extra_rows.items():
+        if b not in src: continue
+        os.makedirs(os.path.join(out_split, "rulebooks"), exist_ok=True)
+        dst = os.path.join(out_split, "rulebooks", b + ".md")
+        base = open(dst, encoding="utf-8").read() if os.path.isfile(dst) else open(os.path.join(src[b], "rulebook.md"), encoding="utf-8").read()
+        with open(dst, "w", encoding="utf-8") as f:
+            f.write(base.rstrip("\n") + "\n\n## Thuật ngữ riêng của cửa hàng\n| Thuật ngữ | Định nghĩa |\n|---|---|\n" + "\n".join(dict.fromkeys(rws)) + "\n")
     with open(os.path.join(out_split, "questions.jsonl"), "w", encoding="utf-8") as f:
         for r in rows: f.write(json.dumps(r, ensure_ascii=False) + "\n")
     print(f"eval split: {len(rows)} questions of {sets} ({len(miss)} ids without text: {miss[:5]})", flush=True)

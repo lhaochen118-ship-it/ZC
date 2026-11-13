@@ -42,7 +42,8 @@
  "mask_check": 0,
  "pure": 1,
  "lrl": "compile_train.jsonl,compile_public.jsonl,alias_train.jsonl,alias_public.jsonl,translit.jsonl,induced.jsonl",
- "lrl_k": 6,
+ "lrl_k": 4,
  "lrl_check": 1,
- "seed_base": 1
+ "seed_base": 1,
+ "lrl_max_df": 0.02
 }

@@ -41,6 +41,8 @@ class HybridPipeline(pipeline.Pipeline):
         missing = [x for x in lp if not os.path.isfile(x)]
         if missing: print(f"[hybrid] WARNING learned rule cards not found: {missing}", flush=True)
         self.lib = lrl.Library.load(",".join(lp)) if lp else None
+        if self.lib is not None:                                        # generic triggers out, by the run's own questions (inputs)
+            self.lib.prune([x["question"] for x in qs], float(getattr(a, "lrl_max_df", 0.02) or 0.02))
         if self.lib is not None: print(f"[hybrid] learned rule cards: {len(self.lib)} ({lp})", flush=True)
 
     # -- per shop context (prompt prefix, hints, grammar)
@@ -96,7 +98,7 @@ class HybridPipeline(pipeline.Pipeline):
         exs = self.bank.retrieve(q["question"], h, k=int(a.shots), exclude_bids=excl, exclude_ids={q["id"]})
         st["examples"] = [e.get("id") for e in exs]
         shown = h if getattr(a, "hints", 1) and not pure else None
-        cards = self.lib.match(q["question"], bid=b, industry=ctx.ind[2] if ctx.ind else None, k=int(getattr(a, "lrl_k", 6) or 6),
+        cards = self.lib.match(q["question"], bid=b, industry=ctx.ind[2] if ctx.ind else None, k=int(getattr(a, "lrl_k", 4) or 4),
                                rulebook=lrl.rb_key(ctx.rulebook)) if self.lib is not None else []
         st["cards"] = cards; st["rule_ids"] = [c.get("id") for c in cards]
         rules = lrl.render(cards)

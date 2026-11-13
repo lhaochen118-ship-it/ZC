@@ -15,7 +15,7 @@ card: {"id", "kind": period|lexicon|definition|unit|value|check, "trigger": {"wo
 import os, re, json
 import dm
 
-MAX_CARDS = 6
+MAX_CARDS = 4
 
 
 def key(s):
@@ -58,6 +58,18 @@ class Library:
         return cls(cards)
 
     def __len__(self): return len(self.cards)
+
+    def prune(self, questions, max_df=0.05):
+        """drop the triggers that occur in more than max_df of the given questions (the run's own questions: inputs only, no
+        answer): a trigger like 'doanh thu' or 'tiền' says nothing about which rule applies. Cards left without a trigger go."""
+        qs = [(" " + key(q) + " ", " " + akey(q) + " ") for q in questions if q]
+        if not qs: return self
+        lim = max(3, max_df * len(qs)); keep = []
+        for c in self.cards:
+            ks = [(w, acc) for w, acc in c["_keys"] if sum(1 for q, qa in qs if f" {w} " in (qa if acc else q)) <= lim]
+            if ks: c["_keys"] = ks; keep.append(c)
+        n0 = len(self.cards); self.cards = keep; self.pruned = n0 - len(keep)
+        return self
 
     def match(self, question, bid=None, industry=None, k=MAX_CARDS, rulebook=None):
         """cards whose trigger words occur in the question (whole words, accent-free), longest trigger first; a shop card (P3)

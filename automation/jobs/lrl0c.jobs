@@ -1,0 +1,4 @@
+run_kaggle.py train OUT/LRL0/tr_compile --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode compile
+run_kaggle.py public_test OUT/LRL0/pub_alias --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode aliases --cases training/data/out/lrl0/alias_values.jsonl
+run_kaggle.py train OUT/LRL0/tr_alias --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode aliases --cases training/data/out/lrl0/alias_values.jsonl
+run_kaggle.py train OUT/LRL0/newterm --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode newterm --cases training/data/out/lrl0/newterm_in.jsonl

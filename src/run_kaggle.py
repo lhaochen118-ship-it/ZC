@@ -30,12 +30,19 @@ if use_env:
     os.environ["PYTHONPATH"] = pe["PYTHONPATH"]; sys.path.insert(0, env_dir)
     subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)
 elif not NO_VLLM:
-    wh = next((d for d in glob.glob("/kaggle/input/**/wheels", recursive=True) if glob.glob(d + "/vllm-*.whl")), None)
-    cmd = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["vllm"]
-    r = subprocess.run(cmd, capture_output=True, text=True); print("pip vllm:", "wheels" if wh else "pypi", r.returncode, r.stderr[-300:], flush=True)
-    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)
-    cal = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["python-calamine"]
-    subprocess.run(cal, capture_output=True)                         # offline L4 sessions: calamine from the wheels too
+    import fcntl                                                       # several jobs of one kernel (one per GPU) must not pip-install
+    with open("/tmp/.zc_pip.lock", "w") as lk:                         # at the same time (13/11: 3 of 4 parallel lrl_gen jobs died on
+        fcntl.flock(lk, fcntl.LOCK_EX)                                 # half-written site-packages): one installs, the others reuse it
+        done_mark = "/tmp/.zc_vllm_installed"
+        if os.path.isfile(done_mark): print("pip vllm: installed by another job of this kernel", flush=True)
+        else:
+            wh = next((d for d in glob.glob("/kaggle/input/**/wheels", recursive=True) if glob.glob(d + "/vllm-*.whl")), None)
+            cmd = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["vllm"]
+            r = subprocess.run(cmd, capture_output=True, text=True); print("pip vllm:", "wheels" if wh else "pypi", r.returncode, r.stderr[-300:], flush=True)
+            subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "-q", "torchaudio", "torchcodec"], capture_output=True)
+            cal = [sys.executable, "-m", "pip", "install", "-q"] + (["--no-index", "--find-links", wh] if wh else []) + ["python-calamine"]
+            subprocess.run(cal, capture_output=True)                 # offline L4 sessions: calamine from the wheels too
+            if r.returncode == 0: open(done_mark, "w").write("ok")
 TRAIN = "--train" in sys.argv                                          # training jobs: the training wheels too (offline)
 if TRAIN and not NO_VLLM:
     wt = next(iter(sorted(glob.glob("/kaggle/input/**/wheels_train", recursive=True))), None)

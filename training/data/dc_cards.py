@@ -15,10 +15,13 @@ def main():
     ap.add_argument("split"); ap.add_argument("cache"); ap.add_argument("canon_dir"); ap.add_argument("inputs"); ap.add_argument("out")
     ap.add_argument("--cards", required=True); ap.add_argument("--distract", type=float, default=0.3); ap.add_argument("--seed", type=int, default=20261113)
     ap.add_argument("--mode", default="full"); ap.add_argument("--k", type=int, default=3); ap.add_argument("--only-matched", action="store_true")
+    ap.add_argument("--max-df", type=float, default=0.02)
     a = ap.parse_args()
     import retrieval, lrl
     rng = random.Random(a.seed); t0 = time.time()
     lib = lrl.Library.load(a.cards); bank = retrieval.Bank.load()
+    tq = [json.loads(l)["question"] for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    lib.prune(tq, a.max_df); print(f"cards: {len(lib)} after pruning generic triggers", flush=True)   # as the flow does
     pool = [c for c in lib.cards if not (c.get("trigger") or {}).get("bid")]
     rows, n_m, n_d = [], 0, 0
     for f in a.inputs.split(","):

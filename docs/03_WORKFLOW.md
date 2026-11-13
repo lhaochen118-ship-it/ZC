@@ -1,6 +1,6 @@
 # 03 — Quy trình làm việc
 
-*Cập nhật 11/11/2026 (§5 vòng lặp kế hoạch 2: public gốc + held-out, sàng lọc → xác nhận; §1b quota / 12 h; §7 bàn giao qua `Process/`). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
+*Cập nhật 13/11/2026 (§8 vòng học luật của kế hoạch 3; §5 vòng lặp kế hoạch 2: public gốc + held-out, sàng lọc → xác nhận; §1b quota / 12 h; §7 bàn giao qua `Process/`). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
 tối đa trên private test, trong 6 giờ, tái lập được".*
 
 ## 1. Nguyên tắc chung
@@ -102,3 +102,15 @@ Hybrid (user 08/11): mô hình viết chương trình trả lời mọi câu; lu
   `handoff/environment_summary.pdf`, `docs/RESEARCH_WORKFLOW.pdf`, `READING_GUIDE.md`; tắt routine tự chạy của phiên cũ.
 - Khung mới: đọc `READING_GUIDE.md` → `CLAUDE.md` → `handoff/STATUS.md`; xin token; tạo routine mỗi giờ; tải output kernel đang chạy
   (`Process/kaggle/kernels.csv`).
+
+
+## 8. Vòng lặp kế hoạch 3 (13/11): luật do mô hình tự học
+
+1. **Đo sạch trước**: held-out đã lọc nhãn (`*_clean`, `*400c`), mốc P đo cùng code; báo public + held-out sạch ở mọi mốc.
+2. **Sinh thẻ** (`src/lrl_gen.py`, GPU, chia shard theo GPU): biên dịch rulebook, bí danh giá trị (đầu vào của split), quy nạp từ ca sai
+   trên **câu train** (`training/data/lrl_cases.py`).
+3. **Nhận thẻ tự động** (`tests/lrl_accept.py`): thẻ check → quét tín hiệu sạch trên log đã có (CPU); thẻ nội dung → A/B hai lần chạy cùng
+   seed trên câu của DN khác. Không ai đọc / sửa tay thẻ.
+4. **Nội hoá**: dữ liệu v3 (`<spec>`, phong cách, thẻ trong prompt) → SFT FSDP (chuỗi checkpoint qua acc khi một acc không đủ giờ).
+5. **Đánh giá** Q / Q2 / P (+ thẻ) song song nhiều acc → quy tắc giữ / bỏ `docs/12` §4, đổi bản nộp `docs/16` §5.4 → lặp.
+6. Bàn giao: `automation/archive_runs.py` + 3 PDF + `READING_GUIDE.md`.

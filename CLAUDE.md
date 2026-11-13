@@ -47,7 +47,7 @@ chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi
 mô hình thuần + **lớp luật do mô hình tự học** (quy nạp từ lỗi train, biên dịch rulebook lúc suy luận, bí danh giá trị, ViLexNorm; luật chỉ học từ train,
 nhận bằng A/B trên DN khác), dữ liệu v3, gói WP3-00 → WP3-10 đến 16/11, rồi **H2** sau 16/11 (RL thưởng theo PA, mô hình chuẩn hoá câu). **Đổi bản nộp**
 (§5.4) khi hệ mới có held-out gộp ≥ P và public ≥ 0.985. **WP3-04:** huấn luyện lại P trên đủ 30 DN, giữ nếu public ≥ 0.993. Tiến độ: bảng "Tiến độ P3"
-trong `handoff/STATUS.md`. Vẫn áp dụng: kiểm quota trước khi chạy (không đủ → tối ưu: FSDP 4 GPU, chuỗi checkpoint qua acc, chia shard; vẫn không đủ →
+trong `handoff/STATUS.md`. (13/11 08:30: bàn giao sang khung chat mới; routine cũ đã tắt — phiên mới tạo routine theo `READING_GUIDE.md` §0.) Vẫn áp dụng: kiểm quota trước khi chạy (không đủ → tối ưu: FSDP 4 GPU, chuỗi checkpoint qua acc, chia shard; vẫn không đủ →
 giải pháp khác; không có thì không chạy), tốc độ trước, không tiết kiệm acc / GPU.
 
 ## Nguyên tắc user (đã chốt, không hỏi lại)

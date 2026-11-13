@@ -1,73 +1,67 @@
-# PDF 3 — Handoff (khung chat kế tiếp, từ 11/11/2026)
+# PDF 3 — Handoff (khung chat kế tiếp, từ 13/11/2026)
 
 *Phạm vi: mục tiêu, tiến độ, quyết định đã thống nhất, vị trí mã nguồn / dữ liệu / kết quả, các bước tiếp theo. Kết quả khoa học:
 PDF 1; kinh nghiệm kỹ thuật / vận hành: PDF 2; cấu hình máy: `environment_summary.pdf`; trạng thái sống: `handoff/STATUS.md`.*
 
 ## 1. Mục tiêu
 
-- Zalo AI Challenge 2026, track **DataMate**: hỏi đáp tiếng Việt trên dữ liệu bảng bẩn của hộ kinh doanh; **PA = (đúng − sai) / N**.
-- Ràng buộc BTC: tổng tham số ≤ 15B, offline, ≤ 6 h trên 2×RTX 5090, Docker. **Hạn nộp 16/11/2026 23:59 GMT+7**; user build Docker
-  ngày 15/11 và tự nộp portal.
-- Mục tiêu user: PA cao nhất trên private test, nhanh nhất có thể. **Điều kiện dừng nghiên cứu (`docs/13_TASK_AFTER_PLAN1.md`):
-  public gốc 100 % bằng cải tiến tổng quát mà held-out không giảm.**
+- Zalo AI Challenge 2026, track **DataMate**: hỏi đáp tiếng Việt trên dữ liệu bảng bẩn; **PA = (đúng − sai) / N**. Ràng buộc: ≤ 15B tham số,
+  offline, ≤ 6 h trên 2×RTX 5090, Docker. **Hạn nộp solution 16/11/2026 23:59 GMT+7** (Docker đóng băng; private chạy 20–23/11).
+- **Mục tiêu hiện tại (user 13/11): kế hoạch 3** `docs/16_PLAN3_LEARNED_RULES.md` — mô hình thuần (không luật viết tay lúc suy luận) +
+  **lớp luật do mô hình tự học**, nhắm public 1.0 mà held-out không giảm; sau 16/11 tiếp H2 (RL thưởng PA, mô hình chuẩn hoá câu).
 
-## 2. Quyết định đã thống nhất (không hỏi lại; bản đầy đủ: `CLAUDE.md`)
+## 2. Quyết định đã thống nhất (bản đầy đủ: `CLAUDE.md`)
 
 | Ngày | Quyết định |
 |---|---|
-| 08/11 | Hybrid framework: mô hình viết chương trình trả lời mọi câu; luật chỉ chuẩn bị ngữ cảnh (gợi ý, làm sạch, schema, toolkit, ví dụ) và kiểm tra. Cấm luật sinh đáp án |
-| 08/11 | Chạy tự động đến khi xong, không hỏi; routine mỗi giờ đánh thức phiên; chỉ xin user token / acc / accept rules / nộp portal |
-| 08/11 | Dataset ngoài uy tín được dùng; không bao giờ train trên public / private (kể cả paraphrase câu public) |
-| 09/11 | Sau kế hoạch 1: vòng phân tích lỗi → tài liệu → kế hoạch 2 → triển khai, lặp đến public 100 %, báo cả public và held-out |
-| 10/11 | Hai hướng song song: R (luật tổng quát) và M (cải tiến mô hình từ M0, không thêm luật) |
-| 10/11 | `final_submission/submission.jsonl` luôn là file public PA cao nhất; cập nhật tự động sau mỗi lần chạy |
-| 10/11 | Acc < 6 h GPU: kiểm đủ giờ trước khi giao task; phiên Kaggle ≤ 12 h (chia nhỏ / checkpoint) |
-| 11/11 | Chạy nhanh nhất mà không ảnh hưởng nhiều độ chính xác (sàng lọc tập con song song → xác nhận đủ tập) |
-| bất biến | Không vá theo DN / câu; đáp án public (`data/raw/public_gt.jsonl`) chỉ để chấm; không xem từng câu held-out; không push kernel thiếu kiểm tra (CPU suite / preflight; job soup / merge-eval: dry-run + review + `--no-preflight`) |
+| 08/11 | Hybrid: mô hình viết chương trình cho mọi câu; luật chỉ làm ngữ cảnh / kiểm tra; cấm luật sinh đáp án |
+| 10–12/11 | `final_submission/` = file public PA cao nhất (`automation/update_final_submission.py`); quota < 6 h phải đủ giờ; phiên Kaggle ≤ 12 h; **tốc độ trước, không tiết kiệm acc / GPU** (FSDP 4 GPU, chuỗi checkpoint qua acc, chia shard; không đủ giờ thì không chạy) |
+| 12/11 | Mô hình thuần: chỉ giữ A (`ingest`, `automap`) + B (toolkit `dm`, `industry`); bỏ C (gợi ý luật) + D (kiểm tra luật); nhánh song song |
+| **13/11** | **Duyệt kế hoạch 3 "thực hiện hết"**: WP3-00 → 10 đến 16/11, rồi H2. **Đổi bản nộp khi hệ mới có held-out gộp ≥ P và public ≥ 0.985** (§5.4). **WP3-04**: huấn luyện lại P trên đủ 30 DN, giữ nếu public ≥ 0.993 |
+| bất biến | Không vá theo DN / câu; `data/raw/public_gt.jsonl` chỉ để chấm; **không luật nào học từ public**; không xem từng câu held-out; cổng kiểm tra trước khi chạy (`tests/run_all.sh` PASS) |
 
-## 3. Tiến độ
+## 3. Tiến độ (13/11 ~08:30 UTC; chi tiết: `handoff/STATUS.md` §3c)
 
 | Hạng mục | Trạng thái |
 |---|---|
-| Kế hoạch 1 (`docs/08`, WP0–WP12) | xong |
-| Kế hoạch 2 (`docs/12_PLAN2.md`) hướng R | 16 vòng; luật tổng quát (gợi ý, làm sạch, kiểm tra size / unit / len_mask, cờ) — gần bão hoà |
-| Kế hoạch 2 hướng M (`docs/12` §6) | M7, M6, M2, M4 xong (PDF 1 §3.2); M1 / M3 / M5 / M8 / M9 chưa làm |
-| Mô hình | WF1–4 (súp) → WF3 → **WG1** (D1 + toàn bộ D2) là mô hình nộp; WG5–8 đang huấn luyện (`bichthuy93/zc-wg2r-1`) |
-| Bản nộp | O + WG1 × 0.35: public 0.9855 (2 seed), container 0.986, held-out 0.778; `final_submission` 0.991 |
-| Docker | sẵn sàng (`docker/`), dataset adapter `nhatlong1103/zc-final-adapter` = WG1 + `soup.json`; user build 15/11 |
+| Bản nộp | **P + WG1 × 0.35** (public 0.993–0.994, container 0.994); Docker sẵn (`docker/`); adapter `nhatlong1103/zc-final-adapter` khớp sha256 |
+| Kiểm tra (`docs/15`) | không rò rỉ vào trọng số; số đo P lạc quan; tập đo sạch `*_clean`, mốc P sạch `pub_ho400c` 0.698 / `tr_ho400c` 0.923 |
+| WP3-00 / 01 | xong phần code: `<spec>`, dữ liệu phong cách (kỳ, ViLexNorm, phiên âm), DR / `tr_newterm`, lớp luật `src/lrl.py`, `lrl_gen.py`, `lrl_accept.py`, đường container `predict_flow.prepare_lrl` |
+| WP3-02 thẻ vòng 0 | xong: `src/refs/lrl/` (compile public 111 / train 79, alias 619 / 1143, translit 85, induced 4 check) |
+| WP3-03 SFT v3a | chuỗi 3 phần: phần 3 `caotienminh1/zc-v3ap3-1` (bước 51 → 77); xong → adapter ở output kernel đó |
+| WP3-04 WR30 | phần 1 hỏng (NCCL treo); **chưa chạy lại** (plan `Process/kaggle/plans/plan_w14.json`, một acc ~3.6 h) |
+| WP3-05 … 10 | chưa: đánh giá v3a, A/B thẻ nội dung, SFT v3b, vòng học luật 1–2, v4, quyết định, container |
 
 ## 4. Vị trí
 
 | Thứ | Ở đâu |
 |---|---|
-| Repo / branch | `lhaochen118-ship-it/ZC`, `claude/datamate-v3-0dny90` |
-| Hướng dẫn đọc repo | `READING_GUIDE.md` |
-| Trạng thái sống | `handoff/STATUS.md` (lịch sử: `Process/history/`) |
-| Luồng nộp | `src/predict_flow.py` → `src/agent.py --flow hybrid` (`src/hybrid.py`, `pipeline.py`, `hints.py`, `qnorm.py`, `precheck.py`, `tools.py`, `dm.py`, `industry.py`); cấu hình `configs/flow_final.json` |
-| Mô hình nộp | `soup.json` (WG1 × 0.35) trong Kaggle dataset `nhatlong1103/zc-final-adapter`; sha256: `src/adapter_hashes.json`; đổi: `automation/set_final_model.py` |
-| Adapter khác | `<acc>/zc-wg-adapters` (WG1–4), `<acc>/zc-final-adapter` (WF1–4 hoặc WG1), output kernel `loinguyentran/zc-wg-1`, `thnliu/zc-m2w3-1`, `anderson1202/zc-m2g1-1`; danh sách: `Process/kaggle/datasets_by_account.txt` |
-| Dữ liệu BTC | `kaggle datasets download nhatlong1103/zc-2026 -p data/raw --unzip`; đáp án public `data/raw/public_gt.jsonl` (user gửi `score_1.jsonl` nếu mất) |
-| Paraphrase (đánh giá) | `<acc>/zc-para` (`para_pub.jsonl`, `para_train.jsonl`); tập: `tests/splits/*.txt` (`pub_full`, `pub_ho`, `tr_ho`, `pub_ho400`, `tr_ho400`, `tr_dev_*`, `d3sel`) |
-| Dữ liệu huấn luyện | `Process/train_data/` (nén: `wg/` = D1 + D2 + D2N + RFT khó, `m2/`, `m4/`, `w7f_*`); giải nén vào `training/data/out/<tên>/` |
-| Log + kết quả lần chạy | `Process/runs/<run>/<result>/` (`logs.jsonl.gz`, `submission.jsonl.gz`, `result.json`); bảng điểm: `Process/scores.csv` |
-| Kernel / plan | `Process/kaggle/kernels.csv` (run → kernel id → trạng thái), `Process/kaggle/plans/*.json`, job: `automation/jobs/` |
-| Code M0 đóng băng (hướng M) | commit `b093d46` + `Process/m0_worktree/` (bản vá + file thêm) |
-| Bộ chọn | `src/refs/selector/selector_m0_inv.json` (M0) |
+| Repo / branch | `lhaochen118-ship-it/ZC`, `claude/datamate-v3-0dny90`; hướng dẫn đọc: `READING_GUIDE.md` |
+| Luồng nộp P | `src/predict_flow.py` → `agent.py --flow hybrid` (`hybrid.py`, `pipeline.py`, `hints.py`, `precheck.py`, `dm.py`, `industry.py`); `configs/flow_final.json` |
+| Luồng thuần Q / Q2 | `configs/flow_pure.json` / `flow_pure_lrl.json` (`--pure 1 --lrl <thẻ>`) |
+| Lớp luật | `src/lrl.py`, `src/lrl_gen.py`, thẻ `src/refs/lrl/*.jsonl`, nhận thẻ `tests/lrl_accept.py`, test `tests/test_lrl.py` |
+| Dữ liệu huấn luyện kế hoạch 3 | bộ sinh `training/data/{spec_from_program,dp_style,dc_cards,dr_newterm,v3_mix,lrl_cases,lrl_collect}.py`, `build_v3b.sh`; bản nén `Process/train_data/p3/` (giải nén vào `training/data/out/{v3a,v3bm,all30,lrl0}/`) |
+| Tập đo | `tests/splits/` (`pub_full`, `pub_ho400c`, `tr_ho400c`, `*_clean`, `tr_newterm*`, `lrl_ab0`) |
+| Adapter | WG1 nộp: `nhatlong1103/zc-final-adapter`; v3a: output `caotienminh1/zc-v3ap3-1` (`results/V3A/adapter`); QS10: `namhunhh/zc-qs10-adapter`; khác: `Process/kaggle/datasets_by_account.txt` |
+| Log / điểm | `Process/runs/<run>/` (nén), `Process/scores.csv`, kernel `Process/kaggle/kernels.csv`, plan `Process/kaggle/plans/`, job `automation/jobs/` |
+| Công cụ phân tích | `Process/tools/` (`score_sets.py`, `cmp_pure_p.py`, `period_share.py`, quét tín hiệu `scan_*.py`, `publish.sh`) |
 
-## 5. Các bước tiếp theo
+## 5. Các bước tiếp theo (theo thứ tự)
 
-1. **Tạo routine mỗi giờ** cho phiên mới (`create_trigger`, lời nhắc như `CLAUDE.md`) và xin user token Kaggle nếu container mới.
-2. **Gắn lại / tải kết quả WG5–8** (`bichthuy93/zc-wg2r-1`, xong ~14:30 UTC 11/11): `kaggle kernels output` → dataset riêng →
-   sàng lọc → xác nhận → đổi mô hình nộp nếu đạt §4 (chi tiết `handoff/STATUS.md` §4).
-3. **Quota mới 14/11 00:00 UTC**: đợt lớn cuối (thêm nhánh WG1-style / seed, đánh giá nhiều seed của ứng viên tốt nhất); ý tưởng chưa
-   thử ở STATUS §4.3.
-4. **Chốt trước 15/11**: đường container với bản nộp cuối, `docker/README_SOLUTION.md`, `final_submission/`, báo user build và
-   nộp. Không đổi bản nộp sau khi user bắt đầu build trừ khi user đồng ý.
-5. Sau mỗi bước: cập nhật `handoff/STATUS.md`, commit + push.
+1. Phiên mới: xin user token Kaggle (`~/.kaggle/tok_<acc>`), cài `kaggle==2.2.5 xgrammar duckdb markdown xhtml2pdf`, tạo routine mỗi giờ
+   (lời nhắc trong `CLAUDE.md`, đổi sang kế hoạch 3); dựng lại cache theo `Process/README.md`.
+2. **v3a**: tải output `caotienminh1/zc-v3ap3-1` (kiểm `train_metrics.json`: 77 bước, `resumed_from` checkpoint-51) → đăng adapter
+   (`Process/tools/publish.sh <acc> <dir> zc-v3a-adapter`, layout `V3A/adapter/` + `info/`) → 4 đánh giá `automation/jobs/q3{a,l}{35,70}.jobs`
+   (`pub_full,pub_ho400c,tr_ho400c`) → so với P sạch.
+3. **A/B thẻ nội dung** (`automation/jobs/ab0{a,b}.jobs`, tập `lrl_ab0`) → `tests/lrl_accept.py ab` → `src/refs/lrl/induced.jsonl`.
+4. **14/11 00:00 UTC (quota mới)**: `Process/kaggle/plans/plan_w14.json` (v3b trên linhmai24, WR30 trên bichthuy93) + vòng học luật 1 với
+   v3a (ca sai trên `tr_dev_para_*` → `lrl_gen --mode induce` → quét + A/B) → SFT v4 (2 seed) → đánh giá Q / Q2 / P + thẻ.
+5. **Quyết định ~15/11 10:00 UTC** theo §5.4 (`docs/16`); hệ thắng → huấn luyện lại 30 DN nếu cần, đường container (cấu hình có `lrl`:
+   `predict_flow` tự biên dịch rulebook private), cập nhật `docker/README_SOLUTION.md`, `final_submission/`; báo user build Docker.
+6. Sau 16/11: H2 (`docs/16` §6).
 
 ## 6. Rủi ro cần nhớ
 
-- Nhiễu đánh giá lớn (public ±0.4 một lần chạy): không đổi bản nộp theo một seed.
-- Token và scratch mất khi đổi container; dữ liệu `data/raw`, `training/data/out` không nằm trong git (lấy lại theo §4).
-- Quota tuần này còn ít (nhiều acc < 6 h) đến 14/11; acc dùng chung dự án khác: chỉ đụng kernel `zc-*`.
-- Thời gian trên 2×RTX 5090 chưa đo trực tiếp (4×L4: ~22 phút / 1,000 câu, ngân sách luồng nộp 20,400 s).
+- Chỉ còn ~3 ngày: mỗi bước GPU phải song song nhiều acc; bản nộp P an toàn đã sẵn — không đổi khi chưa đạt §5.4.
+- FSDP có thể treo ngẫu nhiên (đã có `ddp_timeout=600`); kernel nhiều job phải dùng `run_kaggle.py` có khoá pip.
+- Thẻ luật sinh lúc suy luận phải tất định (temp 0); `tr_newterm` nhiễu, chỉ là chỉ báo.

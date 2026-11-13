@@ -1,4 +1,4 @@
-# PDF 2 — Engineering & Operations Lessons (DataMate, đến 11/11/2026)
+# PDF 2 — Engineering & Operations Lessons (DataMate, đến 13/11/2026)
 
 *Phạm vi: kinh nghiệm lập trình, cấu hình môi trường, quản lý Kaggle, tổ chức thử nghiệm, lỗi đã gặp và cách sửa,
 bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạng thái và việc tiếp theo ở PDF 3; cấu hình máy ở
@@ -154,3 +154,42 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 # nhận rule khi không mẫu đúng nào bị chạm trên mọi tập (dev + held-out, held-out chỉ xem tổng)
 ```
 (Mã đầy đủ: lịch sử phiên ở commit "Precheck len_mask also through list() / .tolist()" — `src/precheck.py::_len_of_mask`.)
+
+## 7. Bài học 12–13/11 (hướng thuần, kế hoạch 3)
+
+### 7.1 Huấn luyện dài qua nhiều acc (chuỗi checkpoint)
+
+- `training/full_job.py` + env `ZC_SESSION_S` / `ZC_SESSION_MARGIN`: dừng trước hạn có checkpoint (LoRA + optimizer + scheduler + RNG)
+  → **`automation/chain_next.py <runs> <part> <NAME> <next_acc> <next_part> <resume.jobs> --train-data D --remaining-h H`**: chép
+  `<NAME>/ckpt/checkpoint-N` + `info/` thành dataset ở acc kế, chờ file live, tính phiên theo quota (2.5 giờ quota / giờ tường), khởi chạy
+  phần sau với `--resume-from auto`. Đã chạy: QS10 (2 phần), v3a (3 phần). Phí ~15–20 phút mỗi lần nối (cài + nạp checkpoint).
+- Ước lượng token: **0.33 token / ký tự** cho bản ghi prompt full của Qwen3.5 (đo v3a: 16.7M token / 4918 bản ghi / 9834 ký tự); ước
+  0.243 (từ WG) sai 40 %. 4×L4 FSDP: 1.72k tok/s (≈ 2.2 phút / bước, batch 64).
+- **NCCL all-gather treo ở bước 0** (WR30 phần 1, một rank chậm, chờ mặc định 30 phút rồi huỷ): `sft.py` đặt `ddp_timeout=600`; chạy lại.
+  Cùng cài đặt khác vẫn chạy tốt → lỗi ngẫu nhiên; job dài nên đặt trên một acc đủ giờ khi có thể.
+
+### 7.2 Kernel nhiều job song song
+
+- Mỗi dòng job một GPU (`make_kernel.py`); **`pip install vllm` song song làm hỏng site-packages** (3 / 4 job chết) → `run_kaggle.py` khoá
+  `/tmp/.zc_pip.lock` + dấu `/tmp/.zc_vllm_installed`.
+- Sinh văn bản có think: **trần 2048 token không đủ** (199 / 199 câu quy nạp không kịp in JSON) → 6144 cho việc cần suy luận, tắt think cho
+  việc đơn giản (newterm: 10 / 940 → 502 / 940). Danh sách JSON dài bị cắt ở trần → đọc từng object hoàn chỉnh (`lrl_gen.json_objects`);
+  `first_json` phải lấy ngoặc ngoài cùng (trước đó lấy nhầm danh sách con).
+- Dataset private không dùng chéo acc: mỗi acc có bản `<acc>/zc-para` riêng (`kaggle datasets list --mine -s zc-para`).
+
+### 7.3 Dữ liệu và đo
+
+- Đo nhiều nguồn trong một split: rulebook **theo DN** (`<split>/rulebooks/<bid>.md`, `HybridPipeline.rulebook_for`) — trước đó `tr_ho` chạy
+  với rulebook public (thiếu 3 dòng train).
+- Sinh dữ liệu: dùng `zlib.crc32`, không `hash()` (ngẫu nhiên theo tiến trình); tăng cường câu **không được sửa từ nằm trong giá trị của
+  chương trình** (120 / 3096 câu phiên âm đã sửa nhầm tên hàng).
+- Khớp thẻ luật: trigger ngắn (1 từ < 6 ký tự) phải khớp **có dấu** ('hãng' ≠ 'hàng'); bỏ trigger xuất hiện > 2 % câu của chính lần chạy.
+- Ghi log mọi mẫu (`logs.jsonl`) cho phép: quét tín hiệu sạch cho luật mới, so lỗi theo phần chương trình (`Process/tools/cmp_pure_p.py`),
+  dựng ca quy nạp — đều không cần GPU.
+
+### 7.4 Quy trình
+
+- Bàn giao: `automation/archive_runs.py <scratch runs>` lưu phần chuyển giao được vào `Process/runs` (log / submission nén, metrics, thẻ);
+  adapter / checkpoint ở lại Kaggle (`Process/kaggle/kernels.csv`).
+- Watcher phải chạy bằng `run_in_background` (lệnh `&` trong shell không báo về); container khởi động lại → `automation/resume.py <runs>`
+  rồi watcher mới.

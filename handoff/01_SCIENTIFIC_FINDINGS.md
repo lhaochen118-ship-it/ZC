@@ -1,104 +1,75 @@
-# PDF 1 — Scientific Findings (DataMate, đến 11/11/2026)
+# PDF 1 — Scientific Findings (DataMate, đến 13/11/2026)
 
 *Phạm vi: đóng góp, ý nghĩa khoa học, kết quả tích cực và tiêu cực, bằng chứng, điều kiện kiểm chứng. Kinh nghiệm kỹ thuật /
-vận hành ở PDF 2; tiến độ, vị trí file và việc tiếp theo ở PDF 3. Số liệu: `EXPERIMENT_LOG.md` (kế hoạch 1),
-`Process/history/STATUS_full_until_2026-11-11.md` (từng vòng kế hoạch 2), `Process/scores.csv` (mọi lần chạy).*
+vận hành ở PDF 2; tiến độ, quyết định, vị trí file và việc tiếp theo ở PDF 3. Số liệu: `Process/scores.csv` (mọi lần chạy),
+`docs/12_PLAN2.md` (kế hoạch 2), `docs/14_PURE_MODEL_PLAN.md` (mô hình thuần), `docs/15_AUDIT.md` (kiểm tra 13/11),
+`docs/16_PLAN3_LEARNED_RULES.md` §9 (kế hoạch 3), `EXPERIMENT_LOG.md` (kế hoạch 1).*
 
 ## 1. Bài toán và thước đo
 
-- Hỏi đáp tiếng Việt trên dữ liệu bảng bẩn (CSV / Excel / SQLite), mỗi DN một cấu trúc, rulebook nghiệp vụ.
-  **PA = (đúng − sai) / N**, bỏ trả lời = 0. Train 30 DN / 3,000 câu; public 14 DN / 1,000 câu; private: DN và cách hỏi mới.
-- Thước đo quyết định (giữ suốt kế hoạch 2): **public gốc** (dev, được phân tích lỗi) và **held-out** — `pub_ho` (1,373
-  paraphrase câu public, k = 1, 2), `tr_ho` (1,826 câu của 6 DN train giữ ngoài huấn luyện); gộp = trung bình theo số câu.
-  Nhiễu một lần chạy: public ±0.4, held-out gộp ±0.3 → mọi quyết định dùng ≥ 2 seed.
-- Quy tắc giữ / bỏ (`docs/12_PLAN2.md` §4): giữ khi public tăng ≥ 0.3 (một lần hoặc trung bình) và held-out gộp không giảm > 0.3;
-  sửa lỗi hiển nhiên được giữ nếu không kém đi; cải tiến tăng public mà giảm held-out → loại.
+- Hỏi đáp tiếng Việt trên dữ liệu bảng bẩn (CSV / Excel / SQLite), mỗi DN một cấu trúc, rulebook nghiệp vụ. **PA = (đúng − sai) / N**,
+  bỏ trả lời = 0. Train 30 DN / 3000 câu; public 14 DN / 1000 câu (không trùng DN với train); private: có **loại DN mới**.
+- Huấn luyện trên 24 DN train; 6 DN giữ ngoài (`tr_ho`, 631 câu + 1195 paraphrase); `pub_ho` = 1373 paraphrase câu public.
+- **Tập đo sạch (13/11):** Qwen tự chấm tương đương câu gốc ↔ paraphrase (2 prompt, không ai xem từng câu) → `pub_ho_clean` 1171 / 1373,
+  `tr_ho_clean` 1711; tập con `pub_ho400c` (348), `tr_ho400c` (375). **~10 điểm của `pub_ho` cũ là nhãn sai** (paraphrase đổi nghĩa).
+- Nhiễu một lần chạy: public ±0.4, held-out ±0.3 → quyết định cần ≥ 2 seed. Giữ / bỏ: `docs/12_PLAN2.md` §4.
 
-## 2. Kiến trúc cuối: hybrid framework (Agent sinh code + luật hỗ trợ)
+## 2. Hệ đang nộp: hybrid P (luật tổng quát hỗ trợ, mô hình viết mọi chương trình)
 
-Mọi câu: gợi ý tổng quát (kỳ, thực thể, kiểu đáp án, từ rulebook, câu đã làm sạch) + ví dụ truy hồi → **mô hình viết chương
-trình** trên toolkit nghiệp vụ đã kiểm (`dm`, `industry`) → kiểm tra trước khi chạy (precheck: lỗi → lượt sửa) → chạy sandbox →
-cờ sau khi chạy → vòng 2 (thêm mẫu, nửa "think") → **bỏ phiếu**, bỏ trả lời khi phiếu < 0.5. Không luật nào tự viết đáp án.
-
-| Mốc | Public gốc | Held-out gộp |
+| Mốc | Public | Held-out |
 |---|---|---|
-| Kế hoạch 1, M0 (súp WF1–4 × 0.35, không luật P2) | 0.934 (tb 5 lần) | 0.752 |
-| Hướng R vòng 8 (+ luật tổng quát P2, súp cũ) | 0.9815 | 0.761 |
-| Bản nộp 11/11: O + WG1 × 0.35 | **0.9855** (container 0.986) | **0.778** |
+| Kế hoạch 1, M0 (súp WF1–4 × 0.35) | 0.934 | gộp 0.752 |
+| O + WG1 × 0.35 (11/11) | 0.9855 | gộp 0.778 |
+| **P + WG1 × 0.35 (12/11)** = O + 3 kiểm tra tín hiệu sạch (`count_check`, `size_use_check`, `ticket_avg_check`) | **0.993 / 0.994 / 0.993** (3 seed; container 0.994) | gộp 0.7748; **sạch: `pub_ho400c` 0.698, `tr_ho400c` 0.923** |
 
 ## 3. Kết quả tích cực
 
-### 3.1 Hướng R — luật tổng quát làm ngữ cảnh / kiểm tra (16 vòng, 0.934 → 0.9815 với cùng mô hình)
-
-- **Sửa gợi ý / làm sạch câu là đòn bẩy lớn nhất** (vòng 1: +3.1 public): lỗi "máy / mấy" ở 27 câu, từ rulebook khớp có dấu, mẫu
-  "N ngày tới", "the" → thế / thẻ khi câu không dấu, khôi phục dấu từng từ có bigram hỗ trợ.
-- **Trần token 512 → 1536** (10.7 % mẫu bị cắt ở 512): +0.2 public, held-out không giảm (với luồng R).
-- **Kiểm tra lỗi có "tín hiệu sạch"** (chỉ chạm mẫu sai trên mọi log): `size` (54 + 114 mẫu, 0 đúng), `unit` (71 + 104), `len_mask`
-  (`len()` của mặt nạ True / False; 69 mẫu cuối trên 20 lần chạy, 0 đúng). Áp dụng như lỗi → lượt sửa. Phương pháp chọn kiểm tra này
-  (đo trên log có sẵn, chỉ nhận khi không chạm mẫu đúng) là đóng góp có thể tái dùng.
-- Cờ cảnh báo (period, named-periods, threshold) giảm trọng số phiếu thay vì chặn: +0.2–0.5.
-
-### 3.2 Hướng M — cải tiến phía mô hình (không thêm luật; từ M0 = 0.934 / 0.752)
-
-| Gói | Ý tưởng | Kết quả | Quyết định |
-|---|---|---|---|
-| **M7** | mỗi thành viên súp chạy như bộ sinh riêng | WF3 (D1 + mẫu D2) × 0.35: **0.951 / 0.759**; WF1 / WF2 (chỉ D1): 0.924 / 0.931 | **thành viên có paraphrase > súp 4 thành viên** |
-| M6 | bộ chọn đáp án học được (logistic, 13 đặc trưng tỉ lệ bất biến số mẫu; train trên log câu train / paraphrase / D3) | M0: public 0.934 → **0.944**, held-out 0.752 → **0.767** | giữ cho M; trên luồng R: public −0.1…−0.8 → không dùng |
-| M2 | RFT / STaR: SFT trên chương trình đúng của chính mô hình (710 câu khó + câu dễ), LoRA **học trên** súp | M0: 0.939 / 0.768 (+0.5 / +1.6); trên WF3 + R: +0.05 / +0.3; trên WG1: −0.6 public | giúp mô hình yếu, không giúp mô hình đã mạnh |
-| M4 | DPO theo phản hồi thực thi (871 cặp đúng / sai của chính súp) | 0.935 / 0.749 | loại (khớp cặp, margin 9.2, không tổng quát) |
-| — | trần 1536 trên luồng M0 | public +0.55, held-out −1.0 | loại (khác hướng R) |
-
-### 3.3 Mô hình nộp: dữ liệu paraphrase là đòn bẩy (vòng 10–16, cùng luồng R)
-
-| Mô hình × 0.35 (luồng J / O) | Public tb | Held-out gộp tb | Seed |
-|---|---|---|---|
-| súp WF1–4 (cũ) | 0.9815 | 0.761 | 2 |
-| WF3 (D1 + 2,119 paraphrase) | 0.979 | 0.773 | 3 |
-| WF3 + RFT trên WF3 | 0.9805 | 0.776 | 2 |
-| súp WF3 + WF4 | 0.977 | 0.769 | 3 |
-| **WG1 (D1 + 3,818 paraphrase)** | **0.985** (J), **0.9855** (O) | 0.776 / 0.778 | 3 / 2 |
-| WG2 (D1 + D2 + D2N) | 0.979 | **0.782** | 1 |
-| WG3 (= WG1, seed khác) | 0.983 | 0.768 | 1 |
-| WG1 × 0.40 | 0.986 | 0.780 | 2 |
-| WG1 × 0.40 + k 12 | 0.9825 | 0.784 | 2 |
-
-Kết luận: (1) nhiều paraphrase hơn → tổng quát tốt hơn ở cả public lẫn held-out; (2) **súp không hơn thành viên tốt nhất** (4 lần
-thử); (3) chất lượng phụ thuộc seed huấn luyện (WG1 vs WG3: 0.8 điểm public cùng dữ liệu); (4) α 0.35–0.40 ổn định; (5) trộn câu
-RFT vào SFT từ mô hình gốc (WG4) làm held-out giảm (0.754), RFT chỉ có ích khi học chồng lên mô hình đã fine-tune và còn yếu.
+1. **Luật tổng quát làm ngữ cảnh + kiểm tra** (hướng R, 17 vòng): 0.934 → 0.993 public với cùng loại mô hình. Đòn bẩy lớn nhất là
+   gợi ý / làm sạch câu và kiểm tra lỗi được chọn bằng **"tín hiệu sạch"** (chỉ nhận kiểm tra không chạm mẫu đúng nào trên mọi log).
+2. **Dữ liệu paraphrase > kỹ thuật huấn luyện phức tạp:** WG1 (D1 + 3818 paraphrase) hơn súp, RFT, DPO. D2b (paraphrase kiểu câu mới,
+   WG11) nâng held-out (0.784, cao nhất) nhưng public 0.987 < WG1.
+3. **Mô hình thuần (không luật lúc suy luận, chỉ đọc dữ liệu + toolkit; `docs/14`)**: Q0 0.841 → tốt nhất **QS7 0.905** public
+   (tự gợi ý + câu nhiễu); câu nhiễu (D2N) giúp cả public lẫn held-out; "tự gợi ý" (nhãn bắt đầu bằng gợi ý luật đọc từ câu) +1.8–2.2.
+4. **Chuỗi checkpoint qua acc hoạt động** (QS10 26M token: 59 bước acc A → 60 bước acc B; v3a: 22 → 51 → 77) — huấn luyện dài không
+   bị giới hạn bởi quota một acc.
+5. **Học luật tự động (kế hoạch 3, vòng 0):** Qwen tự đề xuất 178 luật từ 598 ca sai trên câu train; quét tín hiệu sạch nhận **4 luật
+   kiểm tra** (bắt 39 / 21 / 9 / 4 mẫu sai, 0 mẫu đúng) — cùng tiêu chí đã dùng tay ở vòng 17, nay tái lập được không cần Claude.
+   Biên dịch rulebook thành thẻ luật (111 thẻ public, 79 train) khớp đúng thuật ngữ mới (vd "Khách sộp nhất" → `by="aov"`, ≥ 3 đơn).
 
 ## 4. Kết quả tiêu cực và hạn chế
 
-1. **Chưa đạt điều kiện dừng 100 %**: còn 3 câu sai ổn định (chọn sai hàm: bỉm size M theo bịch, bình quân trên phiếu thu, nhập về
-   N viên) + ~10 câu phiếu tách đổi theo seed → public trần thực tế ~0.985–0.99 với hệ hiện tại.
-2. **Held-out paraphrase public còn thấp (0.64)**: một phần là paraphrase đổi nghĩa (đổi kỳ / đại lượng) nên số này dưới-ước lượng;
-   tr_ho (DN chưa thấy, câu gốc) 0.88 là ước lượng gần private nhất.
-3. **Bộ chọn học được không chuyển được** giữa luồng / mô hình (trên luồng R public giảm mọi lần) → cần train lại trên log của đúng
-   cấu hình, và cần log câu train ngoài mẫu (D3) để không bỏ trả lời quá tay.
-4. **Sàng lọc trên tập con 400 câu nhiễu ±0.6**: ×0.40 và k12 hơn +1.2 trên tập con nhưng chỉ +0.2 / +0.6 trên đủ tập → tập con
-   chỉ dùng để loại.
-5. Điểm 1.000 của đường luật kế hoạch 1 là trong mẫu (paraphrase chỉ 0.51–0.67) → lý do chuyển sang hybrid.
-
-### Đã thử và không giữ (kế hoạch 2)
-
-prefill `<plan>` (0.898), θ 0.375 (public +, pub_ho −), review 3 / k 12 (trung tính, chậm hơn), cờ raw-pandas / base-unit / hàm nhập
-(không sạch), DPO, RFT trên WG1, súp WF3 + WF4 / WG1 + WG3 / WG1 + WG2, WG1 × 0.30, bộ chọn trên luồng R.
+1. **Số đo của P lạc quan** (`docs/15` §4.2): luật viết tay được chỉnh theo lỗi public (dùng đáp án public) và viết trước khi tách 6 DN
+   held-out → public 0.994 / held-out của P không ước lượng được private (có ngành mới).
+2. **Mô hình thuần bão hoà ~0.89–0.905 public**: vòng 2 (RFT QS9, 26M token QS10: 0.889 / 0.896) không hơn vòng 1. Khoảng cách tới P
+   nằm ở câu kiểu public (sạch: QS10 0.606 vs P 0.687 trên `pub_ho400c`; câu train ≈ ngang: 0.909 vs 0.92).
+3. **Lệch phong cách train ↔ test**: kỳ viết tắt "T4/2025", "Th12/25" ở 25.9 % câu public, **0 %** câu train; QS7 PA 0.845 trên nhóm
+   này vs 0.934 phần còn lại (P 0.997 vì `qparse` viết cho đúng kiểu này). Lỗi thuần còn lại theo phần chương trình khác P (QS10, 48 sai):
+   kỳ 24, thực thể / tham số 32, hàm 17.
+4. Prompt của mô hình thuần **không chứa định nghĩa rulebook public** (chỉ dòng mới so với train + public) → thuật ngữ như "khách sộp"
+   chỉ đến được qua gợi ý luật (P) hoặc thẻ biên dịch (kế hoạch 3).
+5. Mô hình nộp chỉ học 70.6 % câu train (bỏ 6 DN held-out và 250 câu không có chương trình đã kiểm); nhãn đến từ 55 mẫu luật → học
+   sinh bắt chước độ phủ của luật (loss 0.03, phải trộn × 0.35).
+6. Học luật tự động: 171 / 175 luật quy nạp bị loại (độ chính xác 0.09–0.17: điều kiện quá rộng); thuật ngữ mới do mô hình sinh nhiều
+   khi không mới hoặc định nghĩa lệch chương trình → `tr_newterm` chỉ là chỉ báo thô.
+7. WG5–8 (seed, r 64, lr 1e-4), WG9–12 (dữ liệu khác) không hơn WG1 ở public.
 
 ## 5. Ý nghĩa khoa học
 
-- Với mô hình ≤ 10B, **ngữ nghĩa trong code kiểm chứng + LLM viết chương trình ngắn** đạt 0.986 public / 0.88 trên DN chưa thấy;
-  luật không trả lời thẳng mà nâng chất lượng ngữ cảnh (gợi ý, làm sạch) và kiểm tra lỗi → +5 điểm.
-- **Đa dạng cách hỏi trong dữ liệu fine-tune** (paraphrase do chính mô hình viết, kiểm giữ kỳ) quan trọng hơn kỹ thuật huấn luyện
-  phức tạp (DPO, RFT, súp) cho tổng quát hoá cách hỏi mới.
-- **Chọn kiểm tra bằng "tín hiệu sạch" trên log** cho phép thêm luật tổng quát mà không làm hại held-out.
-- Đánh giá có nhiễu lớn giữa các lần chạy (±0.4 public) → mọi kết luận cần ≥ 2 seed và thước đo held-out cố định.
+- Với mô hình ≤ 10B, **ngữ nghĩa trong toolkit đã kiểm + LLM viết chương trình ngắn** đạt 0.99 public; phần còn thiếu của mô hình thuần
+  là **hiểu cách nói của người dùng thật** (kỳ viết tắt, lóng, thuật ngữ rulebook), không phải tính toán.
+- **Thước đo held-out phải được làm sạch** trước khi so hệ (10 điểm nhiễu nhãn có thể đảo kết luận); một bộ chấm tương đương do chính
+  mô hình làm là đủ và không cần người.
+- **Luật có thể do mô hình học**: cùng quy trình "đề xuất → thống kê trên log → nhận khi chỉ chạm mẫu sai" thay được người viết luật;
+  biên dịch rulebook lúc suy luận mang định nghĩa của ngành mới vào prompt mà không cần đáp án.
 
 ## 6. Điều kiện kiểm chứng
 
 | Kết luận | Cách kiểm |
 |---|---|
-| Điểm mọi lần chạy | `Process/scores.csv` (tính lại: script ở PDF 2 §4 hoặc `tests/pool_gens.py <log dirs>`) |
-| Bản nộp O + WG1 | `Process/runs/p2r15o*`, `p2r16pred` (logs + submission nén); chấm `python3 src/score.py data/raw/public_gt.jsonl <submission>` |
-| Phát lại bỏ phiếu / bộ chọn không GPU | `python3 tests/pool_gens.py <run>[,<run>] --selector src/refs/selector/selector_m0_inv.json` |
-| Tín hiệu sạch của một kiểm tra | quét log `Process/runs/*` như PDF 2 §4 (đếm mẫu bị chạm theo đúng / sai) |
-| Huấn luyện lại WG1 | `automation/jobs/wg.jobs` (dữ liệu `Process/train_data/wg/*.gz`), ~5 h trên 4×L4 |
-| Toàn bộ test CPU | `bash tests/run_all.sh` → `ALL PASS` |
+| Điểm mọi lần chạy | `Process/scores.csv`; tính lại: `python3 Process/tools/score_sets.py <run dir>` |
+| P trên tập sạch | `Process/runs/p3pbase/` (submission nén) + `tests/splits/{pub,tr}_ho400c.txt` |
+| Tập sạch | `Process/runs/pj/PJ/judge.jsonl.gz`, `tests/splits/*_clean.txt` |
+| Lỗi thuần so với P | `python3 Process/tools/cmp_pure_p.py <logs thuần> <logs P>`; `period_share.py` |
+| Luật quy nạp / quét | `Process/runs/lrl0d/LRL0/induce*/`, `python3 tests/lrl_accept.py scan …` (`training/data/out/lrl0/scan_report.json` dựng lại được) |
+| Rò rỉ / phủ dữ liệu | `docs/15_AUDIT.md` §7 |
+| Test CPU | `bash tests/run_all.sh` → `ALL PASS` |

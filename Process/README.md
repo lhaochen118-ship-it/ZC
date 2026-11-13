@@ -6,16 +6,17 @@ Khung chat mới chạy trong container mới: scratch (log lần chạy, cache,
 | Đường dẫn | Nội dung | Dùng khi |
 |---|---|---|
 | `scores.csv` | điểm (PA theo đáp án cuối) của **188 lần chạy** trên mọi tập: pub_full, pub_ho, tr_ho, pub_ho400, tr_ho400, tr_dev_all, tr_dev_para, d3sel, pub_k0 + held-out gộp | so ứng viên mới với mốc cũ mà không tải lại gì |
-| `runs/<run>/<result>/` | `logs.jsonl.gz` (mọi mẫu: chương trình, đáp án, cờ, phiếu), `submission.jsonl.gz`, `result.json`; `arms.json` / `train_metrics.json` của lần huấn luyện | phát lại phiếu / bộ chọn (`tests/pool_gens.py`), quét tín hiệu sạch cho kiểm tra mới, liệt kê câu sai (`tests/list_wrong.py`), dữ liệu RFT / DPO |
+| `runs/<run>/<result>/` (lưu bằng `automation/archive_runs.py`; 13/11: thêm QS*, q1s*, rq5_*, sc3wg*, wg9–12f, LRL0 (thẻ + output thô), pj (bộ chấm tương đương), p3pbase, v3a) | `logs.jsonl.gz` (mọi mẫu: chương trình, đáp án, cờ, phiếu), `submission.jsonl.gz`, `result.json`; `arms.json` / `train_metrics.json` của lần huấn luyện | phát lại phiếu / bộ chọn (`tests/pool_gens.py`), quét tín hiệu sạch cho kiểm tra mới, liệt kê câu sai (`tests/list_wrong.py`), dữ liệu RFT / DPO |
 | `train_data/wg/` | dữ liệu huấn luyện kiểu WG: `d1_full` (2,119 câu train → chương trình đã kiểm), `d2_full` (3,818 paraphrase), `d2n_full` (5,419 câu nhiễu), `rft_hard` (710 mẫu đúng của câu khó) — prompt full | huấn luyện nhánh mới (`automation/jobs/wg.jobs`, `wg2r.jobs`: `--train-data wg`) |
 | `train_data/p3/` | kế hoạch 3 (13/11): `v3a_mix` (SFT v3a thuần: D1 + RFT + phong cách kỳ / ViLexNorm, nhãn `<spec>`), `v3b_mix` (+ thẻ luật trong prompt, DR, phiên âm), `d1_all` / `d2_all` (30 DN, WR30), đầu vào sinh thẻ (`cases`, `alias_values`, `newterm_in`), thẻ quy nạp ứng viên | `training/data/build_v3b.sh`, `docs/16_PLAN3_LEARNED_RULES.md` |
 | `train_data/m2/`, `m4/`, `w7f_*` | RFT (m2a–d), cặp DPO (871), dữ liệu WF1–4 | tái lập M2 / M4 / WF |
 | `kaggle/kernels.csv` | lần chạy → kernel id (`<acc>/zc-<slug>`) → trạng thái | tải lại output: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_<acc>) kaggle kernels output <acc>/<slug> -p <dir>` |
 | `kaggle/plans/*.json` | plan `launch_many.py` đã dùng (acc, job, est_h, datasets) | mẫu khởi chạy lần sau |
 | `kaggle/datasets_by_account.txt` | dataset `zc-*` trên từng acc (zc-para, zc-final-adapter, zc-wg-adapters …) | chọn acc có sẵn dữ liệu / adapter |
-| `kaggle/quota_2026-11-11.txt` | quota lúc bàn giao (làm mới 14/11 00:00 UTC) | lập kế hoạch (số thật: `python3 automation/quota.py`) |
+| `kaggle/quota_2026-11-13.txt` (cũ: `_11-11`) | quota lúc bàn giao 13/11 (làm mới 14/11 00:00 UTC) | lập kế hoạch (số thật: `python3 automation/quota.py`) |
+| `tools/` | công cụ phân tích của phiên (sửa `$S` = scratch): `score_sets.py` (PA theo tập), `cmp_pure_p.py` (lỗi thuần so với P theo kỳ / thực thể / hàm), `period_share.py`, quét tín hiệu sạch `scan_*.py`, `publish.sh` (đăng dataset có `info/`) | phân tích lỗi, đăng adapter / checkpoint |
 | `m0_worktree/` | code M0 đóng băng = commit trong `BASE_COMMIT.txt` + `tracked.patch` + `untracked.tgz` | chạy tiếp hướng M (cần đúng code M0) |
-| `history/STATUS_full_until_2026-11-11.md` | bảng tiến độ đầy đủ WP + 16 vòng R + hướng M (số từng lần chạy, kernel, quyết định) | tra lịch sử; trạng thái sống ở `handoff/STATUS.md` |
+| `history/STATUS_full_until_2026-11-13.md`, `…-11-11.md` | bảng tiến độ đầy đủ WP + 16 vòng R + hướng M (số từng lần chạy, kernel, quyết định) | tra lịch sử; trạng thái sống ở `handoff/STATUS.md` |
 
 ## Khôi phục nhanh
 

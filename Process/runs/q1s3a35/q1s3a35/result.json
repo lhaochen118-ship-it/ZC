@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "QS3": "/kaggle/input/notebooks/caotienminh1/zc-qs3-1/results/QS3/adapter"
+ },
+ "weights": [
+  0.35
+ ],
+ "merge_rc": 0,
+ "merge_s": 116,
+ "eval_rc": 0,
+ "eval_s": 1895
+}

@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "WG7": "/kaggle/input/datasets/huuhien95/zc-wg78-adapters/WG7/adapter"
+ },
+ "weights": [
+  0.35
+ ],
+ "merge_rc": 0,
+ "merge_s": 799,
+ "eval_rc": 0,
+ "eval_s": 1758
+}

@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "QS5": "/kaggle/input/notebooks/hai1108/zc-qs5-1/results/QS5/adapter"
+ },
+ "weights": [
+  0.35
+ ],
+ "merge_rc": 0,
+ "merge_s": 118,
+ "eval_rc": 0,
+ "eval_s": 2020
+}

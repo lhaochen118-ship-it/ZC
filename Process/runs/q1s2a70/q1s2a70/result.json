@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "QS2": "/kaggle/input/datasets/namhunhh/zc-qs2-adapter/QS2/adapter"
+ },
+ "weights": [
+  0.7
+ ],
+ "merge_rc": 0,
+ "merge_s": 576,
+ "eval_rc": 0,
+ "eval_s": 2516
+}

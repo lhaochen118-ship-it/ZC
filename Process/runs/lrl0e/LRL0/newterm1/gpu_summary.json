@@ -1,0 +1,31 @@
+{
+ "gpu0": {
+  "mean_util": 42.3,
+  "busy_share": 0.429,
+  "peak_mem_gb": 20.3,
+  "total_gb": 22.5,
+  "samples": 91
+ },
+ "gpu1": {
+  "mean_util": 40.0,
+  "busy_share": 0.396,
+  "peak_mem_gb": 20.6,
+  "total_gb": 22.5,
+  "samples": 91
+ },
+ "gpu2": {
+  "mean_util": 0.0,
+  "busy_share": 0.0,
+  "peak_mem_gb": 0.0,
+  "total_gb": 22.5,
+  "samples": 91
+ },
+ "gpu3": {
+  "mean_util": 0.0,
+  "busy_share": 0.0,
+  "peak_mem_gb": 0.0,
+  "total_gb": 22.5,
+  "samples": 91
+ },
+ "wall_s": 454
+}

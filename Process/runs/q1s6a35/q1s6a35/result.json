@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "QS6": "/kaggle/input/notebooks/nguyenmanh0404/zc-qs6-1/results/QS6/adapter"
+ },
+ "weights": [
+  0.35
+ ],
+ "merge_rc": 0,
+ "merge_s": 153,
+ "eval_rc": 0,
+ "eval_s": 1786
+}

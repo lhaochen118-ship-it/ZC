@@ -1,0 +1,4 @@
+run_kaggle.py train OUT/LRL1/induce0 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode induce --cases training/data/out/lrl1/cases.jsonl --shard 0/4
+run_kaggle.py train OUT/LRL1/induce1 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode induce --cases training/data/out/lrl1/cases.jsonl --shard 1/4
+run_kaggle.py train OUT/LRL1/induce2 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode induce --cases training/data/out/lrl1/cases.jsonl --shard 2/4
+run_kaggle.py train OUT/LRL1/induce3 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode induce --cases training/data/out/lrl1/cases.jsonl --shard 3/4

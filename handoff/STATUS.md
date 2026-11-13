@@ -22,14 +22,27 @@ chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 
 | Held-out | gộp 0.7748; **sạch (đo 13/11, rulebook theo DN): `pub_ho400c` 0.6983, `tr_ho400c` 0.9227** — mốc so sánh kế hoạch 3 |
 | Docker | `docker/` sẵn sàng; user build 15/11; hạn nộp **16/11 23:59 GMT+7** |
 
-## 2. Kernel đang chạy (13/11 13:20 UTC; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`)
+## 2. Kernel đang chạy (13/11 15:20 UTC; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`)
 
 | Kernel | Việc | Sau khi xong |
 |---|---|---|
-| 12 kernel `plan_v3aeval_run.json` (13:05 UTC; `zc-v3a-adapter` đăng lên linhmai24, yuan1103, thnliu, dinhthinh, huuhien95, nguyenmanh0404, bichthuy93, duckzuykobip) | v3a phần 4 **xong** (`anderson1202/zc-v3ap4-1`, 77 / 77 bước, 16.7M token, 9.3k tok/s; reference-loss OOM bỏ qua). Đánh giá: Q / Q2 × α 0.35 / 0.70 × `pub_full` / held-out; A/B `ab0a/b`; ca học luật vòng 1 `c1a/c1b` | chấm `Process/tools/score_sets.py` → `Process/scores.csv`, `docs/16` §9; A/B → `tests/lrl_accept.py ab` |
-| `phuongnehe/zc-v3b-1` | SFT v3b trọn một phiên (19.5M token, ~3.6–4 h; dời từ đợt 00:00 lên ngay vì phuongnehe còn 13.9 h) | đăng adapter → đánh giá Q / Q2 như v3a |
-| `anderson1202/zc-wr30p2-1` | WR30 (P refit 30 DN) **phần 2** từ checkpoint-29 / 117 (phần 1 `synchan5704/zc-wr30p1-1` xong 13:19: 29 bước, 1.7k tok/s, 26.2M token, loss 0.026 → 0.016); phiên ~1.8 h (dataset `anderson1202/zc-wr30p2-ck`) | phần 3 (còn ~48 bước ≈ 1.8 h) ở đợt quota 14/11 00:00: `chain_next.py <S>/runs wr30p2 WR30 <acc> wr30p3 automation/jobs/wr30r.jobs --train-data all30` → đánh giá như P (public ≥ 0.993 thì là ứng viên nộp) |
-| `hieuho669/zc-p3pb2-1` | mốc P (WG1 × 0.35, `flow_final`) trên `pub_noind,tr_newterm` — **xong, đã chấm**: `pub_noind` 0.9732 (110 / 1 / 1 trên 112), `tr_newterm` 0.9074 (51 / 2 / 1 trên 54) | dùng cho held-out gộp §5.4. **Mốc P held-out gộp 4 tập (pub_ho400c 348 + tr_ho400c 375 + pub_noind 112 + tr_newterm 54, theo số câu) = 0.8403**; chấm hệ mới: `python3 Process/tools/score_p3.py <tên> <submission các shard>` → `Process/scores_p3.csv` |
+| `phuongnehe/zc-v3b-1` | SFT v3b trọn một phiên (19.5M token; bắt đầu ~12:00) | đăng `zc-v3b-adapter` (`automation/publish_many.py`) → đánh giá Q / Q2 như v3a (job `q3*` đổi `V3A` → `V3B`) |
+| `phuongnehe/zc-wr30p3-1` | WR30 phần 3 từ checkpoint-55 / 117 (phần 2 `anderson1202/zc-wr30p2-1`: 55 bước, 3.1k tok/s, loss 0.0068); phiên ~3.2 h | nếu chưa đủ 117 bước: phần 4 ở đợt 00:00 (`chain_next.py <S>/runs wr30p3 WR30 <acc> wr30p4 automation/jobs/wr30r.jobs --train-data all30`); xong → đánh giá như P (`flow_final`, WR30 × 0.35, `pub_full` + `pub_ho400c,pub_noind`) |
+| `yuan1103/zc-plrlpf-1`, `linhmai24/zc-plrlho-1` | **P + LRL** (`configs/p3_plrl.json` = `flow_final` + lớp luật; WG1 × 0.35) trên `pub_full` / held-out 4 tập | `python3 Process/tools/score_p3.py plrl <2 output>`; so P (0.994 / 0.8403) |
+| `duylnng/zc-lrl1i-1` | quy nạp thẻ vòng 1 (480 ca sai / bỏ của Q2 v3a × 0.70 trên `tr_dev_para_a/b`, 4 shard) | `tests/lrl_accept.py scan` (thẻ check) trên log `c1a/c1b` + log cũ; thẻ nội dung: lọc chặt rồi A/B |
+
+**Kết quả đánh giá v3a (13/11, `Process/scores_p3.csv`)** — held-out gộp = PA theo số câu trên `pub_ho400c` (348) + `tr_ho400c` (375) + `pub_noind` (112) + `tr_newterm` (54):
+
+| Hệ | pub_full | pub_ho400c | tr_ho400c | pub_noind | tr_newterm | held-out gộp |
+|---|---|---|---|---|---|---|
+| **P + WG1 × 0.35 (bản nộp)** | **0.994** | **0.6983** | **0.9227** | **0.9732** | **0.9074** | **0.8403** |
+| Q v3a × 0.35 | 0.891 | 0.6092 | 0.8720 | 0.8661 | 0.8519 | 0.7672 |
+| Q v3a × 0.70 | 0.909 | 0.5891 | 0.9173 | 0.8214 | 0.8704 | 0.7739 |
+| Q2 v3a × 0.35 | 0.922 | 0.5862 | 0.8747 | 0.8750 | 0.8519 | 0.7604 |
+| Q2 v3a × 0.70 | 0.928 | 0.6092 | 0.9040 | 0.8304 | 0.8519 | 0.7762 |
+
+Lớp luật (Q2) cộng ~+2–3 điểm public, ~0 held-out; hệ thuần còn kém P ~7 điểm public, ~6.5 điểm held-out → chưa đạt quy tắc §5.4.
+A/B thẻ nội dung vòng 0: không thẻ 0.864, có thẻ 0.854 → nhận 1 thẻ (`docs/16` §9). Ca vòng 1 (`c1a`): PA 0.815 trên `tr_dev_para_a`.
 
 ## 3c. Tiến độ P3 (kế hoạch 3, `docs/16_PLAN3_LEARNED_RULES.md`, user duyệt 13/11)
 
@@ -41,7 +54,9 @@ chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 
 | WP3-03 SFT v3a | **xong 13/11 12:39**: 16.7M token, 77 / 77 bước; chuỗi 4 phần bichthuy93 → duckzuykobip → caotienminh1 → `anderson1202/zc-v3ap4-1`; adapter → `<acc>/zc-v3a-adapter` (8 acc); đánh giá `plan_v3aeval_run.json` đang chạy (§2) |
 | WP3-04 P refit 30 DN (WR30) | phần 1 `duckzuykobip/zc-wr30p1-1` **hỏng**: NCCL all-gather treo ở bước 0 (rank 2 chậm, chờ 30 phút) — thêm `ddp_timeout=600`; **dời sang đợt 14/11 00:00** (một acc, ~3.4 h, không cần chuỗi); mốc P trên tập sạch với đo đã sửa: `p3pbase` (hieuho669) |
 | v3b (dữ liệu) | **xong**: `training/data/out/v3bm/v3b_mix.jsonl` 5569 bản ghi ≈ 19.5M token (v3a + thẻ trong prompt + 250 DR + 400 phiên âm); huấn luyện ở đợt 00:00 (`plan_w14.json`) |
-| WP3-05 … 10 | chờ (STATUS §4) |
+| WP3-05 đánh giá v3a | **xong** (bảng §2): Q2 v3a × 0.70 tốt nhất trong hệ thuần (public 0.928, held-out 0.776) — kém P; v3b chờ adapter |
+| WP3-06 vòng học luật | vòng 0 A/B xong (1 thẻ nhận); vòng 1: quy nạp đang chạy (`lrl1i`) |
+| WP3-07 … 10 | chờ (§4) |
 
 ## 4. Việc tiếp theo (theo thứ tự)
 

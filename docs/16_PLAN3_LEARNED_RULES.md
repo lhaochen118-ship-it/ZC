@@ -230,3 +230,18 @@ Giờ UTC (GMT+7 = UTC + 7). "acc" = acc Kaggle, mỗi nhánh huấn luyện m�
 | SemEval-2025 Task 8 (DataBench, QA trên bảng) — AILS-NTUA và các đội đầu | LLM sinh code pandas + sửa lỗi là hướng thắng | [arXiv 2506.09657](https://arxiv.org/abs/2506.09657) |
 
 Công cụ: TRL (`GRPOTrainer`, `DPOTrainer`), verl (RL quy mô lớn), DSPy (tối ưu prompt / chương trình LM), vLLM (multi-LoRA).
+
+## 9. Nhật ký triển khai (13/11)
+
+**Đo sạch (WP3-00, `src/para_judge.py`, `namhunhh/zc-pj-1`):** Qwen tự chấm tương đương (2 prompt độc lập, không ai xem từng câu) giữ
+1171 / 1373 paraphrase public (`pub_ho_clean`) và 1080 / 1195 paraphrase train (`tr_ho_clean` = 631 câu gốc + 1080); tập con
+`pub_ho400c` (348), `tr_ho400c` (375). Mốc trên tập sạch:
+
+| Hệ | pub_ho → pub_ho_clean | pub_ho400 → 400c | tr_ho400 → 400c |
+|---|---|---|---|
+| P + WG1 (seed 0 / 1) | 0.6286 → **0.7267** / 0.6329 → 0.7284 | 0.6225 → 0.6868 / 0.6125 → 0.681 | 0.8775 → 0.92 / 0.8575 → 0.8987 |
+| QS7 × 0.35 (thuần) | — | 0.495 → 0.569 | 0.8175 → 0.864 |
+| QS10 × 0.70 (thuần) | — | 0.525 → 0.6063 | 0.8625 → 0.9093 |
+| QS6 × 0.70 (thuần) | — | 0.5475 → 0.5805 | 0.8775 → 0.912 |
+
+~10 điểm của `pub_ho` cũ là nhãn nhiễu; khoảng cách thật thuần ↔ P ở câu kiểu public ≈ 8 điểm, ở câu train ≈ 1 điểm.

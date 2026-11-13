@@ -97,3 +97,8 @@ Q2) ở 4494 câu paraphrase train (`c1a`, `c1b`), θ 0.45 chọn trên train; p
 Nối vào luồng: cờ `--selector` (agent / `hybrid.finish`), `src/refs/selector/selector_v3a_inv.json`, cấu hình `configs/flow_swv.json`
 (= Q2 + V), `tests/test_selector_flow.py`; smoke CPU qua `eval_flow` với mô hình giả OK. V2 sẽ huấn luyện lại trên log của S cuối.
 
+**13/11 17:15 — E0 (`thnliu/zc-e0h-1`, v3a × 0.70, `pub_noind` 112 câu, mọi hàm ngành bị ẩn = `pub_noindH`):** Q **−0.1607** (33 / 51 / 28),
+Q2 **−0.0357** (36 / 40 / 36) — so với 0.821 / 0.830 khi còn toolkit ngành viết tay. **Toàn bộ điểm "ngành mới" trước đây là của
+`industry.py`**; với ngành mới thật (private) hệ thuần gần như trả lời sai hết → W (hàm do mô hình viết từ rulebook ngành) + V (bỏ trả lời
+khi không chắc) là phần quyết định. G0 (S + W + V trên `pub_noindH`) đang chạy.
+

@@ -217,6 +217,19 @@ class HybridPipeline(pipeline.Pipeline):
             if path and self._cal is None: print(f"[hybrid] calibrator {path} not found: vote share", flush=True)
         return self._cal
 
+    def selector(self):
+        """the learned selector of --selector (tests/train_selector.py --out), loaded once; None = vote / calibrator."""
+        if not hasattr(self, "_sel"):
+            path = getattr(self.a, "selector", "") or ""
+            if path and not os.path.isabs(path) and not os.path.isfile(path):
+                for base in (os.path.dirname(os.path.dirname(os.path.abspath(__file__))), os.path.dirname(os.path.abspath(__file__))):
+                    if os.path.isfile(os.path.join(base, path)): path = os.path.join(base, path); break
+            import selector as _selmod
+            self._sel = _selmod.Selector.load(path) if path and os.path.isfile(path) else None
+            if path and self._sel is None: print(f"[hybrid] selector {path} not found: vote share", flush=True)
+            elif self._sel is not None: print(f"[hybrid] learned selector {path} (theta {self._sel.theta})", flush=True)
+        return self._sel
+
     def finish(self, st):
         a, q = self.a, st["q"]
         if q["id"] in self.written: return st["done"]()
@@ -229,7 +242,11 @@ class HybridPipeline(pipeline.Pipeline):
         log = {"hints": st.get("hints"), "examples": st.get("examples"), "rules": st.get("rule_ids") or None, "stop": st.get("stop", "round2"), "error": st.get("error"),
                "best": rep[top] if votes else None,
                "samples": [{k: v for k, v in s.items()} for s in st["samples"]]}
-        if votes:
+        sel = self.selector()
+        if votes and sel is not None:                                   # plan 4 V: learned selector chooses the group + abstains
+            conf_vote = votes[top] / n; log["conf_vote"] = conf_vote
+            final, conf = sel.decide({"samples": log}); conf = float(conf); log["conf_sel"] = conf
+        elif votes:
             conf = votes[top] / n; log["conf_vote"] = conf
             cal = self.calibrator()
             if cal is not None:                                         # QĐ14: calibrated probability of the top answer (WP8)

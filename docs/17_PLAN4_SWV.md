@@ -88,3 +88,12 @@ có trong toolkit) → V chỉ ngưỡng bỏ trả lời. **Không cắt:** S3 
 | S không dùng đơn vị dù có | dữ liệu UD trong v4; đo S + W_trần |
 | Bộ chọn quá khớp log v3a | huấn luyện lại trên log của chính S cuối (V2); đặc trưng không phụ thuộc DN |
 | Thời gian container | W chạy một lần / split (~10–20 phút cho mọi dòng rulebook trên 2×5090), song song với ingest |
+
+## 7. Nhật ký
+
+**13/11 16:40 — V1 xong (CPU, không GPU):** bộ chọn học được (`src/selector.py`, đặc trưng bất biến) huấn luyện trên log của S (v3a × 0.70,
+Q2) ở 4494 câu paraphrase train (`c1a`, `c1b`), θ 0.45 chọn trên train; phát lại trên log đánh giá: public 0.928 → 0.923, `pub_ho400c`
+0.609 → **0.647**, `tr_ho400c` 0.904 → 0.912, `pub_noind` / `tr_newterm` không đổi → held-out gộp **0.776 → 0.794** (+1.8) → nhận (§3).
+Nối vào luồng: cờ `--selector` (agent / `hybrid.finish`), `src/refs/selector/selector_v3a_inv.json`, cấu hình `configs/flow_swv.json`
+(= Q2 + V), `tests/test_selector_flow.py`; smoke CPU qua `eval_flow` với mô hình giả OK. V2 sẽ huấn luyện lại trên log của S cuối.
+

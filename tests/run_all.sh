@@ -44,5 +44,6 @@ run test_p2_fixes 600 python3 tests/test_p2_fixes.py $SPLIT
 run test_lrl 600 python3 tests/test_lrl.py
 run test_predict_args 120 python3 tests/test_predict_args.py
 run test_session_limit 300 python3 tests/test_session_limit.py $S/t_sess
+run test_selector_flow 120 python3 tests/test_selector_flow.py
 run test_flow_hybrid 2400 python3 tests/test_flow_hybrid.py $SPLIT $S/t_flow
 echo "ALL PASS"

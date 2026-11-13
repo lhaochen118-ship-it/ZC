@@ -938,6 +938,7 @@ def build_parser():
     ap.add_argument("--retriever", default="ngram", choices=["ngram", "embed"]); ap.add_argument("--embed-model", default="")
     ap.add_argument("--verifier", default=""); ap.add_argument("--verifier-weight", type=float, default=0.0)
     ap.add_argument("--calibrator", default=""); ap.add_argument("--theta-abstain", type=float, default=0.5, help="hybrid: answer when conf >= this")
+    ap.add_argument("--selector", default="", help="hybrid: learned answer selector (src/selector.py json, trained on the solver's own logs of TRAINING shops): it picks the answer group and abstains below its theta (plan 4 V; replaces the vote)")
     ap.add_argument("--exclude-bids", default="", help="hybrid: shops whose examples are never retrieved (held-out evaluation)")
     ap.add_argument("--hide-api", default="", help="hybrid: hidden API names, 'industry' = every industry function (pub_noind)")
     ap.add_argument("--bank-holdout", type=int, default=0, help="hybrid: the held-out shops' checked examples in the bank (final model only)")

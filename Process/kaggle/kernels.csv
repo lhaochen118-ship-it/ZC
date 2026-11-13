@@ -210,7 +210,7 @@ q1s9a70,caotienminh1/zc-q1s9a70-1,DONE:complete,STATUS=DONE:complete
 qs10p2,hai1108/zc-qs10p2-1,DONE:complete,resumed from checkpoint-59; 119/119 steps; part 2 2.15 h train (1.69k tok/s)
 q1s10a35,namhunhh/zc-q1s10a35-1,DONE:complete,public 0.889 / held-out subsets 0.6725
 q1s10a70,namhunhh/zc-q1s10a70-1,DONE:complete,public 0.896 / held-out subsets 0.6938
-wr30p1,duckzuykobip/zc-wr30p1-1,RUNNING?,launched 13/11 04:14 (WP3-04 part 1 of a checkpoint chain: P refit on 30 shops)
+wr30p1,duckzuykobip/zc-wr30p1-1,DONE:failed,NCCL all-gather hung at step 0 (rank 2 behind; 30 min default timeout); moved to the 14/11 00:00 wave on one account
 lrl0a,hai1108/zc-lrl0a-1,DONE:partial,pub_compile ok (111 cards); 3 jobs died on a parallel pip install race
 lrl0b,loinguyentran/zc-lrl0b-1,DONE:partial,3 jobs died on the pip race; induce1 ran but its think hit the 2048-token cap (no JSON)
 v3ap1,bichthuy93/zc-v3ap1-1,RUNNING?,launched 13/11 04:29 (WP3-03 SFT v3a pure: spec labels + period / noise style data; part 1 of a chain)

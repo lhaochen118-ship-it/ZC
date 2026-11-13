@@ -47,7 +47,7 @@ Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp +
 | WP3-01 lớp luật | `src/lrl.py` (thẻ, khớp có dấu cho trigger ngắn, lọc trigger chung theo tần suất 2 %, `# RULES`, check → lượt sửa), `src/lrl_gen.py`, `tests/lrl_accept.py`, DC, đường container (`predict_flow.prepare_lrl`); `tests/test_lrl.py` PASS; Q2 chạy trọn trên CPU |
 | WP3-02 sinh thẻ vòng 0 | biên dịch rulebook public: 111 thẻ (`src/refs/lrl/compile_public.jsonl`); lrl0a / lrl0b hỏng phần lớn (cài pip song song → đã khoá; think 2048 token không đủ → 6144) → chạy lại `hai1108/zc-lrl0c-1` (compile train, bí danh, newterm) + `loinguyentran/zc-lrl0d-1` (phiên âm, quy nạp) |
 | WP3-03 SFT v3a | chuỗi: phần 1 `bichthuy93/zc-v3ap1-1` (phiên 1.5 h, xong ~06:05) → phần 2 caotienminh1 (`automation/chain_next.py`) → đánh giá `q3a35/q3a70` (Q) + `q3l35/q3l70` (Q2) trên `pub_full,pub_ho400c,tr_ho400c` |
-| WP3-04 P refit 30 DN (WR30) | phần 1 `duckzuykobip/zc-wr30p1-1` (xong ~06:45) → phần 2 linhmai24 → đánh giá `configs/p3_pbh.json`; mốc P trên tập sạch với đo đã sửa: `p3pbase` (hieuho669) |
+| WP3-04 P refit 30 DN (WR30) | phần 1 `duckzuykobip/zc-wr30p1-1` **hỏng**: NCCL all-gather treo ở bước 0 (rank 2 chậm, chờ 30 phút) — thêm `ddp_timeout=600`; **dời sang đợt 14/11 00:00** (một acc, ~3.4 h, không cần chuỗi); mốc P trên tập sạch với đo đã sửa: `p3pbase` (hieuho669) |
 | WP3-05 … 10 | chờ |
 
 ## 4. Việc tiếp theo (theo thứ tự; cập nhật 13/11 01:30 UTC)

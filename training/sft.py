@@ -149,7 +149,9 @@ def main():
                 logging_steps=a.log_every, save_strategy="steps" if a.save_every else "no", save_steps=a.save_every or 500, save_total_limit=1, report_to="none", bf16=not cpu, seed=a.seed, max_length=a.max_len,
                 gradient_checkpointing=not a.no_gc, gradient_checkpointing_kwargs={"use_reentrant": False},
                 completion_only_loss=True, dataset_num_proc=1, dataloader_num_workers=2, remove_unused_columns=True,
-                packing=False, padding_free=False)
+                packing=False, padding_free=False,
+                ddp_timeout=600)                                             # a stuck rank fails in 10 min, not 30 (13/11 WR30 part 1:
+                                                                             # NCCL all-gather hung at step 0 for the default 1800 s)
     import dataclasses
     fields = {f.name for f in dataclasses.fields(SFTConfig)}
     if rank == 0 and set(want) - fields: print(f"[sft] SFTConfig has no {sorted(set(want) - fields)}: left out", flush=True)

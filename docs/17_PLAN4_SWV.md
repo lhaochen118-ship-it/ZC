@@ -118,3 +118,9 @@ trần dù tắt suy nghĩ) → 5 hàm. Sửa gốc: **sinh có ràng buộc JSO
 `name`, `signature`, `doc`, `triggers`, `code`), `agent.Engine.gen(json_schema=...)`, có đường lùi không ràng buộc nếu vLLM từ chối schema.
 **G0e** chạy trên huuhien95.
 
+**13/11 20:50 — G0e** (JSON có ràng buộc): `pub_noindH` **−0.018** (38 / 40 / 34), 12 hàm (480 s). JSON nay parse được nhưng mã kém: một dòng nối
+bằng `;` (một `#` nuốt phần còn lại), sai tên bảng, NaN. **Lưu ý thống kê:** với 112 câu, sai số chuẩn của PA ≈ 0.08 → G0 / G0b / G0c / G0d /
+G0e (0.036 … −0.107) **chưa khác biệt có ý nghĩa** với không có W (−0.036). Sửa: `code` = mảng dòng (schema), bỏ `import toolkit`,
+chỉ nhận hàm khi ≥ 2 mẫu chạy được cho cùng kết quả. Hướng còn lại nếu W vẫn ≈ 0: V bỏ trả lời khi câu ngành không có hàm đáng tin
+(học từ log, không luật viết tay) để không mất điểm ở ngành mới.
+

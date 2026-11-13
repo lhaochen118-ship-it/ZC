@@ -229,7 +229,8 @@ UNIT_SCHEMA = {"type": "object", "properties": {
     "signature": {"type": "string", "maxLength": 120},
     "doc": {"type": "string", "maxLength": 300},
     "triggers": {"type": "array", "items": {"type": "string", "maxLength": 60}, "maxItems": 8},
-    "code": {"type": "string", "maxLength": 2500}},
+    "code": {"type": "array", "items": {"type": "string", "maxLength": 200}, "maxItems": 40}},   # one line per item (G0e: one-line
+    # code joined by ';' where a '#' comment swallowed the rest of the function)
     "required": ["plan", "name", "signature", "doc", "triggers", "code"], "additionalProperties": False}
 
 
@@ -273,7 +274,8 @@ def unit_items(split, cache):
                  "trên C hoặc T (đúng tên bảng / cột có ở trên). Tham số đầu là kỳ p (Period: p.mask(series), p.start, p.end) khi thuật ngữ "
                  "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không đọc file. Nếu dòng này không phải một đại lượng tính được "
                  "(chỉ là cách ghi, cách làm tròn...) thì name = null và code rỗng. Trả lời bằng MỘT đối tượng JSON: plan (vài câu ngắn: "
-                 "bảng / cột dùng, cách tính), name, signature, doc, triggers, code (như các ví dụ).")
+                 "bảng / cột dùng, cách tính), name, signature, doc, triggers, code = MẢNG các dòng mã (mỗi dòng một phần tử, thụt lề 4 dấu "
+                 "cách, không dồn nhiều lệnh vào một dòng). Hàm toolkit, C, T, pd, np, re đã có sẵn: không import chúng.")
             items.append(({"bid": b, "term": term, "definition": definition, "section": sec, "rulebook": __import__("lrl").rb_key(rb)}, u))
     return items
 
@@ -328,7 +330,8 @@ def to_cards(mode, items, texts, names):
         elif mode == "unit" and isinstance(j, dict):
             if not j.get("name") or not j.get("code"): continue
             name = re.sub(r"[^0-9a-zA-Z_]", "_", str(j["name"]))[:48].strip("_") or "unit"
-            code = str(j["code"])
+            code = "\n".join(str(x) for x in j["code"]) if isinstance(j["code"], list) else str(j["code"])
+            code = "\n".join(l for l in code.split("\n") if not re.match(r"\s*(from|import)\s+(toolkit|datamate)\b", l))   # names already defined
             m = re.search(r"def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", code)
             if m and m.group(1) != name: code = code.replace(f"def {m.group(1)}(", f"def {name}(", 1)
             u = {"kind": "unit", "bid": meta["bid"], "term": meta["term"], "definition": meta["definition"][:400], "section": meta.get("section"),
@@ -345,7 +348,7 @@ def to_cards(mode, items, texts, names):
     return out
 
 
-def verify_units(cands, split, cache):
+def verify_units(cands, split, cache, min_agree=2):
     """per (shop, term): every candidate unit is run on the shop's data (src/units.py); among those that run with a non-degenerate
     result, the one whose results on the test periods most candidates share is kept (self-consistency over the samples; ties ->
     the earliest sample, temperature 0)."""
@@ -372,6 +375,7 @@ def verify_units(cands, split, cache):
     for k, us in good.items():
         votes = Counter(u.get("_sig") for u in us)
         best = max(us, key=lambda u: (votes[u.get("_sig")], -us.index(u)))
+        if votes[best.get("_sig")] < min_agree: fails[k] = f"no agreement ({votes[best.get('_sig')]} / {len(us)} runnable samples)"; continue
         best["verified"]["agree"] = f"{votes[best.get('_sig')]}/{len(us)} runnable samples"
         best.pop("_sig", None); out.append(best); done.add(k)
     print(f"[unit] {len(out)} units verified for {len({u['bid'] for u in out})} shops; {len([k for k in fails if k not in done])} rows without a "
@@ -429,7 +433,7 @@ def main():
         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap without reaching their JSON (13/11)
     else: texts = []
     cards = to_cards(a.mode, items, texts, names)
-    if a.mode == "unit": cards = verify_units(cards, a.split, a.cache)
+    if a.mode == "unit": cards = verify_units(cards, a.split, a.cache, 2 if a.samples >= 3 else 1)
     tag = a.mode + (("_" + a.shard.replace("/", "of")) if a.shard else "")
     with open(os.path.join(a.out, f"cards_{tag}.jsonl"), "w", encoding="utf-8") as f:
         for c in cards: f.write(json.dumps(c, ensure_ascii=False) + "\n")

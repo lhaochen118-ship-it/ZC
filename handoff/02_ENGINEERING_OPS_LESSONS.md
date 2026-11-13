@@ -120,6 +120,7 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 | `src/selector.py`, `tests/train_selector.py`, `tests/pool_gens.py` | bộ chọn học được, phát lại / gộp mẫu nhiều lần chạy không GPU | đặc trưng đếm lệch khi gộp → dùng `FEATS_INV` |
 | `automation/set_final_model.py` | đổi mô hình nộp một bước (dataset + `soup.json` + `src/adapter_hashes.json`) | `kaggle datasets version` thay toàn bộ file của dataset |
 | `automation/update_final_submission.py` | `final_submission/` = file public PA cao nhất | chạy sau mỗi lần có public |
+| Chuỗi checkpoint qua acc (`full_job.py`, env `ZC_SESSION_S` / `ZC_SESSION_MARGIN`) | phần 1 dừng trước hạn có checkpoint → tải output → đăng dataset (có `info/`) ở acc kế → phần 2 `--ds <acc>/<ckpt> --resume-from auto` | đã chạy thật 12–13/11 (QS10 26M token: nguyenmanh0404 checkpoint-59/119 → hai1108 bước 60–119, `resumed_from` đúng, 1.69k tok/s cả hai phần); phí ~15 phút cho tải mô hình + nạp checkpoint ở phần sau |
 
 ### 6.2 Lỗi / sự cố kế hoạch 2
 

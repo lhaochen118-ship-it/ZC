@@ -259,3 +259,8 @@ Theo quy tắc §2.6 (đúng tăng ≥ 2, sai không tăng) nhận **1 thẻ** (
 (nay 4 check + 1 nội dung). Với ngưỡng lỏng 1 / 0 sẽ có 12 thẻ, nhưng tổng âm cho thấy mức 1 câu là nhiễu lấy mẫu. Kết luận: thẻ nội dung
 do Qwen quy nạp thô (vòng 0) chưa có ích; vòng 1 cần lọc chặt hơn trước A/B (khớp ≥ 2 DN, nội dung nêu tham số / kỳ cụ thể).
 
+**Đánh giá 13/11 chiều (trên log, không chạy thêm):** (1) **P + LRL** (`configs/p3_plrl.json`, WG1 × 0.35) held-out: `pub_ho400c` 0.6782,
+`tr_ho400c` 0.9093, `pub_noind` 0.9821, `tr_newterm` 0.8889 → gộp **0.8268 < P 0.8403**: thẻ văn xuôi do mô hình viết làm P giảm (chỉ
+`pub_noind` tăng). (2) **Bộ chọn:** Q2 v3a × 0.70 — câu bỏ trả lời mà trả lời theo đa số: public 6 đúng / 8 sai (−2), held-out 8 / 5 (+3) → gần 0;
+trần "có ít nhất một mẫu đúng": public 975 vs 957 (+1.8 điểm), held-out 801 vs 783 → chỉ bộ kiểm học được mới lấy được phần này.
+

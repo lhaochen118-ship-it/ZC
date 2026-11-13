@@ -245,3 +245,10 @@ Công cụ: TRL (`GRPOTrainer`, `DPOTrainer`), verl (RL quy mô lớn), DSPy (t�
 | QS6 × 0.70 (thuần) | — | 0.5475 → 0.5805 | 0.8775 → 0.912 |
 
 Đo lại P với rulebook theo DN (`p3pbase`, `tests/splits/*400c` là tập con sạch; cột tập con ghi `pub_ho400`/`tr_ho400` trong `Process/scores.csv` khi tên là *400c*): **pub_ho400c 0.6983, tr_ho400c 0.9227** — mốc của mọi so sánh từ đây. ~10 điểm của `pub_ho` cũ là nhãn nhiễu; khoảng cách thật thuần ↔ P ở câu kiểu public ≈ 8 điểm, ở câu train ≈ 1 điểm.
+
+**Vòng sinh thẻ 0 (13/11, Qwen3.5-9B gốc, fp8):** biên dịch rulebook public 111 thẻ, rulebook train 79; bí danh giá trị public 619 /
+train 1143 (sau bỏ trùng); phiên âm từ mượn 85 (danh sách bị cắt ở trần token → đọc từng object hoàn chỉnh); quy nạp từ 598 ca sai của
+mô hình thuần trên câu train → 178 thẻ ứng viên (175 có hàm kiểm). **Quét tín hiệu sạch** trên 9779 câu đã log (mọi mẫu, DN khác DN
+sinh thẻ): **4 thẻ check được nhận** (bắt 39 / 21 / 9 / 4 mẫu sai, 0 mẫu đúng — ví dụ "câu có 'qua' mà chương trình dùng `today_p`",
+"câu về 'xe' mà dùng `n_orders` thay `n_delivery_trips`"); 171 thẻ bị loại (độ chính xác 0.09–0.17). Thẻ nội dung quy nạp: chờ A/B
+với v3a (WP3-06). Sự cố: cài pip song song trong một kernel (đã khoá), trần think 2048 token (quy nạp → 6144, newterm → không think).

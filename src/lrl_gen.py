@@ -50,6 +50,15 @@ def first_json(text):
     return None
 
 
+def json_objects(text):
+    """every complete flat JSON object of a (possibly cut) output: a list cut by the token cap still gives its first items."""
+    out = []
+    for m in re.finditer(r"\{[^{}]*\}", (text or "").split("</think>")[-1]):
+        try: out.append(json.loads(m.group(0)))
+        except Exception: continue
+    return out
+
+
 def valid_hint(h, names):
     """code_hint kept when it parses and calls only toolkit names (parameters alone, 'payment="cod"', are kept too)."""
     if not h or not isinstance(h, str): return None
@@ -199,6 +208,8 @@ def to_cards(mode, items, texts, names):
     out = []
     for (meta, _), t in zip(items, texts):
         j = first_json(t)
+        if mode in ("translit", "induce") and (j is None or (isinstance(j, list) and not any(isinstance(x, dict) for x in j))):
+            j = json_objects(t) or None                                 # a list cut by the token cap (first_json then finds an inner list)
         if j is None: continue
         if mode == "compile" and isinstance(j, dict):
             trig = list(j.get("triggers") or []) + [meta["term"]]

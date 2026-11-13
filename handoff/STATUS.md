@@ -49,6 +49,10 @@ Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp +
 4. Bản nộp: **P + WG1 × 0.35** (`configs/flow_final.json`, container 0.994, `final_submission/`); `docker/README_SOLUTION.md` đã cập nhật.
    **Kiểm 13/11 01:40:** `nhatlong1103/zc-final-adapter` tải về khớp sha256 `src/adapter_hashes.json` (WG1 + `soup.json` × 0.35), `predict.sh`
    mặc định `flow_final.json` (P: count / size_use / ticket_avg bật) → sẵn sàng; báo user build Docker 15/11.
+6. **13/11: kiểm tra + kế hoạch 3 (chờ user duyệt):** `docs/15_AUDIT.md` (không rò rỉ vào trọng số; số đo của P lạc quan vì luật chỉnh theo
+   public và viết trước khi tách held-out; mô hình nộp mới dùng 70.6 % câu train; kiểu kỳ 'T4/2025' 25.9 % public vs 0 % train) và
+   `docs/16_PLAN3_LEARNED_RULES.md` (mô hình thuần + lớp luật do mô hình tự học: quy nạp từ lỗi train, biên dịch rulebook lúc suy luận,
+   bí danh giá trị, ViLexNorm; dữ liệu v3; gói WP3-00…10 đến 16/11). Chờ user: duyệt kế hoạch, quy tắc đổi bản nộp §5.4, WP3-04 (refit 30 DN).
 5. **13/11 02:05: mục 1–4 xong → dừng, chờ user phân tích và lập kế hoạch mới** hướng tới score = 1 (quyết định user 12/11). Routine tự
    tiếp tục hằng giờ `trig_018LeLfkcTwsLDDxbbaUvUNB` và nhắc 14/11 `trig_01X66grTP7iy1Hv5p6sCCtFv` **đã tắt** (bật lại khi có kế hoạch mới).
    Việc chỉ user làm: build Docker 15/11 (`docker/SETUP_DOCKER.md`), nộp trước 16/11 23:59 GMT+7.

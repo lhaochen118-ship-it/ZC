@@ -26,8 +26,8 @@ chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 
 
 | Kernel | Việc | Sau khi xong |
 |---|---|---|
-| `phuongnehe/zc-v3b-1` | SFT v3b trọn một phiên (19.5M token; bắt đầu ~12:00) | đăng `zc-v3b-adapter` (`automation/publish_many.py`) → đánh giá Q / Q2 như v3a (job `q3*` đổi `V3A` → `V3B`) |
-| `phuongnehe/zc-wr30p3-1` | WR30 phần 3 từ checkpoint-55 / 117 (phần 2 `anderson1202/zc-wr30p2-1`: 55 bước, 3.1k tok/s, loss 0.0068); phiên ~3.2 h | nếu chưa đủ 117 bước: phần 4 ở đợt 00:00 (`chain_next.py <S>/runs wr30p3 WR30 <acc> wr30p4 automation/jobs/wr30r.jobs --train-data all30`); xong → đánh giá như P (`flow_final`, WR30 × 0.35, `pub_full` + `pub_ho400c,pub_noind`) |
+| ~~`phuongnehe/zc-v3b-1`~~ | **v3b hỏng 15:25**: đủ 87 / 87 bước (3 h 06) rồi pha reference-loss FSDP hết bộ nhớ ở một số rank → NCCL treo → không lưu adapter. Đã sửa `training/sft.py` (reference-loss chỉ khi 1 GPU) | **huấn luyện lại v3b ở đợt 14/11 00:00** (một acc, `automation/jobs/v3b.jobs`, ~3.5 h) → đánh giá Q / Q2 |
+| `phuongnehe/zc-wr30p3b-1` | WR30 phần 3 **chạy lại bằng code đã sửa** (15:33) từ checkpoint-55 / 117 (bản `zc-wr30p3-1` code cũ đã huỷ: nếu train xong sẽ vướng đúng lỗi của v3b) | phần còn lại (nếu dừng theo hạn phiên) ở đợt 00:00: `chain_next.py <S>/runs wr30p3b WR30 <acc> wr30p4 automation/jobs/wr30r.jobs --train-data all30`; xong → đánh giá như P |
 | `yuan1103/zc-plrlpf-1`, `linhmai24/zc-plrlho-1` | **P + LRL** (`configs/p3_plrl.json` = `flow_final` + lớp luật; WG1 × 0.35) trên `pub_full` / held-out 4 tập | `python3 Process/tools/score_p3.py plrl <2 output>`; so P (0.994 / 0.8403) |
 | `duylnng/zc-lrl1i-1` | quy nạp thẻ vòng 1 (480 ca sai / bỏ của Q2 v3a × 0.70 trên `tr_dev_para_a/b`, 4 shard) | `tests/lrl_accept.py scan` (thẻ check) trên log `c1a/c1b` + log cũ; thẻ nội dung: lọc chặt rồi A/B |
 

@@ -1,7 +1,13 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-13 08:30 UTC (bàn giao sang khung chat mới). Lịch sử: `Process/history/STATUS_full_until_2026-11-13.md` (đến 13/11),
+*Cập nhật 2026-11-13 12:10 UTC (phiên `session_013HwGSxCZD97CnFARZhoQzT`). Lịch sử: `Process/history/STATUS_full_until_2026-11-13.md` (đến 13/11),
 `Process/history/STATUS_full_until_2026-11-11.md`; điểm mọi lần chạy: `Process/scores.csv`. Kế hoạch hiện tại: `docs/16_PLAN3_LEARNED_RULES.md`.*
+
+**Phiên này:** token 29 acc (`~/.kaggle/tok_*`); routine mỗi giờ `trig_01CDP8dAkHB3yiAe5gw7TReb` + một lần 14/11 00:06 UTC `trig_01Lfy86ETp9yQ9yp9Q9QL3q9`.
+Quota 13/11 11:50 UTC (làm mới 14/11 00:00): phuongnehe 13.9, anderson1202 5.95, synchan5704 4.74, linhmai24 4.2, yuan1103 4.07, thnliu 3.37,
+dinhthinh 2.79, huuhien95 2.19, nguyenmanh0404 2.05, bichthuy93 2.0, duckzuykobip 1.97, duylnng 1.91, caohuyen74 / hieuho669 1.81, namhunhh 1.46,
+caotienminh1 1.31, hai1108 0.94, loinguyentran 0.33; hết: huyenco, lelynhan, mucnokieu, nguyenhoa99, nguynduylm, nhatlong1103, phatle1578, quynhle07,
+quynhtran35; mxuanquy 30 / yeshenhi 29.85 **không có L4**. Thiếu `data/raw/public_gt.jsonl` (đã xin user) → chưa chấm được pub_full / pub_ho*.
 
 ## 1. Bản nộp hiện tại (chốt 12/11)
 
@@ -13,13 +19,14 @@
 | Held-out | gộp 0.7748; **sạch (đo 13/11, rulebook theo DN): `pub_ho400c` 0.6983, `tr_ho400c` 0.9227** — mốc so sánh kế hoạch 3 |
 | Docker | `docker/` sẵn sàng; user build 15/11; hạn nộp **16/11 23:59 GMT+7** |
 
-## 2. Kernel lúc bàn giao
+## 2. Kernel đang chạy (13/11 12:10 UTC; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`)
 
 | Kernel | Việc | Sau khi xong |
 |---|---|---|
-| `caotienminh1/zc-v3ap3-1` | SFT v3a phần 3: **dừng ở checkpoint-66 / 77** (hết phiên; sau đó bước reference loss OOM → NCCL timeout, rc 1, không có `train_metrics.json` — đã sửa `sft.py`). Không kernel nào đang chạy | **phần 4 (11 bước ≈ 25 phút + 20 phút cài)**: tải output (`kaggle kernels output caotienminh1/zc-v3ap3-1 -p <S>/runs/v3ap3`), rồi `python3 automation/chain_next.py <S>/runs v3ap3 V3A <acc> v3ap4 automation/jobs/v3ar.jobs --train-data v3a --remaining-h 0.6` (cần `training/data/out/v3a/v3a_mix.jsonl` từ `Process/train_data/p3`) |
-
-Routine của phiên cũ (`trig_018LeLfkcTwsLDDxbbaUvUNB`, `trig_01X66grTP7iy1Hv5p6sCCtFv`) **đã tắt** — phiên mới tạo routine riêng.
+| `anderson1202/zc-v3ap4-1` | SFT v3a phần 4 (checkpoint-66 → 77, phiên 1.25 h; dataset `anderson1202/zc-v3ap4-ck`) | script nền `<S>/after_v3a.sh`: `automation/publish_many.py` đăng `zc-v3a-adapter` lên 8 acc → `Process/kaggle/plans/plan_v3aeval.json` (12 kernel: Q / Q2 × α 0.35 / 0.70 × shard pub_full / held-out `pub_ho400c,tr_ho400c,pub_noind,tr_newterm`; A/B `ab0a/b`; ca học luật vòng 1 `c1a/c1b` = Q2 × 0.70 trên `tr_dev_para_a/b`) |
+| `phuongnehe/zc-v3b-1` | SFT v3b trọn một phiên (19.5M token, ~3.6–4 h; dời từ đợt 00:00 lên ngay vì phuongnehe còn 13.9 h) | đăng adapter → đánh giá Q / Q2 như v3a |
+| `synchan5704/zc-wr30p1-1` | WR30 (P refit 30 DN) phần 1, phiên 1.85 h (`ZC_SESSION_S=6660`) → checkpoint | `chain_next.py <S>/runs wr30p1 WR30 <acc> wr30p2 automation/jobs/wr30r.jobs --train-data all30` (phuongnehe slot 2 hoặc anderson1202) |
+| `hieuho669/zc-p3pb2-1` | mốc P (WG1 × 0.35, `flow_final`) trên `pub_noind,tr_newterm` (cho held-out gộp §5.4) | chấm |
 
 ## 3c. Tiến độ P3 (kế hoạch 3, `docs/16_PLAN3_LEARNED_RULES.md`, user duyệt 13/11)
 

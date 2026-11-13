@@ -1,0 +1,197 @@
+[
+ {
+  "acc": "linhmai24",
+  "name": "c1a",
+  "jobs": "automation/jobs/c1a.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "linhmai24/zc-para,linhmai24/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "linhmai24",
+  "name": "ab0a",
+  "jobs": "automation/jobs/ab0a.jobs",
+  "est_h": 0.35,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "linhmai24/zc-para,linhmai24/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "yuan1103",
+  "name": "c1b",
+  "jobs": "automation/jobs/c1b.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "yuan1103/zc-para,yuan1103/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "yuan1103",
+  "name": "ab0b",
+  "jobs": "automation/jobs/ab0b.jobs",
+  "est_h": 0.35,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "yuan1103/zc-para,yuan1103/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "thnliu",
+  "name": "q3l70pf",
+  "jobs": "automation/jobs/q3l70pf.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "thnliu/zc-para,thnliu/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "thnliu",
+  "name": "q3l70ho",
+  "jobs": "automation/jobs/q3l70ho.jobs",
+  "est_h": 0.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "thnliu/zc-para,thnliu/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "dinhthinh",
+  "name": "q3a70pf",
+  "jobs": "automation/jobs/q3a70pf.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "dinhthinh/zc-para,dinhthinh/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "dinhthinh",
+  "name": "q3a70ho",
+  "jobs": "automation/jobs/q3a70ho.jobs",
+  "est_h": 0.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "dinhthinh/zc-para,dinhthinh/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "huuhien95",
+  "name": "q3l35pf",
+  "jobs": "automation/jobs/q3l35pf.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huuhien95/zc-para,huuhien95/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "nguyenmanh0404",
+  "name": "q3l35ho",
+  "jobs": "automation/jobs/q3l35ho.jobs",
+  "est_h": 0.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "nguyenmanh0404/zc-para,nguyenmanh0404/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "bichthuy93",
+  "name": "q3a35pf",
+  "jobs": "automation/jobs/q3a35pf.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "bichthuy93/zc-para,bichthuy93/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "duckzuykobip",
+  "name": "q3a35ho",
+  "jobs": "automation/jobs/q3a35ho.jobs",
+  "est_h": 0.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "duckzuykobip/zc-para,duckzuykobip/zc-v3a-adapter",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "hieuho669",
+  "name": "p3pb2",
+  "jobs": "automation/jobs/p3pb2.jobs",
+  "est_h": 0.35,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "hieuho669/zc-para,hieuho669/zc-eval-adapters",
+   "--no-preflight"
+  ]
+ }
+]

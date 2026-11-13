@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "hieuho669",
+  "name": "p3pb2",
+  "jobs": "automation/jobs/p3pb2.jobs",
+  "est_h": 0.35,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "hieuho669/zc-para,hieuho669/zc-eval-adapters",
+   "--no-preflight"
+  ]
+ }
+]

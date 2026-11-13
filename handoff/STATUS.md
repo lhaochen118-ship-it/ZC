@@ -1,13 +1,16 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-13 12:10 UTC (phiên `session_013HwGSxCZD97CnFARZhoQzT`). Lịch sử: `Process/history/STATUS_full_until_2026-11-13.md` (đến 13/11),
+*Cập nhật 2026-11-13 13:20 UTC (phiên `session_01GwRWJKNnGuKMW6nYYuFVQh`, tiếp quản phiên `session_013HwGSx…` — phiên đó không còn
+hoạt động: adapter v3a xong 12:39 mà 22 phút sau chưa được đăng, không commit sau 12:05). Lịch sử: `Process/history/STATUS_full_until_2026-11-13.md`,
 `Process/history/STATUS_full_until_2026-11-11.md`; điểm mọi lần chạy: `Process/scores.csv`. Kế hoạch hiện tại: `docs/16_PLAN3_LEARNED_RULES.md`.*
 
-**Phiên này:** token 29 acc (`~/.kaggle/tok_*`); routine mỗi giờ `trig_01CDP8dAkHB3yiAe5gw7TReb` + một lần 14/11 00:06 UTC `trig_01Lfy86ETp9yQ9yp9Q9QL3q9`.
-Quota 13/11 11:50 UTC (làm mới 14/11 00:00): phuongnehe 13.9, anderson1202 5.95, synchan5704 4.74, linhmai24 4.2, yuan1103 4.07, thnliu 3.37,
-dinhthinh 2.79, huuhien95 2.19, nguyenmanh0404 2.05, bichthuy93 2.0, duckzuykobip 1.97, duylnng 1.91, caohuyen74 / hieuho669 1.81, namhunhh 1.46,
-caotienminh1 1.31, hai1108 0.94, loinguyentran 0.33; hết: huyenco, lelynhan, mucnokieu, nguyenhoa99, nguynduylm, nhatlong1103, phatle1578, quynhle07,
-quynhtran35; mxuanquy 30 / yeshenhi 29.85 **không có L4**. Thiếu `data/raw/public_gt.jsonl` (đã xin user) → chưa chấm được pub_full / pub_ho*.
+**Phiên này:** token 29 acc (`~/.kaggle/tok_*`); routine mỗi giờ `trig_01N2pVq2uTpkcaBAh9CwpWuu` (:13) + một lần 14/11 00:06 UTC `trig_01UjCMuoEVQpTi4oJLL5pJb1`.
+Quota 13/11 13:02 UTC (làm mới 14/11 00:00): phuongnehe 11.7, anderson1202 4.57, linhmai24 4.19, yuan1103 4.07, thnliu 3.37, dinhthinh 2.79,
+synchan5704 2.51, huuhien95 2.18, nguyenmanh0404 2.05, bichthuy93 1.99, duckzuykobip 1.97, duylnng 1.90, caohuyen74 1.80, namhunhh 1.45,
+caotienminh1 1.30, hieuho669 1.09, hai1108 0.94, loinguyentran 0.32; hết: huyenco, lelynhan, mucnokieu, nguyenhoa99, nguynduylm, nhatlong1103,
+phatle1578, quynhle07, quynhtran35; mxuanquy / yeshenhi **không có L4** (thăm dò `automation/probe_l4.py` 13/11: 17 acc chạy được 4×L4 ngay).
+**`data/raw/public_gt.jsonl` dựng lại không cần user:** `python3 automation/rebuild_public_gt.py` (từ `submissions/v30` ở commit `30fee95`, đã
+chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 4 như `score.json`).
 
 ## 1. Bản nộp hiện tại (chốt 12/11)
 
@@ -19,14 +22,14 @@ quynhtran35; mxuanquy 30 / yeshenhi 29.85 **không có L4**. Thiếu `data/raw/p
 | Held-out | gộp 0.7748; **sạch (đo 13/11, rulebook theo DN): `pub_ho400c` 0.6983, `tr_ho400c` 0.9227** — mốc so sánh kế hoạch 3 |
 | Docker | `docker/` sẵn sàng; user build 15/11; hạn nộp **16/11 23:59 GMT+7** |
 
-## 2. Kernel đang chạy (13/11 12:10 UTC; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`)
+## 2. Kernel đang chạy (13/11 13:20 UTC; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`)
 
 | Kernel | Việc | Sau khi xong |
 |---|---|---|
-| `anderson1202/zc-v3ap4-1` | SFT v3a phần 4 (checkpoint-66 → 77, phiên 1.25 h; dataset `anderson1202/zc-v3ap4-ck`) | script nền `<S>/after_v3a.sh`: `automation/publish_many.py` đăng `zc-v3a-adapter` lên 8 acc → `Process/kaggle/plans/plan_v3aeval.json` (12 kernel: Q / Q2 × α 0.35 / 0.70 × shard pub_full / held-out `pub_ho400c,tr_ho400c,pub_noind,tr_newterm`; A/B `ab0a/b`; ca học luật vòng 1 `c1a/c1b` = Q2 × 0.70 trên `tr_dev_para_a/b`) |
+| 12 kernel `plan_v3aeval_run.json` (13:05 UTC; `zc-v3a-adapter` đăng lên linhmai24, yuan1103, thnliu, dinhthinh, huuhien95, nguyenmanh0404, bichthuy93, duckzuykobip) | v3a phần 4 **xong** (`anderson1202/zc-v3ap4-1`, 77 / 77 bước, 16.7M token, 9.3k tok/s; reference-loss OOM bỏ qua). Đánh giá: Q / Q2 × α 0.35 / 0.70 × `pub_full` / held-out; A/B `ab0a/b`; ca học luật vòng 1 `c1a/c1b` | chấm `Process/tools/score_sets.py` → `Process/scores.csv`, `docs/16` §9; A/B → `tests/lrl_accept.py ab` |
 | `phuongnehe/zc-v3b-1` | SFT v3b trọn một phiên (19.5M token, ~3.6–4 h; dời từ đợt 00:00 lên ngay vì phuongnehe còn 13.9 h) | đăng adapter → đánh giá Q / Q2 như v3a |
 | `synchan5704/zc-wr30p1-1` | WR30 (P refit 30 DN) phần 1, phiên 1.85 h (`ZC_SESSION_S=6660`) → checkpoint | `chain_next.py <S>/runs wr30p1 WR30 <acc> wr30p2 automation/jobs/wr30r.jobs --train-data all30` (phuongnehe slot 2 hoặc anderson1202) |
-| `hieuho669/zc-p3pb2-1` | mốc P (WG1 × 0.35, `flow_final`) trên `pub_noind,tr_newterm` (cho held-out gộp §5.4) | chấm |
+| `hieuho669/zc-p3pb2-1` | mốc P (WG1 × 0.35, `flow_final`) trên `pub_noind,tr_newterm` — **xong, đã chấm**: `pub_noind` 0.9732 (110 / 1 / 1 trên 112), `tr_newterm` 0.9074 (51 / 2 / 1 trên 54) | dùng cho held-out gộp §5.4 |
 
 ## 3c. Tiến độ P3 (kế hoạch 3, `docs/16_PLAN3_LEARNED_RULES.md`, user duyệt 13/11)
 
@@ -35,7 +38,7 @@ quynhtran35; mxuanquy 30 / yeshenhi 29.85 **không có L4**. Thiếu `data/raw/p
 | WP3-00 sửa đo + dữ liệu v3 | rulebook theo DN khi đo; **`pub_ho_clean` 1171 / 1373, `tr_ho_clean` 1711** (Qwen tự chấm tương đương; P: `pub_ho` 0.629 → sạch 0.727); `<spec>` từ chương trình; dữ liệu phong cách 5368 (kỳ viết tắt 19.1 %, ViLexNorm); mix v3a 4919 ≈ 12M token; DR / `tr_newterm` (chờ newterm) |
 | WP3-01 lớp luật | `src/lrl.py` (thẻ, khớp có dấu cho trigger ngắn, lọc trigger chung theo tần suất 2 %, `# RULES`, check → lượt sửa), `src/lrl_gen.py`, `tests/lrl_accept.py`, DC, đường container (`predict_flow.prepare_lrl`); `tests/test_lrl.py` PASS; Q2 chạy trọn trên CPU |
 | WP3-02 sinh thẻ vòng 0 | **xong**: `src/refs/lrl/` compile public 111 / train 79, alias 619 / 1143, translit 85, induced 4 check (quét 175 → 4); 178 thẻ nội dung chờ A/B (`lrl_ab0`); DR 375 + `tr_newterm` 54 câu |
-| WP3-03 SFT v3a | 16.7M token, 77 bước; chuỗi 3 acc: bichthuy93 (→ 22) → duckzuykobip (→ 51) → **`caotienminh1/zc-v3ap3-1` (→ 66, dừng hết phiên)** → phần 4 (11 bước); tiếp: đánh giá `automation/jobs/q3{a,l}{35,70}.jobs` |
+| WP3-03 SFT v3a | **xong 13/11 12:39**: 16.7M token, 77 / 77 bước; chuỗi 4 phần bichthuy93 → duckzuykobip → caotienminh1 → `anderson1202/zc-v3ap4-1`; adapter → `<acc>/zc-v3a-adapter` (8 acc); đánh giá `plan_v3aeval_run.json` đang chạy (§2) |
 | WP3-04 P refit 30 DN (WR30) | phần 1 `duckzuykobip/zc-wr30p1-1` **hỏng**: NCCL all-gather treo ở bước 0 (rank 2 chậm, chờ 30 phút) — thêm `ddp_timeout=600`; **dời sang đợt 14/11 00:00** (một acc, ~3.4 h, không cần chuỗi); mốc P trên tập sạch với đo đã sửa: `p3pbase` (hieuho669) |
 | v3b (dữ liệu) | **xong**: `training/data/out/v3bm/v3b_mix.jsonl` 5569 bản ghi ≈ 19.5M token (v3a + thẻ trong prompt + 250 DR + 400 phiên âm); huấn luyện ở đợt 00:00 (`plan_w14.json`) |
 | WP3-05 … 10 | chờ (STATUS §4) |

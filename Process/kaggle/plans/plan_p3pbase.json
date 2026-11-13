@@ -1,0 +1,2 @@
+[{"acc": "hieuho669", "name": "p3pbase", "jobs": "automation/jobs/p3pbase.jobs", "est_h": 0.6,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "hieuho669/zc-para,hieuho669/zc-eval-adapters", "--no-preflight"]}]

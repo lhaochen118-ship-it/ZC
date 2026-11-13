@@ -41,13 +41,13 @@ Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp +
 
 ## 3c. Tiến độ P3 (kế hoạch 3, `docs/16_PLAN3_LEARNED_RULES.md`, user duyệt 13/11)
 
-| Gói | Trạng thái (13/11 UTC) |
+| Gói | Trạng thái (13/11 ~05:00 UTC) |
 |---|---|
-| WP3-00 sửa đo + dữ liệu v3 | rulebook theo DN khi đo (`tr_ho` dùng rulebook train); `<spec>` từ chương trình; dữ liệu phong cách 5368 bản ghi (kỳ viết tắt 19.1 %, ViLexNorm); mix v3a 4919 bản ghi ≈ 12M token |
-| WP3-01 lớp luật | `src/lrl.py` (thẻ, khớp, `# RULES`, check → lượt sửa), `src/lrl_gen.py` (compile / aliases / translit / induce), `tests/test_lrl.py` PASS |
-| WP3-02 sinh thẻ vòng 0 | `hai1108/zc-lrl0a-1` (compile train + public, bí danh), `loinguyentran/zc-lrl0b-1` (phiên âm, quy nạp 598 ca train) — 04:22 |
-| WP3-03 SFT v3a | chuỗi checkpoint: phần 1 `bichthuy93/zc-v3ap1-1` (04:29, phiên 1.5 h) → phần 2 caotienminh1 (`automation/chain_next.py`) |
-| WP3-04 P refit 30 DN (WR30) | D1 2681 + D2 4818; chuỗi: phần 1 `duckzuykobip/zc-wr30p1-1` (04:14, phiên 2.4 h) → phần 2 linhmai24 → đánh giá `configs/p3_pbh.json` (bank 30 DN) |
+| WP3-00 sửa đo + dữ liệu v3 | rulebook theo DN khi đo; **`pub_ho_clean` 1171 / 1373, `tr_ho_clean` 1711** (Qwen tự chấm tương đương; P: `pub_ho` 0.629 → sạch 0.727); `<spec>` từ chương trình; dữ liệu phong cách 5368 (kỳ viết tắt 19.1 %, ViLexNorm); mix v3a 4919 ≈ 12M token; DR / `tr_newterm` (chờ newterm) |
+| WP3-01 lớp luật | `src/lrl.py` (thẻ, khớp có dấu cho trigger ngắn, lọc trigger chung theo tần suất 2 %, `# RULES`, check → lượt sửa), `src/lrl_gen.py`, `tests/lrl_accept.py`, DC, đường container (`predict_flow.prepare_lrl`); `tests/test_lrl.py` PASS; Q2 chạy trọn trên CPU |
+| WP3-02 sinh thẻ vòng 0 | biên dịch rulebook public: 111 thẻ (`src/refs/lrl/compile_public.jsonl`); lrl0a / lrl0b hỏng phần lớn (cài pip song song → đã khoá; think 2048 token không đủ → 6144) → chạy lại `hai1108/zc-lrl0c-1` (compile train, bí danh, newterm) + `loinguyentran/zc-lrl0d-1` (phiên âm, quy nạp) |
+| WP3-03 SFT v3a | chuỗi: phần 1 `bichthuy93/zc-v3ap1-1` (phiên 1.5 h, xong ~06:05) → phần 2 caotienminh1 (`automation/chain_next.py`) → đánh giá `q3a35/q3a70` (Q) + `q3l35/q3l70` (Q2) trên `pub_full,pub_ho400c,tr_ho400c` |
+| WP3-04 P refit 30 DN (WR30) | phần 1 `duckzuykobip/zc-wr30p1-1` (xong ~06:45) → phần 2 linhmai24 → đánh giá `configs/p3_pbh.json`; mốc P trên tập sạch với đo đã sửa: `p3pbase` (hieuho669) |
 | WP3-05 … 10 | chờ |
 
 ## 4. Việc tiếp theo (theo thứ tự; cập nhật 13/11 01:30 UTC)

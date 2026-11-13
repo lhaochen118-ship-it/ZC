@@ -1,0 +1,80 @@
+frame #2: c10::DistBackendError::DistBackendError(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x72 (0x7c1ca4d64d02 in /usr/local/lib/python3.13/dist-packages/torch/lib/libc10.so)
+frame #3: <unknown function> + 0x697922 (0x7c1bc1193922 in /usr/local/lib/python3.13/dist-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xecdb4 (0x7c1c65e6edb4 in /lib/x86_64-linux-gnu/libstdc++.so.6)
+frame #5: <unknown function> + 0x9cb84 (0x7c1ca61ccb84 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: __clone + 0x44 (0x7c1ca6259cc4 in /lib/x86_64-linux-gnu/libc.so.6)
+
+W1113 08:04:59.684000 302 torch/distributed/elastic/multiprocessing/api.py:1028] Sending process 353 closing signal SIGTERM
+W1113 08:04:59.685000 302 torch/distributed/elastic/multiprocessing/api.py:1028] Sending process 354 closing signal SIGTERM
+W1113 08:04:59.685000 302 torch/distributed/elastic/multiprocessing/api.py:1028] Sending process 356 closing signal SIGTERM
+E1113 08:05:00.194000 302 torch/distributed/elastic/multiprocessing/api.py:1002] failed (exitcode: -6) local_rank: 2 (pid: 355) of binary: /usr/bin/python3
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.13/dist-packages/accelerate/commands/launch.py", line 1423, in <module>
+    main()
+    ~~~~^^
+  File "/usr/local/lib/python3.13/dist-packages/accelerate/commands/launch.py", line 1419, in main
+    launch_command(args)
+    ~~~~~~~~~~~~~~^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/accelerate/commands/launch.py", line 1400, in launch_command
+    multi_gpu_launcher(args)
+    ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/accelerate/commands/launch.py", line 1029, in multi_gpu_launcher
+    distrib_run.run(args)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/torch/distributed/run.py", line 1019, in run
+    elastic_launch(
+    ~~~~~~~~~~~~~~~
+        config=config,
+        ~~~~~~~~~~~~~~
+        entrypoint=cmd,
+        ~~~~~~~~~~~~~~~
+    )(*cmd_args)
+    ~^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/torch/distributed/launcher/api.py", line 194, in __call__
+    return launch_agent(
+        self._config,
+    ...<2 lines>...
+        health_check_server=self._health_check_server,
+    )
+  File "/usr/local/lib/python3.13/dist-packages/torch/distributed/launcher/api.py", line 383, in launch_agent
+    raise ChildFailedError(
+    ...<2 lines>...
+    )
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+=====================================================
+/kaggle/working/code/training/sft.py FAILED
+-----------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-11-13_08:05:00
+  host      : 1abc0c7a6f5a
+  rank      : 0 (local_rank: 0)
+  exitcode  : -6 (pid: 353)  (SIGABRT)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 353
+[2]:
+  time      : 2026-11-13_08:05:00
+  host      : 1abc0c7a6f5a
+  rank      : 1 (local_rank: 1)
+  exitcode  : -15 (pid: 354)  (SIGTERM)
+  error_file: <N/A>
+  traceback : Signal 15 (SIGTERM) received by PID 354
+[3]:
+  time      : 2026-11-13_08:05:00
+  host      : 1abc0c7a6f5a
+  rank      : 3 (local_rank: 3)
+  exitcode  : -15 (pid: 356)  (SIGTERM)
+  error_file: <N/A>
+  traceback : Signal 15 (SIGTERM) received by PID 356
+-----------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-11-13_08:04:59
+  host      : 1abc0c7a6f5a
+  rank      : 2 (local_rank: 2)
+  exitcode  : -6 (pid: 355)  (SIGABRT)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 355
+=====================================================

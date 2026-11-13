@@ -28,7 +28,7 @@ PDF 1; kinh nghiệm kỹ thuật / vận hành: PDF 2; cấu hình máy: `envir
 | Kiểm tra (`docs/15`) | không rò rỉ vào trọng số; số đo P lạc quan; tập đo sạch `*_clean`, mốc P sạch `pub_ho400c` 0.698 / `tr_ho400c` 0.923 |
 | WP3-00 / 01 | xong phần code: `<spec>`, dữ liệu phong cách (kỳ, ViLexNorm, phiên âm), DR / `tr_newterm`, lớp luật `src/lrl.py`, `lrl_gen.py`, `lrl_accept.py`, đường container `predict_flow.prepare_lrl` |
 | WP3-02 thẻ vòng 0 | xong: `src/refs/lrl/` (compile public 111 / train 79, alias 619 / 1143, translit 85, induced 4 check) |
-| WP3-03 SFT v3a | chuỗi 3 phần: phần 3 `caotienminh1/zc-v3ap3-1` (bước 51 → 77); xong → adapter ở output kernel đó |
+| WP3-03 SFT v3a | chuỗi: 22 → 51 → **66 / 77** (checkpoint-66 trong output `caotienminh1/zc-v3ap3-1`); còn phần 4 (11 bước, `chain_next.py`) |
 | WP3-04 WR30 | phần 1 hỏng (NCCL treo); **chưa chạy lại** (plan `Process/kaggle/plans/plan_w14.json`, một acc ~3.6 h) |
 | WP3-05 … 10 | chưa: đánh giá v3a, A/B thẻ nội dung, SFT v3b, vòng học luật 1–2, v4, quyết định, container |
 
@@ -42,7 +42,7 @@ PDF 1; kinh nghiệm kỹ thuật / vận hành: PDF 2; cấu hình máy: `envir
 | Lớp luật | `src/lrl.py`, `src/lrl_gen.py`, thẻ `src/refs/lrl/*.jsonl`, nhận thẻ `tests/lrl_accept.py`, test `tests/test_lrl.py` |
 | Dữ liệu huấn luyện kế hoạch 3 | bộ sinh `training/data/{spec_from_program,dp_style,dc_cards,dr_newterm,v3_mix,lrl_cases,lrl_collect}.py`, `build_v3b.sh`; bản nén `Process/train_data/p3/` (giải nén vào `training/data/out/{v3a,v3bm,all30,lrl0}/`) |
 | Tập đo | `tests/splits/` (`pub_full`, `pub_ho400c`, `tr_ho400c`, `*_clean`, `tr_newterm*`, `lrl_ab0`) |
-| Adapter | WG1 nộp: `nhatlong1103/zc-final-adapter`; v3a: output `caotienminh1/zc-v3ap3-1` (`results/V3A/adapter`); QS10: `namhunhh/zc-qs10-adapter`; khác: `Process/kaggle/datasets_by_account.txt` |
+| Adapter | WG1 nộp: `nhatlong1103/zc-final-adapter`; v3a: chưa xong (checkpoint-66 ở output `caotienminh1/zc-v3ap3-1`, `results/V3A/ckpt/`); QS10: `namhunhh/zc-qs10-adapter`; khác: `Process/kaggle/datasets_by_account.txt` |
 | Log / điểm | `Process/runs/<run>/` (nén), `Process/scores.csv`, kernel `Process/kaggle/kernels.csv`, plan `Process/kaggle/plans/`, job `automation/jobs/` |
 | Công cụ phân tích | `Process/tools/` (`score_sets.py`, `cmp_pure_p.py`, `period_share.py`, quét tín hiệu `scan_*.py`, `publish.sh`) |
 
@@ -50,7 +50,7 @@ PDF 1; kinh nghiệm kỹ thuật / vận hành: PDF 2; cấu hình máy: `envir
 
 1. Phiên mới: xin user token Kaggle (`~/.kaggle/tok_<acc>`), cài `kaggle==2.2.5 xgrammar duckdb markdown xhtml2pdf`, tạo routine mỗi giờ
    (lời nhắc trong `CLAUDE.md`, đổi sang kế hoạch 3); dựng lại cache theo `Process/README.md`.
-2. **v3a**: tải output `caotienminh1/zc-v3ap3-1` (kiểm `train_metrics.json`: 77 bước, `resumed_from` checkpoint-51) → đăng adapter
+2. **v3a**: tải output `caotienminh1/zc-v3ap3-1` (checkpoint-66) → phần 4 bằng `automation/chain_next.py … --remaining-h 0.6` (11 bước) → đăng adapter
    (`Process/tools/publish.sh <acc> <dir> zc-v3a-adapter`, layout `V3A/adapter/` + `info/`) → 4 đánh giá `automation/jobs/q3{a,l}{35,70}.jobs`
    (`pub_full,pub_ho400c,tr_ho400c`) → so với P sạch.
 3. **A/B thẻ nội dung** (`automation/jobs/ab0{a,b}.jobs`, tập `lrl_ab0`) → `tests/lrl_accept.py ab` → `src/refs/lrl/induced.jsonl`.

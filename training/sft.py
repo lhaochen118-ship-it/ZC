@@ -186,7 +186,9 @@ def main():
     ck = deadline.latest_checkpoint(a.resume)
     if a.resume and rank == 0: print(f"[sft] resume from {ck}", flush=True)
     res = tr.train(resume_from_checkpoint=ck)
-    lr1 = ref_loss(tr.model, ref) if rank == 0 or world > 1 else None
+    # not after a deadline stop (13/11 v3a part 3: the FSDP reference pass ran out of memory on one rank right after the
+    # deadline checkpoint, the other ranks waited 10 min on NCCL, the job exited 1 without train_metrics.json)
+    lr1 = ref_loss(tr.model, ref) if (rank == 0 or world > 1) and not stats.get("stopped_early") else None
     dt = time.time() - t1
     steps = res.global_step
     tok_per_step = a.mb * ga * world * (ntok / max(1, len(recs)))

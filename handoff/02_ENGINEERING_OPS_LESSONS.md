@@ -167,6 +167,9 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
   0.243 (từ WG) sai 40 %. 4×L4 FSDP: 1.72k tok/s (≈ 2.2 phút / bước, batch 64).
 - **NCCL all-gather treo ở bước 0** (WR30 phần 1, một rank chậm, chờ mặc định 30 phút rồi huỷ): `sft.py` đặt `ddp_timeout=600`; chạy lại.
   Cùng cài đặt khác vẫn chạy tốt → lỗi ngẫu nhiên; job dài nên đặt trên một acc đủ giờ khi có thể.
+- Sau khi dừng vì hạn phiên, bước "reference loss" của `sft.py` hết bộ nhớ trên một rank → các rank khác chờ NCCL 10 phút, job rc 1, mất
+  `train_metrics.json` (checkpoint vẫn còn) → bỏ bước này khi `stopped_early`. Tốc độ mỗi bước tăng dần trong phiên (79 → 114 s / bước ở
+  v3a phần 3) → khi tính phiên cho phần cuối, nhân thời gian còn lại ~1.3.
 
 ### 7.2 Kernel nhiều job song song
 

@@ -220,4 +220,4 @@ lrl0d,loinguyentran/zc-lrl0d-1,DONE:complete,induce 178 candidates (4 checks acc
 p3pbase,hieuho669/zc-p3pbase-1,DONE:complete,P+WG1 x0.35: pub_ho400c 0.6983 tr_ho400c 0.9227 (per-shop rulebook fix)
 v3ap2,duckzuykobip/zc-v3ap2-1,DONE:partial,checkpoint-51 of 77 (resumed from 22)
 lrl0e,namhunhh/zc-lrl0e-1,DONE:complete,newterm 502/940 (no think)
-v3ap3,caotienminh1/zc-v3ap3-1,RUNNING?,launched 13/11 (v3a part 3 from checkpoint-51)
+v3ap3,caotienminh1/zc-v3ap3-1,DONE:partial,checkpoint-66 of 77 (deadline stop; then the reference-loss pass OOM -> NCCL timeout rc 1, no train_metrics; fixed in sft.py)

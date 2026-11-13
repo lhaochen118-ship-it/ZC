@@ -17,7 +17,7 @@
 
 | Kernel | Việc | Sau khi xong |
 |---|---|---|
-| `caotienminh1/zc-v3ap3-1` (07:08) | SFT v3a phần 3 (checkpoint-51 → 77) | nếu đã xong: adapter `results/V3A/adapter` trong output (kiểm `train_metrics.json`: 77 bước) → STATUS §4 bước 2; nếu partial: `automation/chain_next.py` sang acc còn quota |
+| `caotienminh1/zc-v3ap3-1` | SFT v3a phần 3: **dừng ở checkpoint-66 / 77** (hết phiên; sau đó bước reference loss OOM → NCCL timeout, rc 1, không có `train_metrics.json` — đã sửa `sft.py`). Không kernel nào đang chạy | **phần 4 (11 bước ≈ 25 phút + 20 phút cài)**: tải output (`kaggle kernels output caotienminh1/zc-v3ap3-1 -p <S>/runs/v3ap3`), rồi `python3 automation/chain_next.py <S>/runs v3ap3 V3A <acc> v3ap4 automation/jobs/v3ar.jobs --train-data v3a --remaining-h 0.6` (cần `training/data/out/v3a/v3a_mix.jsonl` từ `Process/train_data/p3`) |
 
 Routine của phiên cũ (`trig_018LeLfkcTwsLDDxbbaUvUNB`, `trig_01X66grTP7iy1Hv5p6sCCtFv`) **đã tắt** — phiên mới tạo routine riêng.
 
@@ -28,7 +28,7 @@ Routine của phiên cũ (`trig_018LeLfkcTwsLDDxbbaUvUNB`, `trig_01X66grTP7iy1Hv
 | WP3-00 sửa đo + dữ liệu v3 | rulebook theo DN khi đo; **`pub_ho_clean` 1171 / 1373, `tr_ho_clean` 1711** (Qwen tự chấm tương đương; P: `pub_ho` 0.629 → sạch 0.727); `<spec>` từ chương trình; dữ liệu phong cách 5368 (kỳ viết tắt 19.1 %, ViLexNorm); mix v3a 4919 ≈ 12M token; DR / `tr_newterm` (chờ newterm) |
 | WP3-01 lớp luật | `src/lrl.py` (thẻ, khớp có dấu cho trigger ngắn, lọc trigger chung theo tần suất 2 %, `# RULES`, check → lượt sửa), `src/lrl_gen.py`, `tests/lrl_accept.py`, DC, đường container (`predict_flow.prepare_lrl`); `tests/test_lrl.py` PASS; Q2 chạy trọn trên CPU |
 | WP3-02 sinh thẻ vòng 0 | **xong**: `src/refs/lrl/` compile public 111 / train 79, alias 619 / 1143, translit 85, induced 4 check (quét 175 → 4); 178 thẻ nội dung chờ A/B (`lrl_ab0`); DR 375 + `tr_newterm` 54 câu |
-| WP3-03 SFT v3a | 16.7M token, 77 bước; chuỗi 3 acc: bichthuy93 (→ 22) → duckzuykobip (→ 51) → **`caotienminh1/zc-v3ap3-1` (→ 77, chạy 07:08, xong ~08:30)**; tiếp: đánh giá `automation/jobs/q3{a,l}{35,70}.jobs` |
+| WP3-03 SFT v3a | 16.7M token, 77 bước; chuỗi 3 acc: bichthuy93 (→ 22) → duckzuykobip (→ 51) → **`caotienminh1/zc-v3ap3-1` (→ 66, dừng hết phiên)** → phần 4 (11 bước); tiếp: đánh giá `automation/jobs/q3{a,l}{35,70}.jobs` |
 | WP3-04 P refit 30 DN (WR30) | phần 1 `duckzuykobip/zc-wr30p1-1` **hỏng**: NCCL all-gather treo ở bước 0 (rank 2 chậm, chờ 30 phút) — thêm `ddp_timeout=600`; **dời sang đợt 14/11 00:00** (một acc, ~3.4 h, không cần chuỗi); mốc P trên tập sạch với đo đã sửa: `p3pbase` (hieuho669) |
 | v3b (dữ liệu) | **xong**: `training/data/out/v3bm/v3b_mix.jsonl` 5569 bản ghi ≈ 19.5M token (v3a + thẻ trong prompt + 250 DR + 400 phiên âm); huấn luyện ở đợt 00:00 (`plan_w14.json`) |
 | WP3-05 … 10 | chờ (STATUS §4) |
@@ -36,7 +36,7 @@ Routine của phiên cũ (`trig_018LeLfkcTwsLDDxbbaUvUNB`, `trig_01X66grTP7iy1Hv
 ## 4. Việc tiếp theo (theo thứ tự)
 
 1. Phiên mới: token, gói, cache, routine (`READING_GUIDE.md` §0).
-2. **v3a**: tải output `caotienminh1/zc-v3ap3-1` → đăng adapter (`Process/tools/publish.sh <acc> <dir> zc-v3a-adapter`, layout `V3A/adapter/` +
+2. **v3a**: phần 4 (§2) → đăng adapter (`Process/tools/publish.sh <acc> <dir> zc-v3a-adapter`, layout `V3A/adapter/` +
    `info/`) trên các acc đánh giá → `q3a35/q3a70` (Q) + `q3l35/q3l70` (Q2) trên `pub_full,pub_ho400c,tr_ho400c` (mỗi job ~0.8 h, cần ≥ 2 h quota)
    → chấm `Process/tools/score_sets.py` → `Process/scores.csv`, `docs/16` §9.
 3. **A/B thẻ nội dung**: `automation/jobs/ab0a.jobs` / `ab0b.jobs` (α theo kết quả bước 2) → `python3 tests/lrl_accept.py ab src/refs/lrl/induced_content_r0.jsonl <logs A> <logs B> <out>` → gộp vào `src/refs/lrl/induced.jsonl`.

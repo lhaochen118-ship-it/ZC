@@ -67,8 +67,10 @@ def valid_check(c):
 
 
 def card(kind, triggers, content, hint, names, source, **extra):
-    trig = [str(t).strip() for t in (triggers or []) if str(t).strip() and len(str(t)) <= 60][:16]
-    if not trig or not content: return None
+    trig = [str(t).strip() for t in (triggers or []) if re.search(r"[^\W_]{2}", str(t)) and len(str(t)) <= 60][:16]
+    content = str(content or "").strip()
+    if not trig or len(re.findall(r"[^\W_]+", content)) < 3 or content.strip(". ") == "": return None   # no template echo ('...')
+    if kind not in ("period", "lexicon", "definition", "unit", "value", "check"): kind = "definition"
     c = {"kind": kind, "trigger": {"words": trig}, "content": str(content).strip()[:400], "code_hint": valid_hint(hint, names), "source": source}
     c["trigger"].update({k: v for k, v in extra.items() if k in ("bid", "industry", "section", "rulebook") and v})
     if extra.get("check"): c["check"] = valid_check(extra["check"])
@@ -262,7 +264,8 @@ def main():
         eng = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
                                               gpu_util=0.9, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0, prefix_budget=0))
         temp = 0.7 if a.mode == "translit" else 0.0
-        texts, _ = eng.gen(convs, [temp] * len(convs), [4242 + i for i in range(len(convs))], 2048 if think else 900, think=think)
+        texts, _ = eng.gen(convs, [temp] * len(convs), [4242 + i for i in range(len(convs))], 6144 if think else 900, think=think)   # 2048 was
+        # too few: 199 / 199 induction answers of lrl0b reasoned past the cap without reaching their JSON (13/11)
     else: texts = []
     cards = to_cards(a.mode, items, texts, names)
     tag = a.mode + (("_" + a.shard.replace("/", "of")) if a.shard else "")

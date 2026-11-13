@@ -1,0 +1,2 @@
+[{"acc": "loinguyentran", "name": "lrl0d", "jobs": "automation/jobs/lrl0d.jobs", "est_h": 0.6,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--train-data", "lrl0", "--no-preflight"]}]

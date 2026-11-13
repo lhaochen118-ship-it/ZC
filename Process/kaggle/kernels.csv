@@ -211,7 +211,9 @@ qs10p2,hai1108/zc-qs10p2-1,DONE:complete,resumed from checkpoint-59; 119/119 ste
 q1s10a35,namhunhh/zc-q1s10a35-1,DONE:complete,public 0.889 / held-out subsets 0.6725
 q1s10a70,namhunhh/zc-q1s10a70-1,DONE:complete,public 0.896 / held-out subsets 0.6938
 wr30p1,duckzuykobip/zc-wr30p1-1,RUNNING?,launched 13/11 04:14 (WP3-04 part 1 of a checkpoint chain: P refit on 30 shops)
-lrl0a,hai1108/zc-lrl0a-1,RUNNING?,launched 13/11 04:22 (WP3-02: compile rulebooks + value aliases)
-lrl0b,loinguyentran/zc-lrl0b-1,RUNNING?,launched 13/11 04:22 (WP3-02: translit + induction round 0)
+lrl0a,hai1108/zc-lrl0a-1,DONE:partial,pub_compile ok (111 cards); 3 jobs died on a parallel pip install race
+lrl0b,loinguyentran/zc-lrl0b-1,DONE:partial,3 jobs died on the pip race; induce1 ran but its think hit the 2048-token cap (no JSON)
 v3ap1,bichthuy93/zc-v3ap1-1,RUNNING?,launched 13/11 04:29 (WP3-03 SFT v3a pure: spec labels + period / noise style data; part 1 of a chain)
-pj,namhunhh/zc-pj-1,RUNNING?,launched 13/11 (WP3-00: paraphrase equivalence judge -> pub_ho_clean / tr_ho_clean)
+pj,namhunhh/zc-pj-1,DONE:complete,pub_ho_clean 1171/1373 tr_ho_clean 1711
+lrl0c,hai1108/zc-lrl0c-1,RUNNING?,launched 13/11 04:41 (rerun of lrl0a parts after the pip race + newterm)
+lrl0d,loinguyentran/zc-lrl0d-1,RUNNING?,launched 13/11 04:53 (rerun translit + induce with a 6144-token think cap)

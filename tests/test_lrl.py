@@ -93,4 +93,15 @@ with tempfile.TemporaryDirectory() as d:
     open(os.path.join(d, "rulebooks", "biz_105.md"), "w").write("TRAIN RULEBOOK")
     h = hybrid.HybridPipeline.__new__(hybrid.HybridPipeline); h.a = argparse.Namespace(split=d); h.rulebook = "PUBLIC RULEBOOK"
     check(h.rulebook_for("biz_105") == "TRAIN RULEBOOK" and h.rulebook_for("dev_001") == "PUBLIC RULEBOOK", "rulebook_for")
+# 7. container: a split whose rulebook no shipped compiled card belongs to gets its own cards first (predict_flow.prepare_lrl)
+import predict_flow
+with tempfile.TemporaryDirectory() as d:
+    sp_dir = os.path.join(d, "split"); os.makedirs(os.path.join(sp_dir, "data"))
+    open(os.path.join(sp_dir, "rulebook.md"), "w", encoding="utf-8").write("| Luật | Mặc định |\n|---|---|\n| Khách ruột | khách mua nhiều ngày nhất |\n")
+    fake = os.path.join(d, "f.py"); open(fake, "w").write("import json\ndef responder(conv): return json.dumps({'triggers': ['khach ruot'], 'content': 'nhiều ngày mua nhất', 'code_hint': None})\n")
+    cfg = os.path.join(d, "c.json"); json.dump({"lrl": "translit.jsonl,compile_public.jsonl"}, open(cfg, "w"))
+    msgs = []
+    lv = predict_flow.prepare_lrl(cfg, sp_dir, d, "none", msgs.append, fake)
+    check(lv and "cards_compile.jsonl" in lv and "compile_public" not in lv, f"new split compiled: {lv} {msgs[-3:]}")
+    check(predict_flow.prepare_lrl("", sp_dir, d, "none", msgs.append) is None, "no config -> no cards")
 print("test_lrl PASS")

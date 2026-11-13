@@ -65,6 +65,32 @@ def smoke_split(split, dst, n_biz=2):
     return dst
 
 
+def prepare_lrl(cfg, split, work, model, log, fake=""):
+    """plan 3 (docs/16 §2.3, P2 / P3): when the config uses learned rule cards, a split whose rulebook no shipped compiled card
+    belongs to (a new test) gets its own cards first, written by the model from the split's INPUTS only (rulebook rows; the
+    categorical values of its shops' data). Returns the --lrl value (shipped files + the new ones) or None (config without cards)."""
+    if not cfg: return None
+    c = json.load(open(cfg, encoding="utf-8"))
+    if not c.get("lrl"): return None
+    import lrl
+    refs = os.path.join(HERE, "refs", "lrl")
+    names = [x for x in c["lrl"].split(",") if x]
+    have = [os.path.join(refs, x) for x in names if os.path.isfile(os.path.join(refs, x))]
+    rk = lrl.rb_key(open(os.path.join(split, "rulebook.md"), encoding="utf-8").read())
+    keys = {(cd.get("trigger") or {}).get("rulebook") for f in have if "compile" in os.path.basename(f) for cd in map(json.loads, open(f, encoding="utf-8"))}
+    if rk in keys:
+        log(f"lrl: compiled cards of this rulebook are shipped ({len(have)} card files)"); return ",".join(have)
+    out = os.path.join(work, "lrl"); os.makedirs(out, exist_ok=True)
+    t = time.time()
+    for mode in ("compile", "aliases"):
+        cmd = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", mode, "--quant", "fp8"] + \
+              (["--fake-responder", fake] if fake else [])
+        rc = run(cmd, log); log(f"lrl: {mode} for this split rc={rc} ({time.time() - t:.0f}s)")
+    new = [os.path.join(out, f) for f in ("cards_compile.jsonl", "cards_aliases.jsonl") if os.path.isfile(os.path.join(out, f))]
+    keep = [f for f in have if not any(k in os.path.basename(f) for k in ("compile", "alias"))]   # other splits' cards do not apply
+    return ",".join(keep + new)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split"); ap.add_argument("result")
@@ -74,6 +100,7 @@ def main():
     ap.add_argument("--runs", type=int, default=1); ap.add_argument("--work", default="/tmp/zc")
     ap.add_argument("--dp", type=int, default=0); ap.add_argument("--min-conf", type=float, default=0.0)
     ap.add_argument("--fake-responder", default=""); ap.add_argument("--max-pending", type=int, default=0)
+    ap.add_argument("--lrl-fake", default="", help="tests: fake model of the card writer (src/lrl_gen.py --fake-responder)")
     argv = sys.argv[1:]; extra = []
     if "--" in argv: i = argv.index("--"); argv, extra = argv[:i], argv[i + 1:]
     if "--fake-responder" in extra:
@@ -97,6 +124,8 @@ def main():
     if not ng:
         log("no GPU: every question abstained"); return
     log(f"model {a.model}  dp {dp}  config {cfg or '(defaults)'}  runs up to {a.runs}")
+    lv = prepare_lrl(cfg, a.split, a.work, a.model, log, a.lrl_fake)
+    if lv is not None: extra = extra + ["--lrl", lv]
     vote_sub = os.path.join(a.work, "llm_vote.jsonl")
 
     def agent(i, budget, logdir):

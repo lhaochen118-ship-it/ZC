@@ -208,5 +208,5 @@ qs10p1,nguyenmanh0404/zc-qs10p1-1,DONE:partial,checkpoint-59 of 119 (stopped at 
 q1s9a35,caotienminh1/zc-q1s9a35-1,DONE:complete,STATUS=DONE:complete
 q1s9a70,caotienminh1/zc-q1s9a70-1,DONE:complete,STATUS=DONE:complete
 qs10p2,hai1108/zc-qs10p2-1,DONE:complete,resumed from checkpoint-59; 119/119 steps; part 2 2.15 h train (1.69k tok/s)
-q1s10a35,namhunhh/zc-q1s10a35-1,RUNNING?,launched 13/11 01:16
-q1s10a70,namhunhh/zc-q1s10a70-1,RUNNING?,launched 13/11 01:17
+q1s10a35,namhunhh/zc-q1s10a35-1,DONE:complete,public 0.889 / held-out subsets 0.6725
+q1s10a70,namhunhh/zc-q1s10a70-1,DONE:complete,public 0.896 / held-out subsets 0.6938

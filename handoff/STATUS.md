@@ -24,7 +24,7 @@
 | P seed 0 / 1 / 2, O seed 2, đường container P (`hieuho669`, `dinhthinh`, `caohuyen74`, `loinguyentran`, `bichthuy93`) | **xong** — số ở §1 | — |
 | `hieuho669/zc-wg9f-1`, `dinhthinh/zc-wg10f-1`, `caohuyen74/zc-wg11f-1`, `huuhien95/zc-wg12f-1` (12/11 09:05 UTC) | huấn luyện **WG9–12 song song, mỗi nhánh một acc, FSDP 4 GPU** (`training/full_job.py`, ~2k tok/s; r 32 α 64 lr 2e-4, mb 4 × 4 GPU × ga 4 = 64; WG9 / WG10 D1 + d2mix seed 31 / 32, WG11 D1 + D2 + D2b 21M token, WG12 D1 + D2 + D2b 14.7M) — user 12/11: không tiết kiệm acc, ra kết quả nhanh nhất; thay chuỗi checkpoint 1 GPU / nhánh (~8 h) | ~2.5–3.5 h → adapter ở `results/WG*/adapter` → đánh giá **đủ tập** seed 0 ngay (× 0.35, cấu hình P) trên bichthuy93 / linhmai24 / loinguyentran; seed 1 sau quota 14/11 |
 | WG9–12 + P (đủ tập, seed 0) | **xong** — public 0.986 / 0.988 / 0.987 / 0.987, held-out gộp 0.7765 / 0.7721 / **0.784** / 0.7787 (P + WG1 0.993 / 0.7718) → không nhánh nào hơn WG1 ở public, giữ WG1; WG11 tổng quát tốt nhất (`docs/12_PLAN2.md`) | — |
-| **Hướng thuần** (`docs/14_PURE_MODEL_PLAN.md`, bảng kết quả ở đó) | tốt nhất: **QS7** (tự gợi ý + câu nhiễu) public **0.905** (× 0.35); QS6 held-out tập con 0.7125 (× 0.70); RFT vòng 2 (QS9) không hơn QS5; **QS10** (tự gợi ý + mọi dữ liệu + RFT, 26M) chuỗi checkpoint: phần 1 nguyenmanh0404 → checkpoint-59/119 → `hai1108/zc-qs10-ckpt` → phần 2 `hai1108/zc-qs10p2-1` **xong 01:12 13/11: chạy tiếp đúng từ checkpoint-59, đủ 119 bước** (chuỗi checkpoint qua acc chạy được) → adapter `namhunhh/zc-qs10-adapter` | sàng lọc `namhunhh/zc-q1s10a35-1`, `zc-q1s10a70-1` (01:16, ~0.8 h) |
+| **Hướng thuần** (`docs/14_PURE_MODEL_PLAN.md`, bảng kết quả ở đó) | **xong vòng 1–2 (13/11 02:00):** tốt nhất public **QS7 × 0.35 = 0.905**, held-out tập con QS6 × 0.70 = 0.7125; QS10 (tự gợi ý + mọi dữ liệu + RFT, 26M, chuỗi checkpoint 2 acc chạy đúng) 0.889 / 0.896 public — vòng 2 không hơn vòng 1; khoảng cách tới P (~9 điểm) nằm ở câu kiểu public | không thắng P → bản nộp giữ P + WG1; đưa vào thảo luận kế hoạch mới |
 
 ## 3. Tiến độ kế hoạch
 
@@ -44,8 +44,8 @@ Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp +
 1. ~~Cấu hình P~~: **xong, P là cấu hình nộp** (§1).
 2. ~~WG9–12~~: **xong 12/11** (huấn luyện chia acc, sàng lọc với P đủ tập, `docs/12_PLAN2.md`): public 0.986–0.988 < 0.993 → giữ WG1; WG11
    held-out 0.784 (ứng viên tổng quát nếu ưu tiên held-out).
-3. **Hướng thuần** (`docs/14_PURE_MODEL_PLAN.md`): QS10 đang sàng lọc (`namhunhh/zc-q1s10a35-1`, `zc-q1s10a70-1`) → ghi điểm, so với QS7 / P;
-   nếu QS10 (hoặc QS7) đáng giữ → xác nhận đủ tập 2 seed sau khi quota làm mới **14/11 00:00 UTC** (hiện mọi acc < 6.3 h).
+3. ~~Hướng thuần~~: **xong vòng 1–2** (QS10 0.889 / 0.896 public, không hơn QS7 0.905) → không thắng P; không cần xác nhận 2 seed để đổi
+   bản nộp. Kết luận + hướng tiếp: `docs/14_PURE_MODEL_PLAN.md` (cập nhật 13/11 02:00).
 4. Bản nộp: **P + WG1 × 0.35** (`configs/flow_final.json`, container 0.994, `final_submission/`); `docker/README_SOLUTION.md` đã cập nhật.
    **Kiểm 13/11 01:40:** `nhatlong1103/zc-final-adapter` tải về khớp sha256 `src/adapter_hashes.json` (WG1 + `soup.json` × 0.35), `predict.sh`
    mặc định `flow_final.json` (P: count / size_use / ticket_avg bật) → sẵn sàng; báo user build Docker 15/11.

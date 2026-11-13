@@ -57,3 +57,19 @@ không luật nào chạy) — QS8 = QS1 + tự gợi ý, QS7 = D1 + D2 / D2N + 
 Tự gợi ý + câu nhiễu = public thuần cao nhất (0.905, +4.6 so với QS1; P có luật 0.993). Câu nhiễu (D2N) giúp cả public lẫn held-out;
 tự gợi ý giúp public (+1.8–2.2 so với cùng dữ liệu). Huấn luyện vòng 2: QS9 (D1p + D2p + D2Np + RFT của QS5, không tự gợi ý) và
 **QS10** (tự gợi ý + D1 + RFT + ⅓ D2 / ⅓ D2b / ⅓ D2N, 26M token; chuỗi checkpoint qua acc, phần 1 nguyenmanh0404).
+
+**Cập nhật 13/11 02:00** (vòng 2, cấu hình Q):
+
+| Mô hình | Dữ liệu | × 0.35: public / held-out tập con | × 0.70 |
+|---|---|---|---|
+| QS9 | D1p + D2p + D2Np + RFT của QS5 (không tự gợi ý) | 0.880 / 0.6475 | 0.875 / 0.695 |
+| QS10 | tự gợi ý + D1 + RFT + ⅓ D2 / ⅓ D2b / ⅓ D2N, 26M (chuỗi checkpoint 2 acc) | 0.889 / 0.6725 | 0.896 / 0.694 |
+
+Mốc có luật P + WG1 (tập con): public 0.993–0.994, pub_ho400 0.6125–0.6225, tr_ho400 0.8575–0.8775 (tb ≈ 0.74–0.75).
+
+**Kết luận hướng thuần (vòng 1–2):** public thuần cao nhất vẫn là **QS7 × 0.35 = 0.905**; held-out tập con cao nhất **QS6 × 0.70 = 0.7125**.
+Vòng 2 (RFT, thêm dữ liệu đến 26M token) không vượt vòng 1: chưng cất thêm cùng loại dữ liệu đã bão hoà ở public ≈ 0.89–0.905.
+Khoảng cách tới P (≈ 9 điểm public) gần như toàn bộ nằm ở câu kiểu public (pub_ho: thuần 0.50–0.55 so với P 0.61–0.62; tr_ho: thuần
+0.82–0.88 ≈ P 0.86–0.88): kỳ viết tắt, tiếng lóng / viết tắt, tên giá trị — đúng phần module gợi ý + kiểm tra luật đang làm. Mô hình thuần
+**không thắng P** theo §4 của `docs/12_PLAN2.md` → bản nộp giữ P + WG1. Hướng tiếp (đưa vào thảo luận kế hoạch mới với user): dữ liệu huấn
+luyện mang đúng phân bố câu public (paraphrase kiểu lóng / viết tắt / kỳ viết tắt sinh có kiểm), không chỉ thêm dữ liệu cùng loại.

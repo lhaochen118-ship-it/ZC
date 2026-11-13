@@ -252,3 +252,10 @@ mô hình thuần trên câu train → 178 thẻ ứng viên (175 có hàm kiể
 sinh thẻ): **4 thẻ check được nhận** (bắt 39 / 21 / 9 / 4 mẫu sai, 0 mẫu đúng — ví dụ "câu có 'qua' mà chương trình dùng `today_p`",
 "câu về 'xe' mà dùng `n_orders` thay `n_delivery_trips`"); 171 thẻ bị loại (độ chính xác 0.09–0.17). Thẻ nội dung quy nạp: chờ A/B
 với v3a (WP3-06). Sự cố: cài pip song song trong một kernel (đã khoá), trần think 2048 token (quy nạp → 6144, newterm → không think).
+
+**A/B thẻ nội dung vòng 0 (13/11 13:35 UTC, v3a × 0.70, cấu hình Q, tập `lrl_ab0` 500 câu train của DN khác DN sinh thẻ):** không thẻ
+(`ab0a`) **0.864** (460 / 28 / 12) — có 178 thẻ ứng viên (`ab0b`) **0.854** (458 / 31 / 11); trên 111 thẻ được kích hoạt: sửa 18 / làm hỏng 28.
+Theo quy tắc §2.6 (đúng tăng ≥ 2, sai không tăng) nhận **1 thẻ** (`R54b52f8f`, 'doanh thu' → `revenue`, 2 / 0) vào `src/refs/lrl/induced.jsonl`
+(nay 4 check + 1 nội dung). Với ngưỡng lỏng 1 / 0 sẽ có 12 thẻ, nhưng tổng âm cho thấy mức 1 câu là nhiễu lấy mẫu. Kết luận: thẻ nội dung
+do Qwen quy nạp thô (vòng 0) chưa có ích; vòng 1 cần lọc chặt hơn trước A/B (khớp ≥ 2 DN, nội dung nêu tham số / kỳ cụ thể).
+

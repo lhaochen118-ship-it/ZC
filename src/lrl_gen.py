@@ -255,7 +255,8 @@ def main():
         i, n = map(int, a.shard.split("/")); items = items[i::n]
     if os.environ.get("ZC_SMOKE") == "1": items = items[:8]
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
-    think = a.mode in ("induce", "newterm")
+    think = a.mode == "induce"                                          # newterm without thinking: with it 930 / 940 answers of
+                                                                        # lrl0c reasoned past the cap (13/11); the task is simple
     if a.fake_responder:
         g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
         texts = [g["responder"](c) for c in convs]

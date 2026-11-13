@@ -160,10 +160,12 @@ def compact_hints(h):
     return json.dumps(keep, ensure_ascii=False, separators=(", ", ": "), default=str)
 
 
-def question_block(examples, hints, question, as_of, variant="direct"):
-    """# EXAMPLES + # HINTS + # QUESTION (+ # TASK of the variant): per question, after the shared prefix."""
+def question_block(examples, hints, question, as_of, variant="direct", rules=""):
+    """# EXAMPLES + # RULES (learned rule cards, src/lrl.py) + # HINTS + # QUESTION (+ # TASK of the variant): per question,
+    after the shared prefix."""
     parts = []
     if examples: parts.append("# EXAMPLES (other shops: their names differ; use them for the method)\n" + "\n\n".join(render_example(e) for e in examples))
+    if rules: parts.append(rules.strip())
     hj = compact_hints(hints)
     if hj: parts.append("# HINTS (read by rules from the question and the data; may be incomplete or wrong)\n" + hj)
     parts.append(f"# QUESTION (today = {as_of})\n{question.strip()}")
@@ -175,7 +177,7 @@ def messages(system, business, qblock):
     return [{"role": "system", "content": system}, {"role": "user", "content": business + "\n\n" + qblock}]
 
 
-_TAG = re.compile(r"<(plan|code|python|sql)>\s*\n?(.*?)\n?\s*</\1>", re.S)
+_TAG = re.compile(r"<(spec|plan|code|python|sql)>\s*\n?(.*?)\n?\s*</\1>", re.S)
 
 
 def parse_output(text):
@@ -186,7 +188,10 @@ def parse_output(text):
     blocks = {m.group(1): m.group(2) for m in _TAG.finditer(t)}
     plan = blocks.get("plan", "")
     for tag in ("code", "python", "sql"):
-        if tag in blocks: return {"plan": plan.strip(), "code": blocks[tag].strip("\n"), "escape": None if tag == "code" else tag}
+        if tag in blocks:
+            out = {"plan": plan.strip(), "code": blocks[tag].strip("\n"), "escape": None if tag == "code" else tag}
+            if "spec" in blocks: out["spec"] = blocks["spec"].strip()          # plan 3: the model's own <spec> (voted on, logged)
+            return out
     m = re.search(r"<(code|python|sql)>\s*\n?(.*)$", t, re.S)                # unterminated last block
     if m: return {"plan": plan.strip(), "code": m.group(2).strip("\n"), "escape": None if m.group(1) == "code" else m.group(1), "unterminated": True}
     m = re.search(r"```(?:python|py)?\s*\n(.*?)```", t, re.S)

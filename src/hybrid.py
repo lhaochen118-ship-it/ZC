@@ -14,7 +14,7 @@ Per question:
 Everything a question went through is logged (hints, examples, every turn: text, code, precheck, execution, postcheck, logprob)."""
 import os, re, json, time, pickle
 from collections import Counter
-import pipeline, dm, prompting, api_spec, retrieval, shopctx
+import pipeline, dm, prompting, api_spec, retrieval, shopctx, lrl
 import precheck as pre
 import tools as toolsmod
 
@@ -35,15 +35,26 @@ class HybridPipeline(pipeline.Pipeline):
         self.variants = [v for v in (getattr(a, "variants", "direct") or "direct").split(",") if v in prompting.VARIANT] or ["direct"]
         self.ctxs = {}
         self.stats = Counter()
+        lp = getattr(a, "lrl", "") or ""                                # plan 3: learned rule cards (src/lrl.py), comma-separated files;
+        if lp and not os.path.isabs(lp.split(",")[0]) and not os.path.isfile(lp.split(",")[0]):   # a bare name: <split>/lrl/<name>
+            lp = ",".join(os.path.join(a.split, "lrl", x) for x in lp.split(","))
+        self.lib = lrl.Library.load(lp) if lp else None
+        if self.lib is not None: print(f"[hybrid] learned rule cards: {len(self.lib)} ({lp})", flush=True)
 
     # -- per shop context (prompt prefix, hints, grammar)
+    def rulebook_for(self, b):
+        """the rulebook of shop b: <split>/rulebooks/<b>.md when an evaluation split mixes shops of two original splits
+        (src/eval_flow.py: a held-out TRAINING shop keeps the training rulebook, docs/15 §4.3), else the split's rulebook."""
+        p = os.path.join(self.a.split, "rulebooks", b + ".md")
+        return open(p, encoding="utf-8").read() if os.path.isfile(p) else self.rulebook
+
     def ctx_of(self, b, can):
         if b in self.ctxs: return self.ctxs[b]
         c = None
         if can and can.get("path"):
             try:
                 d = pickle.load(open(can["path"], "rb"))
-                c = shopctx.ShopCtx(self.a.split, b, self.bizs[b], d["C"], d.get("notes", ""), d.get("data_end"), self.rulebook,
+                c = shopctx.ShopCtx(self.a.split, b, self.bizs[b], d["C"], d.get("notes", ""), d.get("data_end"), self.rulebook_for(b),
                                     hide=self.hide, mode=getattr(self.a, "prompt", "compact"), escapes=self.escapes)
                 c.hint_opts = {"counts_hints": bool(int(getattr(self.a, "hint_counts", 0) or 0))}
                 if getattr(self.a, "grammar", 1): c.grammar(int(getattr(self.a, "max_enum", 5000)))
@@ -83,7 +94,11 @@ class HybridPipeline(pipeline.Pipeline):
         exs = self.bank.retrieve(q["question"], h, k=int(a.shots), exclude_bids=excl, exclude_ids={q["id"]})
         st["examples"] = [e.get("id") for e in exs]
         shown = h if getattr(a, "hints", 1) and not pure else None
-        st["msgs"] = {v: ctx.messages(q["question"], q["as_of_date"], exs, shown, v) for v in set(self.variants) | {"direct"}}
+        cards = self.lib.match(q["question"], bid=b, industry=(ctx.ind or (None, None, None))[2] if ctx.ind else None,
+                               k=int(getattr(a, "lrl_k", 6) or 6)) if self.lib is not None else []
+        st["cards"] = cards; st["rule_ids"] = [c.get("id") for c in cards]
+        rules = lrl.render(cards)
+        st["msgs"] = {v: ctx.messages(q["question"], q["as_of_date"], exs, shown, v, rules) for v in set(self.variants) | {"direct"}}
         st["qkey"] = dm.key(h.get("clean") or q["question"])
         k1 = 1 if self.k_now < a.k else max(1, int(a.k_fast))
         for j in range(k1): self.sample(st, j, "direct", 0.0 if j == 0 else a.temp)
@@ -123,6 +138,10 @@ class HybridPipeline(pipeline.Pipeline):
                                bool(int(getattr(a, "mask_check", 0) or 0)), cc, su,
                                getattr(ctx, "industry_doc", None) if int(getattr(a, "ticket_avg_check", 0) or 0) else None)
             turn["precheck"] = [f"{i['level']}:{i['rule']}:{i['msg'][:120]}" for i in iss]
+            viol = lrl.Library.violations(st.get("cards") or [], q["question"], code) if int(getattr(a, "lrl_check", 1) or 0) else []
+            if viol and len(smp["turns"]) <= int(a.max_turns):          # a learned check card flags the program: one repair turn
+                turn["lrl_check"] = viol; self.stats["lrl_check"] += 1
+                return retry("The program breaks these rules:\n" + "\n".join("- " + v for v in viol))
             if pre.errors(iss):
                 self.stats["precheck_error"] += 1
                 return retry("The program has problems:\n" + pre.message(iss))
@@ -203,7 +222,7 @@ class HybridPipeline(pipeline.Pipeline):
             c = agent.canon_of(s["answer"]); votes[c] += 0.5 if s.get("flags") else 1.0; rep.setdefault(c, s["answer"])
         n = max(1, len(st["samples"]))
         top = votes.most_common(1)[0][0] if votes else None
-        log = {"hints": st.get("hints"), "examples": st.get("examples"), "stop": st.get("stop", "round2"), "error": st.get("error"),
+        log = {"hints": st.get("hints"), "examples": st.get("examples"), "rules": st.get("rule_ids") or None, "stop": st.get("stop", "round2"), "error": st.get("error"),
                "best": rep[top] if votes else None,
                "samples": [{k: v for k, v in s.items()} for s in st["samples"]]}
         if votes:

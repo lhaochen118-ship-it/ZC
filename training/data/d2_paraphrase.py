@@ -3,7 +3,8 @@
 names preserved), labelled with the original question's checked program. Held-out shops removed. A paraphrase whose period
 (qparse.parse_period of the paraphrase vs the original, as-of day of the question) differs is dropped: a changed period
 changes the question (entry 26: such paraphrases were almost always another question).
-Usage: d2_paraphrase.py <train_split> <ingest_cache> <canon_dir> <para_train.jsonl> <out.jsonl> [--mode compact] [--k 3]"""
+--all-shops (final model only, plan 3 WP3-04): paraphrases of the 6 held-out shops too, examples from the all-shop bank (--bank).
+Usage: d2_paraphrase.py <train_split> <ingest_cache> <canon_dir> <para_train.jsonl> <out.jsonl> [--mode compact] [--k 3] [--all-shops --bank F]"""
 import os, sys, json, time, argparse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common
@@ -13,12 +14,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split"); ap.add_argument("cache"); ap.add_argument("canon_dir"); ap.add_argument("para"); ap.add_argument("out")
     ap.add_argument("--mode", default="compact"); ap.add_argument("--k", type=int, default=3)
+    ap.add_argument("--all-shops", action="store_true"); ap.add_argument("--bank", default=None)
     a = ap.parse_args()
     import retrieval, qparse
     t0 = time.time()
-    ex = {r["id"]: r for r in common.jl(os.path.join(common.SRC, "refs", "answer_examples.jsonl")) if r["business_id"] not in common.TR_HO}
+    ex = {r["id"]: r for r in common.jl(os.path.join(common.SRC, "refs", "answer_examples.jsonl")) if a.all_shops or r["business_id"] not in common.TR_HO}
     ans = {r["id"]: r for r in common.jl(os.path.join(a.split, "answers.jsonl"))}
-    bank = retrieval.Bank.load()
+    bank = retrieval.Bank.load(a.bank, include_holdout=a.all_shops)
     rows, drop = [], {"no_program": 0, "period_changed": 0}
     for p in common.jl(a.para):
         if not p.get("ok"): continue

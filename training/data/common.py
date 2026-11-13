@@ -45,10 +45,11 @@ def ctx(split, cache, canon_dir, bid, mode="compact", hide=()):
     return _CTX[k]
 
 
-def sample(c, q, code, examples, hints, source, answer=None, variant="direct", plan=None):
-    """one SFT record: the inference prompt of shop context c + the labelled output (docs/08 §5.2 / §5.3)."""
+def sample(c, q, code, examples, hints, source, answer=None, variant="direct", plan=None, rules=""):
+    """one SFT record: the inference prompt of shop context c + the labelled output (docs/08 §5.2 / §5.3); rules: the # RULES
+    block of the learned rule cards (src/lrl.render, plan 3)."""
     import grammar
-    msgs = c.messages(q["question"], q["as_of_date"], examples, hints, variant)
+    msgs = c.messages(q["question"], q["as_of_date"], examples, hints, variant, rules)
     label = grammar.wrap(code, plan or grammar.auto_plan(code))
     return {"id": q["id"], "business_id": q["business_id"], "source": source, "messages": msgs + [{"role": "assistant", "content": label}],
             "program": code, "answer": answer, "as_of_date": q["as_of_date"], "question": q["question"]}

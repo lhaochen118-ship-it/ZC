@@ -43,6 +43,13 @@ dùng hết slot một acc rồi mới sang acc khác; việc không cần GPU �
 **`final_submission/submission.jsonl` (user 10/11):** luôn là file nộp public có PA cao nhất đến nay; sau **mỗi** lần chạy GPU có public gốc,
 chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi PA cao hơn; ghi `final_submission/score.json`) rồi commit + push.
 
+**Quyết định user 13/11 (bắt buộc):** duyệt **kế hoạch 3** `docs/16_PLAN3_LEARNED_RULES.md` (kiểm tra: `docs/15_AUDIT.md`) — "thực hiện hết":
+mô hình thuần + **lớp luật do mô hình tự học** (quy nạp từ lỗi train, biên dịch rulebook lúc suy luận, bí danh giá trị, ViLexNorm; luật chỉ học từ train,
+nhận bằng A/B trên DN khác), dữ liệu v3, gói WP3-00 → WP3-10 đến 16/11, rồi **H2** sau 16/11 (RL thưởng theo PA, mô hình chuẩn hoá câu). **Đổi bản nộp**
+(§5.4) khi hệ mới có held-out gộp ≥ P và public ≥ 0.985. **WP3-04:** huấn luyện lại P trên đủ 30 DN, giữ nếu public ≥ 0.993. Tiến độ: bảng "Tiến độ P3"
+trong `handoff/STATUS.md`. Vẫn áp dụng: kiểm quota trước khi chạy (không đủ → tối ưu: FSDP 4 GPU, chuỗi checkpoint qua acc, chia shard; vẫn không đủ →
+giải pháp khác; không có thì không chạy), tốc độ trước, không tiết kiệm acc / GPU.
+
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 
 - Tự động hoá tối đa; chỉ hỏi việc chỉ user làm được (token, nộp portal, accept rules Kaggle trên web).

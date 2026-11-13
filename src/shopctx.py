@@ -84,8 +84,8 @@ class ShopCtx:
     def hints(self, question, as_of):
         return hintsmod.build_hints(question, as_of, self.shop(as_of), self.normalizer, self.rule_rows, self.vocab, **self.hint_opts)
 
-    def messages(self, question, as_of, examples=(), hints=None, variant="direct"):
-        return prompting.messages(self.system, self.business, prompting.question_block(list(examples), hints, question, as_of, variant))
+    def messages(self, question, as_of, examples=(), hints=None, variant="direct", rules=""):
+        return prompting.messages(self.system, self.business, prompting.question_block(list(examples), hints, question, as_of, variant, rules))
 
     @property
     def entity_values(self):

@@ -76,9 +76,10 @@ def evaluate(a, model, res, t0, out_dir, eval_config, tag="eval"):
         if a.subset: cmd += ([] if a.fake_responder else ["--"]) + ["--subset", str(a.subset)]
     env = dict(os.environ, ZC_BASE_MODEL=a.model)                     # plan 4 W: the rule-unit writer is the base model
     rc = subprocess.run(cmd, stdout=open(os.path.join(out_dir, "eval.log"), "w"), stderr=subprocess.STDOUT, env=env).returncode
-    for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"):
+    for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl", os.path.join("units", "cards_unit.jsonl")):
         for p in (os.path.join(ev, "run", f), os.path.join(ev, f)):
             if os.path.isfile(p): shutil.copy(p, out_dir); break
+    for p in __import__("glob").glob(os.path.join(ev, "units", "raw_unit*.jsonl")): shutil.copy(p, out_dir)   # plan 4 W: what the writer wrote
     if a.runner == "predict" and os.path.isdir(os.path.join(ev, "logs")):
         shutil.copytree(os.path.join(ev, "logs"), os.path.join(out_dir, "logs"), dirs_exist_ok=True)
     res.update(eval_rc=rc, eval_s=round(time.time() - t1))

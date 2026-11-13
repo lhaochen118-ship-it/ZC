@@ -317,12 +317,15 @@ def to_cards(mode, items, texts, names):
 
 
 def verify_units(cands, split, cache):
-    """keep, per (shop, term), the first candidate unit that runs on the shop's data with a non-degenerate result (src/units.py)."""
+    """per (shop, term): every candidate unit is run on the shop's data (src/units.py); among those that run with a non-degenerate
+    result, the one whose results on the test periods most candidates share is kept (self-consistency over the samples; ties ->
+    the earliest sample, temperature 0)."""
     import units, ingest, automap
+    from collections import defaultdict, Counter
     out, done, fails, shops = [], set(), {}, {}
+    good = defaultdict(list)
     for u in cands:
         k = (u["bid"], u["term"])
-        if k in done: continue
         if u["bid"] not in shops:
             try:
                 bp = os.path.join(cache or "", u["bid"] + ".pkl")
@@ -334,8 +337,13 @@ def verify_units(cands, split, cache):
         C, de, T = shops[u["bid"]]
         ok, why, sample = units.verify(u, C, de, T)
         if ok:
-            u["verified"] = {"sample": str(sample)[:200]}; out.append(u); done.add(k)
-        else: fails[k] = why
+            u["verified"] = {"sample": str(sample)[:200]}; good[k].append(u)
+        else: fails.setdefault(k, why)
+    for k, us in good.items():
+        votes = Counter(u.get("_sig") for u in us)
+        best = max(us, key=lambda u: (votes[u.get("_sig")], -us.index(u)))
+        best["verified"]["agree"] = f"{votes[best.get('_sig')]}/{len(us)} runnable samples"
+        best.pop("_sig", None); out.append(best); done.add(k)
     print(f"[unit] {len(out)} units verified for {len({u['bid'] for u in out})} shops; {len([k for k in fails if k not in done])} rows without a "
           f"working unit", flush=True)
     return out
@@ -347,6 +355,7 @@ def main():
     ap.add_argument("--cases", default=""); ap.add_argument("--cache", default=""); ap.add_argument("--quant", default="")
     ap.add_argument("--max-len", type=int, default=8192); ap.add_argument("--fake-responder", default="")
     ap.add_argument("--shard", default=""); ap.add_argument("--samples", type=int, default=3, help="unit: samples per rulebook row")
+    ap.add_argument("--think-units", type=int, default=0, help="unit: the writer reasons first (4096-token cap)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     names = api_names()
     if a.mode == "compile": items = compile_items(a.split)
@@ -362,13 +371,13 @@ def main():
         items = induce_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
     elif a.mode == "unit": items = unit_items(a.split, a.cache)
     else: sys.exit(f"unknown mode {a.mode}")
-    if a.mode == "unit" and a.samples > 1:                              # k samples per row: the first that verifies is kept
-        items = [it for it in items for _ in range(a.samples)]
     if a.shard:
         i, n = map(int, a.shard.split("/")); items = items[i::n]
     if os.environ.get("ZC_SMOKE") == "1": items = items[:8]
+    if a.mode == "unit" and a.samples > 1:                              # k samples per row (after sharding: a row's samples stay
+        items = [it for it in items for _ in range(a.samples)]          # together for the self-consistency choice)
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
-    think = a.mode == "induce"                                          # newterm without thinking: with it 930 / 940 answers of
+    think = a.mode == "induce" or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
                                                                         # lrl0c reasoned past the cap (13/11); the task is simple
     if a.fake_responder:
         g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
@@ -380,7 +389,7 @@ def main():
         temp = 0.7 if a.mode == "translit" else 0.0
         temps = [temp] * len(convs)
         if a.mode == "unit": temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
-        texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], 6144 if think else 900, think=think)   # 2048 was
+        texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], (4096 if a.mode == "unit" else 6144) if think else 900, think=think)   # 2048 was
         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap without reaching their JSON (13/11)
     else: texts = []
     cards = to_cards(a.mode, items, texts, names)

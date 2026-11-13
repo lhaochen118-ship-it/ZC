@@ -47,6 +47,7 @@
  "lrl_max_df": 0.02,
  "selector": "src/refs/selector/selector_v3a_inv.json",
  "units_gen": 1,
- "units_samples": 3,
- "hide_api": "industry"
+ "units_samples": 5,
+ "hide_api": "industry",
+ "units_think": 1
 }

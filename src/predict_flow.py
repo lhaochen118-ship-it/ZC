@@ -73,12 +73,25 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     c = json.load(open(cfg, encoding="utf-8"))
     if not int(c.get("units_gen", 0) or 0): return None
     out = os.path.join(work, "units"); os.makedirs(out, exist_ok=True); t = time.time()
-    cmd = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unit", "--quant", "fp8",
-           "--samples", str(int(c.get("units_samples", 3) or 3))] + (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
-    rc = run(cmd, log)
+    base = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unit", "--quant", "fp8",
+            "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0))] + \
+           (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
+    ng = 1 if fake else max(1, n_gpus())                               # one shard of the rows per GPU, in parallel
+    if ng == 1: rcs = [run(base, log)]
+    else:
+        procs = [subprocess.Popen(base + ["--shard", f"{i}/{ng}"], env=dict(os.environ, CUDA_VISIBLE_DEVICES=str(i)),
+                                  stdout=open(os.path.join(out, f"shard{i}.log"), "w"), stderr=subprocess.STDOUT) for i in range(ng)]
+        rcs = [p.wait() for p in procs]
+        for i in range(ng):
+            for l in open(os.path.join(out, f"shard{i}.log"), encoding="utf-8", errors="replace").readlines()[-3:]: log(f"units shard {i}: {l.rstrip()}")
     f = os.path.join(out, "cards_unit.jsonl")
+    if ng > 1:                                                         # merge the shards' units
+        with open(f, "w", encoding="utf-8") as w:
+            for i in range(ng):
+                p = os.path.join(out, f"cards_unit_{i}of{ng}.jsonl")
+                if os.path.isfile(p): w.write(open(p, encoding="utf-8").read())
     n = sum(1 for _ in open(f, encoding="utf-8")) if os.path.isfile(f) else 0
-    log(f"units: rc={rc}, {n} verified units ({time.time() - t:.0f}s)")
+    log(f"units: rc={rcs}, {n} verified units ({time.time() - t:.0f}s)")
     return f if n else None
 
 

@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/g0hb --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters V3A --weights 0.70 --sets pub_noind,tr_newterm --eval-configs configs/flow_swv_h.json

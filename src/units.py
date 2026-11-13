@@ -125,7 +125,22 @@ def verify(unit, C, data_end, T=None, timeout=20):
     s = good[-1]
     try: s = s if isinstance(s, (int, float, str, bool)) else (s.head(3).to_dict() if hasattr(s, "head") else list(s)[:3])
     except Exception: s = str(s)[:120]
+    unit["_sig"] = signature(results)                                  # what the unit computes on the test periods (self-consistency)
     return True, "ok", s
+
+
+def signature(results):
+    """a hashable summary of a unit's results on the test periods: numbers rounded, lists / tables by their first items."""
+    out = []
+    for v in results:
+        try:
+            if isinstance(v, bool): out.append(("b", v))
+            elif isinstance(v, (int, float)) or type(v).__module__.startswith("numpy") and hasattr(v, "__float__"): out.append(("n", round(float(v), 2)))
+            elif hasattr(v, "to_dict") and hasattr(v, "head"): out.append(("t", str(list(v.head(5).to_dict().items()))[:200]))
+            elif isinstance(v, (list, tuple, set)): out.append(("l", tuple(str(x)[:30] for x in list(v)[:5]), len(v)))
+            else: out.append(("s", str(v)[:60]))
+        except Exception: out.append(("?", str(v)[:60]))
+    return repr(out)
 
 
 def block(units):

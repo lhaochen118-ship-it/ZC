@@ -221,3 +221,7 @@ p3pbase,hieuho669/zc-p3pbase-1,DONE:complete,P+WG1 x0.35: pub_ho400c 0.6983 tr_h
 v3ap2,duckzuykobip/zc-v3ap2-1,DONE:partial,checkpoint-51 of 77 (resumed from 22)
 lrl0e,namhunhh/zc-lrl0e-1,DONE:complete,newterm 502/940 (no think)
 v3ap3,caotienminh1/zc-v3ap3-1,DONE:partial,checkpoint-66 of 77 (deadline stop; then the reference-loss pass OOM -> NCCL timeout rc 1, no train_metrics; fixed in sft.py)
+v3ap4,anderson1202/zc-v3ap4-1,RUNNING,resume checkpoint-66 -> 77 (dataset anderson1202/zc-v3ap4-ck)
+v3b,phuongnehe/zc-v3b-1,RUNNING,SFT v3b one session (19.5M tokens)
+wr30p1,synchan5704/zc-wr30p1-1,RUNNING,WR30 part 1 (ZC_SESSION_S 6660)
+p3pb2,hieuho669/zc-p3pb2-1,RUNNING,P (WG1 x 0.35) on pub_noind + tr_newterm

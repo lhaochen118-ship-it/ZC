@@ -49,7 +49,9 @@ Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp +
 4. Bản nộp: **P + WG1 × 0.35** (`configs/flow_final.json`, container 0.994, `final_submission/`); `docker/README_SOLUTION.md` đã cập nhật.
    **Kiểm 13/11 01:40:** `nhatlong1103/zc-final-adapter` tải về khớp sha256 `src/adapter_hashes.json` (WG1 + `soup.json` × 0.35), `predict.sh`
    mặc định `flow_final.json` (P: count / size_use / ticket_avg bật) → sẵn sàng; báo user build Docker 15/11.
-5. Xong các mục trên → **dừng, cùng user phân tích và lập kế hoạch mới** hướng tới score = 1 (quyết định user 12/11).
+5. **13/11 02:05: mục 1–4 xong → dừng, chờ user phân tích và lập kế hoạch mới** hướng tới score = 1 (quyết định user 12/11). Routine tự
+   tiếp tục hằng giờ `trig_018LeLfkcTwsLDDxbbaUvUNB` và nhắc 14/11 `trig_01X66grTP7iy1Hv5p6sCCtFv` **đã tắt** (bật lại khi có kế hoạch mới).
+   Việc chỉ user làm: build Docker 15/11 (`docker/SETUP_DOCKER.md`), nộp trước 16/11 23:59 GMT+7.
 
 Đã thử 12/11 (không giữ): WG5–8 (seed 25 / 26, r 64, lr 1e-4) — không nhánh nào hơn WG1 ở public. Ý tưởng chưa làm: tài liệu API thiếu
 `purchased_qty_base` ("nhập về bao nhiêu viên"; đổi mọi prompt → cần đo riêng); bộ chọn học trên log WG1 (bộ chọn J từng bị loại: public −0.1…−0.8).

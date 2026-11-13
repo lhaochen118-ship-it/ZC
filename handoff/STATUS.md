@@ -39,13 +39,16 @@
 
 Không chờ 100 % mới dừng: làm hết §4 (đến khi chốt bản nộp + Docker), rồi cùng user phân tích và lập kế hoạch mới (mô hình → score = 1).
 
-## 4. Việc tiếp theo (theo thứ tự; cập nhật 12/11 04:40 UTC)
+## 4. Việc tiếp theo (theo thứ tự; cập nhật 13/11 01:30 UTC)
 
 1. ~~Cấu hình P~~: **xong, P là cấu hình nộp** (§1).
-2. **14/11 00:06 UTC** (đã hẹn `send_later`): quota làm mới → huấn luyện **WG9–12** (`automation/jobs/wg3r.jobs`, plan `plan_wg3r.json`, ~7.5 h):
-   WG9 / WG10 = D1 + `d2mix_full` (1,909 D2 + 1,909 D2b, cùng tỉ lệ WG1) seed 31 / 32; WG11 = D1 + D2 + D2b, ngân sách 21M token; WG12 = D1 + D2 + D2b,
-   14.7M token. Rồi sàng lọc (× 0.35, `pub_full,pub_ho400,tr_ho400`) → xác nhận đủ tập 2 seed nhánh hơn WG1.
-3. Trước 15/11: chốt bản nộp, đường container lần cuối, `docker/README_SOLUTION.md`, báo user build.
+2. ~~WG9–12~~: **xong 12/11** (huấn luyện chia acc, sàng lọc với P đủ tập, `docs/12_PLAN2.md`): public 0.986–0.988 < 0.993 → giữ WG1; WG11
+   held-out 0.784 (ứng viên tổng quát nếu ưu tiên held-out).
+3. **Hướng thuần** (`docs/14_PURE_MODEL_PLAN.md`): QS10 đang sàng lọc (`namhunhh/zc-q1s10a35-1`, `zc-q1s10a70-1`) → ghi điểm, so với QS7 / P;
+   nếu QS10 (hoặc QS7) đáng giữ → xác nhận đủ tập 2 seed sau khi quota làm mới **14/11 00:00 UTC** (hiện mọi acc < 6.3 h).
+4. Bản nộp: **P + WG1 × 0.35** (`configs/flow_final.json`, container 0.994, `final_submission/`); `docker/README_SOLUTION.md` đã cập nhật.
+   Trước 15/11: kiểm lại một lần (hash adapter, `predict.sh` mặc định `flow_final.json`), báo user build Docker 15/11.
+5. Xong các mục trên → **dừng, cùng user phân tích và lập kế hoạch mới** hướng tới score = 1 (quyết định user 12/11).
 
 Đã thử 12/11 (không giữ): WG5–8 (seed 25 / 26, r 64, lr 1e-4) — không nhánh nào hơn WG1 ở public. Ý tưởng chưa làm: tài liệu API thiếu
 `purchased_qty_base` ("nhập về bao nhiêu viên"; đổi mọi prompt → cần đo riêng); bộ chọn học trên log WG1 (bộ chọn J từng bị loại: public −0.1…−0.8).

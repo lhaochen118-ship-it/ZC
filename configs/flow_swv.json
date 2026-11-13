@@ -1,5 +1,5 @@
 {
- "_doc": "Plan 4 (docs/17) S-W-V, first version: S = pure solver (flow_pure), W = model-written rule cards (lrl), V = learned selector trained on S's own logs of TRAINING shops (src/refs/selector/selector_v3a_inv.json: v3a x 0.70, tr_dev_para_a/b, invariant features, theta 0.45). No hand-written rule reads the question.",
+ "_doc": "Plan 4 (docs/17) S-W-V, first version: S = pure solver (flow_pure), W = model-written rule cards (lrl), V = learned selector trained on S's own logs of TRAINING shops (src/refs/selector/selector_v3a_inv.json: v3a x 0.70, tr_dev_para_a/b, invariant features, theta 0.45). No hand-written rule reads the question. + W: executable rule units written at inference (units_gen).",
  "flow": "hybrid",
  "pipeline": true,
  "quant": "fp8",
@@ -45,5 +45,7 @@
  "lrl_k": 4,
  "lrl_check": 1,
  "lrl_max_df": 0.02,
- "selector": "src/refs/selector/selector_v3a_inv.json"
+ "selector": "src/refs/selector/selector_v3a_inv.json",
+ "units_gen": 1,
+ "units_samples": 3
 }

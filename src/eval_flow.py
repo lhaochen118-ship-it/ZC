@@ -116,6 +116,14 @@ def main():
     dl = float(os.environ.get("ZC_DEADLINE") or 0)                     # Kaggle's 12 h session (make_kernel.py): unanswered
     if dl and "--hard-deadline" not in extra + rest:                    # questions abstained 10 min before the kernel's deadline,
         extra += ["--hard-deadline", str(int(dl - 600))]                # so the run writes its answers (no fast mode: same results)
+    def opt(name):
+        return rest[rest.index(name) + 1] if name in rest and rest.index(name) + 1 < len(rest) else ""
+    if opt("--config") and "--units" not in rest + extra:               # plan 4 W: the model writes this split's rule units first
+        import predict_flow                                             # (from the eval split's rulebook / shop data, no answer)
+        fake = extra[extra.index("--fake-responder") + 1] if "--fake-responder" in extra else ""
+        uv = predict_flow.prepare_units(opt("--config"), sp, out, os.environ.get("ZC_BASE_MODEL") or opt("--model"), lambda *m: print(*m, flush=True),
+                                        os.environ.get("ZC_UNITS_FAKE", ""), opt("--cache"))
+        if uv: extra += ["--units", uv]
     cmd = [sys.executable, os.path.join(HERE, "agent.py"), sp, os.path.join(out, "run")] + rest + extra
     rc = subprocess.run(cmd).returncode
     sys.exit(rc)

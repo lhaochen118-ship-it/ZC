@@ -186,6 +186,69 @@ def newterm_items(recs):
     return items
 
 
+UNIT_EXAMPLES = """## Ví dụ 1 — dòng rulebook: | Khách sộp nhất | khách có giá trị trung bình một đơn cao nhất trong kỳ, chỉ xét khách có từ 3 đơn trở lên trong kỳ |
+{"name": "khach_sop_nhat", "signature": "khach_sop_nhat(p, k=1)", "doc": "k khách có giá trị TB / đơn cao nhất trong kỳ p, chỉ khách >= 3 đơn", "triggers": ["khách sộp", "khach sop", "khách chịu chi"], "code": "def khach_sop_nhat(p, k=1):\n    so_don = customer_sales(p, by=\"n_orders\")\n    tb = customer_sales(p, by=\"aov\")\n    return rank(tb[so_don >= 3], k)"}
+## Ví dụ 2 — dòng rulebook: | Giờ cao điểm | khung một giờ tròn theo giờ tạo đơn có nhiều đơn nhất trong kỳ; đáp án là giờ bắt đầu khung |
+{"name": "gio_cao_diem", "signature": "gio_cao_diem(p)", "doc": "giờ bắt đầu của khung một giờ có nhiều đơn nhất trong kỳ p", "triggers": ["giờ cao điểm", "gio cao diem", "giờ đông khách"], "code": "def gio_cao_diem(p):\n    o = orders(p)\n    gio = pd.to_datetime(o[\"order_time\"]).dt.hour\n    dem = gio.value_counts().sort_index()\n    return int(dem.idxmax())"}
+## Ví dụ 3 — dòng rulebook: | Số đợt giao trong tháng | số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt |
+{"name": "so_dot_giao", "signature": "so_dot_giao(p)", "doc": "số đợt giao có ngày giao trong kỳ p (mỗi đợt của mỗi đơn)", "triggers": ["đợt giao", "chuyến giao", "dot giao"], "code": "def so_dot_giao(p):\n    g = C[\"deliveries\"].copy()\n    g[\"delivery_date\"] = pd.to_datetime(g[\"delivery_date\"]).dt.normalize()\n    g = g[p.mask(g[\"delivery_date\"])]\n    return int(g[[\"order_id\", \"trip_no\"]].drop_duplicates().shape[0])"}
+## Ví dụ 4 — dòng rulebook: | Mặt hàng được ưa chuộng nhất | mặt hàng có mặt trong nhiều đơn nhất trong kỳ |
+{"name": "hang_ua_chuong", "signature": "hang_ua_chuong(p, k=1)", "doc": "k mặt hàng có mặt trong nhiều đơn nhất trong kỳ p", "triggers": ["ưa chuộng", "ua chuong", "được chuộng"], "code": "def hang_ua_chuong(p, k=1):\n    return rank(item_sales(p, by=\"n_orders\"), k)"}
+## Ví dụ 5 — dòng rulebook: | Làm tròn | tiền làm tròn đến đồng |
+{"name": null}"""
+
+
+def _tables_card(C, T, max_chars=2500):
+    import prompting
+    out = "## C (bảng chuẩn)\n" + prompting.compact_card(C, "", max_chars=1500)
+    raw = []
+    for t, df in (T or {}).items():
+        cols = [str(c) for c in getattr(df, "columns", []) if not str(c).startswith("_")][:25]
+        raw.append(f"T[{t!r}] ({len(df)} dòng): {', '.join(cols)}")
+    return (out + "\n## T (bảng gốc)\n" + "\n".join(raw))[:max_chars]
+
+
+def unit_items(split, cache):
+    """per shop of the split: the rows of its rulebook industry section + the rows its rulebook has that neither the training
+    nor the public rulebook has (shopctx.rule_changes) -> a prompt asking for ONE function over the shop's tables (or null)."""
+    import ingest, automap, hints as hintsmod, shopctx
+    rb0 = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
+    items = []
+    bids = sorted(os.path.basename(d) for d in glob.glob(os.path.join(split, "data", "*")) if os.path.isdir(d))
+    for b in bids:
+        rbp = os.path.join(split, "rulebooks", b + ".md")
+        rb = open(rbp, encoding="utf-8").read() if os.path.isfile(rbp) else rb0
+        try:
+            bp = os.path.join(cache or "", b + ".pkl")
+            biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", b))
+            C = automap.build(biz)[0]
+        except Exception as e:
+            print(f"[unit] {b}: {type(e).__name__}: {e}", flush=True); continue
+        rows = []
+        ind = shopctx.industry_of(rb, biz)
+        if ind: rows += [(t, d, ind[0]) for t, d in hintsmod.rulebook_rows(ind[1]).values()]
+        try:                                                            # rows neither the training nor the public rulebook has
+            known = set()
+            for f in (shopctx.TRAIN_RULEBOOK, shopctx.PUBLIC_RULEBOOK):
+                try: known |= set(hintsmod.rulebook_rows(open(f, encoding="utf-8").read()))
+                except OSError: pass
+            rows += [(t, d, "mới") for k, (t, d) in hintsmod.rulebook_rows(rb).items() if k not in known]
+        except Exception as e: print(f"[unit] {b}: new rows unavailable ({type(e).__name__}: {e})", flush=True)
+        seen = set(); card = _tables_card(C, biz.tables)
+        for term, definition, sec in rows:
+            if term in seen: continue
+            seen.add(term)
+            u = (f"# TOOLKIT (đã có sẵn trong chương trình)\n{api_doc()}\n\n# DỮ LIỆU CỦA CỬA HÀNG {b}\n{card}\n\n# VÍ DỤ\n{UNIT_EXAMPLES}\n\n"
+                 f"# DÒNG RULEBOOK CẦN VIẾT HÀM (mục '{sec}')\n| {term} | {definition} |\n\n"
+                 "Viết MỘT hàm Python tính đúng thuật ngữ này trên dữ liệu của cửa hàng: dùng hàm toolkit khi có hàm hợp, nếu không thì pandas "
+                 "trên C hoặc T (đúng tên bảng / cột có ở trên). Tham số đầu là kỳ p (Period: p.mask(series), p.start, p.end) khi thuật ngữ "
+                 "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không import, không đọc file. Nếu dòng này không phải một đại lượng "
+                 "tính được (chỉ là cách ghi, cách làm tròn...) trả {\"name\": null}. JSON: {\"name\": \"ten_ham_khong_dau\", \"signature\": "
+                 "\"ten_ham(p, ...)\", \"doc\": \"một câu\", \"triggers\": [\"3-8 cụm từ chủ cửa hàng dùng\"], \"code\": \"def ten_ham(p, ...):\\n    ...\"}")
+            items.append(({"bid": b, "term": term, "definition": definition, "section": sec, "rulebook": __import__("lrl").rb_key(rb)}, u))
+    return items
+
+
 def induce_items(cases):
     items = []
     for c in cases:
@@ -233,6 +296,17 @@ def to_cards(mode, items, texts, names):
             t, d, q = (str(j.get(k) or "").strip() for k in ("term", "definition", "question"))
             if t and d and q and t.lower() in q.lower() and 2 <= len(t.split()) <= 6 and q != meta["orig_question"]:
                 out.append(dict(meta, term=t, definition=d, question=q, row=f"| {t} | {d} |"))
+        elif mode == "unit" and isinstance(j, dict):
+            if not j.get("name") or not j.get("code"): continue
+            name = re.sub(r"[^0-9a-zA-Z_]", "_", str(j["name"]))[:48].strip("_") or "unit"
+            code = str(j["code"])
+            m = re.search(r"def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", code)
+            if m and m.group(1) != name: code = code.replace(f"def {m.group(1)}(", f"def {name}(", 1)
+            u = {"kind": "unit", "bid": meta["bid"], "term": meta["term"], "definition": meta["definition"][:400], "section": meta.get("section"),
+                 "rulebook": meta.get("rulebook"), "name": name, "signature": str(j.get("signature") or name)[:120], "doc": str(j.get("doc") or "")[:300],
+                 "triggers": [str(t) for t in (j.get("triggers") or [])][:8], "code": code[:3000]}
+            u["id"] = "U" + hashlib.sha1(json.dumps([u["bid"], u["term"], code], ensure_ascii=False).encode()).hexdigest()[:8]
+            out.append(u)
         elif mode == "induce":
             for e in (j if isinstance(j, list) else [j]):
                 if not isinstance(e, dict): continue
@@ -242,12 +316,37 @@ def to_cards(mode, items, texts, names):
     return out
 
 
+def verify_units(cands, split, cache):
+    """keep, per (shop, term), the first candidate unit that runs on the shop's data with a non-degenerate result (src/units.py)."""
+    import units, ingest, automap
+    out, done, fails, shops = [], set(), {}, {}
+    for u in cands:
+        k = (u["bid"], u["term"])
+        if k in done: continue
+        if u["bid"] not in shops:
+            try:
+                bp = os.path.join(cache or "", u["bid"] + ".pkl")
+                biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", u["bid"]))
+                C = automap.build(biz)[0]; de = automap.parse_readme(biz.readme).get("data_end")
+                shops[u["bid"]] = (C, de, biz.tables)
+            except Exception as e: shops[u["bid"]] = None; print(f"[unit] {u['bid']}: {type(e).__name__}: {e}", flush=True)
+        if shops[u["bid"]] is None: continue
+        C, de, T = shops[u["bid"]]
+        ok, why, sample = units.verify(u, C, de, T)
+        if ok:
+            u["verified"] = {"sample": str(sample)[:200]}; out.append(u); done.add(k)
+        else: fails[k] = why
+    print(f"[unit] {len(out)} units verified for {len({u['bid'] for u in out})} shops; {len([k for k in fails if k not in done])} rows without a "
+          f"working unit", flush=True)
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("split"); ap.add_argument("out"); ap.add_argument("--model", default=""); ap.add_argument("--mode", required=True)
     ap.add_argument("--cases", default=""); ap.add_argument("--cache", default=""); ap.add_argument("--quant", default="")
     ap.add_argument("--max-len", type=int, default=8192); ap.add_argument("--fake-responder", default="")
-    ap.add_argument("--shard", default="")
+    ap.add_argument("--shard", default=""); ap.add_argument("--samples", type=int, default=3, help="unit: samples per rulebook row")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     names = api_names()
     if a.mode == "compile": items = compile_items(a.split)
@@ -261,7 +360,10 @@ def main():
     elif a.mode == "induce":
         p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
         items = induce_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
+    elif a.mode == "unit": items = unit_items(a.split, a.cache)
     else: sys.exit(f"unknown mode {a.mode}")
+    if a.mode == "unit" and a.samples > 1:                              # k samples per row: the first that verifies is kept
+        items = [it for it in items for _ in range(a.samples)]
     if a.shard:
         i, n = map(int, a.shard.split("/")); items = items[i::n]
     if os.environ.get("ZC_SMOKE") == "1": items = items[:8]
@@ -276,10 +378,13 @@ def main():
         eng = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
                                               gpu_util=0.9, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0, prefix_budget=0))
         temp = 0.7 if a.mode == "translit" else 0.0
-        texts, _ = eng.gen(convs, [temp] * len(convs), [4242 + i for i in range(len(convs))], 6144 if think else 900, think=think)   # 2048 was
+        temps = [temp] * len(convs)
+        if a.mode == "unit": temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
+        texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], 6144 if think else 900, think=think)   # 2048 was
         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap without reaching their JSON (13/11)
     else: texts = []
     cards = to_cards(a.mode, items, texts, names)
+    if a.mode == "unit": cards = verify_units(cards, a.split, a.cache)
     tag = a.mode + (("_" + a.shard.replace("/", "of")) if a.shard else "")
     with open(os.path.join(a.out, f"cards_{tag}.jsonl"), "w", encoding="utf-8") as f:
         for c in cards: f.write(json.dumps(c, ensure_ascii=False) + "\n")

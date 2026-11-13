@@ -44,6 +44,11 @@ class HybridPipeline(pipeline.Pipeline):
         if self.lib is not None:                                        # generic triggers out, by the run's own questions (inputs)
             self.lib.prune([x["question"] for x in qs], float(getattr(a, "lrl_max_df", 0.02) or 0.02))
         if self.lib is not None: print(f"[hybrid] learned rule cards: {len(self.lib)} ({lp})", flush=True)
+        self.units_all = []                                             # plan 4 W: executable rule units (src/units.py)
+        if getattr(a, "units", ""):
+            import units as unitsmod
+            self.units_all = unitsmod.load(a.units)
+            print(f"[hybrid] rule units: {len(self.units_all)} ({a.units})", flush=True)
 
     # -- per shop context (prompt prefix, hints, grammar)
     def rulebook_for(self, b):
@@ -61,6 +66,14 @@ class HybridPipeline(pipeline.Pipeline):
                 c = shopctx.ShopCtx(self.a.split, b, self.bizs[b], d["C"], d.get("notes", ""), d.get("data_end"), self.rulebook_for(b),
                                     hide=self.hide, mode=getattr(self.a, "prompt", "compact"), escapes=self.escapes)
                 c.hint_opts = {"counts_hints": bool(int(getattr(self.a, "hint_counts", 0) or 0))}
+                if self.units_all:                                     # the units of this shop that run on its data
+                    import units as unitsmod
+                    ok = [u for u in unitsmod.for_shop(self.units_all, b) if unitsmod.verify(u, d["C"], d.get("data_end"), self.bizs[b].tables)[0]]
+                    c.units = ok[:unitsmod.MAX_UNITS]
+                    if c.units:
+                        c.business = c.business + "\n\n" + unitsmod.block(c.units)
+                        c.spec_u = list(self.spec) + unitsmod.spec_entries(c.units)
+                    print(f"[hybrid] {b}: {len(c.units)} rule units verified", flush=True)
                 if getattr(self.a, "grammar", 1): c.grammar(int(getattr(self.a, "max_enum", 5000)))
             except Exception as e:
                 print(f"[hybrid] {b}: no context ({type(e).__name__}: {e})", flush=True); c = None
@@ -137,7 +150,7 @@ class HybridPipeline(pipeline.Pipeline):
                 code = sql_program(code, (st["hints"] or {}).get("answer_type"))
             uc = bool(int(getattr(a, "unit_check", 0) or 0)); cc = bool(int(getattr(a, "count_check", 0) or 0))
             su = bool(int(getattr(a, "size_use_check", 0) or 0))
-            iss = pre.precheck(code, self.spec, st["hints"], ctx.entity_values, out["escape"], q["as_of_date"],
+            iss = pre.precheck(code, getattr(ctx, "spec_u", None) or self.spec, st["hints"], ctx.entity_values, out["escape"], q["as_of_date"],
                                q["question"] if (int(getattr(a, "size_check", 0) or 0) or uc or cc or su) else None, uc,
                                bool(int(getattr(a, "mask_check", 0) or 0)), cc, su,
                                getattr(ctx, "industry_doc", None) if int(getattr(a, "ticket_avg_check", 0) or 0) else None)

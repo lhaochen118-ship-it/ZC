@@ -65,6 +65,23 @@ def smoke_split(split, dst, n_biz=2):
     return dst
 
 
+def prepare_units(cfg, split, work, model, log, fake="", cache=""):
+    """plan 4 W (docs/17): with "units_gen": 1 in the config, the model writes executable rule units for this split from its INPUTS
+    only (src/lrl_gen.py --mode unit: the rows of each shop's industry section + rows no known rulebook has -> one function each,
+    kept when it runs on the shop's data). Returns the --units path, or None."""
+    if not cfg: return None
+    c = json.load(open(cfg, encoding="utf-8"))
+    if not int(c.get("units_gen", 0) or 0): return None
+    out = os.path.join(work, "units"); os.makedirs(out, exist_ok=True); t = time.time()
+    cmd = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unit", "--quant", "fp8",
+           "--samples", str(int(c.get("units_samples", 3) or 3))] + (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
+    rc = run(cmd, log)
+    f = os.path.join(out, "cards_unit.jsonl")
+    n = sum(1 for _ in open(f, encoding="utf-8")) if os.path.isfile(f) else 0
+    log(f"units: rc={rc}, {n} verified units ({time.time() - t:.0f}s)")
+    return f if n else None
+
+
 def prepare_lrl(cfg, split, work, model, log, fake=""):
     """plan 3 (docs/16 §2.3, P2 / P3): when the config uses learned rule cards, a split whose rulebook no shipped compiled card
     belongs to (a new test) gets its own cards first, written by the model from the split's INPUTS only (rulebook rows; the
@@ -126,6 +143,8 @@ def main():
     log(f"model {a.model}  dp {dp}  config {cfg or '(defaults)'}  runs up to {a.runs}")
     lv = prepare_lrl(cfg, a.split, a.work, a.model, log, a.lrl_fake)
     if lv is not None: extra = extra + ["--lrl", lv]
+    uv = prepare_units(cfg, a.split, a.work, a.model, log, a.lrl_fake)
+    if uv is not None: extra = extra + ["--units", uv]
     vote_sub = os.path.join(a.work, "llm_vote.jsonl")
 
     def agent(i, budget, logdir):

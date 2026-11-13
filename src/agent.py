@@ -342,6 +342,11 @@ def _namespace(bid, as_of=None, canon_path=None):
                 import tools
                 g.update(tools.bind_tools(shop, as_of, _CTX.get("rulebook", ""), can.get("data_end")))
             except Exception as e: print(f"[tools] unavailable: {type(e).__name__}: {e}", flush=True)
+            if os.environ.get("ZC_UNITS"):                             # plan 4 W: the model-written unit functions of this shop
+                try:
+                    import units as _units
+                    _units.bind(g, _units.for_shop(_units.env_units(), bid))
+                except Exception as e: print(f"[units] unavailable: {type(e).__name__}: {e}", flush=True)
             import sqlesc                                              # the <sql> escape (WP12): DuckDB over C + raw tables, read-only
             g["sql_answer"] = sqlesc.make_sql_answer(can["C"], biz.tables)
         else: g["C"] = {k: v.copy() for k, v in can["C"].items()}
@@ -938,6 +943,7 @@ def build_parser():
     ap.add_argument("--retriever", default="ngram", choices=["ngram", "embed"]); ap.add_argument("--embed-model", default="")
     ap.add_argument("--verifier", default=""); ap.add_argument("--verifier-weight", type=float, default=0.0)
     ap.add_argument("--calibrator", default=""); ap.add_argument("--theta-abstain", type=float, default=0.5, help="hybrid: answer when conf >= this")
+    ap.add_argument("--units", default="", help="hybrid: executable rule units written by the model from the split's rulebook (src/lrl_gen.py --mode unit; files / dirs, comma-separated): verified per shop, shown as # SHOP FUNCTIONS and callable in programs (plan 4 W)")
     ap.add_argument("--selector", default="", help="hybrid: learned answer selector (src/selector.py json, trained on the solver's own logs of TRAINING shops): it picks the answer group and abstains below its theta (plan 4 V; replaces the vote)")
     ap.add_argument("--exclude-bids", default="", help="hybrid: shops whose examples are never retrieved (held-out evaluation)")
     ap.add_argument("--hide-api", default="", help="hybrid: hidden API names, 'industry' = every industry function (pub_noind)")
@@ -969,6 +975,7 @@ def main():
 def run(a, engine=None):
     t_start = time.time(); os.makedirs(a.out, exist_ok=True)
     os.environ["ZC_ADJ_ROWS"] = getattr(a, "adj_rows", "keep") or "keep"   # read by dm.finalize in every worker (inherited)
+    if getattr(a, "units", ""): os.environ["ZC_UNITS"] = a.units        # plan 4 W: unit functions for the CPU workers (inherited at fork)
     cache = a.cache or os.path.join(a.out, "cache")
     qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
     if a.subset: qs = select_subset(qs, a.subset)

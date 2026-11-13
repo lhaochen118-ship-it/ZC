@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""Executable rule units written by the model (plan 4 W, docs/17 §1): a rulebook row of a NEW split (an industry the toolkit does
+not know, a term the training rulebook does not have) -> a Python function over the shop's tables that the solver S can call like
+a toolkit metric. Written by src/lrl_gen.py --mode unit from the split's INPUTS only (rulebook row + the shop's table card); kept
+only when it runs on the shop's own data and gives a non-degenerate result. No answer is ever read.
+
+Unit (one JSON line of cards_unit*.jsonl):
+  {"kind": "unit", "id", "bid", "term", "definition", "name", "signature", "doc", "code", "triggers", "rulebook", "section"}
+
+  load(paths) -> [unit]                         every unit of the files (one per (bid, term), the first that verified)
+  bind(g, units)                                exec each unit's def in the program namespace g (toolkit + C + T already in g)
+  verify(unit, C, data_end, T=None) -> (ok, why, sample)   exec + call on the shop's data (last month of data, the whole data)
+  block(units) -> str                           '# SHOP FUNCTIONS' prompt block (signature + definition)
+  spec_entries(units) -> [dict]                 api_spec-like entries so that precheck knows the names and their parameters"""
+import ast, json, math, os, re, glob
+
+MAX_UNITS = 12
+
+
+def load(paths):
+    out, seen = [], set()
+    for p in [x for x in (paths.split(",") if isinstance(paths, str) else paths) if x]:
+        for f in (sorted(glob.glob(os.path.join(p, "cards_unit*.jsonl"))) if os.path.isdir(p) else [p]):
+            if not os.path.isfile(f): continue
+            for l in open(f, encoding="utf-8"):
+                if not l.strip(): continue
+                u = json.loads(l)
+                if u.get("kind") != "unit" or not u.get("code") or not u.get("name"): continue
+                k = (u.get("bid"), u.get("name"))
+                if k in seen: continue
+                seen.add(k); out.append(u)
+    return out
+
+
+def for_shop(units, bid):
+    return [u for u in units if u.get("bid") in (None, "", "*", bid)]
+
+
+def safe_code(code):
+    """a unit is one top-level def (helper statements inside it), no import / open / exec / dunder access."""
+    try: tree = ast.parse(code)
+    except SyntaxError as e: return False, f"syntax: {e.msg}"
+    defs = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
+    if len(defs) != 1 or any(not isinstance(n, (ast.FunctionDef, ast.Expr)) for n in tree.body):
+        return False, "one top-level function definition expected"
+    for n in ast.walk(tree):
+        if isinstance(n, (ast.Import, ast.ImportFrom, ast.Global, ast.Nonlocal)): return False, "import / global not allowed"
+        if isinstance(n, ast.Name) and n.id in ("open", "exec", "eval", "compile", "__import__", "globals", "locals", "input", "breakpoint"):
+            return False, f"{n.id} not allowed"
+        if isinstance(n, ast.Attribute) and n.attr.startswith("__"): return False, "dunder access not allowed"
+    return True, defs[0].name
+
+
+def bind(g, units):
+    """define every unit function in namespace g (its globals are g: toolkit metrics, C, T, pd ... are visible)."""
+    ok = []
+    for u in units:
+        try:
+            exec(compile(u["code"], f"<unit {u['name']}>", "exec"), g)
+            if callable(g.get(u["name"])): ok.append(u["name"])
+        except Exception: g.pop(u["name"], None)
+    return ok
+
+
+def _degenerate(v):
+    try:
+        import numpy as np, pandas as pd
+        if v is None: return True
+        if isinstance(v, bool): return False
+        if isinstance(v, (int, float, np.integer, np.floating)): return not math.isfinite(float(v))
+        if isinstance(v, (pd.Series, pd.DataFrame)): return len(v) == 0
+        if isinstance(v, (list, tuple, dict, set, str)): return len(v) == 0
+        return False
+    except Exception: return True
+
+
+def _zero(v):
+    try:
+        import numpy as np
+        return isinstance(v, (int, float, np.integer, np.floating)) and not isinstance(v, bool) and float(v) == 0.0
+    except Exception: return False
+
+
+def _params(code):
+    try: fn = next(n for n in ast.parse(code).body if isinstance(n, ast.FunctionDef))
+    except Exception: return []
+    a = fn.args; nd = len(a.defaults); out = []
+    for i, x in enumerate(a.args):
+        out.append({"name": x.arg, "required": i < len(a.args) - nd})
+    return out
+
+
+def verify(unit, C, data_end, T=None, timeout=20):
+    """run the unit on the shop's data: (ok, why, sample result). Periods tried: the last month of the data, the whole data
+    (from its first day); a required parameter other than the period makes the unit unverifiable here (kept only if it binds)."""
+    import dm, pandas as pd
+    ok, why = safe_code(unit.get("code") or "")
+    if not ok: return False, why, None
+    end = pd.Timestamp(data_end) if data_end else None
+    shop = dm.Shop(C, end, {"data_end": data_end})
+    if end is None: end = shop.last
+    g = dm.api(shop, end); g["T"] = T or {}
+    if bind(g, [unit]) != [unit["name"]]: return False, "does not define its function", None
+    f = g[unit["name"]]; ps = _params(unit["code"])
+    req = [p["name"] for p in ps if p["required"]]
+    periods = [dm.month(end.year, end.month), dm.between(pd.Timestamp(end) - pd.Timedelta(days=365 * 3), end)]
+    results, errs = [], []
+    import signal
+    def _alarm(*_): raise TimeoutError("unit ran too long")
+    for P in periods:
+        try:
+            old = signal.signal(signal.SIGALRM, _alarm); signal.alarm(timeout)
+            try:
+                if not req: v = f()
+                elif len(req) == 1: v = f(P)
+                else: return False, f"needs arguments {req[1:]} besides the period: not checkable", None
+            finally: signal.alarm(0); signal.signal(signal.SIGALRM, old)
+            results.append(v)
+        except dm.Unanswerable as e: errs.append(f"Unanswerable: {e}")
+        except Exception as e: errs.append(f"{type(e).__name__}: {str(e)[:160]}")
+    if not results: return False, "; ".join(errs)[:300] or "no result", None
+    good = [v for v in results if not _degenerate(v)]
+    if not good: return False, "degenerate result (None / NaN / empty)", None
+    if all(_zero(v) for v in good): return False, "zero on every test period", None
+    s = good[-1]
+    try: s = s if isinstance(s, (int, float, str, bool)) else (s.head(3).to_dict() if hasattr(s, "head") else list(s)[:3])
+    except Exception: s = str(s)[:120]
+    return True, "ok", s
+
+
+def block(units):
+    if not units: return ""
+    lines = ["# SHOP FUNCTIONS (written from this shop's rulebook; already defined: call them like toolkit metrics when the question uses the term)"]
+    for u in units[:MAX_UNITS]:
+        lines.append(f"- {u['signature']}: {u.get('term')} = {str(u.get('definition') or u.get('doc') or '')[:300]}")
+    return "\n".join(lines)
+
+
+def spec_entries(units):
+    out = []
+    for u in units[:MAX_UNITS]:
+        ps = [{"name": p["name"], "kind": "period" if p["name"] in ("p", "period") else "any", "required": p["required"], "default": None}
+              for p in _params(u["code"])]
+        out.append({"name": u["name"], "signature": u.get("signature") or u["name"], "params": ps, "filters": False, "returns": "any",
+                    "doc": str(u.get("definition") or "")[:200], "example": "", "group": "unit", "by": []})
+    return out
+
+
+def env_units():
+    """units of the current run (env ZC_UNITS: comma list of files / dirs), loaded once per process (CPU workers)."""
+    global _ENV
+    try: return _ENV
+    except NameError: pass
+    _ENV = load(os.environ.get("ZC_UNITS", "")) if os.environ.get("ZC_UNITS") else []
+    return _ENV

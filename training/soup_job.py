@@ -74,7 +74,8 @@ def evaluate(a, model, res, t0, out_dir, eval_config, tag="eval"):
                "--config", eval_config, "--cache", f"{a.tmp}/cache"]
         if a.fake_responder: cmd += ["--", "--fake-responder", a.fake_responder]
         if a.subset: cmd += ([] if a.fake_responder else ["--"]) + ["--subset", str(a.subset)]
-    rc = subprocess.run(cmd, stdout=open(os.path.join(out_dir, "eval.log"), "w"), stderr=subprocess.STDOUT).returncode
+    env = dict(os.environ, ZC_BASE_MODEL=a.model)                     # plan 4 W: the rule-unit writer is the base model
+    rc = subprocess.run(cmd, stdout=open(os.path.join(out_dir, "eval.log"), "w"), stderr=subprocess.STDOUT, env=env).returncode
     for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"):
         for p in (os.path.join(ev, "run", f), os.path.join(ev, f)):
             if os.path.isfile(p): shutil.copy(p, out_dir); break

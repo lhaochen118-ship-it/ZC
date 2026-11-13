@@ -733,7 +733,7 @@ class Engine:
         cuts = [c for c in (p.find(m) for m in Engine.PREFIX_MARKS) if c > 0]
         return p[:min(cuts)] if cuts else p
 
-    def gen(self, convs, temps, seeds, max_tokens, think=None):
+    def gen(self, convs, temps, seeds, max_tokens, think=None, json_schema=None):
         """Requests sharing a business prefix form a group. Groups are packed into waves whose distinct prefixes fit in
         about half of the KV cache (`--prefix-budget` tokens); per wave, every prefix is prefilled once by a 1-token
         warm-up request (one batched call), then all requests of the wave are generated in ONE call, so the scheduler
@@ -755,7 +755,15 @@ class Engine:
             warm = [fitted[m[0]][0] for _, m in wave if len(m) > 1]
             if warm: self.llm.generate(warm, [SamplingParams(max_tokens=1)] * len(warm), use_tqdm=False, lora_request=self.lora)
             members = [i for _, m in wave for i in m]
-            sps = [SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=fitted[i][1], seed=seeds[i]) for i in members]
+            so = {}
+            if json_schema is not None:                                 # constrained JSON output (plan 4 W: the unit writer)
+                try:
+                    from vllm.sampling_params import StructuredOutputsParams
+                    so = {"structured_outputs": StructuredOutputsParams(json=json_schema)}
+                except ImportError:
+                    from vllm.sampling_params import GuidedDecodingParams
+                    so = {"guided_decoding": GuidedDecodingParams(json=json_schema)}
+            sps = [SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=fitted[i][1], seed=seeds[i], **so) for i in members]
             outs = self.llm.generate([fitted[i][0] for i in members], sps, use_tqdm=False, lora_request=self.lora)
             for i, o in zip(members, outs): texts[i] = o.outputs[0].text; ntok += len(o.outputs[0].token_ids)
         if len(idx) < len(convs): print(f"  {len(convs) - len(idx)} prompts too long for max_len={self.a.max_len}: skipped", flush=True)

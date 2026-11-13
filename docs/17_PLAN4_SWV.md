@@ -113,3 +113,8 @@ automap chỉ cho DN có dòng cần viết (dùng lại khi kiểm). Ghi nhận
 **G0d** (`pub_noindH`) chạy trên namhunhh. Lỗi public còn lại của S + W + V v3a: 26 sai không mẫu nào đúng (năng lực S, 24 dùng `month(...)`),
 18 có mẫu đúng (V), 2 bỏ.
 
+**13/11 20:15 — G0d** (trần 2560): `pub_noindH` **0.009** (40 / 39 / 33); W vẫn chỉ ra JSON ở 17 / 125 đầu ra (mô hình lập luận bằng văn xuôi tới
+trần dù tắt suy nghĩ) → 5 hàm. Sửa gốc: **sinh có ràng buộc JSON** (vLLM structured outputs, schema: `plan` ≤ 700 ký tự cho lập luận ngắn,
+`name`, `signature`, `doc`, `triggers`, `code`), `agent.Engine.gen(json_schema=...)`, có đường lùi không ràng buộc nếu vLLM từ chối schema.
+**G0e** chạy trên huuhien95.
+

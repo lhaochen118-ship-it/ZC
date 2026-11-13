@@ -221,6 +221,16 @@ def _tables_card(C, T, max_chars=4500):
 
 
 _SHOPS = {}                                                             # bid -> (C, data_end, T) of the shops unit_items built
+# the writer reasons in plain text past any token cap (G0d: 108 / 125 outputs without JSON at 2560 tokens): constrained JSON with a
+# bounded 'plan' field for its reasoning, then the function (vLLM structured outputs)
+UNIT_SCHEMA = {"type": "object", "properties": {
+    "plan": {"type": "string", "maxLength": 700},
+    "name": {"type": ["string", "null"], "maxLength": 48},
+    "signature": {"type": "string", "maxLength": 120},
+    "doc": {"type": "string", "maxLength": 300},
+    "triggers": {"type": "array", "items": {"type": "string", "maxLength": 60}, "maxItems": 8},
+    "code": {"type": "string", "maxLength": 2500}},
+    "required": ["plan", "name", "signature", "doc", "triggers", "code"], "additionalProperties": False}
 
 
 def unit_items(split, cache):
@@ -262,8 +272,8 @@ def unit_items(split, cache):
                  "Viết MỘT hàm Python tính đúng thuật ngữ này trên dữ liệu của cửa hàng: dùng hàm toolkit khi có hàm hợp, nếu không thì pandas "
                  "trên C hoặc T (đúng tên bảng / cột có ở trên). Tham số đầu là kỳ p (Period: p.mask(series), p.start, p.end) khi thuật ngữ "
                  "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không đọc file. Nếu dòng này không phải một đại lượng tính được "
-                 "(chỉ là cách ghi, cách làm tròn...) trả {\"name\": null}. Trả lời ngay bằng MỘT đối tượng JSON cùng dạng các ví dụ "
-                 "(khoá name, signature, doc, triggers, code), không giải thích trước.")
+                 "(chỉ là cách ghi, cách làm tròn...) thì name = null và code rỗng. Trả lời bằng MỘT đối tượng JSON: plan (vài câu ngắn: "
+                 "bảng / cột dùng, cách tính), name, signature, doc, triggers, code (như các ví dụ).")
             items.append(({"bid": b, "term": term, "definition": definition, "section": sec, "rulebook": __import__("lrl").rb_key(rb)}, u))
     return items
 
@@ -410,7 +420,12 @@ def main():
         temps = [temp] * len(convs)
         if a.mode == "unit": temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
         mt = (4096 if a.mode == "unit" else 6144) if think else (2560 if a.mode == "unit" else 900)   # unit: the writer often reasons in
-        texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], mt, think=think)   # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
+        js = UNIT_SCHEMA if a.mode == "unit" and not think else None   # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
+        try: texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], mt, think=think, json_schema=js)
+        except Exception as e:                                          # a schema this vLLM / xgrammar refuses: unconstrained
+            if js is None: raise
+            print(f"[lrl_gen] constrained JSON unavailable ({type(e).__name__}: {str(e)[:200]}): unconstrained", flush=True)
+            texts, _ = eng.gen(convs, temps, [4242 + i for i in range(len(convs))], mt, think=think)
         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap without reaching their JSON (13/11)
     else: texts = []
     cards = to_cards(a.mode, items, texts, names)

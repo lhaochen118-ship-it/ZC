@@ -1,0 +1,90 @@
+# 17 — Kế hoạch 4: hệ S–W–V (mô hình giải + mô hình viết luật + bộ chọn học được), không luật viết tay
+
+*Lập 13/11/2026 16:30 UTC. Quyết định user 13/11 tối: (1) **ngừng phát triển luật viết tay** — luật nếu có phải do mô hình viết;
+(2) **bản nộp cuối là hệ mới** (không luật viết tay) kể cả khi điểm thấp hơn P; (3) WR30 (P huấn luyện lại 30 DN) chạy xong làm dự phòng.
+Thay phần còn lại của kế hoạch 3 (`docs/16`). Hạn: container sẵn cho user build **15/11 12:00 UTC**; nộp trước **16/11 16:59 UTC**.*
+
+## 0. Bằng chứng (đo 13/11, `Process/scores_p3.csv`, `docs/16` §9)
+
+| Hệ | public | pub_ho400c | tr_ho400c | pub_noind* | tr_newterm | held-out gộp |
+|---|---|---|---|---|---|---|
+| P (luật viết tay, bản cũ) | 0.994 | 0.698 | 0.923 | 0.973 | 0.907 | 0.840 |
+| P + thẻ mô hình viết | — | 0.678 | 0.909 | 0.982 | 0.889 | 0.827 |
+| Q v3a × 0.70 (thuần) | 0.909 | 0.589 | 0.917 | 0.821 | 0.870 | 0.774 |
+| Q2 v3a × 0.70 (thuần + thẻ) | 0.928 | 0.609 | 0.904 | 0.830 | 0.852 | 0.776 |
+
+\* `pub_noind` **chưa từng ẩn hàm ngành** (không job nào bật `--hide-api industry`): mọi số "ngành mới" đến nay đều có toolkit ngành
+viết tay giúp. Private có ngành mới **không** có toolkit đó → phép đo đúng là `pub_noind` + `--hide-api industry` (gọi `pub_noindH`).
+
+Phát hiện quyết định thiết kế:
+1. **Thẻ văn xuôi** (thẻ biên dịch rulebook / quy nạp từ lỗi train) chỉ +1.9 public cho hệ thuần, ~0 held-out, và làm P giảm → dạng
+   văn xuôi lặp lại rulebook đã có trong prompt; thẻ quy nạp từ lỗi train là kiến thức lẽ ra nằm trong trọng số (A/B vòng 0 âm).
+2. **Bộ chọn:** câu bỏ trả lời → theo đa số: public −2, held-out +3 (≈ 0). Trần "có mẫu đúng": +1.8 public, +2.0 held-out → chỉ bộ
+   chọn **học được** lấy được.
+3. Lỗi hệ thuần (docs/15 §6): kỳ 24 câu, thực thể / tham số 32, hàm 17 (chồng nhau); kiểu kỳ "T4/2025" 26 % câu public, 0 % train.
+4. Huấn luyện FSDP 4×L4 đo được **1.75k tok/s** (v3b: 19.5M token, 87 bước, 3 h 06); chồng adapter (`--base-adapters`) cho phép học
+   tiếp trên v3a × 0.70 với ít token.
+
+## 1. Kiến trúc S–W–V (một mô hình gốc Qwen3.5-9B; tổng tham số lúc chạy ≈ 9.7B)
+
+| Vai | Làm gì | Học từ đâu | Chạy khi nào | Đo |
+|---|---|---|---|---|
+| **S** mô hình giải | câu + ngữ cảnh → `<spec>` + chương trình trên toolkit / C / T | trọng số (LoRA): kỹ năng ổn định (văn phong, kỳ, nhiễu, API, không trả lời được) + **đọc và dùng đơn vị luật trong prompt** | mỗi câu | S một mình trên mọi bộ |
+| **W** mô hình viết luật | dòng rulebook / README / dữ liệu của split mới → **đơn vị luật thực thi được**: `{name, triggers, definition, signature, code (hàm Python trên C dùng primitive toolkit), tests}`; chỉ giữ đơn vị chạy được trên dữ liệu DN, không suy biến | Qwen gốc + ví dụ mẫu là cặp (dòng rulebook train/public ↔ hàm toolkit đã cài: `dm.py`, `industry.py`) | mỗi split một lần, trước khi trả lời (chỉ đọc đầu vào, không đáp án) | `pub_noindH`, `tr_newterm`: S+W so S và S + hàm thật (trần) |
+| **V** bộ chọn học được | mỗi nhóm đáp án ứng viên của một câu → xác suất đúng → chọn nhóm + quyết định bỏ trả lời | mô hình nhỏ (hồi quy logistic / cây tăng cường) trên đặc trưng chung (tỉ lệ phiếu, đồng thuận `<spec>`, cờ, số lượt sửa, lỗi chạy, biến thể prompt, độ dài) — **học từ log của S trên DN train**, không luật viết tay | sau khi các mẫu của câu xong | AUROC; PA held-out so bỏ phiếu thường |
+
+**Còn giữ (hạ tầng, user cho phép 08/11, không phát triển thêm):** ingest / automap (đọc dữ liệu, schema), toolkit `dm` (định nghĩa chung
+của rulebook), sandbox. **Bỏ khỏi hệ nộp:** `hints.py`, `qnorm`, `qparse`, mọi cờ / precheck viết tay của P, thẻ quy nạp văn xuôi.
+`industry.py` (toolkit ngành viết tay cho 3 ngành public) **không** dùng khi đo `pub_noindH` và là thứ W phải tự viết lại cho ngành mới.
+
+## 2. Phân luồng lỗi (fine-tune hay luật) — tự động, chạy trên DN train sau mỗi vòng
+
+Với mỗi câu sai / bỏ của S trên DN train (`tr_dev_para_a/b`, 4494 câu đã có log v3a):
+1. có mẫu đúng trong K mẫu → **V** (dữ liệu bộ chọn);
+2. không có: chạy lại S **greedy** với ngữ cảnh trần (định nghĩa + hàm đúng của toolkit cho thuật ngữ câu dùng) → đúng thì lỗi thiếu
+   ngữ cảnh → **W** phải sinh được đơn vị đó (kiểm W); vẫn sai → lỗi năng lực → **dữ liệu S** (RFT: chương trình đúng của câu / paraphrase);
+3. đáp án là không trả lời được → dữ liệu "không trả lời được" cho S + nhãn cho V.
+
+## 3. Quy công và nhận thay đổi
+
+- Ma trận bóc tách trên cùng bộ, giải mã tất định ghép cặp (seed cố định, mẫu đầu greedy): S / S+W / S+W_trần / S+V / S+W+V.
+- Nhận một thay đổi khi held-out gộp (pub_ho400c + tr_ho400c + pub_noindH + tr_newterm) tăng ≥ 0.5 điểm **và** không bộ nào giảm quá
+  1 điểm; bootstrap 1000 lần cho khoảng tin cậy (ghi kèm). Đơn vị luật của W: nhận theo **cụm** (mọi đơn vị của một split cùng lúc),
+  không theo từng đơn vị (bài học A/B vòng 0: nhận từng thẻ là nhiễu).
+
+## 4. Gói việc, phân luồng, batch, thời gian (UTC; acc mới đủ 30 h quota từ 14/11 00:00)
+
+| Mã | Việc | Ai / đâu | Batch / tham số | Thời gian | Phụ thuộc |
+|---|---|---|---|---|---|
+| **V1** | `training/data/selector_data.py`: đặc trưng nhóm ứng viên từ log (c1a/c1b + log cũ của DN train trong `Process/runs`); `src/selector.py` (đã có khung) → mô hình logistic / GBDT; đánh giá offline trên log `q3l70ho` / `q3l70pf` (không chạy GPU) | container CPU | — | 13/11 17:00–20:00 | log có sẵn |
+| **W1** | `lrl_gen.py --mode unit`: prompt = API toolkit + card schema DN + dòng rulebook + 6–8 cặp mẫu (dòng train ↔ hàm toolkit); đầu ra JSON đơn vị; `src/units.py`: nạp đơn vị vào namespace chương trình (exec trong sandbox), kiểm chạy trên dữ liệu DN (2 kỳ: tháng cuối, toàn bộ), bỏ đơn vị lỗi / suy biến; khối prompt `# SHOP FUNCTIONS` (chữ ký + định nghĩa) | container CPU (code + test mô hình giả) | — | 13/11 17:00–22:00 | — |
+| **S1** | dữ liệu học tiếp v4 (CPU): RFT = chương trình đúng của S trên câu train sai / bỏ ở vòng trước (từ log c1a/c1b, chọn mẫu đúng) + UD = bản ghi "dùng đơn vị luật" (ẩn một hàm toolkit, đưa nó dưới dạng đơn vị trong `# SHOP FUNCTIONS`, nhãn gọi đơn vị) + DR có sẵn + 30 % mẫu v3a (chống quên); ~6M token | container CPU | max_len 4608 | 13/11 20:00–23:30 | W1 (định dạng khối) |
+| **E0** | mốc `pub_noindH`: Q2 v3a × 0.70 + `--hide-api industry` (112 câu) | 1 acc còn quota tối 13/11 (caohuyen74 1.8 h) | DP 4 | 0.4 h | — |
+| **S2** | **v3b** huấn luyện lại (đã sửa lỗi lưu) | acc A, FSDP 4 | mb 4, eff 64, max_len 4608, r 32, α 64, lr 2e-4, 1 epoch, 19.5M token | 14/11 00:05 → ~03:30 | — |
+| **S3** | **v4 seed 1 / seed 2**: `--base-adapters V3A --base-weights 0.70` + LoRA r 32 trên dữ liệu S1 | acc B, C (FSDP 4 mỗi acc) | như S2, ~6M token | 00:05 → ~01:30 | S1 |
+| **W2** | W chạy trên rulebook public + train (unit) với Qwen gốc fp8 | acc D | DP 4 (vLLM, max_num_seqs 128) | 00:05 → ~00:45 | W1 |
+| **G1** | đánh giá v3a / v4s1 / v4s2 / v3b × {S, S+W} trên `pub_full`, `pub_ho400c`, `tr_ho400c`, `pub_noindH`, `tr_newterm` (mỗi cấu hình 2 shard: `pub_full` / held-out) + log đủ mẫu cho V | 8–16 phiên trên 8 acc (2 phiên / acc) | DP 4, max_num_seqs 128, max_batched_tokens 16384, gpu_util 0.92 | 01:45 → ~03:00 (v3b: ~04:00 → 05:00) | S3, W2 |
+| **V2** | huấn luyện lại bộ chọn trên log G1 của DN train (`tr_dev_para` shard thêm vào G1 nếu cần) → đánh giá offline mọi cấu hình | CPU | — | sau G1, ~0.5 h | G1 |
+| **R1** | vòng 2: phân luồng lỗi (§2) trên log G1 → sửa W (ví dụ mẫu / kiểm), dữ liệu S (RFT vòng 2) → v5 (học tiếp từ cấu hình thắng) | CPU + 1–2 acc | như S3 | 14/11 06:00 → 12:00 | G1, V2 |
+| **G2** | đánh giá vòng 2 + ma trận bóc tách đầy đủ (§3) | 8 phiên | như G1 | 14/11 12:00 → 14:00 | R1 |
+| **F1** | cấu hình cuối `configs/flow_s_w_v.json`; huấn luyện lại S cuối trên 30 DN (công thức thắng, thêm 6 DN held-out) nếu kịp | 1 acc / seed | như S2 | 14/11 14:00 → 18:00 | G2 |
+| **F2** | đánh giá cuối: `pub_full` × 2 seed (tất định), held-out (trên công thức 24 DN), thời gian 1000 câu; đường container (W chạy lúc suy luận trong `predict_flow`, V nạp từ `refs/`) | 4 phiên | — | 14/11 18:00 → 15/11 00:00 | F1 |
+| **D1** | Docker: `docker/` (S hợp nhất + adapter, W gọi lúc suy luận, V trong image), `docker/README_SOLUTION.md`, `final_submission/`; user build | container | — | 15/11 00:00 → 12:00 | F2 |
+
+**Thứ tự cắt khi thiếu thời gian:** R1 / G2 (một vòng thay vì hai) → huấn luyện 30 DN ở F1 → W chỉ đơn vị cho dòng rulebook **mới** (không
+có trong toolkit) → V chỉ ngưỡng bỏ trả lời. **Không cắt:** S3 (v4), W1 + W2 (đơn vị cho ngành mới), V1, F2, D1.
+
+## 5. Kiểm trước khi chạy (cổng)
+
+`tests/run_all.sh` (thêm `test_units.py`: W giả sinh đơn vị → nạp → chạy → đơn vị lỗi bị bỏ; `test_selector.py`: bộ chọn tất định, đơn
+điệu theo tỉ lệ phiếu, không dùng id DN / câu); smoke CPU của mọi job bằng mô hình giả; `automation/preflight.py` (job `soup_job`: smoke qua
+`src/eval_flow.py` với cấu hình thật như 13/11).
+
+## 6. Rủi ro
+
+| Rủi ro | Giảm |
+|---|---|
+| W sinh hàm sai mà vẫn chạy được | kiểm trên 2 kỳ + so `tests` trong đơn vị; nhận theo cụm bằng A/B ghép cặp; trần (hàm thật) cho biết khoảng cách |
+| S không dùng đơn vị dù có | dữ liệu UD trong v4; đo S + W_trần |
+| Bộ chọn quá khớp log v3a | huấn luyện lại trên log của chính S cuối (V2); đặc trưng không phụ thuộc DN |
+| Thời gian container | W chạy một lần / split (~10–20 phút cho mọi dòng rulebook trên 2×5090), song song với ingest |

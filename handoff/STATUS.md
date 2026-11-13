@@ -58,7 +58,13 @@ A/B thẻ nội dung vòng 0: không thẻ 0.864, có thẻ 0.854 → nhận 1 t
 | WP3-06 vòng học luật | vòng 0 A/B xong (1 thẻ nhận); vòng 1: quy nạp đang chạy (`lrl1i`) |
 | WP3-07 … 10 | chờ (§4) |
 
-## 4. Việc tiếp theo (theo thứ tự)
+## 4. Việc tiếp theo — **kế hoạch 4 `docs/17_PLAN4_SWV.md`** (user 13/11 tối: không luật viết tay; nộp hệ mới; WR30 chỉ dự phòng)
+
+P + LRL đo xong: public 0.983, held-out gộp 0.8268 (< P) — không theo tiếp. Thứ tự: V1 (bộ chọn học được, CPU) + W1 (đơn vị luật thực thi
+được) + S1 (dữ liệu v4) tối 13/11; E0 (`pub_noindH` mốc) trên acc còn quota; đợt 14/11 00:05: S2 v3b, S3 v4 × 2 seed, W2 → G1 → V2 → R1 →
+G2 → F1 → F2 → D1 (container 15/11 12:00 UTC). Kế hoạch 3 (`docs/16`) dừng ở WP3-06 (vòng học luật thẻ văn xuôi: bỏ vì không có ích).
+
+## 4b. (cũ, kế hoạch 3 — đã thay bằng §4)
 
 1. Phiên mới: token, gói, cache, routine (`READING_GUIDE.md` §0).
 2. **v3a**: phần 4 (§2) → đăng adapter (`Process/tools/publish.sh <acc> <dir> zc-v3a-adapter`, layout `V3A/adapter/` +

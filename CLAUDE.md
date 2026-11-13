@@ -50,6 +50,13 @@ nhận bằng A/B trên DN khác), dữ liệu v3, gói WP3-00 → WP3-10 đến
 trong `handoff/STATUS.md`. (13/11 08:30: bàn giao sang khung chat mới; routine cũ đã tắt — phiên mới tạo routine theo `READING_GUIDE.md` §0.) Vẫn áp dụng: kiểm quota trước khi chạy (không đủ → tối ưu: FSDP 4 GPU, chuỗi checkpoint qua acc, chia shard; vẫn không đủ →
 giải pháp khác; không có thì không chạy), tốc độ trước, không tiết kiệm acc / GPU.
 
+**Quyết định user 13/11 tối (mới nhất, bắt buộc):** (1) **ngừng phát triển luật viết tay** (hints / qparse / qnorm / cờ, precheck viết tay
+của P) — khi vận hành thật có nhiều tình huống mới; luật nếu có **phải do mô hình tự viết**; (2) **bản nộp cuối là hệ mới không luật viết
+tay** (S–W–V), kể cả khi điểm thấp hơn P; (3) WR30 chạy xong chỉ làm dự phòng. Kế hoạch hiện tại: **`docs/17_PLAN4_SWV.md`** (S mô hình
+giải, W mô hình viết luật thực thi được lúc suy luận, V bộ chọn học được; gói V1, W1, S1–S3, W2, G1–G2, R1, F1–F2, D1). Đo ngành mới
+bằng `pub_noindH` (= `pub_noind` + `--hide-api industry`). Sau khi xong kế hoạch: dừng, đọc lại findings, đề xuất hướng mới, lên kế
+hoạch chi tiết (chia luồng, batch, thời gian) xong rồi mới chạy (user 13/11).
+
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 
 - Tự động hoá tối đa; chỉ hỏi việc chỉ user làm được (token, nộp portal, accept rules Kaggle trên web).

@@ -1,0 +1,6 @@
+[
+ {"acc": "dinhthinh", "name": "g0hf", "jobs": "automation/jobs/g0hf.jobs", "est_h": 0.6,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "dinhthinh/zc-para,dinhthinh/zc-v3a-adapter", "--no-preflight"]},
+ {"acc": "bichthuy93", "name": "g1v3aho", "jobs": "automation/jobs/g1v3aho.jobs", "est_h": 0.9,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "bichthuy93/zc-para,bichthuy93/zc-v3a-adapter", "--no-preflight"]}
+]

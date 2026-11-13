@@ -35,10 +35,12 @@ class HybridPipeline(pipeline.Pipeline):
         self.variants = [v for v in (getattr(a, "variants", "direct") or "direct").split(",") if v in prompting.VARIANT] or ["direct"]
         self.ctxs = {}
         self.stats = Counter()
-        lp = getattr(a, "lrl", "") or ""                                # plan 3: learned rule cards (src/lrl.py), comma-separated files;
-        if lp and not os.path.isabs(lp.split(",")[0]) and not os.path.isfile(lp.split(",")[0]):   # a bare name: <split>/lrl/<name>
-            lp = ",".join(os.path.join(a.split, "lrl", x) for x in lp.split(","))
-        self.lib = lrl.Library.load(lp) if lp else None
+        lp = [x for x in (getattr(a, "lrl", "") or "").split(",") if x]  # plan 3: learned rule cards (src/lrl.py): files, or names
+        here = os.path.dirname(os.path.abspath(__file__))               # under src/refs/lrl/ (shipped with the code) or <split>/lrl/
+        lp = [next((c for c in (x, os.path.join(here, "refs", "lrl", x), os.path.join(a.split, "lrl", x)) if os.path.isfile(c)), x) for x in lp]
+        missing = [x for x in lp if not os.path.isfile(x)]
+        if missing: print(f"[hybrid] WARNING learned rule cards not found: {missing}", flush=True)
+        self.lib = lrl.Library.load(",".join(lp)) if lp else None
         if self.lib is not None: print(f"[hybrid] learned rule cards: {len(self.lib)} ({lp})", flush=True)
 
     # -- per shop context (prompt prefix, hints, grammar)

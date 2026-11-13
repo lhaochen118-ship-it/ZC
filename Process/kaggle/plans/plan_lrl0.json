@@ -1,0 +1,6 @@
+[
+ {"acc": "hai1108", "name": "lrl0a", "jobs": "automation/jobs/lrl0a.jobs", "est_h": 0.6,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--train-data", "lrl0", "--no-preflight"]},
+ {"acc": "loinguyentran", "name": "lrl0b", "jobs": "automation/jobs/lrl0b.jobs", "est_h": 0.7,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--train-data", "lrl0", "--no-preflight"]}
+]

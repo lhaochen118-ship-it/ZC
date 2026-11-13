@@ -94,11 +94,36 @@ def compile_items(split):
     return items
 
 
-CAT_PARAM = {"payment": "payment", "channel": "channel", "group": "group", "status": "status", "shift": "shift", "unit": "base_unit",
-             "base_unit": "base_unit", "customer_group": "customer_group", "brand": "brand"}
+CAT_PARAM = {"payment": "payment", "payment_method": "payment", "method": "payment", "channel": "channel", "group": "group",
+             "item_group": "group", "status": "status", "shift": "shift", "unit": "base_unit", "base_unit": "base_unit",
+             "customer_group": "customer_group", "brand": "brand", "size": "size", "item_type": "kind", "area": None, "kind": None}
 
 
-def alias_items(split, cache):
+def alias_values(canon_dir):
+    """{bid, table, col, values} of the categorical columns of every shop's canonical tables (a canon dir: <bid>.pkl with "C")."""
+    out = []
+    for f in sorted(glob.glob(os.path.join(canon_dir, "*.pkl"))):
+        d = pickle.load(open(f, "rb")); C = d.get("C") if isinstance(d, dict) else None
+        for t, df in (C or {}).items():
+            if not hasattr(df, "columns"): continue
+            for col in df.columns:
+                if col not in CAT_PARAM: continue
+                vals = [str(v) for v in df[col].dropna().astype(str).unique() if str(v).strip()][:40]
+                if 1 <= len(vals) <= 40: out.append({"bid": os.path.basename(f)[:-4], "table": t, "col": col, "values": vals})
+    return out
+
+
+def alias_prompt(m):
+    return (f"Cột '{m['table']}.{m['col']}' trong dữ liệu một cửa hàng có các giá trị: {json.dumps(m['values'], ensure_ascii=False)}.\n"
+            "Với mỗi giá trị, liệt kê 2-6 cách chủ cửa hàng có thể viết nó trong câu hỏi: viết tắt, không dấu, từ thân mật, từ địa "
+            "phương, từ tiếng Anh viết theo cách đọc tiếng Việt. JSON: {\"<giá trị>\": [\"<cách viết>\", ...], ...}")
+
+
+def alias_items(split, cache, values_file=""):
+    """per shop of the split: the categorical values (from a precomputed values file when given, else the shop's data)."""
+    if values_file and os.path.isfile(values_file):
+        bids = {os.path.basename(d) for d in glob.glob(os.path.join(split, "data", "*"))}
+        return [(m, alias_prompt(m)) for m in map(json.loads, open(values_file, encoding="utf-8")) if not bids or m["bid"] in bids]
     import ingest, automap
     items = []
     bids = sorted(os.path.basename(d) for d in glob.glob(os.path.join(split, "data", "*")) if os.path.isdir(d))
@@ -118,10 +143,7 @@ def alias_items(split, cache):
                 if col not in CAT_PARAM: continue
                 vals = [str(v) for v in df[col].dropna().astype(str).unique() if str(v).strip()][:40]
                 if not 1 <= len(vals) <= 40: continue
-                u = (f"Cột '{t}.{col}' trong dữ liệu một cửa hàng có các giá trị: {json.dumps(vals, ensure_ascii=False)}.\n"
-                     "Với mỗi giá trị, liệt kê 2-6 cách chủ cửa hàng có thể viết nó trong câu hỏi: viết tắt, không dấu, từ thân mật, từ địa "
-                     "phương, từ tiếng Anh viết theo cách đọc tiếng Việt. JSON: {\"<giá trị>\": [\"<cách viết>\", ...], ...}")
-                items.append(({"bid": b, "table": t, "col": col, "values": vals}, u))
+                m = {"bid": b, "table": t, "col": col, "values": vals}; items.append((m, alias_prompt(m)))
     return items
 
 
@@ -193,7 +215,9 @@ def main():
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     names = api_names()
     if a.mode == "compile": items = compile_items(a.split)
-    elif a.mode == "aliases": items = alias_items(a.split, a.cache)
+    elif a.mode == "aliases":
+        vf = a.cases if (a.cases and os.path.isfile(a.cases)) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), "") if a.cases else ""
+        items = alias_items(a.split, a.cache, vf)
     elif a.mode == "translit": items = translit_items(a.split)
     elif a.mode == "induce":
         p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)

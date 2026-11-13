@@ -211,3 +211,6 @@ qs10p2,hai1108/zc-qs10p2-1,DONE:complete,resumed from checkpoint-59; 119/119 ste
 q1s10a35,namhunhh/zc-q1s10a35-1,DONE:complete,public 0.889 / held-out subsets 0.6725
 q1s10a70,namhunhh/zc-q1s10a70-1,DONE:complete,public 0.896 / held-out subsets 0.6938
 wr30p1,duckzuykobip/zc-wr30p1-1,RUNNING?,launched 13/11 04:14 (WP3-04 part 1 of a checkpoint chain: P refit on 30 shops)
+lrl0a,hai1108/zc-lrl0a-1,RUNNING?,launched 13/11 04:22 (WP3-02: compile rulebooks + value aliases)
+lrl0b,loinguyentran/zc-lrl0b-1,RUNNING?,launched 13/11 04:22 (WP3-02: translit + induction round 0)
+v3ap1,bichthuy93/zc-v3ap1-1,RUNNING?,launched 13/11 04:29 (WP3-03 SFT v3a pure: spec labels + period / noise style data; part 1 of a chain)

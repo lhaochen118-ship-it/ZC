@@ -12,7 +12,7 @@ has to learn the notations. Output: pure records (src/hybrid.py --pure 1 prompt:
 text, never the same shop / question), label optionally prefixed with its <spec> (--spec).
 Usage: dp_style.py <train_split> <ingest_cache> <canon_dir> <in.jsonl>[,...] <out.jsonl> --vilexnorm DIR [--kinds period,noise,both]
        [--per 1] [--seed 20261113] [--mode full] [--k 3] [--spec] [--limit N]"""
-import os, sys, re, csv, json, time, random, argparse, difflib, unicodedata
+import os, sys, re, csv, json, time, random, argparse, difflib, unicodedata, zlib
 from collections import defaultdict, Counter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common
@@ -185,7 +185,7 @@ def main():
         try: today = dt.date.fromisoformat(r["as_of_date"])
         except Exception: today = None
         for i in range(a.per):
-            kind = kinds[(hash(r["id"]) + i) % len(kinds)] if len(kinds) > 1 else kinds[0]
+            kind = kinds[(zlib.crc32(r["id"].encode()) + i) % len(kinds)] if len(kinds) > 1 else kinds[0]   # reproducible (not hash())
             q0 = r["question"]; nq = None
             if kind in ("period", "both"): nq = rewrite_periods(q0, sp, today, rng)
             if kind == "both" and nq is None: kind = "noise"

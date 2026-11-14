@@ -1,0 +1,47 @@
+[
+ {
+  "acc": "quynhle07",
+  "name": "h0b2",
+  "jobs": "automation/jobs/h0b2.jobs",
+  "est_h": 1.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight",
+   "--ds",
+   "quynhle07/zc-ad2,quynhle07/zc-para"
+  ]
+ },
+ {
+  "acc": "yuan1103",
+  "name": "f2b",
+  "jobs": "automation/jobs/f2b.jobs",
+  "est_h": 1.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight",
+   "--ds",
+   "yuan1103/zc-ad2,yuan1103/zc-para"
+  ]
+ },
+ {
+  "acc": "quynhtran35",
+  "name": "h0c2",
+  "jobs": "automation/jobs/h0c2.jobs",
+  "est_h": 1.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight",
+   "--ds",
+   "quynhtran35/zc-ad2,quynhtran35/zc-para"
+  ]
+ }
+]

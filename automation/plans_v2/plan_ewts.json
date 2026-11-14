@@ -10,7 +10,7 @@
    "--ks",
    "nhatlong1103/zc-assets",
    "--ds",
-   "phuongnehe/zc-ad2",
+   "phuongnehe/zc-ad2,phuongnehe/zc-para",
    "--no-preflight"
   ]
  }

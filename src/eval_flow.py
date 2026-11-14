@@ -97,6 +97,9 @@ def build(sets, out_split, split_hint, para_dir):
     with open(os.path.join(out_split, "questions.jsonl"), "w", encoding="utf-8") as f:
         for r in rows: f.write(json.dumps(r, ensure_ascii=False) + "\n")
     print(f"eval split: {len(rows)} questions of {sets} ({len(miss)} ids without text: {miss[:5]})", flush=True)
+    if ids and len(miss) > 0.1 * len(ids) and os.environ.get("ZC_SMOKE") != "1":   # 14/11 v2: held-out runs without the zc-para
+        sys.exit(f"eval_flow: {len(miss)} / {len(ids)} questions of {sets} have no text (paraphrase sets need a zc-para "   # dataset
+                 "dataset / --para): refusing to measure a silently reduced set")        # scored 206 / 1,122 questions; stop loudly
     return len(rows)
 
 

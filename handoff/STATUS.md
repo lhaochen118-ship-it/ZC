@@ -85,6 +85,12 @@ linhmai24,caohuyen74) → `launch_many.py` với `plan_g1v4_only.json` khi v4 xo
 `tr_dev_para_a/b` của S cuối) → F1: `configs/flow_final.json` = cấu hình S–W–V (P giữ ở `configs/flow_p_final.json`), `set_final_model.py`
 → F2 → D1.
 
+**Danh sách F1 / D1 (chốt hệ S–W–V, user 13/11: nộp hệ mới kể cả thấp hơn P):** (1) `configs/flow_final.json` ← cấu hình S–W–V đã chọn
+(`flow_swv.json` + bộ chọn V2); P giữ ở `configs/flow_p_final.json` (đã lưu 14/11); (2) `automation/set_final_model.py --members V3A,V4Sx
+--weights 0.70,1.0 --from <dirs> --out <dir> --publish` → `nhatlong1103/zc-final-adapter` + `src/adapter_hashes.json`; (3) `docker/assets.env`
+(chú thích), `docker/README_SOLUTION.md` (mô hình, cách làm S–W–V, điểm); (4) `final_submission/`: file public của hệ mới (P chuyển sang
+`final_submission/p_fallback/`); (5) chạy thử đường container (`soup_job --runner predict`) trên public: thời gian W + S, điểm.
+
 ## 4b. (cũ, kế hoạch 3 — đã thay bằng §4)
 
 1. Phiên mới: token, gói, cache, routine (`READING_GUIDE.md` §0).

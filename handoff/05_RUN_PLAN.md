@@ -225,3 +225,9 @@ nhiễu. Đòn bẩy phán xử nằm ở chất lượng (huấn luyện WJR2, 
 → từ ~18:25 mọi lệnh `kaggle` trả 429; không thấy kernel nào xong dù đã chạy > 1.5 h. Kernel trên Kaggle không bị ảnh hưởng. Sửa:
 `run_kernel.py` hỏi kernel đang chạy mỗi ~150 s (`ZC_POLL_S`, jitter), lùi 4–6 phút khi gặp 429; tạm dừng mọi watcher, một vòng kiểm tra
 thưa (3 phút) chờ API mở lại rồi gắn lại (`automation/resume.py`). Bài học (PDF 2): số watcher × tần suất phải dưới ngưỡng của IP chung.
+
+**19:45 – G0 / G-F / nhánh Qwen gốc.** Mốc trung thực chế độ H: H0a 0.863, H0a2 0.863 (chế độ thường D1 0.952). Held-out H (bỏ phiếu):
+pub_ho400c 0.581, tr_ho400c 0.901, pub_hoind 0.455, tr_newterm 0.852 (thường: 0.644 / 0.912 / 0.704 / 0.815). **F loại**: public −0.016
+(z −1.6 so với trung bình hai seed, thua cả ở cửa hàng không ngành: khối API mới làm lệch tiền tố S đã học), held-out lẫn lộn (pub_hoind
++0.044, pub_ho400c +0.023, train 0). **Qwen gốc có suy nghĩ làm bộ viết hàm (EWBT2)**: 2 hàm qua kiểm, 614 câu kém W = S → không dùng lúc
+suy luận; chỉ làm thầy sinh dữ liệu offline (TG1 có 6 mẫu, đồng thuận ≥ 3).

@@ -139,21 +139,26 @@ def worker(a):
         eng = engine(a, False)                                         # process found the GPU still held: tg2 14/11 17:42)
         texts = eng.gen(convs, [0.8] * len(convs), [7000 + j for j in range(len(convs))], 700, think=False, json_schema=GEN_SCHEMA)[0]
     cands = []
+    from collections import Counter
+    why = Counter()
+    tag = os.path.splitext(os.path.basename(a.items_local))[0]           # items_<k>: one output per worker
+    rawf = open(os.path.join(a.out, f"raw_{tag}.jsonl"), "w", encoding="utf-8")
     for it, t in zip(items, texts):
+        rawf.write(json.dumps({"id": it["id"], "slot": it["slot"], "text": (t or "")[-1500:]}, ensure_ascii=False) + "\n")
         j = first_json(t)
-        if not isinstance(j, dict) or not j.get("question") or "ANSWER" not in str(j.get("program")): continue
+        if not isinstance(j, dict) or not j.get("question") or "ANSWER" not in str(j.get("program")): why["no_json"] += 1; continue
         q2, p2 = j["question"].strip(), j["program"].strip()
-        if q2 == it["question"].strip(): continue
+        if q2 == it["question"].strip(): why["same_question"] += 1; continue
         ok, ans2 = run_program(a.split, it["business_id"], it["as_of_date"], p2)
-        if not ok: continue
+        if not ok: why["new_fails"] += 1; continue
         ok0, ans0 = run_program(a.split, it["business_id"], it["as_of_date"], it["program"])
-        if not ok0: continue
+        if not ok0: why["orig_fails"] += 1; continue
         style = it["slot"][0] == "style"
-        if style != same(ans0, ans2): continue                         # contrast must change the answer, style must not
+        if style != same(ans0, ans2): why["style_changed" if style else "same_answer"] += 1; continue   # contrast must change the answer
         cands.append(dict(id=f"{it['id']}~c{zlib.crc32(q2.encode()) % 10**6}", business_id=it["business_id"], as_of_date=it["as_of_date"],
                           slot=list(it["slot"]), question=q2, program=p2, answer=ans2, orig_question=it["question"], orig_program=it["program"],
                           orig_answer=ans0))
-    tag = os.path.splitext(os.path.basename(a.items_local))[0]           # items_<k>: one output per worker
+    rawf.close(); print(f"[contrast] rejected: {dict(why)}", flush=True)
     with open(os.path.join(a.out, f"generated_{tag}.jsonl"), "w", encoding="utf-8") as w:   # stage 1 kept even if stage 2 fails
         for c in cands: w.write(json.dumps(c, ensure_ascii=False, default=str) + "\n")
     # blind back-check of the contrast pairs (thinking)

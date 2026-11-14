@@ -79,9 +79,9 @@ G2 → F1 → F2 → D1 (container 15/11 12:00 UTC). Kế hoạch 3 (`docs/16`) 
 **Cổng CPU 13/11 22:20 UTC:** `tests/run_all.sh` ALL PASS (26 test) ở commit `a002671` (W kiểm 13 kỳ + vòng tự sửa, W = trọng số S, trần thời gian W).
 
 **Sau huấn luyện (≈ 02:00–04:00 UTC 14/11):** adapter `V4S1` / `V4S2` / `V3B` (output `<S>/runs/<tên>`) →
-`python3 automation/publish_many.py <dir>/adapter V4S1 zc-v4s1-adapter huuhien95,caohuyen74` (V4S2 → namhunhh,phuongnehe; V3B →
-linhmai24,caohuyen74) → `launch_many.py Process/kaggle/plans/plan_g1v4.json` (9 kernel: `pub_full`, held-out, ẩn hàm ngành
-`pub_noind,tr_newterm,pub_ind,pub_hoind`; S = V3A × 0.70 + V4 × 1.0) → `score_p3.py` → chọn S → V2 (bộ chọn học lại trên log
+`python3 automation/publish_many.py <dir>/adapter V4S1 zc-v4s1-adapter huuhien95,caohuyen74,bichthuy93` (V4S2 → namhunhh,phuongnehe,duckzuykobip; V3B →
+linhmai24,caohuyen74) → `launch_many.py` với `plan_g1v4_only.json` khi v4 xong, `plan_g1v3b_only.json` khi v3b xong (tổng 13 kernel: `pub_full`, held-out, ẩn hàm ngành
+`pub_noind,tr_newterm,pub_ind,pub_hoind`; + dữ liệu V2 `tr_dev_para_a/b` cho mỗi v4; S = V3A × 0.70 + V4 × 1.0) → `score_p3.py` → chọn S → V2 (bộ chọn học lại trên log
 `tr_dev_para_a/b` của S cuối) → F1: `configs/flow_final.json` = cấu hình S–W–V (P giữ ở `configs/flow_p_final.json`), `set_final_model.py`
 → F2 → D1.
 

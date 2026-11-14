@@ -336,6 +336,12 @@ BIND_SCHEMA = {"type": "object", "properties": {                     # W1 (14/11
     "required": ["plan", "triggers", "content", "code_hint"], "additionalProperties": False}
 
 
+ROWGEN_SCHEMA = {"type": "array", "maxItems": 30, "items": {"type": "object", "properties": {   # v2 TG1: rows without thinking
+    "term": {"type": "string", "maxLength": 60}, "definition": {"type": "string", "maxLength": 400},     # (the base model's thinking
+    "variant_of": {"type": ["string", "null"], "maxLength": 60}},                                       # looped past 8k tokens: tg1p0)
+    "required": ["term", "definition", "variant_of"], "additionalProperties": False}}
+
+
 UNIT_SCHEMA = {"type": "object", "properties": {
     "plan": {"type": "string", "maxLength": 700},
     "name": {"type": ["string", "null"], "maxLength": 48},
@@ -522,7 +528,8 @@ def to_cards(mode, items, texts, names):
             seen = set()
             for e in (j if isinstance(j, list) else [j]):
                 if not isinstance(e, dict): continue
-                t, d = str(e.get("term") or "").strip(), str(e.get("definition") or "").strip()
+                import html
+                t, d = html.unescape(str(e.get("term") or "")).strip(), html.unescape(str(e.get("definition") or "")).strip()
                 if not t or not d or len(d) < 15 or t.lower() in seen or not (1 <= len(t.split()) <= 8): continue
                 seen.add(t.lower())
                 v = e.get("variant_of"); v = str(v).strip() if v not in (None, "", "null") else None
@@ -623,6 +630,7 @@ def main():
     ap.add_argument("--rows-per-shop", type=int, default=20); ap.add_argument("--min-agree", type=int, default=0, help="unit: samples that must agree (0 = 2 when samples >= 3)")
     ap.add_argument("--think-tokens", type=int, default=4096, help="unit / rowgen with thinking: output token cap (thinking + JSON)")
     ap.add_argument("--max-num-seqs", type=int, default=0)
+    ap.add_argument("--think-rowgen", type=int, default=0, help="rowgen: reason first (off: tg1p0 14/11, the base model looped past 8k tokens)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     names = api_names()
     if a.mode == "compile": items = compile_items(a.split)
@@ -648,11 +656,11 @@ def main():
     if a.mode in ("unit", "bind") and a.samples > 1:                   # k samples per row (after sharding: a row's samples stay
         items = [it for it in items for _ in range(a.samples)]          # together for the self-consistency choice)
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
-    think = a.mode in ("induce", "rowgen") or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
+    think = a.mode == "induce" or (a.mode == "rowgen" and a.think_rowgen) or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
                                                                         # lrl0c reasoned past the cap (13/11); the task is simple
     eng = [None]
-    mt = (a.think_tokens if a.mode in ("unit", "rowgen") else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else 900))   # unit: the writer often reasons in
-    js = UNIT_SCHEMA if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else None)       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
+    mt = (a.think_tokens if a.mode in ("unit", "rowgen") else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else (5000 if a.mode == "rowgen" else 900)))   # unit: the writer often reasons in
+    js = UNIT_SCHEMA if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else (ROWGEN_SCHEMA if a.mode == "rowgen" and not think else None))       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
                                                                         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap
     def generate(convs, temps, seed0):                                  # without reaching their JSON (13/11)
         if not convs: return []

@@ -83,6 +83,8 @@ def main():
     ap.add_argument("--samples", type=int, default=6); ap.add_argument("--rows-per-shop", type=int, default=20)
     ap.add_argument("--train-rows-per-shop", type=int, default=30); ap.add_argument("--newterm-per-shop", type=int, default=60)
     ap.add_argument("--think-tokens", type=int, default=7168); ap.add_argument("--min-agree", type=int, default=3)
+    ap.add_argument("--think", type=int, default=0, help="teacher reasons first (off by default: tg1p0 14/11, the base model's thinking "
+                    "looped past 7-8k tokens in 68 % of the samples -> 7 / 243 rows kept); without it: constrained JSON")
     ap.add_argument("--max-len", type=int, default=16384); ap.add_argument("--max-num-seqs", type=int, default=128)
     ap.add_argument("--fake-responder", default=""); ap.add_argument("--cache", default="")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
@@ -99,7 +101,7 @@ def main():
     print(f"[tg1] part {a.part}: {len(shops)} shops over {len(groups)} GPUs: {groups}", flush=True)
     # A: synthetic rows per shop
     procs = [lrl(a.split, os.path.join(a.out, f"g{k}", "A"), "rowgen", model, k, ["--shops", ",".join(g), "--rows-per-shop", str(a.rows_per_shop),
-                 "--think-tokens", "8192"], a, os.path.join(a.out, f"g{k}_A.log")) for k, g in enumerate(groups)] if a.rows_per_shop > 0 else []
+                 "--think-tokens", "8192", "--think-rowgen", str(a.think)], a, os.path.join(a.out, f"g{k}_A.log")) for k, g in enumerate(groups)] if a.rows_per_shop > 0 else []
     rcA = wait_all(procs, deadline - 3 * 3600)                           # --rows-per-shop 0: no synthetic rows (a newterm-only run)
     print(f"[tg1] A rowgen rc={rcA} ({time.time() - t0:.0f}s)", flush=True)
     synth = {}
@@ -123,7 +125,9 @@ def main():
         allrows += rows
         procs.append(lrl(a.split, os.path.join(a.out, f"g{k}", "B"), "unit", model, k,
                          ["--rows", rf, "--samples", str(a.samples), "--think-units", "1", "--think-tokens", str(a.think_tokens),
-                          "--min-agree", str(a.min_agree), "--unit-repairs", "1"], a, os.path.join(a.out, f"g{k}_B.log")))
+                          "--min-agree", str(a.min_agree), "--unit-repairs", "1"] if a.think else
+                         ["--rows", rf, "--samples", str(a.samples), "--think-units", "0", "--min-agree", str(a.min_agree), "--unit-repairs", "1"],
+                         a, os.path.join(a.out, f"g{k}_B.log")))
     with open(os.path.join(a.out, "rows.jsonl"), "w", encoding="utf-8") as w:
         for r in allrows: w.write(json.dumps(r, ensure_ascii=False, default=str) + "\n")
     rcB = wait_all(procs, deadline)

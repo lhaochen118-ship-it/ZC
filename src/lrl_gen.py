@@ -506,6 +506,8 @@ def to_cards(mode, items, texts, names):
             if not j.get("name") or not j.get("code"): continue
             name = re.sub(r"[^0-9a-zA-Z_]", "_", str(j["name"]))[:48].strip("_") or "unit"
             code = "\n".join(str(x) for x in j["code"]) if isinstance(j["code"], list) else str(j["code"])
+            if "&quot;" in code or "&lt;" in code or "&gt;" in code or "&amp;" in code or "&#" in code:   # v2: the base model's
+                import html; code = html.unescape(code)                 # constrained JSON may carry HTML entities (tg2c 14/11)
             code = "\n".join(l for l in code.split("\n") if not re.match(r"\s*(from|import)\s+(toolkit|datamate)\b", l))   # names already defined
             m = re.search(r"def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", code)
             if m and m.group(1) != name: code = code.replace(f"def {m.group(1)}(", f"def {name}(", 1)

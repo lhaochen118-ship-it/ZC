@@ -25,8 +25,8 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | TG1b thầy WT (không suy nghĩ, JSON ràng buộc, 8 mẫu, đồng thuận ≥ 3) | phatle1578, mucnokieu ×2 | xong | 2,654 dòng → giữ 782 hàm (train_rule 143, biến thể 145, mới 18, thuật ngữ mới 476) |
 | Hàm từ chương trình đã kiểm (`wt_from_programs.py`, CPU) | CPU | xong | 1,249 / 1,446 thuật ngữ → hàm của `p`, kiểm lại bằng thực thi (cân bằng còn 917) |
 | Dữ liệu WT (`wt_build.py`) | CPU | xong | 864 bản ghi (3.5M token) + 265 dòng đo (6 DN held-out) |
-| WT-b / WT-s huấn luyện | nhatlong1103 ×2 | chạy | |
-| WT0B (chỉ 543 hàm từ chương trình) → EWT0 (614 câu H) | anderson1202 | chạy | kiểm tra tích hợp WT |
+| WT-b / WT-s huấn luyện | nhatlong1103 ×2 | chạy lần 3 (wtb2, wts3) | lần 1–2 OOM (bản ghi dài 4.3–4.7k token) → mb 2 × ga 8 + expandable_segments |
+| WT0B (238 / 543 bản ghi do max-len) → EWT0 (614 câu H) | anderson1202 | xong | **tích hợp chạy đúng** (WT0B gộp vào trọng số gốc, 14 hàm, có 'Dòng máy', 'hãng' cho dev_014); pub_ind 0.528, pub_hoind 0.438 (< mốc W = S 0.576 / 0.475; dữ liệu quá nhỏ) |
 | ewu_ref: độ chính xác hàm W = S, W = Qwen gốc (265 dòng held-out) | synchan5704 | xong | **W = S 0.517** (giữ 221, đúng 137; nhãn chương trình đã kiểm 67 / 157); Qwen gốc 0.423 (41 / 157) |
 | TG1n (thuật ngữ mới, suy nghĩ) | huyenco | huỷ | gộp vào TG1b |
 | TG2 cặp tương phản | nguyenhoa99/zc-tg2d-1 | xong (lần 4) | **1,005 cặp** (729 tương phản, kiểm ngược mù 97 %; 276 cách viết); lỗi trước: 2 engine vLLM, HTML-escape `&quot;` |

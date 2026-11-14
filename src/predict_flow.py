@@ -88,7 +88,8 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
         log(f"units: tool writer {c['units_lora']} on {c.get('units_lora_on', 'base')}")
     base = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unit", "--quant", "fp8",
             "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0)),
-            "--unit-repairs", str(int(c.get("units_repairs", 1)))] + \
+            "--unit-repairs", str(int(c.get("units_repairs", 1))), "--think-tokens", str(int(c.get("units_think_tokens", 4096))),
+            "--max-len", str(int(c.get("units_max_len", 16384 if int(c.get("units_think", 0) or 0) else 8192)))] + \
            (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
     devs = visible_gpus()
     ng = 1 if fake else max(1, len(devs))                              # one shard of the rows per (visible) GPU, in parallel

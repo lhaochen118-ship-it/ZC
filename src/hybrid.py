@@ -46,6 +46,10 @@ class HybridPipeline(pipeline.Pipeline):
         if self.lib is not None: print(f"[hybrid] learned rule cards: {len(self.lib)} ({lp})", flush=True)
         self.links = None                                               # plan 5 W2: rulebook rows the model linked to each question
         if getattr(a, "links", ""):                                     # (src/link.py); a named file that is missing stops the run
+            if not os.path.isfile(a.links):                             # a shipped file named relative to the code (repo: src/refs/...,
+                here = os.path.dirname(os.path.abspath(__file__))      # Kaggle stage: <stage>/refs/...)
+                for cand in (os.path.join(os.path.dirname(here), a.links), os.path.join(here, a.links), os.path.join(here, a.links[4:] if a.links.startswith("src/") else a.links)):
+                    if os.path.isfile(cand): a.links = cand; break
             if not os.path.isfile(a.links): raise SystemExit(f"[hybrid] --links {a.links} not found")   # (no silent fallback, 14/11)
             self.links = {}
             for l in open(a.links, encoding="utf-8"):

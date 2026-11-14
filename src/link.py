@@ -83,8 +83,10 @@ def vote(samples, need=2):
 def card_index(paths, rb_key):
     """{term: compiled card} of the cards compiled from this rulebook (their toolkit hints)."""
     out = {}
+    here = os.path.dirname(os.path.abspath(__file__))
     for f in [x for x in (paths or "").split(",") if x]:
-        if not os.path.isfile(f): continue
+        if not os.path.isfile(f): f = os.path.join(here, "refs", "lrl", os.path.basename(f))   # a shipped card file by name
+        if not os.path.isfile(f): print(f"[link] cards {f} not found", flush=True); continue
         for l in open(f, encoding="utf-8"):
             if not l.strip(): continue
             c = json.loads(l); src = str(c.get("source") or "")

@@ -14,12 +14,13 @@ Last line: STATUS=DONE:<complete|error|stall|timeout>
 The kernel state is read ONLY from the CLI's 'has status "KernelWorkerStatus.X"' line; any other answer (HTTP 503,
 network error) is transient and retried (a '503 Server Error' once ended a healthy running kernel's watch as 'error').
 """
-import sys, subprocess, time, os, re, json, glob
+import random, sys, subprocess, time, os, re, json, glob
 
 kdir, outdir = sys.argv[1], sys.argv[2]
 STALL = int(sys.argv[3]) if len(sys.argv) > 3 else 600
 MAXR = int(sys.argv[4]) if len(sys.argv) > 4 else 4
 HARD = int(sys.argv[5]) if len(sys.argv) > 5 else 10800
+POLL_S = int(os.environ.get("ZC_POLL_S", "150"))                    # seconds between status calls of a running kernel
 SILENT_MAX = int(sys.argv[6]) if len(sys.argv) > 6 and sys.argv[6].isdigit() else 0
 ATTACH = "--attach" in sys.argv
 LOGS_ONLY = "--logs-only" in sys.argv
@@ -76,7 +77,8 @@ while True:
         api_fail += 1
         if api_fail in (1, 10) or api_fail % 60 == 0: print(ts(), f"[{int(now - t0)}s] status API unavailable x{api_fail}:", st[-120:], flush=True)
         if now - t0 > HARD: print("STATUS=HARD_TIMEOUT", flush=True); state = "timeout"; break
-        time.sleep(30); continue
+        rl = "rate limit" in st.lower()                            # v2 14/11: ~17 watchers on one IP were rate limited for
+        time.sleep(random.uniform(240, 360) if rl else 30); continue   # ~40 min -> back off hard on a rate limit
     api_fail = 0; low = m.group(1).lower()
     if low != last:
         print(ts(), f"[{int(now - t0)}s]", st[:140], flush=True); last = low
@@ -98,6 +100,7 @@ while True:
         cancel(); push(); attempt_t0 = time.time(); running_since = None; saw_out = False; time.sleep(15); continue
     if now - t0 > HARD:
         print("STATUS=HARD_TIMEOUT", flush=True); state = "timeout"; break
+    if not queued: time.sleep(random.uniform(0.5, 1.5) * max(0, POLL_S - 30))   # v2: a running kernel is polled every ~POLL_S
     time.sleep(30)
 
 os.makedirs(outdir, exist_ok=True)

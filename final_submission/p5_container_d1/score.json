@@ -1,0 +1,1 @@
+{"run": "d1 (quynhtran35/zc-d1-1), container path", "config": "configs/flow_p5_final.json (industry.py visible: normal mode)", "file": "judge/ensemble/submission.jsonl", "pub_full": 0.952, "right": 973, "wrong": 21, "abstain": 6}

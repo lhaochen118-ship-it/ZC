@@ -11,7 +11,7 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | H0a `pub_full_H` (container) | quynhle07/zc-h0a-1 | chạy | |
 | H0b held-out H | quynhle07/zc-h0b2-1 | chạy lại (thiếu zc-para) | |
 | H0c held-out thường | quynhtran35/zc-h0c-1 → h0c2 | chạy lại (thiếu zc-para) | |
-| D1 container `flow_p5_final` | quynhtran35/zc-d1-1 | xong | **public 0.950** (973 / 23 / 4; còn `industry.py`) → `final_submission/p5_container_d1/` |
+| D1 container `flow_p5_final` | quynhtran35/zc-d1-1 | xong | **public 0.952** (973 / 21 / 6, file ensemble; còn `industry.py`) → `final_submission/p5_container_d1/` |
 | TG0 thuật ngữ mới (Qwen gốc) | nguyenhoa99/zc-tg0-1 | xong | 1,446 / 2,681 thuật ngữ (`training/data/out/tg0`) |
 | A1 phán xử ràng buộc (4 log × 4 biến thể) | nguyenhoa99/zc-a1-1 | xong — **A loại** | đọc được 100 % (point+c 1375/1375 vs 479) nhưng PA không tăng: list_c+point_c+point_think m0.5 TB 0.946; list_c+point_think 0.950–0.952 vs mốc chạy lại list+point+point_think 0.951 (0.944 / 0.956 / 0.958 / 0.947); có log giảm → không qua G-A |
 | F1 `pub_full_H` + F | yuan1103/zc-f1-1 | chạy | F2 (held-out) đẩy sau |

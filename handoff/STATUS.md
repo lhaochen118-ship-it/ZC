@@ -22,17 +22,17 @@ chấm 1000 / 1000; tự kiểm: `final_submission` ra đúng 0.994 = 995 / 1 / 
 | Held-out | gộp 0.7748; **sạch (đo 13/11, rulebook theo DN): `pub_ho400c` 0.6983, `tr_ho400c` 0.9227** — mốc so sánh kế hoạch 3 |
 | Docker | `docker/` sẵn sàng; user build 15/11; hạn nộp **16/11 23:59 GMT+7** |
 
-## 2. Kernel đang chạy (14/11 00:10 UTC; quota mọi acc 30 h, làm mới 21/11; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`) — kế hoạch 4
+## 2. Kernel đang chạy (14/11 02:19 UTC; runs ở scratch `<S>/runs`, watcher `automation/watch_done.py`) — kế hoạch 4
 
-| Kernel | Việc | Ước tính | Sau khi xong |
-|---|---|---|---|
-| `linhmai24/zc-v3b-1` | S2: v3b huấn luyện lại (19.5M token, sửa treo NCCL) | ~3.6 h | đăng `zc-v3b-adapter` → `plan_g1v4.json` (dòng v3b) |
-| `yuan1103/zc-v4s1-1`, `thnliu/zc-v4s2-1` | S3: v4 seed 1 / 2 trên v3a × 0.70 (dữ liệu S1 3150 bản ghi) | ~1.9 h | đăng `zc-v4s{1,2}-adapter` → `plan_g1v4.json` |
-| ~~`anderson1202/zc-wr30p4-1`~~ | WR30 phần 4 **xong 02:12** (117 / 117 bước, 26.2M token, loss 0.006) — adapter ở `<S>/runs/wr30p4/zc-wr30p4-1_out/results/WR30/adapter` | — | chỉ dự phòng (user 13/11): không đánh giá thêm trừ khi cần |
-| `dinhthinh` g0hf / g0hg | W = S / W = Qwen gốc trên `pub_noindH` + `tr_newterm` | ~0.6 h | so với e0hv |
-| `duckzuykobip` e0hv | S + V không W, ẩn hàm ngành (mốc của W) | ~0.5 h | |
-| `nguyenmanh0404` e0hvp / g0hfp | không W / có W trên `pub_ind` + `pub_hoind` (614 câu DN ngành), ẩn hàm ngành | ~0.8–1 h | tác dụng W đo được (SE ~0.03) |
-| `bichthuy93` g1v3aho, `synchan5704` g1v3apf2 | S + W + V v3a: held-out; `pub_full` với W mới | ~0.9 / 1.3 h | `score_p3.py` |
+**Xong đợt 00:05:** v4 seed 1 / 2 (50 / 50 bước, 11M token, loss 0.083 → 0.052 / 0.058; adapter `zc-v4s{1,2}-adapter` trên huuhien95,
+caohuyen74, bichthuy93 / namhunhh, phuongnehe, duckzuykobip); WR30 (117 / 117, dự phòng); W2 (W có tác dụng); V sửa lỗi nạp.
+
+| Kernel | Việc | Ước tính |
+|---|---|---|
+| `linhmai24/zc-v3b-1` | S2: v3b huấn luyện lại | đến ~03:45 → `plan_g1v3b_only.json` |
+| huuhien95 `g1v4s1pf` / `g1v4s1ho`, caohuyen74 `g1v4s1h` | G1: S + W + V (V3A × 0.70 + V4S1) `pub_full` / held-out / ẩn ngành (`pub_noind,tr_newterm,pub_ind,pub_hoind`) | ~1–1.3 h |
+| namhunhh `g1v4s2pf` / `g1v4s2ho`, phuongnehe `g1v4s2h` | G1 với V4S2 | ~1–1.3 h |
+| bichthuy93 `v2v4s1a/b`, duckzuykobip `v2v4s2a/b` | dữ liệu V2: `tr_dev_para_a/b` với mỗi S v4 | ~0.9 h |
 
 **Tiến độ kế hoạch 4 (`docs/17_PLAN4_SWV.md`):** V1 xong (held-out +1.8 khi phát lại); W1 xong (`src/units.py`, `lrl_gen --mode unit`); E0 xong
 (`pub_noindH`: Q −0.16, Q2 −0.04 — toàn bộ điểm ngành trước đây là của `industry.py`); G0 xong (S + W + V: 0.036); S1 xong

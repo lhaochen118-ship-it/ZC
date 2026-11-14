@@ -160,6 +160,15 @@ def w_model(adapter, model, work, log, mode="merge"):
     return out, ""
 
 
+def free_w_models(work, log):
+    """v2: the merged copies of the W phases (work/model_<adapter>, ~19 GB each) are removed once their phase is over (units, links
+    and the judge would otherwise hold ~57 GB of disk in the container); ZC_KEEP_W_MODELS=1 keeps them (Kaggle studies)."""
+    if os.environ.get("ZC_KEEP_W_MODELS") == "1": return
+    import glob
+    for d in glob.glob(os.path.join(work, "model_*")):
+        if os.path.isdir(d): shutil.rmtree(d, ignore_errors=True); log(f"freed {os.path.basename(d)}")
+
+
 def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     """plan 5 W2 (docs/18): with "links_gen": 1 in the config, the model links every question of the split to the rulebook rows it
     uses (src/link.py; inputs only), one shard of the shops per GPU. Returns the --links path, or None (config without it). The
@@ -324,8 +333,10 @@ def main():
     lv = prepare_lrl(cfg, a.split, a.work, a.model, log, a.lrl_fake)
     if lv is not None: extra = extra + ["--lrl", lv]
     uv = prepare_units(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder)
+    free_w_models(a.work, log)
     if uv is not None: extra = extra + ["--units", uv]
     kv = prepare_link(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder, cards=",".join(x for x in (lv or "").split(",") if "compile" in os.path.basename(x)))
+    free_w_models(a.work, log)
     if kv is not None: extra = extra + ["--links", kv]
     vote_sub = os.path.join(a.work, "llm_vote.jsonl")
 
@@ -354,6 +365,7 @@ def main():
         run([sys.executable, os.path.join(HERE, "vote.py"), vote_sub] + dirs + ["--min-conf", str(a.min_conf), "--log-dir", logs], log)
         n = merge_sub.merge(a.split, final, [vote_sub], quiet=True); log(f"after run {i + 1}: {n}")
     jv = judge_phase(cfg, a, dirs, uv, log, t0, kv)                       # plan 5 W3: the judge re-decides from the solver's samples
+    free_w_models(a.work, log)
     if jv: n = merge_sub.merge(a.split, final, [jv, os.path.join(dirs[0], "submission.jsonl")], quiet=True); log(f"after the judge: {n}")
     log(f"end: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}  ({time.time() - t0:.0f}s)")
 

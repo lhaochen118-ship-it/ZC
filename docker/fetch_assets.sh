@@ -48,3 +48,22 @@ shutil.rmtree("models/_adapter_dl")
 print("adapter sha256 check:", "OK" if not bad else f"MISMATCH {bad}"); raise SystemExit(1 if bad else 0)
 PY
 du -sh models/adapter
+
+# --- v2: W adapters (docker/assets.env W_ADAPTER_DS: one <NAME>/adapter/ folder per W role), checked against src/adapter_hashes_w.json
+W_DS=$(sed -n 's/^W_ADAPTER_DS=//p' docker/assets.env 2>/dev/null | head -1)
+rm -rf models/adapters; mkdir -p models/adapters
+if [ -n "$W_DS" ]; then
+  kaggle datasets download -d "$W_DS" -p models/_w_dl --unzip -q
+  python3 - <<'PY'
+import json, hashlib, os, shutil, glob
+ref = json.load(open("src/adapter_hashes_w.json"))["files"]           # {"<NAME>/adapter/<file>": sha256}
+bad = []
+for rel, h in ref.items():
+    c = [p for p in glob.glob("models/_w_dl/**/" + rel, recursive=True)]
+    if not c or hashlib.sha256(open(c[0], "rb").read()).hexdigest() != h: bad.append(rel); continue
+    dst = os.path.join("models/adapters", rel); os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy(c[0], dst)
+shutil.rmtree("models/_w_dl")
+print("W adapters sha256 check:", "OK" if not bad else f"MISMATCH {bad}"); raise SystemExit(1 if bad else 0)
+PY
+fi
+du -sh models/adapters

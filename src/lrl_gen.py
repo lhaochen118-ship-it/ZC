@@ -327,6 +327,14 @@ def _tables_card(C, T, max_chars=4500):
 _SHOPS = {}                                                             # bid -> (C, data_end, T) of the shops unit_items built
 # the writer reasons in plain text past any token cap (G0d: 108 / 125 outputs without JSON at 2560 tokens): constrained JSON with a
 # bounded 'plan' field for its reasoning, then the function (vLLM structured outputs)
+BIND_SCHEMA = {"type": "object", "properties": {                     # W1 (14/11 w1b: 98 / 125 rows reasoned in prose past the
+    "plan": {"type": "string", "maxLength": 400},                       # 900-token cap without their JSON): constrained JSON, a short
+    "triggers": {"type": "array", "items": {"type": "string", "maxLength": 60}, "maxItems": 12},   # plan first
+    "content": {"type": "string", "maxLength": 400},
+    "code_hint": {"type": ["string", "null"], "maxLength": 200}},
+    "required": ["plan", "triggers", "content", "code_hint"], "additionalProperties": False}
+
+
 UNIT_SCHEMA = {"type": "object", "properties": {
     "plan": {"type": "string", "maxLength": 700},
     "name": {"type": ["string", "null"], "maxLength": 48},
@@ -560,8 +568,8 @@ def main():
     think = a.mode == "induce" or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
                                                                         # lrl0c reasoned past the cap (13/11); the task is simple
     eng = [None]
-    mt = (4096 if a.mode == "unit" else 6144) if think else (2560 if a.mode == "unit" else 900)   # unit: the writer often reasons in
-    js = UNIT_SCHEMA if a.mode == "unit" and not think else None       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
+    mt = (4096 if a.mode == "unit" else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else 900))   # unit: the writer often reasons in
+    js = UNIT_SCHEMA if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else None)       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
                                                                         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap
     def generate(convs, temps, seed0):                                  # without reaching their JSON (13/11)
         if not convs: return []

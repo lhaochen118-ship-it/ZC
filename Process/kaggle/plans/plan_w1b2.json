@@ -1,0 +1,4 @@
+[
+ {"acc": "anderson1202", "name": "w1b2", "jobs": "automation/jobs/w1b.jobs", "est_h": 1.0,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "anderson1202/zc-v3a-adapter", "--no-preflight"]}
+]

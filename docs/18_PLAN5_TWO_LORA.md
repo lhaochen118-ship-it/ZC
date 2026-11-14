@@ -86,3 +86,15 @@ Ngân sách token mỗi nhánh ~15M (max_len 4608) ≈ 2.4–2.8 h FSDP 4×L4 (�
 ## 7. Nhật ký
 
 *(ghi tại đây từng lần chạy: mã, acc, giờ, kết quả)*
+
+**14/11 06:35 — T1 + Z đẩy.** wjl1 / wjp1 (quynhle07 / quynhtran35) chết "STALE CODE": hai fanout trên cùng acc, kernel đầu bị Kaggle giữ
+hàng đợi > 8 phút rồi được đẩy lại sau khi lần đẩy thứ hai đã thay dataset `zc-code` → **quy tắc: mỗi acc chỉ một lần đẩy cho tới khi kernel
+trước RUNNING**. Đẩy lại wjl1b (yuan1103) / wjp1b (anderson1202). zjs / zjb lần 1 lỗi: Kaggle tự giải nén `.gz` trong dataset code
+(`judge.find_file` nay thử cả hai tên; log gửi dạng không nén). Container khởi động lại 1 lần (~08:05), `automation/resume.py` gắn lại kernel.
+
+**14/11 09:20 — Z-judge (zero-shot, log `pva3k16`, đáp án public, phát lại chính sách `tests/replay_judge.py`):** bỏ phiếu 0.938 (mẫu số = mẫu
+hợp lệ: 0.942). Trọng số S không suy nghĩ: chỉ 5 % đầu ra có `<choice>` (S viết chương trình) → vô dụng; S có suy nghĩ: phán mọi câu 0.941
+(sửa 13 / hỏng 8), **chỉ phán câu có mẫu bất đồng: 0.947**. Qwen gốc không suy nghĩ: 0.947 (chỉ câu bất đồng, τ 1.0). → `judge.py
+--only-split 1` mặc định (~90 / 1000 câu, nhanh ~10 lần). W1 lần 1 (`w1b`): 98 / 125 dòng lập luận văn xuôi quá trần → JSON có ràng buộc (`w1b2`).
+
+**14/11 09:30 — WJB1 xong** (list + point, 3025 bản ghi, 10.1M token, 143 bước, 2 h 32, loss 0.27 → 0.002, 1.72k tok/s, đỉnh 16.4 GB / GPU).

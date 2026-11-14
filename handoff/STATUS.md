@@ -72,6 +72,8 @@ P + LRL đo xong: public 0.983, held-out gộp 0.8268 (< P) — không theo ti�
 được) + S1 (dữ liệu v4) tối 13/11; E0 (`pub_noindH` mốc) trên acc còn quota; đợt 14/11 00:05: S2 v3b, S3 v4 × 2 seed, W2 → G1 → V2 → R1 →
 G2 → F1 → F2 → D1 (container 15/11 12:00 UTC). Kế hoạch 3 (`docs/16`) dừng ở WP3-06 (vòng học luật thẻ văn xuôi: bỏ vì không có ích).
 
+**14/11 01:00 — lỗi bộ chọn V (đã sửa, commit này):** trên Kaggle đường dẫn `src/refs/selector/...` không tồn tại → V lặng lẽ thành bỏ phiếu thường ở mọi lần chạy `flow_swv*` đến nay; giờ thiếu file thì dừng. Phát lại V trên log thật: `pub_noindH` −0.107 → +0.018, `pub_ho400c` 0.603 → 0.652, `tr_ho400c` 0.917 → 0.928 (docs/17 §7). Các kernel W đang chạy (đợt 00:05) đo W không V — vẫn so được với nhau.
+
 **Cổng CPU 13/11 22:20 UTC:** `tests/run_all.sh` ALL PASS (26 test) ở commit `a002671` (W kiểm 13 kỳ + vòng tự sửa, W = trọng số S, trần thời gian W).
 
 **Sau huấn luyện (≈ 02:00–04:00 UTC 14/11):** adapter `V4S1` / `V4S2` / `V3B` (output `<S>/runs/<tên>`) →

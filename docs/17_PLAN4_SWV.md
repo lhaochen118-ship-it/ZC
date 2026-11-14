@@ -148,3 +148,12 @@ ví dụ mẫu thêm một hàm tỉ lệ. Kiểm lại 12 hàm G0e bằng bộ 
 không cứu được ngành mới khi không có W (E0 không V: −0.036; V bỏ trả lời 32 câu nhưng vẫn sai 46). So với mốc đúng này, các bản W đã chạy:
 G0 +0.143, G0d +0.116, G0e +0.089, G0b +0.071, G0c 0.000 → W có tác dụng dương ở `pub_noindH` (từng lần vẫn trong nhiễu; chờ tập 614 câu).
 
+**14/11 01:00 — LỖI: V chưa từng chạy trong các lần chạy thật.** g1v3aho (S + W + V v3a, held-out): `pub_ho400c` 0.6034, `tr_ho400c` 0.9173 — log
+không có `conf_sel`: đường dẫn `src/refs/selector/...` của cấu hình không có trong kernel Kaggle (code đóng gói thành `<stage>/refs/...`,
+không có tầng `src/`) và `hybrid.selector` **lặng lẽ** quay về bỏ phiếu thường. Mọi lần chạy `flow_swv*` / `flow_sv_h` đến nay (G0…G0e,
+g1v3apf 0.919, g1v3aho, e0hv và 5 kernel của đợt 00:05) là **S (+ W) không V**; so sánh W / không W vẫn hợp lệ (cả hai đều thiếu V);
+e0hv = E0 lặp lại (−0.107 vs −0.036: nhiễu giữa hai lần chạy ~0.07 trên 112 câu). Sửa: thử thêm đường dẫn bỏ `src/`, thiếu file thì
+**dừng** (không lùi lặng lẽ); `tests/test_selector_flow.py` kiểm bố cục kernel + trường hợp thiếu file. Phát lại V (cùng mẫu, chỉ đổi
+cách chọn) trên log thật: `pub_noindH` −0.107 → **+0.018**, `tr_newterm` 0.852 → 0.852, `pub_ho400c` 0.603 → **0.652**, `tr_ho400c`
+0.917 → **0.928** → V có ích ở mọi tập. G1 v4 (sau huấn luyện) sẽ là lần đầu đo S + W + V thật.
+

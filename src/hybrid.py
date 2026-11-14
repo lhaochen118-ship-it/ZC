@@ -235,12 +235,15 @@ class HybridPipeline(pipeline.Pipeline):
         if not hasattr(self, "_sel"):
             path = getattr(self.a, "selector", "") or ""
             if path and not os.path.isabs(path) and not os.path.isfile(path):
-                for base in (os.path.dirname(os.path.dirname(os.path.abspath(__file__))), os.path.dirname(os.path.abspath(__file__))):
-                    if os.path.isfile(os.path.join(base, path)): path = os.path.join(base, path); break
+                here = os.path.dirname(os.path.abspath(__file__))       # repo / image: <root>/src/refs/...; a Kaggle kernel's code
+                rel = path[4:] if path.startswith("src/") else path    # stage has no src/ level: <stage>/refs/...
+                for cand in (os.path.join(os.path.dirname(here), path), os.path.join(here, path), os.path.join(here, rel)):
+                    if os.path.isfile(cand): path = cand; break
             import selector as _selmod
-            self._sel = _selmod.Selector.load(path) if path and os.path.isfile(path) else None
-            if path and self._sel is None: print(f"[hybrid] selector {path} not found: vote share", flush=True)
-            elif self._sel is not None: print(f"[hybrid] learned selector {path} (theta {self._sel.theta})", flush=True)
+            if path and not os.path.isfile(path):                       # a missing selector silently became the plain vote in every
+                raise SystemExit(f"[hybrid] --selector {path} not found")   # plan 4 run up to 14/11 00:50 (Kaggle stage layout)
+            self._sel = _selmod.Selector.load(path) if path else None
+            if self._sel is not None: print(f"[hybrid] learned selector {path} (theta {self._sel.theta})", flush=True)
         return self._sel
 
     def finish(self, st):

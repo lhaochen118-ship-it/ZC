@@ -23,4 +23,18 @@ assert a.selector.endswith("selector_v3a_inv.json")
 cfg = json.load(open(os.path.join(ROOT, "configs", "flow_swv.json")))
 assert cfg["selector"] == "src/refs/selector/selector_v3a_inv.json" and cfg.get("pure") == 1 and not cfg.get("hints")
 print(f"strong group p={c1:.3f}, split p={c3:.3f} -> {d3.get('type')}")
+# the config's selector path also resolves in a Kaggle kernel's code stage (no src/ level: <stage>/refs/selector), and a selector
+# that is not found stops the run (it silently became the plain vote in every plan 4 run up to 14/11 00:50)
+import shutil, subprocess, tempfile
+st = tempfile.mkdtemp()
+try:
+    for f in os.listdir(os.path.join(ROOT, "src")):
+        if f.endswith(".py"): shutil.copy(os.path.join(ROOT, "src", f), st)
+    shutil.copytree(os.path.join(ROOT, "src", "refs", "selector"), os.path.join(st, "refs", "selector"))
+    for path, want in ((cfg["selector"], 0), ("src/refs/selector/missing.json", 1)):
+        code = ("import sys, argparse; sys.path.insert(0, %r); import hybrid\nclass H: pass\nh = H(); h.a = argparse.Namespace(selector=%r)\n"
+                "assert hybrid.HybridPipeline.selector(h) is not None\n") % (st, path)
+        r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, cwd="/")
+        assert r.returncode == want, (path, r.returncode, r.stderr[-400:])
+finally: shutil.rmtree(st, ignore_errors=True)
 print("test_selector_flow PASS")

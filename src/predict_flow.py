@@ -306,9 +306,9 @@ def main():
     log(f"model {a.model}  dp {dp}  config {cfg or '(defaults)'}  runs up to {a.runs}")
     lv = prepare_lrl(cfg, a.split, a.work, a.model, log, a.lrl_fake)
     if lv is not None: extra = extra + ["--lrl", lv]
-    uv = prepare_units(cfg, a.split, a.work, a.model, log, a.lrl_fake)
+    uv = prepare_units(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder)
     if uv is not None: extra = extra + ["--units", uv]
-    kv = prepare_link(cfg, a.split, a.work, a.model, log, a.lrl_fake, cards=",".join(x for x in (lv or "").split(",") if "compile" in os.path.basename(x)))
+    kv = prepare_link(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder, cards=",".join(x for x in (lv or "").split(",") if "compile" in os.path.basename(x)))
     if kv is not None: extra = extra + ["--links", kv]
     vote_sub = os.path.join(a.work, "llm_vote.jsonl")
 

@@ -117,7 +117,7 @@ def main():
                 key = (b, r["term"].strip().lower())
                 if key in seen: continue
                 seen.add(key); rows.append(r)
-        rf = os.path.join(a.out, f"g{k}", "rows.jsonl")
+        rf = os.path.join(a.out, f"g{k}", "rows.jsonl"); os.makedirs(os.path.dirname(rf), exist_ok=True)   # (no rowgen: no g<k>/ yet)
         with open(rf, "w", encoding="utf-8") as w:
             for r in rows: w.write(json.dumps(r, ensure_ascii=False, default=str) + "\n")
         allrows += rows

@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/S2S1 --script training/full_job.py --model Qwen/Qwen3.5-9B --train --data s2 --r 32 --alpha 64 --lr 1e-4 --epochs 1 --mb 4 --eff-batch 64 --max-len 4608 --no-eval --files s2_mix.jsonl --seed 801 --budget 0 --base-adapters V3A --base-weights 0.70

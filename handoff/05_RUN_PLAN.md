@@ -182,3 +182,29 @@ Theo thứ tự giá trị. Mỗi nhánh ≤ 1 phiên, chỉ chạy khi acc củ
 1. Cắt trước: D → nhánh thêm §4 → WT v2 (5.4–5.5) → S′ seed 2 → toàn bộ S′ (C) → B (giữ WJR2 + A) → E (WJR2 = WJR1 + câu định tuyến).
 2. **Không cắt:** H0, A, G (WT), cổng held-out, đường container × 2, Docker.
 3. Mỗi cổng trễ quá 2 giờ so lịch → quyết định cắt ngay, ghi lý do vào STATUS.
+
+## 6. Nhật ký chạy và quyết định (UTC)
+
+**14/11 17:00** user duyệt v2, chế độ H cho bản nộp, chạy tự động. Token 14 acc lưu `~/.kaggle`. Probe: phatle1578, mucnokieu, huyenco,
+nguynduylm, phuongnehe đều có 4×L4. Dataset `zc-ad2` (V3A + WL1 + WJR1, sha V3A khớp `src/adapter_hashes.json`) đăng lên 13 acc.
+
+**17:05 – rò rỉ chế độ H phát hiện và sửa.** 14 / 125 thẻ W1 public (`compile_public_b.jsonl`) có gợi ý code gọi hàm `industry.py`
+(`n_vehicles`, `n_tickets`, `shipping_total`…): nếu chỉ đặt `hide_api` thì hàm viết tay vẫn lọt vào prompt qua thẻ / link / phán xử. Sửa:
+`ZC_HIDE_API` xuất cho mọi pha, `lrl.strip_hidden` bỏ gợi ý / check gọi tên bị ẩn (giữ định nghĩa do mô hình viết), W1 không được gắn tên
+bị ẩn. `tests/test_mode_h.py`.
+
+**17:10 – đợt 0 + A + TG0 đẩy:** h0a, h0b, h0c, d1, tg0, a1. TG0 xong 17:20: 1,446 / 2,681 thuật ngữ mới.
+
+**17:20 – F:** `API_DOC` chỉ thiếu 3 hàm công khai (next_n_days, lunar_to_solar, purchased_qty_base) → F = nối khối sinh từ `api_spec`
+vào cuối (giữ tiền tố đã huấn luyện), không thay toàn bộ. F1 / F2 đẩy.
+
+**17:25 – TG1 (4 phiên), TG1n, TG2 đẩy.** TG1n lần 1 lỗi (thư mục `g<k>` chưa tạo khi bỏ bước rowgen) → sửa + smoke đúng trường hợp, đẩy lại.
+
+**17:40 – quyết định thiết kế:**
+- **B rút gọn (B-lite):** bỏ huấn luyện W2′ (nhãn "thiếu định nghĩa" cần phán đoán chủ quan, không kiểm được bằng thực thi). Thay bằng thí
+  nghiệm `bl1`: bộ phán xử đã huấn luyện xem lại **mọi** câu (kể cả đồng thuận) ở dạng `point+c` / `point+think`; ngưỡng ghi đè chọn trên log
+  held-out (không chọn trên public).
+- **C – bỏ loại "deleted":** xem mẫu dựng được: thuật ngữ mới do mô hình đặt phần lớn trong suốt ("doanh thu thuần"…; S đã đạt tr_newterm
+  0.85 khi không có định nghĩa) → nhãn Unanswerable khi xoá dòng sẽ dạy S′ từ chối sai. S′ giữ: replay (+ hàm cửa hàng không liên quan),
+  term (+ dòng nhiễu), term_fn (lời gọi hàm WT kiểm bằng thực thi), contrast / style.
+- **Huấn luyện:** WT-b giữ đường đã chứng minh (mb 4); WT-s bật `--group-by-length` + mb 8 để đo lợi tốc độ (nếu lỗi thì chỉ mất nhánh kiểm tra).

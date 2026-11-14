@@ -144,3 +144,7 @@ kiểm + chọn lại (Chen et al. 2023, self-debugging); (3) câu lệnh: một
 ví dụ mẫu thêm một hàm tỉ lệ. Kiểm lại 12 hàm G0e bằng bộ kiểm mới: loại đúng 2 hàm sai (dict, lỗi 13 / 13 kỳ). `tests/test_units.py`
 (mô hình giả): vòng tự sửa 1 → 4 hàm.
 
+**14/11 00:38 — e0hv (S + V, không W, hàm ngành ẩn; v3a × 0.70):** `pub_noindH` **−0.107** (34 / 46 / 32), `tr_newterm` 0.852 (50 / 4 / 0). V
+không cứu được ngành mới khi không có W (E0 không V: −0.036; V bỏ trả lời 32 câu nhưng vẫn sai 46). So với mốc đúng này, các bản W đã chạy:
+G0 +0.143, G0d +0.116, G0e +0.089, G0b +0.071, G0c 0.000 → W có tác dụng dương ở `pub_noindH` (từng lần vẫn trong nhiễu; chờ tập 614 câu).
+

@@ -30,8 +30,14 @@ def main():
                     "(one merge for an A/B; results in <out>/<config name>/)")
     ap.add_argument("--parallel-gpus", type=int, default=0, help="with --eval-configs: run the configs at the same time, one GPU group "
                     "each (4 L4: 4 variants of 1 GPU; 2: 2 variants of 2 GPUs) instead of one after the other on every GPU (user 14/11)")
-    ap.add_argument("--runner", default="eval", choices=["eval", "predict"],
-                    help="predict: the submission path (src/predict_flow.py --config, whole split) instead of eval_flow's sets")
+    ap.add_argument("--runner", default="eval", choices=["eval", "predict", "judge"],
+                    help="predict: the submission path (src/predict_flow.py --config, whole split) instead of eval_flow's sets; "
+                         "judge: plan 5 W3 (src/judge.py) on a solver run's saved logs with the merged model")
+    ap.add_argument("--judge-logs", default="", help="judge: the solver log file (name under training/data/out, shipped with --train-data)")
+    ap.add_argument("--judge-units", default=""); ap.add_argument("--judge-variants", default="list")
+    ap.add_argument("--judge-k", type=int, default=5)
+    ap.add_argument("--judge-lora", default="", help="judge: a LoRA-W adapter (branch name under --search, or a directory) applied at "
+                    "run time on the merged model (vLLM LoRA) instead of being merged (--adapters ...,W --weights ...,1.0)")
     a = ap.parse_args()
     os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     a.tmp = a.tmp or "/tmp/soup_" + os.path.basename(os.path.normpath(a.out))      # one folder per job (two soups in a kernel)
@@ -55,7 +61,9 @@ def main():
 def evaluate_all(a, model, res, t0):
     """one evaluation (--eval-config) or several on the same merged model (--eval-configs), then the merged copy removed."""
     cfgs = [c for c in a.eval_configs.split(",") if c] if a.eval_configs else []
-    if not cfgs:
+    if a.runner == "judge":
+        judge(a, model, res, t0)
+    elif not cfgs:
         evaluate(a, model, res, t0, a.out, a.eval_config)
     elif a.parallel_gpus > 1 and len(cfgs) > 1:                        # one experiment variant per GPU group, all at once
         import queue, threading
@@ -84,6 +92,26 @@ def evaluate_all(a, model, res, t0):
             name = os.path.splitext(os.path.basename(c))[0]; out = os.path.join(a.out, name); os.makedirs(out, exist_ok=True)
             evaluate(a, model, dict(res, config=c), t0, out, c, tag=name)
     if model != a.model: shutil.rmtree(model, ignore_errors=True)       # 19 GB merged copy: the next soup of the kernel needs the space
+
+
+def judge(a, model, res, t0):
+    """plan 5 W3: src/judge.py on saved solver logs (one variant per GPU inside judge.py); outputs under <out>/judge/."""
+    t1 = time.time(); out = os.path.join(a.out, "judge"); os.makedirs(out, exist_ok=True)
+    cmd = [PY, os.path.join(SRC, "judge.py"), a.split, out, "--model", model, "--logs", a.judge_logs, "--variants", a.judge_variants,
+           "--k", str(a.judge_k)]
+    if a.judge_units: cmd += ["--units", a.judge_units]
+    if a.judge_lora:
+        d = find_adapter(a.judge_lora, a.search)
+        if d is None: sys.exit(f"[soup] judge adapter {a.judge_lora} not found under {a.search}")
+        cmd += ["--lora", d]
+    if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]
+    if a.subset: cmd += ["--subset", str(a.subset)]
+    rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "judge.log"), "w"), stderr=subprocess.STDOUT).returncode
+    res.update(judge_rc=rc, judge_s=round(time.time() - t1), judge_logs=a.judge_logs, judge_variants=a.judge_variants, judge_lora=a.judge_lora)
+    json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1)
+    print(f"[soup] judge rc {rc} in {res['judge_s']}s; total {time.time() - t0:.0f}s\n" +
+          open(os.path.join(a.out, "judge.log"), errors="ignore").read()[-1500:], flush=True)
+    if rc != 0: sys.exit(5)
 
 
 def evaluate(a, model, res, t0, out_dir, eval_config, tag="eval", gpus=None, workers=0):

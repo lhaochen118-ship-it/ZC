@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/WJB1 --script training/full_job.py --model Qwen/Qwen3.5-9B --train --data wj --r 32 --alpha 64 --lr 2e-4 --epochs 1.5 --mb 4 --eff-batch 32 --max-len 4608 --no-eval --files wj_both.jsonl --seed 503 --budget 0 --base-adapters V3A --base-weights 0.70

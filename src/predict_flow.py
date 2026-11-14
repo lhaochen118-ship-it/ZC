@@ -124,7 +124,7 @@ def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     if not cards:                                                       # the compiled cards of the config (their toolkit hints)
         refs = os.path.join(HERE, "refs", "lrl")
         cards = ",".join(os.path.join(refs, x) for x in str(c.get("lrl") or "").split(",") if x and "compile" in x and os.path.isfile(os.path.join(refs, x)))
-    base = [sys.executable, os.path.join(HERE, "link.py"), split, out, "--model", model, "--quant", "fp8", "--k", str(int(c.get("links_k", 3) or 3))] + \
+    base = [sys.executable, os.path.join(HERE, "link.py"), split, out, "--model", model, "--quant", "fp8", "--k", str(int(c.get("links_k", 3) or 3)), "--max-df", str(c.get("links_max_df", 0.0) or 0.0)] + \
            (["--cards", cards] if cards else []) + (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
     devs = visible_gpus()
     ng = 1 if fake else max(1, len(devs))

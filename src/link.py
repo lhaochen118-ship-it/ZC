@@ -136,6 +136,9 @@ def main():
     ap.add_argument("--cache", default=""); ap.add_argument("--quant", default="fp8"); ap.add_argument("--max-len", type=int, default=8192)
     ap.add_argument("--k", type=int, default=3, help="samples per question: 1 greedy + k-1 at 0.7; a row needs 2 votes")
     ap.add_argument("--shard", default=""); ap.add_argument("--fake-responder", default=""); ap.add_argument("--lora", default="")
+    ap.add_argument("--max-df", type=float, default=0.0, help="rows linked to more than this share of the split's questions are "
+                    "dropped as generic (14/11 zlk: 'Đơn tính vào doanh thu -> revenue(p)' on 27 %% of the questions pulled n_orders "
+                    "questions to revenue); 0 = keep all. With --shard the share is per shard (a shard holds whole shops)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     import lrl
     sys.argv = [sys.argv[0]]
@@ -175,13 +178,19 @@ def main():
     by = {}
     for (qid, j), t in zip(meta, texts): by.setdefault(qid, []).append(t)
     tag = "links" + (("_" + a.shard.replace("/", "of")) if a.shard else "")
+    voted = {q["id"]: vote([parse(t, len(shop[q["business_id"]][0])) for t in by.get(q["id"], [])]) for q in qs}
+    generic = set()
+    if a.max_df > 0 and qs:                                             # data-driven, like lrl.prune: a row linked to most questions
+        df = Counter(shop[q["business_id"]][0][i - 1][0] for q in qs for i in voted[q["id"]])   # says nothing about any one of them
+        generic = {t for t, k in df.items() if k > a.max_df * len(qs)}
+        print(f"[link] generic rows dropped (> {a.max_df:.0%} of {len(qs)} questions): {sorted(generic)}", flush=True)
     n_link = n_parsed = n_hint = 0; used = Counter()
     with open(os.path.join(a.out, tag + ".jsonl"), "w", encoding="utf-8") as f:
         for q in qs:
             rows, idx, sec = shop[q["business_id"]]
             samples = [parse(t, len(rows)) for t in by.get(q["id"], [])]
             n_parsed += sum(1 for s in samples if s is not None)
-            ids = vote(samples)
+            ids = [i for i in voted[q["id"]] if rows[i - 1][0] not in generic]
             cards = [to_card(*rows[i - 1], idx.get(rows[i - 1][0])) for i in ids]
             n_link += bool(cards); n_hint += sum(1 for c in cards if c["code_hint"]); used.update(rows[i - 1][0] for i in ids)
             f.write(json.dumps({"id": q["id"], "ids": ids, "samples": samples, "cards": cards}, ensure_ascii=False) + "\n")

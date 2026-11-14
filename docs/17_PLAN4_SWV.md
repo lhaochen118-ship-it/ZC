@@ -168,3 +168,7 @@ cách chọn) trên log thật: `pub_noindH` −0.107 → **+0.018**, `tr_newter
 của hệ không luật viết tay (Q2 0.928; g1v3apf W cũ 0.919); `pub_ind` 0.900, `pub_noind` 0.830; W 15 hàm (775 s), đánh giá 1994 s. Phát lại V:
 `pub_full` 0.929 (bỏ thêm 7 câu đúng; ở held-out V +0.05 / +0.01 — đổi chác chấp nhận được theo quy tắc held-out trước).
 
+**14/11 01:04 — e0hvp (S, không W, không V, hàm ngành ẩn; 614 câu của 5 DN ngành):** `pub_ind` **0.476** (186 / 58 / 25), `pub_hoind`
+**0.415** (220 / 77 / 48); V phát lại 0.535 / 0.458. Có hàm ngành viết tay (g1v3apf2) `pub_ind` 0.900 → ngành mới thật mất ~0.42 trên DN
+ngành: khoảng W phải lấp. (Tập con `pub_noindH` lần này −0.188: ba lần chạy cùng cấu hình −0.036 / −0.107 / −0.188.)
+

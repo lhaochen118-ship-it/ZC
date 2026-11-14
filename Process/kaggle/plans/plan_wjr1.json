@@ -1,0 +1,4 @@
+[
+ {"acc": "quynhtran35", "name": "wjr1", "jobs": "automation/jobs/wjr1.jobs", "est_h": 2.9,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "quynhtran35/zc-v3a-adapter", "--train-data", "wj", "--no-preflight"]}
+]

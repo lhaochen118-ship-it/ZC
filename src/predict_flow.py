@@ -81,6 +81,11 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     c = json.load(open(cfg, encoding="utf-8"))
     if not int(c.get("units_gen", 0) or 0): return None
     out = os.path.join(work, "units"); os.makedirs(out, exist_ok=True); t = time.time()
+    if c.get("units_model") == "base" or (c.get("units_lora") and c.get("units_lora_on", "base") == "base"):
+        model = os.environ.get("ZC_BASE_MODEL") or model                # v2 G: the tool writer WT-b is a LoRA of the BASE weights
+    if c.get("units_lora") and not fake:                                # v2 G: the trained tool writer, merged into its base (one
+        model, _ = w_model(resolve_adapter(c["units_lora"]), model, work, log, "merge")   # copy under work/, ~1.5 min)
+        log(f"units: tool writer {c['units_lora']} on {c.get('units_lora_on', 'base')}")
     base = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unit", "--quant", "fp8",
             "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0)),
             "--unit-repairs", str(int(c.get("units_repairs", 1)))] + \

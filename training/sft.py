@@ -31,6 +31,7 @@ def parse():
     ap.add_argument("--metrics", default=""); ap.add_argument("--no-save", action="store_true")
     ap.add_argument("--no-gc", action="store_true", help="no gradient checkpointing"); ap.add_argument("--warmup", type=float, default=0.03)
     ap.add_argument("--log-every", type=int, default=1)
+    ap.add_argument("--group-by-length", type=int, default=0, help="v2: batches of similar length (less padding per micro-batch)")
     ap.add_argument("--ckpt-dir", default="", help="where resumable checkpoints go (a kept output folder); default --out")
     ap.add_argument("--resume", default="", help="a checkpoint (or a folder holding checkpoint-N) to continue from (training/deadline.py)")
     ap.add_argument("--save-every", type=int, default=0, help="also checkpoint every N steps (0: only before the session deadline)")
@@ -149,7 +150,7 @@ def main():
                 logging_steps=a.log_every, save_strategy="steps" if a.save_every else "no", save_steps=a.save_every or 500, save_total_limit=1, report_to="none", bf16=not cpu, seed=a.seed, max_length=a.max_len,
                 gradient_checkpointing=not a.no_gc, gradient_checkpointing_kwargs={"use_reentrant": False},
                 completion_only_loss=True, dataset_num_proc=1, dataloader_num_workers=2, remove_unused_columns=True,
-                packing=False, padding_free=False,
+                packing=False, padding_free=False, group_by_length=bool(a.group_by_length),
                 ddp_timeout=600)                                             # a stuck rank fails in 10 min, not 30 (13/11 WR30 part 1:
                                                                              # NCCL all-gather hung at step 0 for the default 1800 s)
     import dataclasses

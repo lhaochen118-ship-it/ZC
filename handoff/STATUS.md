@@ -3,6 +3,22 @@
 *Cập nhật 2026-11-14 15:30 UTC. Kế hoạch 5 (`docs/18_PLAN5_TWO_LORA.md`) **xong phần thử nghiệm, đang DỪNG** chờ user đưa chiến lược mới (khung chat
 Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §9 (`handoff/02_ENGINEERING_OPS_LESSONS.md`).*
 
+## Tiến độ v2 (kế hoạch chạy `handoff/05_RUN_PLAN.md`; T0 = 17:05 UTC 14/11, user duyệt 17:00)
+
+| Bước | Acc / kernel | Trạng thái | Kết quả |
+|---|---|---|---|
+| Chế độ H không rò rỉ (thẻ W1 / link / phán xử / W1 bind) | CPU | xong | 14 / 125 thẻ public từng gợi ý hàm `industry.py` → đã lọc; `tests/test_mode_h.py` |
+| H0a `pub_full_H` (container) | quynhle07/zc-h0a-1 | chạy | |
+| H0b held-out H | quynhle07/zc-h0b-1 | chạy | |
+| H0c held-out thường | quynhtran35/zc-h0c-1 | chạy | |
+| D1 container `flow_p5_final` | quynhtran35/zc-d1-1 | chạy | |
+| TG0 thuật ngữ mới (Qwen gốc) | nguyenhoa99/zc-tg0-1 | xong | 1,446 / 2,681 thuật ngữ (`training/data/out/tg0`) |
+| A1 phán xử ràng buộc (4 log × 4 biến thể) | nguyenhoa99/zc-a1-1 | chạy | |
+| F1 `pub_full_H` + F | yuan1103/zc-f1-1 | chạy | F2 (held-out) đẩy sau |
+| TG1 thầy WT p0–p3 | phatle1578, mucnokieu (2 phiên mỗi acc) | chạy | |
+| TG1n thầy cho thuật ngữ mới p0 (p1 sau) | huyenco | chạy | |
+| TG2 cặp tương phản | loinguyentran | chạy | |
+
 ## 0. Kế hoạch 5 — kết quả (public, đáp án chuẩn)
 
 | Hệ | Public |

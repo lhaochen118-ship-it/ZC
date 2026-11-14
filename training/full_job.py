@@ -27,6 +27,7 @@ def main():
     ap.add_argument("--mb", type=int, default=8); ap.add_argument("--eff-batch", type=int, default=64); ap.add_argument("--gpus", type=int, default=4)
     ap.add_argument("--sets", default="quick400,pub_full"); ap.add_argument("--eval-config", default="configs/e0.json")
     ap.add_argument("--max-len", type=int, default=3072); ap.add_argument("--seed", type=int, default=20261108)
+    ap.add_argument("--group-by-length", type=int, default=0, help="v2: sft.py --group-by-length (similar-length micro-batches)")
     ap.add_argument("--no-eval", action="store_true"); ap.add_argument("--subset", type=int, default=0, help="evaluation: first N questions per shop")
     ap.add_argument("--trainer", default="sft", choices=["sft", "dpo"], help="dpo: training/dpo.py on (chosen, rejected) pairs (M4)")
     ap.add_argument("--beta", type=float, default=0.1); ap.add_argument("--sft-weight", type=float, default=0.0)
@@ -65,7 +66,7 @@ def main():
         cmd += [os.path.join(HERE, "sft.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
                 "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--max-tokens", str(a.budget),
                 "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed),
-                "--ckpt-dir", ck_dir] + res_args
+                "--ckpt-dir", ck_dir, "--group-by-length", str(a.group_by_length)] + res_args
     rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "train.log"), "w"), stderr=subprocess.STDOUT).returncode
     print(f"[full] training rc {rc} in {time.time() - t0:.0f}s", flush=True)
     if rc != 0 or not os.path.isfile(f"{tmp}/adapter/adapter_config.json"):

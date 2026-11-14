@@ -1,0 +1,1 @@
+run_kaggle.py train OUT/TG1n/p1 --script training/tg1_job.py --model Qwen/Qwen3.5-9B --part 1/2 --dp 4 --samples 6 --rows-per-shop 0 --train-rows-per-shop 0 --newterm training/data/out/tg0 --newterm-per-shop 80 --think-tokens 7168 --min-agree 3

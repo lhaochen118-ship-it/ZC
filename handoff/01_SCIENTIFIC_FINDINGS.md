@@ -122,3 +122,20 @@ thực thi được lúc suy luận (dòng rulebook ngành / thuật ngữ mới
 | Kế hoạch 4 (S–W–V) | `Process/scores_p3.csv` (mọi lần chạy 13–14/11), `docs/17_PLAN4_SWV.md` §7; log đã lưu `Process/runs/` (g1v3apf2, pva3k16, e0hvp, g0hfp …) |
 | W có tác dụng (ghép cặp) | `tests/splits/pub_ind.txt`, `pub_hoind.txt`; so từng câu e0hvp vs g0hfp (cùng S, hàm ngành ẩn: `configs/flow_sv_h.json` vs `flow_swv_h.json`) |
 | Hệ nộp | `configs/flow_final.json`, adapter `nhatlong1103/zc-final-adapter` (sha256 `src/adapter_hashes.json`); chạy lại: `training/soup_job.py --runner predict` |
+
+## 8. Kế hoạch 5 — hai LoRA huấn luyện riêng (S giải / W viết luật – nối luật – phán xử), 14/11 (`docs/18_PLAN5_TWO_LORA.md`)
+
+| Kết luận | Bằng chứng (public, đáp án chuẩn) |
+|---|---|
+| **Nút thắt là chọn ứng viên + kiến thức rulebook, không phải năng lực sinh**: gộp 11 lần chạy có mẫu đúng ở 991 / 1000 câu, bỏ phiếu chỉ 0.931–0.947 | phát lại log kế hoạch 3–4 |
+| **W3 phán xử huấn luyện** (LoRA trên S, dữ liệu = chính các mẫu của S trên DN train) chỉ phán câu có mẫu bất đồng: +0.010–0.015 ổn định trên nhiều log S | WJB1 0.950 / 0.946 vs bỏ phiếu 0.938 / 0.936 |
+| Phán xử zero-shot đã giúp khi **chỉ phán câu bất đồng** (0.947); phán mọi câu thì hỏng câu đúng (0.941) | zjs / zjb |
+| **Đưa dòng rulebook vào prompt phán xử** (huấn luyện kèm dòng — nhãn bộ khớp P trên câu train — và lúc chạy dòng do linker W2 nối) là cải tiến lớn thứ hai | WJR1 tổ hợp 3 biến thể: 0.949–0.958 (TB 0.952) vs WJB1 ~0.948–0.950 trên cùng 4 log |
+| Linker W2 huấn luyện (WL1) chính xác hơn hẳn zero-shot (0.78 vs 0.24 so với bộ khớp P) | lkw1 |
+| Dòng rulebook trong prompt **S** không giúp (WL1: 0.940 ≈ mốc) hoặc hại (zero-shot: 0.921) — dòng chung chung kèm hàm kéo sai | zlk, zlb, zlw |
+| W1 bind (mô hình viết lời gọi toolkit cho từng dòng rulebook, chỉ giữ khi chạy được trên dữ liệu ngành): 56 / 125 dòng | w1b2 |
+| Huấn luyện riêng từng vai cho phép quy công: phán xử (W3) đóng góp phần lớn; tăng cường từ chối (WJA1) và point (WJP1) không hơn | E1 |
+| Đường container: 0.943 / 0.941 (2 lần, 984 / 1000 đáp án trùng) — đủ tất định cho luật ±0.03 | F5 |
+
+**Hạn chế:** chọn ngưỡng / tổ hợp trên chính public (4 log) → lạc quan ~0.003–0.005; ~10 câu mọi mẫu S cùng sai (câu chủ quan, thuật ngữ rulebook mà
+S không gọi đúng hàm) nằm ngoài tầm phán xử; phán xử chọn sai ~10 câu bất đồng.

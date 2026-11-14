@@ -1,5 +1,5 @@
 {
- "_doc": "Plan 5 candidate (S-W): S = Qwen3.5-9B + v3a x 0.70 merged; W = the same weights + LoRA-W adapters applied by vLLM: W1 rule units + checked rulebook bindings (lrl_compile_mode bind), W2 linker WL1 (links_lora; generic rows above links_max_df dropped), W3 judge WJB1 (judge_lora) on the questions whose samples disagree, with the linked rows in its prompt; judge = mean of the list, point and point+think variants' choice shares, margin 0.7 (most stable over four public solver logs: 0.948-0.954)",
+ "_doc": "Plan 5 final (S-W, no hand-written rule at inference): S = Qwen3.5-9B + v3a x 0.70 merged; W = LoRA adapters on the same weights (merged per phase, w_mode merge): W1 rule units + checked rulebook bindings (lrl_compile_mode bind), W2 linker WL1 (links_lora; rows linked to > 5 % of the questions dropped), W3 judge WJR1 (trained with the question's rulebook rows; judge_lora) on the questions whose samples disagree: mean of the list / point / point+think choice shares, margin 0.5. Public (offline re-judging of 4 solver logs incl. 2 container runs): 0.949-0.958, mean 0.952",
  "flow": "hybrid",
  "pipeline": true,
  "quant": "fp8",
@@ -56,7 +56,7 @@
  "lrl_compile_mode": "bind",
  "lrl_bind_samples": 4,
  "judge": 1,
- "judge_lora": "WJB1",
+ "judge_lora": "WJR1",
  "judge_mode": "list,point,point+think",
  "judge_k": 5,
  "judge_tau": 0.5,
@@ -65,5 +65,5 @@
  "judge_links": 1,
  "judge_u_answers": 1,
  "judge_max_s": 1800,
- "judge_ensemble": 0.7
+ "judge_ensemble": 0.5
 }

@@ -1,7 +1,23 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-14 05:20 UTC. Dự án **đang dừng** (user 14/11 02:30): kế hoạch 4 xong, PDF 1 / 2 / 3 cập nhật, repo đã dọn. Chờ user đưa
-chiến lược mới hướng tới public = 1. Routine tự tiếp tục đã tắt. Lịch sử chi tiết: `docs/17_PLAN4_SWV.md` §7, PDF 1 / 2; bản STATUS cũ trong git.*
+*Cập nhật 2026-11-14 15:30 UTC. Kế hoạch 5 (`docs/18_PLAN5_TWO_LORA.md`) **xong phần thử nghiệm, đang DỪNG** chờ user đưa chiến lược mới (khung chat
+Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §9 (`handoff/02_ENGINEERING_OPS_LESSONS.md`).*
+
+## 0. Kế hoạch 5 — kết quả (public, đáp án chuẩn)
+
+| Hệ | Public |
+|---|---|
+| Kế hoạch 4 (S + W unit, bỏ phiếu) | 0.938 |
+| F5 container × 2 (S + W1 bind + W2 linker WL1 + W3 phán xử WJB1) | 0.943 / 0.941 (`final_submission/swv/`) |
+| **Cấu hình cuối `configs/flow_p5_final.json`** (W3 = WJR1, tổ hợp 3 biến thể, ngưỡng 0.5) — phán xử lại offline trên 4 log S | **0.949–0.958, TB 0.952** |
+
+Adapter (LoRA, học chồng trên V3A × 0.70): WL1 (`synchan5704/zc-wl1b-1` output; dataset `{yuan1103,synchan5704}/zc-w-adapters`), WJB1
+(`nguyenhoa99/zc-wjb1-1`; trong `zc-w-adapters`), **WJR1** (`quynhtran35/zc-wjr1-1` output — **chưa** có trong dataset). Log: `Process/runs/f5a`,
+`f5b`, `training/data/out/jlogs/` (không commit), dữ liệu W: `training/data/out/{wj,wl}` (dựng lại: `training/data/w_judge.py --aug 1 --rows
+training/data/out/wj/p_rows.jsonl --tag _r`, `w_link.py --max-per-shop 60`, `p_rows.py`).
+
+**Việc còn lại trước hạn (16/11 04:00 UTC đóng băng):** D1 Docker cho cấu hình cuối (đăng WJR1 + WL1 vào dataset adapter cuối; `docker/` thêm
+`training/merge.py` + 2 adapter W; chạy `docker/run_public_test.sh`). Quota 14/11 15:00: các acc còn ~14–25 h.
 
 ## 1. Hệ nộp
 

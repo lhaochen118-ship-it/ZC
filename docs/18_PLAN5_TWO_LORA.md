@@ -127,3 +127,17 @@ container mặc định gộp adapter W theo pha (`w_mode: merge`). Lỗi vận 
 **14/11 13:00 — WJA1 (tăng cường từ chối) + link WL1:** 0.952 / 0.944 — không hơn WJB1. LoRA động sau `merge.py vllm` đúng như gộp (0.951 vs 0.950) →
 `w_mode: "lora"` dùng được trong container (không cần bản sao 19 GB / pha). **F5** (đường container, `configs/flow_p5_final.json`, W gộp theo pha) × 2
 song song: f5a yuan1103, f5b synchan5704 (12:42 →).
+
+**14/11 15:30 — KẾT QUẢ KẾ HOẠCH 5 (dừng chờ chiến lược mới).**
+
+| Hệ (public 1000 câu, đáp án chuẩn) | Điểm |
+|---|---|
+| Hệ nộp kế hoạch 4 (bỏ phiếu) | 0.938 (container 0.922) |
+| F5 container thật (`flow_p5_final` lúc chạy: W1 bind + W2 WL1 + S + W3 WJB1 list) × 2 | **0.943 / 0.941** (984 / 1000 đáp án giống nhau; 56–75 phút / 4×L4) |
+| Phán xử lại offline trên log F5 + 2 log S khác: **WJR1**, tổ hợp list + point + point_think, ngưỡng 0.5 (= cấu hình cuối hiện tại) | **0.949 / 0.953 / 0.958 / 0.949 (TB 0.952)** |
+| Cùng chính sách với WJB1 | TB ~0.948–0.950 |
+
+Quy công: W3 (phán xử) +0.010–0.015 (phần lớn lợi ích); W2 (link) có ích **trong prompt phán xử** (+0.004), trong prompt S ≈ 0 (WL1) hoặc âm (zero-shot);
+W1 bind có ích cho link (hàm đã kiểm). Lỗi còn lại (~20 sai): ~1/2 câu mọi mẫu S cùng sai (cần năng lực S / kiến thức), ~1/2 phán xử chọn sai.
+**Chưa làm (D1):** Docker cho cấu hình cuối — đăng WL1 + WJR1 vào dataset adapter cuối, `docker/` chép `training/merge.py` + adapter W vào image,
+`CONFIG=configs/flow_p5_final.json`, chạy `run_public_test.sh`; hạn đóng băng 16/11 04:00 UTC.

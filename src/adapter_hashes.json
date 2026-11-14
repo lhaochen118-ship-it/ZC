@@ -1,8 +1,8 @@
 {
  "dataset": "nhatlong1103/zc-final-adapter",
  "files": {
-  "WG1/adapter/adapter_config.json": "aedb6f9e400ab2d317b03f37ff4a6c1d835309f7e017f7faf6b1bfd89299efd6",
-  "WG1/adapter/adapter_model.safetensors": "0d4eef7d3a9e3d3544ccece932c5c1ef67bf15aac3c1dd7bf7368a0070b48efd",
-  "soup.json": "3ef6a00650c7ca0e2b9f10f34448f20f03ded13ecb4e014f65887ac6d9ab8949"
+  "V3A/adapter/adapter_config.json": "28effaf8ee989ffa50ca83f058506c69ae819bc56947adb4232cbf00e9d2a771",
+  "V3A/adapter/adapter_model.safetensors": "934281d8c325b7c89e83f514953bd4a30de4331f78470bbcac7654aa9b5f9a7d",
+  "soup.json": "83f2c1d146f55bb7018b1d0c0acba53a2b93224249691a74e6e5ba39a24ffd87"
  }
 }

@@ -201,3 +201,16 @@ chỉ đánh giá public (k 8 `g1v3bpf`, k 16 `pv3bk16`).
 **14/11 04:10 — lưới public (2):** V4S1 k 16: 0.924 (bỏ phiếu 0.926); soup k 16: 0.926 (0.932); **v3a × 0.70 k 16: 0.935 có V, 0.938 bỏ phiếu
 thường** (k 8: 0.929 / 0.936; đánh giá 2431 s, W 16 hàm 774 s) — cao nhất của hệ không luật viết tay. Chờ v3b k 8 / k 16.
 
+**14/11 04:35 — lưới public xong, F1 chốt.** v3b × 0.70: k 8 0.923 (bỏ phiếu 0.926), k 16 0.921 (0.925) < v3a. Bảng `pub_full` (bỏ phiếu thường):
+
+| S | k 8 | k 16 |
+|---|---|---|
+| **v3a × 0.70** | 0.936 | **0.938** |
+| V3A × 0.70 + V4S1 | 0.925 | 0.926 |
+| V3A × 0.70 + V4S2 | 0.920 | 0.932 |
+| soup V3A × 0.70 + V4S1 × 0.5 + V4S2 × 0.5 | 0.928 | 0.932 |
+| v3b × 0.70 | 0.926 | 0.925 |
+
+**Cấu hình cuối (F1):** S = v3a × 0.70, W (5 mẫu, 1 vòng tự sửa), k_fast 4 / k_max 16, bỏ phiếu thường θ 0.5 (V không lợi trên public),
+thẻ luật do mô hình biên dịch (`lrl`) — `configs/flow_swv_k16_vote.json` → `configs/flow_final.json`; P giữ ở `configs/flow_p_final.json`.
+

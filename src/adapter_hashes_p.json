@@ -1,0 +1,8 @@
+{
+ "dataset": "nhatlong1103/zc-final-adapter",
+ "files": {
+  "WG1/adapter/adapter_config.json": "aedb6f9e400ab2d317b03f37ff4a6c1d835309f7e017f7faf6b1bfd89299efd6",
+  "WG1/adapter/adapter_model.safetensors": "0d4eef7d3a9e3d3544ccece932c5c1ef67bf15aac3c1dd7bf7368a0070b48efd",
+  "soup.json": "3ef6a00650c7ca0e2b9f10f34448f20f03ded13ecb4e014f65887ac6d9ab8949"
+ }
+}

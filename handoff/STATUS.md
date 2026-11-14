@@ -19,6 +19,7 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | EWTS2 mốc WT: W = S (H, 614 câu ngành) | phuongnehe/zc-ewts2-1 | xong | pub_ind 0.576, pub_hoind 0.475 (15 hàm; kế hoạch 4: 0.595 / 0.493) |
 | H0a2 `pub_full_H` seed 2 | synchan5704/zc-h0a2-1 | xong | **0.863** (909 / 46 / 45) = H0a → nhiễu nhỏ; F1 − TB(H0a, H0a2) = −0.016 (z −1.6) → **G-F: F loại** |
 | EWBT2 W = Qwen gốc có suy nghĩ (H, 614 câu) | phuongnehe/zc-ewbt2-1 | xong | pub_ind 0.539, pub_hoind 0.455; chỉ 2 hàm qua kiểm (1,552 s) → kém W = S; suy nghĩ lúc suy luận không phải lời giải |
+| bl1 B-lite: phán xử xem lại câu đồng thuận (4 log public, WJR1) | anderson1202/zc-bl1-1 | xong — **B-lite loại** | câu đồng thuận bị bác chắc chắn: point+think 6 đúng / 1 sai (f5a), 14 / 0 (f5b), 6 / 1, 13 / 3; point+c 35 / 1 … → ghi đè chỉ mất điểm; bộ phán xử không thấy lỗi đồng thuận |
 | TG1 thầy WT p0–p3 | phatle1578, mucnokieu (2 phiên mỗi acc) | chạy | |
 | TG1n thầy cho thuật ngữ mới p0 (p1 sau) | huyenco | chạy | |
 | TG2 cặp tương phản | loinguyentran → tg2b → tg2c → nguyenhoa99/tg2d | chạy lại | tg2: 2 engine vLLM; tg2b/c: chương trình bị HTML-escape (`&quot;`) → sửa |

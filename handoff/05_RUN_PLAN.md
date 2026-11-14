@@ -240,3 +240,8 @@ không phụ thuộc thầy: `training/data/wt_from_programs.py` biến chương
 theo kỳ `p` (thay lời gọi kỳ bằng `p` trên AST), giữ khi gọi lại cho đúng đáp án đã kiểm.
 **S′ đẩy không chờ TG1** (S2S1 / S2S2 trên nguynduylm, 23.1M token: replay + thuật ngữ mới trong `# RULES` + 1,005 cặp tương phản / cách viết).
 **WJR2D** (quynhle07) = LoRA chồng trên V3A × 0.70 + WJR1, 1 epoch trên 1,738 bản ghi tương phản + 1,000 bản ghi WJR1.
+
+**20:15 – B-lite loại.** bl1: WJR1 phán xử cả câu đồng thuận trên 4 log public (chỉ để phân tích, không chọn ngưỡng trên public). Câu đồng
+thuận mà bộ phán xử bác với 100 % phiếu: point+think 6 đúng / 1 sai (f5a), 14 / 0 (f5b), 6 / 1 (pva3k16), 13 / 3 (g1v3apf2); point+c
+35–42 đúng / 1–6 sai. Ghi đè đáp án đồng thuận sẽ mất điểm ở mọi ngưỡng → không đưa vào. RC2 (sai đồng thuận vô hình) cần bộ kiểm khác hẳn
+(chưa có trong kế hoạch này).

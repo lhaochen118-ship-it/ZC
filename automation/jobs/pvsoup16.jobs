@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/pvsoup16 --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters V3A,V4S1,V4S2 --weights 0.70,0.5,0.5 --sets pub_full --eval-configs configs/flow_swv_k16.json

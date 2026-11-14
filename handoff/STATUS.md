@@ -33,6 +33,7 @@ caohuyen74, bichthuy93 / namhunhh, phuongnehe, duckzuykobip); WR30 (117 / 117, d
 | huuhien95 `g1v4s1pf` / `g1v4s1ho`, caohuyen74 `g1v4s1h` | G1: S + W + V (V3A × 0.70 + V4S1) `pub_full` / held-out / ẩn ngành (`pub_noind,tr_newterm,pub_ind,pub_hoind`) | ~1–1.3 h |
 | namhunhh `g1v4s2pf` / `g1v4s2ho`, phuongnehe `g1v4s2h` | G1 với V4S2 | ~1–1.3 h |
 | bichthuy93 `v2v4s1a/b`, duckzuykobip `v2v4s2a/b` | dữ liệu V2: `tr_dev_para_a/b` với mỗi S v4 | ~0.9 h |
+| quynhle07 `pvsoup8` / `pvsoup16`, quynhtran35 `pvs1k16`, nguyenhoa99 `pvs2k16` | lưới public: S ∈ {soup V3A × 0.70 + V4S1 × 0.5 + V4S2 × 0.5, V4S1, V4S2} × k_max {8, 16} (`configs/flow_swv_k16.json`) trên `pub_full` | ~1.3–1.8 h |
 
 **Tiến độ kế hoạch 4 (`docs/17_PLAN4_SWV.md`):** V1 xong (held-out +1.8 khi phát lại); W1 xong (`src/units.py`, `lrl_gen --mode unit`); E0 xong
 (`pub_noindH`: Q −0.16, Q2 −0.04 — toàn bộ điểm ngành trước đây là của `industry.py`); G0 xong (S + W + V: 0.036); S1 xong

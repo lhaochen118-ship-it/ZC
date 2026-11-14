@@ -27,7 +27,7 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | Dữ liệu WT (`wt_build.py`) | CPU | xong | 864 bản ghi (3.5M token) + 265 dòng đo (6 DN held-out) |
 | WT-b / WT-s huấn luyện | nhatlong1103 ×2 | chạy | |
 | WT0B (chỉ 543 hàm từ chương trình) → EWT0 (614 câu H) | anderson1202 | chạy | kiểm tra tích hợp WT |
-| ewu_ref: độ chính xác hàm W = S, W = Qwen gốc (265 dòng held-out) | synchan5704 | chạy | |
+| ewu_ref: độ chính xác hàm W = S, W = Qwen gốc (265 dòng held-out) | synchan5704 | xong | **W = S 0.517** (giữ 221, đúng 137; nhãn chương trình đã kiểm 67 / 157); Qwen gốc 0.423 (41 / 157) |
 | TG1n (thuật ngữ mới, suy nghĩ) | huyenco | huỷ | gộp vào TG1b |
 | TG2 cặp tương phản | nguyenhoa99/zc-tg2d-1 | xong (lần 4) | **1,005 cặp** (729 tương phản, kiểm ngược mù 97 %; 276 cách viết); lỗi trước: 2 engine vLLM, HTML-escape `&quot;` |
 | WJR2D (LoRA chồng V3A×0.70 + WJR1; 1,738 bản ghi tương phản + 1,000 WJR1) | quynhle07 | xong | 9.2M token, 1.72k tok/s, đỉnh 16.4 GB; đánh giá ej2 đang chạy |

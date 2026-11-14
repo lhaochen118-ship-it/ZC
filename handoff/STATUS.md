@@ -12,7 +12,7 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | **Cấu hình cuối `configs/flow_p5_final.json`** (W3 = WJR1, tổ hợp 3 biến thể, ngưỡng 0.5) — phán xử lại offline trên 4 log S | **0.949–0.958, TB 0.952** |
 
 Adapter (LoRA, học chồng trên V3A × 0.70): WL1 (`synchan5704/zc-wl1b-1` output; dataset `{yuan1103,synchan5704}/zc-w-adapters`), WJB1
-(`nguyenhoa99/zc-wjb1-1`; trong `zc-w-adapters`), **WJR1** (`quynhtran35/zc-wjr1-1` output — **chưa** có trong dataset). Log: `Process/runs/f5a`,
+(`nguyenhoa99/zc-wjb1-1`; trong `zc-w-adapters`), **WJR1** (`quynhtran35/zc-wjr1-1` output); cả 3 adapter ở **`Process/adapters/` (Git LFS)** và Kaggle `nhatlong1103/zc-w-final`. Log: `Process/runs/f5a`,
 `f5b`, `training/data/out/jlogs/` (không commit), dữ liệu W: `training/data/out/{wj,wl}` (dựng lại: `training/data/w_judge.py --aug 1 --rows
 training/data/out/wj/p_rows.jsonl --tag _r`, `w_link.py --max-per-shop 60`, `p_rows.py`).
 

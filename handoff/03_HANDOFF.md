@@ -38,7 +38,7 @@ lúc suy luận. Hạn: đóng băng container **16/11 04:00 UTC**, nộp 16/11 
 | Job / kế hoạch Kaggle | `automation/jobs/*.jobs`, `Process/kaggle/plans/plan_*.json`, sổ kernel `Process/kaggle/kernels.csv` |
 | Đánh giá offline | `tests/replay_judge.py`, `Process/tools/plan5/{pol,ens2,err}.py`; phiếu: `Process/runs/p5_judge/` |
 | Điểm | `Process/scores_p5.csv` (kế hoạch 5), `scores_p3.csv`, `scores.csv` |
-| Adapter | S: `<acc>/zc-v3a-adapter`, `nhatlong1103/zc-final-adapter`; W: `nhatlong1103/zc-w-final` (WL1, WJR1, WJB1) |
+| Adapter | S: `<acc>/zc-v3a-adapter`, `nhatlong1103/zc-final-adapter`; W (WL1, WJR1, WJB1): **`Process/adapters/` (Git LFS)** + Kaggle `nhatlong1103/zc-w-final` |
 | Nhật ký chi tiết | `docs/18_PLAN5_TWO_LORA.md` §7 |
 
 ## 5. Việc tiếp theo

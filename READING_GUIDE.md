@@ -8,7 +8,7 @@ Cho Agent nhận dự án ở khung chat mới. Đọc theo thứ tự, dừng k
 2. `pip install kaggle==2.2.5 xgrammar duckdb markdown xhtml2pdf pandas openpyxl`
 3. Dữ liệu: `KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_nhatlong1103) kaggle datasets download nhatlong1103/zc-2026 -p data/raw --unzip`;
    đáp án public (chỉ để chấm): `git fetch --unshallow origin; python3 automation/rebuild_public_gt.py`.
-4. Đọc `handoff/STATUS.md`. Dự án **đang dừng** (14/11 15:30): kế hoạch 5 xong; user sẽ gửi kế hoạch mới (docx) để chạy tiếp.
+4. `git lfs pull` (adapter W kế hoạch 5 ở `Process/adapters/`, Git LFS, ~960 MB). Đọc `handoff/STATUS.md`. Dự án **đang dừng** (14/11 15:30): kế hoạch 5 xong; user sẽ gửi kế hoạch mới (docx) để chạy tiếp.
 
 ## 1. Bắt buộc
 

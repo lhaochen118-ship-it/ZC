@@ -30,7 +30,7 @@ Khung chat mới chạy trong container mới: scratch (log lần chạy, cache,
 | `tools/plan5/` | `pol.py` (lưới chính sách 1 biến thể), `ens.py` / `ens2.py` (kết hợp biến thể trên nhiều log), `err.py` (phân nhóm lỗi), `pool.py` (gộp log S), `an*.py` (phân tích lỗi), `fake_*.py` (mô hình giả cho smoke), `watch_loop.sh` | sửa đường dẫn `$S` / scratch ở đầu file |
 | `kaggle/kernels.csv` (thêm 29 dòng), `kaggle/plans/plan_*.json` | kernel + plan của kế hoạch 5 | tải output: `kaggle kernels output <id>` |
 
-**Adapter W (không vào git, 320 MB / cái):** dataset `nhatlong1103/zc-w-final` (WL1, WJR1, WJB1 — mỗi cái `<NAME>/adapter/`), bản sao
+**Adapter W (320 MB / cái): trong repo qua Git LFS — `Process/adapters/{WJR1,WL1,WJB1}/` (`git lfs pull`)**; bản Kaggle: dataset `nhatlong1103/zc-w-final` (WL1, WJR1, WJB1 — mỗi cái `<NAME>/adapter/`), bản sao
 `{yuan1103,synchan5704}/zc-w-adapters` (WL1, WJB1); output kernel gốc ở `kaggle/kernels.csv`. Adapter S (V3A) như cũ.
 
 ## Khôi phục nhanh
@@ -51,7 +51,7 @@ mkdir -p training/data/out/v3a && gunzip -c Process/train_data/p3/v3a_mix.jsonl.
 | Token Kaggle (11 acc dùng 14/11: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99, yuan1103, synchan5704, anderson1202, loinguyentran, yeshenhi (T4), phatle1578, mucnokieu) | xin user → `~/.kaggle/tok_<username>` (600); username: `KAGGLE_API_TOKEN=... kaggle config view` |
 | Dữ liệu BTC + đáp án public | `kaggle datasets download nhatlong1103/zc-2026 -p data/raw --unzip`; `data/raw/public_gt.jsonl` do user gửi (`score_1.jsonl`) |
 | Cache ingest (W: `training/data/out/_ingest_{train,pub}`) | `python3 training/data/w_link.py` / `p_rows.py` tự dựng; agent: | `python3 src/ingest.py <split> <S>/cache_{train,pub} 4`; `python3 tests/build_canon.py data/raw/train/train <S>/cache_train <S>/canon` |
-| Adapter W kế hoạch 5 | `nhatlong1103/zc-w-final` (xem mục Kế hoạch 5) |
+| Adapter W kế hoạch 5 | đã chuyển giao: `Process/adapters/` (Git LFS, `git lfs pull`); Kaggle `nhatlong1103/zc-w-final` |
 | Adapter (LoRA, 320 MB / nhánh) | trên Kaggle: `<acc>/zc-wg-adapters` (WG1–4), `nhatlong1103/zc-final-adapter` (WG1 nộp), output kernel `loinguyentran/zc-wg-1`, `bichthuy93/zc-wg2r-1` (WG5–8) |
 | Paraphrase đánh giá | `<acc>/zc-para` (`para_pub.jsonl`, `para_train.jsonl`) |
 | Log của lần chạy không có ở `runs/` | `kaggle kernels output` theo `kaggle/kernels.csv` (output kernel còn trên Kaggle) |

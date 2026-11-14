@@ -9,7 +9,7 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 |---|---|---|---|
 | Chế độ H không rò rỉ (thẻ W1 / link / phán xử / W1 bind) | CPU | xong | 14 / 125 thẻ public từng gợi ý hàm `industry.py` → đã lọc; `tests/test_mode_h.py` |
 | H0a `pub_full_H` (container) | quynhle07/zc-h0a-1 | chạy | |
-| H0b held-out H | quynhle07/zc-h0b2-1 | chạy lại (thiếu zc-para) | |
+| H0b held-out H | quynhle07/zc-h0b2-1 | xong | bỏ phiếu (chưa phán xử): **pub_ho400c 0.581, tr_ho400c 0.901, pub_hoind 0.455, tr_newterm 0.852** |
 | H0c held-out thường | quynhtran35/zc-h0c-1 → h0c2 | chạy lại (thiếu zc-para) | |
 | D1 container `flow_p5_final` | quynhtran35/zc-d1-1 | xong | **public 0.952** (973 / 21 / 6, file ensemble; còn `industry.py`) → `final_submission/p5_container_d1/` |
 | TG0 thuật ngữ mới (Qwen gốc) | nguyenhoa99/zc-tg0-1 | xong | 1,446 / 2,681 thuật ngữ (`training/data/out/tg0`) |

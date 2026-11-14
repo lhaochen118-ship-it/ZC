@@ -1,0 +1,19 @@
+[
+ {
+  "acc": "nguyenhoa99",
+  "name": "jh0b",
+  "jobs": "automation/jobs/jh0b.jobs",
+  "est_h": 1.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "nguyenhoa99/zc-ad2",
+   "--train-data",
+   "jlogs",
+   "--no-preflight"
+  ]
+ }
+]

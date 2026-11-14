@@ -1,158 +1,261 @@
-# Proposed plan — đưa hệ kế hoạch 5 (public TB 0.952) hướng tới 1.0
+# Proposed plan v2: hệ không luật viết tay, đo trung thực, hướng tới 1.0
 
-*DataMate, Zalo AI Challenge 2026 · lập 14/11/2026 16:10 UTC · nguồn: `handoff/04_PROPOSED_PLAN.md` · đóng băng container 16/11 04:00 UTC*
+*DataMate, Zalo AI Challenge 2026 · bản 2, sửa 14/11/2026 17:00 UTC (bản 1: 16:10 UTC) · nguồn: `handoff/04_PROPOSED_PLAN.md` · kế hoạch chạy
+từng bước: **`handoff/05_RUN_PLAN.md`** · đóng băng container 16/11 04:00 UTC*
 
-**Tóm tắt.** Sau kế hoạch 5, điểm mất còn lại chia hai phần gần bằng nhau: (1) câu mà **mọi mẫu của S cùng sai** nên không bao giờ được phán xử (8–19 câu mỗi lần chạy), gốc là S chưa từng được dạy dùng rulebook; (2) câu có mẫu đúng nhưng **bộ phán xử chọn sai hoặc không ra phán quyết** (6–15 câu). Đề xuất ba việc theo thứ tự: sửa kênh đầu ra của bộ phán xử (không huấn luyện); định tuyến câu "xung đột rulebook" tới bộ phán xử bằng một bộ nối luật biết báo *thiếu định nghĩa*; huấn luyện S đọc rulebook bằng **rulebook đối chứng**. Ước lượng 0.952 → 0.965–0.975; **1.0 không được bảo đảm** (mục 6).
+**Bản 2 thay đổi gì so với bản 1 (theo yêu cầu user 14/11 17:00).**
+1. **E bỏ danh sách lấy từ câu public sai.** Cặp tương phản do mô hình sinh có hệ thống từ cấu trúc chương trình train. Không còn trục nào chọn từ lỗi
+   public ("4/26", "đh", "z", lô / máy / nhập…).
+2. **C thêm ca "định nghĩa nằm ngoài toolkit".** Nhãn là pandas trên `C` / `T` do mô hình viết và kiểm bằng thực thi. S′ thấy hàm do mô hình viết
+   trong prompt (`# SHOP FUNCTIONS`).
+3. **Có lại cổng held-out và chế độ đo trung thực "H"** (ẩn `industry.py`, hàm ngành Claude viết theo rulebook public). Mọi quyết định nhận / bỏ phải
+   qua held-out; số chính là `pub_full_H`, `pub_full` (còn `industry.py`) chỉ là tham chiếu.
+4. **Giải pháp mới G: LoRA viết tool (WT)**, huấn luyện độc lập, thay `industry.py`. §3.G nêu lý do chọn LoRA thay vì Qwen gốc.
 
-## 0. Bản tóm tắt để chạy (cho khung chat thực thi)
+**Tóm tắt.** Điểm 0.952 của cấu hình cuối kế hoạch 5 có phần do **hàm viết tay**: `configs/flow_p5_final.json` không đặt `hide_api`, nên S vẫn gọi
+được `industry.py` (đúng 3 ngành của rulebook public). Khi ẩn các hàm này, 269 câu public của 5 DN có ngành rơi từ 0.900 xuống 0.476. Có hàm
+do mô hình viết (W) thì lên 0.595. Ước lượng `pub_full_H` ≈ 0.86–0.89 (đo ở bước H0). Trên held-out paraphrase public hệ chỉ đạt 0.60–0.65.
+Kế hoạch v2 vì vậy làm ba việc:
+- đo trung thực (H + held-out);
+- thay `industry.py` bằng hàm do một LoRA viết tool tạo ra từ rulebook lúc suy luận;
+- giữ các sửa của bản 1 (A sửa đầu ra phán xử, B định tuyến, C S′ đọc rulebook, F API tự sinh), sau khi bỏ mọi phần xây từ lỗi public.
 
-**Mốc.** Cấu hình `configs/flow_p5_final.json`, public TB **0.952** trên 4 log S (`f5a`, `f5b`, `pva3k16`, `g1v3apf2`). Đáp án chuẩn: `score 1.jsonl` ở gốc repo (trùng `data/raw/public_gt.jsonl` dựng bằng `automation/rebuild_public_gt.py`). Đóng băng container **16/11 04:00 UTC**.
+Mục tiêu thực tế: `pub_full_H` 0.91–0.95 và held-out không giảm. 1.0 không được bảo đảm (§6).
 
-**Còn sai 24–28 câu mỗi log**, ba nhóm: 8–19 câu mọi mẫu S cùng sai (không được phán xử); 6–15 câu có mẫu đúng nhưng mất; 2–5 câu không mẫu nào đúng.
+## 0. Bản tóm tắt để chạy
+
+**Mốc.** `configs/flow_p5_final.json`: public TB 0.952 trên 4 log S (`f5a`, `f5b`, `pva3k16`, `g1v3apf2`). Đáp án chuẩn là `score 1.jsonl`, chỉ
+dùng để chấm. Đóng băng 16/11 04:00 UTC. Lịch giờ, acc, lệnh: `handoff/05_RUN_PLAN.md`.
 
 | Thứ tự | Việc | Làm gì | Đo ở đâu | Nhận khi |
 |---|---|---|---|---|
-| 0 | **Docker dự phòng** | D1 cho `flow_p5_final` (`handoff/03_HANDOFF.md` §5) | đường container | có điểm container của đúng cấu hình WJR1 |
-| 1 | **A** sửa đầu ra phán xử | `src/judge.py`: biến thể `list` / `point` sinh có ràng buộc, chỉ in `<choice>k</choice>` (hoặc lấy xác suất token lựa chọn). Hiện WJR1 chỉ đọc được 19–25 % / 35–40 % phán quyết | phán xử lại 4 log đã lưu (`soup_job --runner judge`, `tests/replay_judge.py`) | tỉ lệ đọc được ≥ 95 %; TB > 0.952, không log nào giảm |
-| 1 | **F** khối API tự sinh | `# API` của prompt sinh từ `api_spec` (mọi hàm công khai) thay `dm.API_DOC` viết tay; hiện `purchased_qty_base` không có trong prompt | một lần chạy public, so ghép cặp với `f5a` | không âm; âm thì chỉ thêm dòng thiếu vào cuối khối |
-| 2 | **Dữ liệu** (CPU, chỉ cửa hàng train) | (i) rulebook đối chứng: xoá / đổi định nghĩa / đổi tên thuật ngữ / thêm dòng nhiễu, nhãn tính lại bằng thực thi; (ii) cặp tương phản: tháng-năm ↔ ngày-tháng, đơn ↔ ngày ↔ số lượng, lô ↔ sản phẩm, máy ↔ lượt, nhập ↔ bán, đếm ↔ liệt kê | — | mỗi cặp chạy được, hai nhãn khác nhau đúng dự định |
-| 3 | **B** định tuyến xung đột rulebook (S đóng băng) | Huấn luyện **W2′** (từ `w_link.py` + dữ liệu i): mỗi câu in dòng áp dụng + trạng thái *có định nghĩa / không cần / tiêu chí chủ quan thiếu định nghĩa*. Câu đồng thuận gửi tới bộ phán xử khi "thiếu định nghĩa", hoặc khi có dòng nối mà không ứng viên nào dùng lời gọi đã kiểm (S chạy lại một lượt với dòng đó). Huấn luyện **WJR2** = WJR1 + dữ liệu (ii) + câu đồng thuận bị định tuyến | cửa hàng train giữ ngoài, rồi 4 log public | precision "thiếu định nghĩa" ≥ 0.9; số câu sai đồng thuận / log giảm; câu bị làm hỏng ≤ 1/3 câu sửa được |
-| 3 | **C** S′ đọc rulebook (song song với B) | LoRA chồng trên V3A × 0.70; prompt có lớp ngữ nghĩa đầy đủ của split (thuật ngữ, định nghĩa, lời gọi W1) ở phần đầu dùng chung; dữ liệu = v3a dựng lại theo bố cục mới + (i) + (ii), câu không trả lời được 3–5 %; ~40–50M token, 2 seed | public × 2 seed, cùng bộ phán xử | độ nhạy rulebook ≥ 0.95 trên train giữ ngoài; tăng ghép cặp z ≥ 2, hai seed cùng dấu; không đạt → giữ S |
-| 4 | **D** kênh thứ hai (chỉ khi A xong và còn giờ) | một mẫu mỗi câu bằng trọng số gốc (`w_mode: lora`, tắt adapter theo request), bật suy nghĩ; bất đồng với S → bộ phán xử | 4 log public | tăng ghép cặp, không log nào giảm |
-| 5 | **Đóng gói** | chọn cấu hình, đường container × 2, thời gian 1,000 câu, Docker, `README_SOLUTION` | — | hai lần chạy lệch ≤ 0.03; trong 6 giờ |
+| 0 | **H0 đo trung thực + Docker dự phòng** | `flow_p5_final_h` (= cấu hình cuối + `hide_api: industry`) trên `pub_full` (đường container), held-out `pub_ho400c`, `tr_ho400c`, `pub_hoind`, `tr_newterm`; bản thường trên cùng held-out làm tham chiếu; D1 container `flow_p5_final` | — | có số mốc H cho mọi tập |
+| 1 | **A** đầu ra phán xử | `list` / `point` sinh có ràng buộc (`<choice>` hoặc xác suất token lựa chọn) | phán xử lại 4 log public + log H0 (cả held-out) | tỉ lệ đọc được ≥ 95 %; TB tăng, không log nào giảm, held-out không giảm > 0.005 |
+| 1 | **F** khối API tự sinh | `# API` sinh từ `api_spec` thay `dm.API_DOC` viết tay | một lần chạy `pub_full_H` + held-out, so ghép cặp | không âm ở cả hai |
+| 2 | **Dữ liệu (CPU + GPU sinh, chỉ DN train, trừ 6 DN held-out)** | (i) rulebook đối chứng (xoá / đổi định nghĩa, cả ngoài toolkit / đổi tên / dòng nhiễu); (ii) cặp tương phản sinh có hệ thống; (iii) dòng rulebook tổng hợp kiểu "ngành mới" + hàm do thầy viết (Qwen gốc có suy nghĩ, tự nhất quán, kiểm 13 kỳ) | — | nhãn qua kiểm thực thi; thống kê tỉ lệ giữ |
+| 3 | **G** LoRA viết tool WT | 2 nhánh độc lập: WT-b (trên Qwen gốc), WT-s (trên V3A × 0.70); so với Qwen gốc có suy nghĩ và W = S | độ chính xác hàm trên DN held-out; 614 câu `pub_ind` + `pub_hoind` ở chế độ H | hơn W hiện tại có ý nghĩa (z ≥ 2), held-out không giảm |
+| 3 | **B** định tuyến xung đột rulebook | W2′ (dòng áp dụng + trạng thái định nghĩa) → câu đồng thuận nghi ngờ gửi phán xử WJR2 | DN train held-out, rồi log public + H0 | precision "thiếu định nghĩa" ≥ 0.9; câu hỏng ≤ 1/3 câu sửa; held-out không giảm |
+| 4 | **C** S′ đọc rulebook | LoRA trên V3A × 0.70, prompt có lớp ngữ nghĩa + hàm WT; dữ liệu v3a + (i) + (ii) | `pub_full_H` + held-out, 2 seed | z ≥ 2, hai seed cùng dấu, held-out không giảm |
+| 5 | **Ghép + đóng gói** | cấu hình tốt nhất qua cổng; đường container × 2; Docker; `README_SOLUTION` | — | hai lần chạy lệch ≤ 0.03; ≤ 6 h |
 
-**Quy tắc khi chạy.** Không luật viết tay lúc suy luận; không dùng câu public để huấn luyện; so ghép cặp trên cùng câu, ≥ 2 seed cho thay đổi ở S; thành phần nào không qua cổng thì tắt bằng cấu hình; tuân thủ PDF 2 §9 và cổng kiểm tra trong `CLAUDE.md`. Dự báo: A + F → 0.954–0.960; thêm B hoặc C → 0.962–0.972; tốt nhất ~0.98; 1.0 xác suất thấp.
+**Quy tắc khi chạy.**
+- Không luật viết tay lúc suy luận. Hàm ngành viết tay bị ẩn trong mọi phép đo mới.
+- Không dùng câu public (kể cả paraphrase) để huấn luyện. Dữ liệu mới bỏ 6 DN train held-out.
+- So ghép cặp trên cùng câu; thay đổi ở S cần ≥ 2 seed.
+- Mọi thay đổi phải qua cổng held-out (§5). Tuân thủ PDF 2 §9 và cổng kiểm tra trong `CLAUDE.md`.
 
 ## 1. Hiện trạng và cách phân tích
 
-- **Hệ hiện tại** (`configs/flow_p5_final.json`): S = Qwen3.5-9B + LoRA v3a × 0.70 viết chương trình (4–16 mẫu / câu, đóng băng); W1 gắn dòng rulebook với lời gọi toolkit đã chạy thử; W2 (linker WL1) nối mỗi câu với dòng rulebook; W3 (bộ phán xử WJR1) chọn giữa các nhóm đáp án ở câu có mẫu bất đồng.
-- Đáp án: file `score 1.jsonl` của user (chính xác 100 %); bản dựng lại bằng `rebuild_public_gt.py` trùng nó ở cả 1,000 câu. Tôi phát lại chính sách cuối trên 4 log S đã lưu: **0.949 / 0.953 / 0.958 / 0.949, TB 0.952** — khớp số đã báo cáo. Đường container thật (bộ phán xử cũ WJB1): 0.943 / 0.941.
-- Chỉ phân tích câu public gốc; không đề xuất nào được xây từ từng câu sai.
+- **Hệ hiện tại** (`configs/flow_p5_final.json`): S = Qwen3.5-9B + LoRA v3a × 0.70 viết chương trình (4–16 mẫu / câu, đóng băng). W1 gắn dòng rulebook
+  với lời gọi toolkit đã chạy thử. W2 (WL1) nối câu với dòng rulebook. W3 (WJR1) phán xử câu có mẫu bất đồng. Đơn vị W (`units_model: solver`)
+  viết hàm cho dòng rulebook ngành / mới.
+- **Phần viết tay còn chạy lúc suy luận:**
 
-| Phép đo (4 log: `f5a`, `f5b`, `pva3k16`, `g1v3apf2`) | Giá trị |
-|---|---|
-| Câu chưa đúng mỗi log | 28 / 26 / 24 / 28 |
-| — mọi mẫu S đồng thuận sai, không được phán xử | 8 / 9 / 12 / 19 |
-| — bất đồng nhưng không mẫu nào đúng | 5 / 4 / 2 / 3 |
-| — **có mẫu đúng nhưng mất** (phán xử sai, hoặc lùi về bỏ phiếu) | 15 / 13 / 10 / 6 |
-| Trần "có ít nhất một mẫu đúng" | 987 / 987 / 986 / 978 |
-| Ổn định: đúng ở cả 4 log / sai ở cả 4 log / sai ở ≥ 1 log | 957 / 13 / 43 câu |
-| Tỉ lệ đầu ra của WJR1 đọc được phán quyết: `list` / `point` / `point+think` | **19–25 % / 35–40 % / 89–90 %** (WJB1: 88 % / 92 % / 98 %) |
+  | Phần | Mô tả | Xử lý trong v2 |
+  |---|---|---|
+  | `src/industry.py` | hàm của 3 ngành rulebook public (điện thoại, sửa chữa, mẹ và bé), có regex như `bim\|ta` | ẩn trong mọi phép đo (chế độ H); WT thay thế |
+  | `src/dm.py` | ngữ nghĩa nghiệp vụ mặc định của phần rulebook chung, ví dụ doanh thu không VAT, đơn hợp lệ, hoà theo mã | giữ (logic toolkit, quyết định 08/11); C dạy S′ ưu tiên định nghĩa trong rulebook hơn mặc định |
+  | `src/automap.py` | ánh xạ bảng bằng luật | giữ; ngoài phạm vi 34 giờ |
+
+- **Số trung thực đã có** (`Process/scores_p3.csv`, kế hoạch 4):
+  - ẩn hàm ngành: `pub_ind` (269 câu) 0.900 → 0.476; có W → 0.595;
+  - `pub_hoind` (345 paraphrase) 0.415 → 0.493;
+  - held-out `pub_ho400c` 0.603 (bỏ phiếu) / 0.652 (V), `tr_ho400c` 0.917 / 0.928.
+- Kế hoạch 5 chưa đo held-out hay chế độ H lần nào. Ước lượng `pub_full_H` ≈ 0.952 − 269 × (0.900 − 0.595) / 1000 ≈ 0.87.
+- Lỗi của bản thường (4 log, phân tích ở bản 1) vẫn đúng: 24–28 câu mỗi log, gồm 8–19 đồng thuận sai, 6–15 có mẫu đúng nhưng mất, 2–5 không mẫu
+  nào đúng. Tỉ lệ đọc được phán quyết của WJR1: `list` 19–25 %, `point` 35–40 %, `point+think` 89–90 %.
+- Phân tích chỉ trên public gốc và train. Held-out chỉ xem số tổng, không xem từng câu.
 
 ## 2. Root causes
 
-| # | Nguyên nhân gốc | Biểu hiện bề mặt | Quy mô | Bằng chứng |
+| # | Nguyên nhân gốc | Biểu hiện | Quy mô | Bằng chứng |
 |---|---|---|---|---|
-| **RC1** | **S chưa từng được dạy dùng rulebook.** Khi huấn luyện, rulebook là hằng số và không có trong prompt; nhãn sinh từ 55 khuôn chương trình | (a) Tiêu chí **không có định nghĩa** vẫn được trả lời bằng hàm xếp hạng gần nhất; (b) thuật ngữ **có** định nghĩa chỉ đúng khi linker nối trúng | 13 câu sai ở cả 4 log, trong đó 6 câu (a); thêm 5–7 câu (b) tuỳ log | "Thợ nhiệt tình / NCC uy tín / khách thân thiện nhất": linker trả về rỗng (đúng), S vẫn trả lời 4 / 4. "Trung thành nhất": có dòng nối → đúng (`f5a`, `f5b`), không có → sai (`pva3k16`). "Ưa chuộng nhất": linker sót → sai cả 4 log. Tập v3a chỉ có 36 / 4,919 nhãn không trả lời được (0.7 %; public 3.1 %). Đưa dòng rulebook vào prompt S đóng băng: 0.921–0.940, không hơn mốc |
-| **RC2** | **Sai đồng thuận là vô hình.** Bộ phán xử chỉ xét câu có mẫu bất đồng; các mẫu cùng prompt nên lỗi tương quan | 8–19 câu mỗi log không bao giờ được xem lại | ~45 % số câu chưa đúng | Phán mọi câu thì hỏng câu đúng (zero-shot 0.941 so với 0.947) → cần tín hiệu chọn *câu nào* đáng xét lại |
-| **RC3** | **Bộ phán xử mất phần lớn phán quyết ở hai trong ba biến thể.** WJR1 không suy nghĩ vẫn lập luận văn xuôi tới trần token, không in `<choice>` | Câu bất đồng lùi về bỏ phiếu | `f5a`: 30 / 94 câu bất đồng lùi về bỏ phiếu, 11 trong đó sai hoặc bỏ | 352 / 470 đầu ra `list` không có phán quyết; cùng lỗi đã gặp ở W1 (PDF 2 §9 mục 3) |
-| **RC4** | **Lệch quy ước cách nói giữa train và public**, S và bộ phán xử cùng mù vì chung trọng số và cùng dữ liệu gốc | "4/26", "5/25" đọc thành ngày thay vì tháng / năm; "đh" → đĩa; "từng bên doanh thu bao nhiêu" → so sánh; trợ từ "z" → cỡ Z | ~6–10 câu mỗi log, phần lớn có mẫu đúng | Kỳ viết gọn: 26 % câu public, 0 % câu train; bộ phán xử chọn cách đọc "ngày" 3 / 3 phiếu ở "4/26 doanh thu" |
-| RC5 | **Nhầm đối tượng được đếm** và **hàm không có trong tài liệu API của prompt** | Hỏi số **lô** sắp hết hạn (đáp án 14) → S liệt kê **sản phẩm**; hỏi số **máy** đã bảo hành (5) → đa số mẫu đếm **lượt** (4); hỏi số viên **nhập** (1,500) → S đếm số **bán** (1,409) | 3–4 câu, 2 câu không log nào có mẫu đúng | Câu "nhập bao nhiêu viên": hàm `purchased_qty_base` có trong toolkit nhưng **không có trong `API_DOC`** viết tay → 1 / 32 mẫu gọi tới. Câu đếm lô: `lots_expiring` có sẵn, 0 / 32 mẫu lấy `len(...)`. Đây không phải câu mơ hồ: cả ba đều có đáp án xác định |
-
-Tách bạch: "trả lời bừa câu *thân thiện nhất*" và "sai câu *ưa chuộng nhất*" là biểu hiện; gốc chung là S không coi rulebook là đầu vào quyết định (RC1), và hệ không có cơ chế nghi ngờ một đáp án đồng thuận (RC2). Kế hoạch 5 đã chứng minh phần "chọn ứng viên" (+0.010–0.015) nhưng giữ S đóng băng nên chưa chạm tới gốc này.
+| **RC0** | **Ngữ nghĩa ngành nằm trong hàm viết tay, không trong mô hình.** W hiện tại (zero-shot, trọng số S) viết hàm từ rulebook kém: sai dạng giá trị (dict, tỉ lệ thay vì %), sai API, sai bảng | ẩn `industry.py` thì DN ngành rơi ~0.3–0.4; ngành mới ở private không có hàm viết tay | ~0.08 `pub_full`; ở private có thể lớn hơn | `pub_ind` 0.900 / 0.476 / 0.595; G0f ≈ G0g (W = S ≈ W = Qwen gốc); W 8 mẫu + 2 vòng sửa không hơn W mặc định → **tăng tính toán lúc suy luận không đủ, cần huấn luyện** |
+| **RC1** | S chưa từng được dạy dùng rulebook. Khi huấn luyện, rulebook là hằng số, không có trong prompt; nhãn đến từ 55 khuôn chương trình | tiêu chí không có định nghĩa vẫn bị trả lời; thuật ngữ có định nghĩa chỉ đúng khi linker nối trúng | 13 câu sai ở cả 4 log (6 câu tiêu chí chủ quan) + 5–7 tuỳ log | như bản 1; v3a chỉ có 0.7 % nhãn `unanswerable` (public 3.1 %) |
+| **RC2** | Sai đồng thuận là vô hình. Bộ phán xử chỉ xét câu có mẫu bất đồng | 8–19 câu / log không bao giờ được xem lại | ~45 % câu chưa đúng | phán mọi câu thì hỏng câu đúng (0.941 vs 0.947) |
+| **RC3** | Bộ phán xử mất phán quyết ở 2 / 3 biến thể (văn xuôi tới trần token) | câu bất đồng lùi về bỏ phiếu | `f5a`: 30 / 94 câu bất đồng, 11 sai / bỏ | 352 / 470 đầu ra `list` không có `<choice>` |
+| **RC4** | Lệch phân phối cách nói giữa train và public: kỳ viết gọn chiếm 26 % câu public, 0 % câu train; viết tắt, trợ từ | S và bộ phán xử cùng mù vì chung trọng số, chung dữ liệu gốc | ~6–10 câu / log | thống kê kỳ viết gọn trên toàn bộ câu. **Trong v2 đây chỉ là chẩn đoán**: giải pháp E không được lấy trục từ các câu sai này |
+| RC5 | Nhầm đối tượng được đếm; hàm không có trong tài liệu API | đếm sản phẩm thay vì lô, lượt thay vì máy; `purchased_qty_base` vắng trong `API_DOC` | 3–4 câu | F sửa phần API (tổng quát); phần "đối tượng đếm" để E sinh có hệ thống, không vá theo câu |
 
 ## 3. Proposed solutions
 
-**Nguyên tắc.** Không luật viết tay lúc suy luận: mọi thành phần đọc câu hỏi là mô hình; phần cố định chỉ là bố cục vào / ra và hạ tầng. Dữ liệu huấn luyện mới do mô hình sinh, nhãn kiểm bằng thực thi, chỉ từ cửa hàng train; họ thuật ngữ dùng để kiểm tra tách khỏi họ dùng để huấn luyện.
+**Nguyên tắc.** Không luật viết tay lúc suy luận: mọi thành phần đọc câu hỏi hay rulebook là mô hình; phần cố định chỉ là bố cục vào / ra, kiểm
+tra thực thi và hạ tầng. Mỗi LoRA huấn luyện **độc lập** cho một vai, rồi ghép theo pha lúc suy luận (`w_model`, `w_mode: merge`, ~1.5 phút / adapter).
+Dữ liệu mới do mô hình sinh, nhãn kiểm bằng thực thi, chỉ từ DN train và bỏ 6 DN held-out. Họ thuật ngữ dùng để kiểm tách khỏi họ dùng huấn luyện.
 
-### A — Sửa kênh đầu ra của bộ phán xử (trúng RC3; không huấn luyện)
+### A — Sửa kênh đầu ra của bộ phán xử (RC3; không huấn luyện)
 
-- **Cơ chế.** Biến thể không suy nghĩ sinh có ràng buộc: chỉ được in `<choice>k</choice>` (structured output của vLLM), hoặc lấy thẳng phân phối xác suất của token lựa chọn trong một lượt chạy. Xác suất này thay cho "tỉ lệ 5 mẫu" trong tổ hợp, mịn hơn và rẻ hơn.
-- **Vì sao.** Hai trong ba thành viên tổ hợp đang mất 60–80 % phán quyết; tổ hợp thực chất chỉ còn `point+think`.
-- **Bằng chứng.** LEVER dùng chính xác suất của bộ kiểm để xếp hạng (+4.6–10.9 điểm) [1]; giải mã có ràng buộc loại lỗi định dạng [2]. Trong repo: JSON có ràng buộc đã đưa W1 từ 13 lên 56 dòng dùng được.
-- **Kiểm chứng.** Phán xử lại 4 log đã lưu (10–15 phút / biến thể, không có nhiễu sinh). **Trạng thái:** lỗi đã đo; mức tăng là giả thuyết.
+Biến thể không suy nghĩ sinh có ràng buộc (structured output của vLLM: chỉ `<choice>k</choice>` hoặc JSON `{"choice": k}`), hoặc lấy phân phối xác
+suất của token lựa chọn. Kiểm chứng bằng phán xử lại log đã lưu: 4 log public, log H0 `pub_full_H`, log held-out H0. Không nhiễu sinh. Bằng chứng
+như bản 1 (LEVER [1], PICARD [2]; JSON có ràng buộc đã đưa W1 từ 13 lên 56 dòng).
 
-### B — Định tuyến "xung đột rulebook" tới bộ phán xử (trúng RC2 và RC1a; S vẫn đóng băng)
+### B — Định tuyến "xung đột rulebook" tới bộ phán xử (RC2, RC1a; S đóng băng)
 
-- **Cơ chế.** Nâng linker W2 thành bộ *kiểm định tiêu chí*: với mỗi câu, ngoài các dòng áp dụng, nó in một trong ba trạng thái — có dòng định nghĩa / không cần định nghĩa (đại lượng đo được trực tiếp) / **tiêu chí chủ quan không có định nghĩa**. Câu đồng thuận được gửi tới bộ phán xử **chỉ khi** (i) trạng thái là "không có định nghĩa", hoặc (ii) có dòng nối mà không ứng viên nào dùng lời gọi đã kiểm của dòng đó; ở (ii) S được chạy lại một lượt với dòng đó để sinh ứng viên mới. Bộ phán xử (đã có lựa chọn "không trả lời được") quyết định.
-- **Dữ liệu huấn luyện.** Sinh *đối chứng* trên rulebook train: xoá dòng định nghĩa của một tiêu chí → nhãn "không có định nghĩa"; đổi tên thuật ngữ; thêm dòng nhiễu. Cùng một câu có nhãn khác nhau tuỳ rulebook nên bộ kiểm định buộc phải đọc rulebook thay vì thuộc danh sách.
-- **Vì sao.** Tạo bất đồng *có thông tin* đúng ở nơi có xung đột với rulebook, thay vì phán mọi câu. Với thước đo phạt −1, mỗi câu sai đồng thuận được sửa là +0.002.
-- **Bằng chứng.** R-Tuning: dạy từ chối bằng dữ liệu có nhãn "không biết" tổng quát sang miền khác [3]; TrustSQL: dưới thước đo có phạt, biết từ chối quan trọng ngang trả lời đúng [4]; R³-SQL: lấy mẫu lại khi nhóm ứng viên thiếu đáp án đúng [5]. Trong repo: WL1 huấn luyện đạt 0.78 so với 0.24 zero-shot; huấn luyện WL1 chỉ 7.3M token (~1 giờ).
-- **Rủi ro.** Báo nhầm làm hỏng câu đồng thuận đúng → đo precision trên cửa hàng train trước, ngưỡng do bộ hiệu chỉnh học. **Trạng thái:** giả thuyết, chưa đo.
+Như bản 1. W2′ in dòng áp dụng + trạng thái (có định nghĩa / không cần / thiếu định nghĩa). Câu đồng thuận được gửi phán xử khi (i) "thiếu định
+nghĩa" hoặc (ii) có dòng nối mà không ứng viên nào dùng lời gọi đã kiểm của dòng đó; ở (ii) S chạy lại một lượt với dòng đó.
+- Hai điều kiện này là luật **điều phối**: đầu vào là đầu ra của mô hình, không đọc câu hỏi.
+- Dữ liệu W2′ từ rulebook đối chứng (i). Cùng một câu có nhãn khác nhau tuỳ rulebook, nên mô hình buộc phải đọc rulebook.
+- Đo precision trên DN train held-out trước khi chạy public.
 
-### C — S′ đọc rulebook: huấn luyện bằng rulebook đối chứng (trúng gốc RC1)
+### C — S′ đọc rulebook: huấn luyện bằng rulebook đối chứng (RC1)
 
-- **Cơ chế.** Đặt "lớp ngữ nghĩa" của split (mọi dòng: thuật ngữ | định nghĩa | lời gọi đã kiểm của W1) vào phần đầu prompt dùng chung — prefix cache làm chi phí thêm gần 0 — rồi huấn luyện một LoRA chồng trên S với các bộ ba (rulebook′, câu hỏi, chương trình′) mà **chỉ rulebook thay đổi**: (a) đổi định nghĩa giữa các phương án toolkit biểu diễn được, nhãn tính lại bằng thực thi; (b) đổi tên thuật ngữ; (c) xoá dòng → `Unanswerable`; (d) dòng nhiễu → chương trình không đổi.
-- **Vì sao.** Khi nhãn phụ thuộc rulebook, cách duy nhất giảm loss là đọc nó. S′ không còn phụ thuộc độ phủ của linker ("ưa chuộng nhất") và tự nhận ra tiêu chí thiếu định nghĩa vì thấy toàn bộ danh sách. Ca (d) dạy đúng điều S đóng băng thiếu: dòng không liên quan thì bỏ qua (nguyên nhân 0.921 của Z-link).
-- **Bằng chứng.** Symbol tuning: nhãn tuỳ ý buộc mô hình dùng ngữ cảnh, kể cả ghi đè tri thức sẵn có [6]; KAFT: ngữ cảnh phản thực + ngữ cảnh nhiễu khi tinh chỉnh tăng mức nghe theo ngữ cảnh 24 lần ở PaLM [7]; dữ liệu đối chứng tối thiểu chống lối tắt [8]; BIRD: có / không có tri thức nghiệp vụ trong ngữ cảnh chênh ~20 điểm với GPT-4 (theo tóm tắt bài gốc) [9].
-- **Thước đo không cần đáp án public.** *Độ nhạy rulebook* (tỉ lệ cặp đối chứng mà chương trình đổi đúng) và F1 tiêu chí chưa định nghĩa trên họ từ không dùng khi huấn luyện, đo ở cửa hàng train giữ ngoài.
-- **Chi phí / rủi ro.** ~40–50M token ≈ 6–8 giờ FSDP 4×L4, 2 seed. Học tiếp trên v3a từng làm giảm public (v4: 0.916–0.921 so với 0.936) → chỉ nhận khi so ghép cặp vượt mốc. **Trạng thái:** giả thuyết; khác v3b / v4 ở chỗ rulebook đầy đủ, đối chứng trên thuật ngữ đã biết, có ca xoá và ca nhiễu.
+Lớp ngữ nghĩa của split (mọi dòng: thuật ngữ | định nghĩa | lời gọi đã kiểm của W1 | **hàm WT đã kiểm**) đặt ở phần đầu prompt dùng chung, nhờ
+prefix cache gần như không tốn thêm. LoRA chồng trên V3A × 0.70 học các bộ ba (rulebook′, câu, chương trình′) mà chỉ rulebook thay đổi:
+- (a) đổi định nghĩa giữa các phương án toolkit biểu diễn được, nhãn tính lại bằng thực thi;
+- **(a′) mới: đổi định nghĩa sang cách tính toolkit không có hàm.** Ví dụ ngưỡng, cửa sổ thời gian, đối tượng đếm, điều kiện kết hợp. Nhãn là
+  chương trình pandas trên `C` / `T`, hoặc lời gọi hàm WT tương ứng. Nhãn do thầy viết (Qwen gốc có suy nghĩ, ≥ 3 / 6 mẫu cùng kết quả trên 13 kỳ)
+  và phải **khác** kết quả của định nghĩa gốc ở ít nhất một kỳ. Chiếm ~25–30 % phần đối chứng. Mục đích: S′ học rằng khi định nghĩa trong rulebook
+  khác mặc định của toolkit thì đi theo định nghĩa, và tự viết pandas khi không có hàm. Đây là chỗ S hiện tại gãy khi gặp tình huống mới;
+- (b) đổi tên thuật ngữ;
+- (c) xoá dòng → `Unanswerable`;
+- (d) dòng nhiễu → chương trình không đổi.
 
-### D — Kênh suy luận thứ hai để lộ sai đồng thuận ngoài rulebook (trúng RC2, RC5)
+Câu `unanswerable` 3–5 %. Thước đo không cần đáp án public: độ nhạy rulebook (tỉ lệ cặp đối chứng mà chương trình đổi đúng) và F1 tiêu chí chưa
+định nghĩa, đo trên DN held-out. Chi phí: ~30M token ≈ 4.5–5.5 giờ FSDP 4×L4 / seed, 2 seed song song. Rủi ro hồi quy như v4 → chỉ nhận khi
+qua cổng §5. Bằng chứng: symbol tuning [6], KAFT [7], CAD [8], BIRD [9].
 
-- **Cơ chế.** Một mẫu "đọc trước, viết sau" mỗi câu bằng cùng trọng số gốc nhưng tắt LoRA theo request và bật suy nghĩ; bất đồng với S thì chuyển cho bộ phán xử. Tổng tham số không đổi (9.65B + adapter).
-- **Bằng chứng.** Lợi ích của tổ hợp tỉ lệ với mức khác nhau giữa các thành viên [10]; CHASE-SQL và XiYan-SQL dựa vào nhiều bộ sinh khác kiểu [11, 12]. Trong repo: LoRA động đã chạy đúng sau `merge.py vllm` (0.951 so với 0.950); gộp mẫu hai lần chạy nâng trần 986 → 991 nhưng bộ phán xử hiện tại chưa tận dụng được.
-- **Rủi ro.** Mô hình gốc viết chương trình yếu hơn S → nhiều bất đồng sai; chỉ có lợi khi bộ phán xử đã được sửa (A) và học thêm (E). **Trạng thái:** giả thuyết.
+### D — Kênh thứ hai (RC2, RC5; chỉ khi còn giờ)
 
-### E — Dữ liệu tương phản về cách nói và đối tượng đếm, dùng chung cho bộ phán xử và S′ (trúng RC4, RC5)
+Như bản 1: một mẫu "đọc trước, viết sau" bằng trọng số gốc, bật suy nghĩ; bất đồng với S thì chuyển phán xử. Không bắt buộc; cắt đầu tiên nếu trễ.
 
-- **Cơ chế.** Mô hình sinh *cặp tương phản tối thiểu* quanh các cách đọc gần nhau (tháng / năm ↔ ngày / tháng; số đơn ↔ số ngày ↔ số lượng; liệt kê từng bên ↔ so sánh; **đối tượng đếm**: lô ↔ sản phẩm, máy ↔ lượt, nhập ↔ bán; đếm ↔ liệt kê), nhãn kiểm bằng thực thi, viết theo nhiều kiểu chữ (không dấu, viết tắt, phương ngữ). Bổ sung vào dữ liệu phán xử (WJR2) và dữ liệu của C.
-- **Bằng chứng.** Dr.Spider: mô hình bền nhất vẫn mất 14 % (50.7 % ở nhiễu khó nhất) khi câu hỏi bị biến đổi [13]; ViLexNorm [14]. Trong repo: paraphrase và câu nhiễu là hai loại dữ liệu có lợi rõ nhất.
-- **Trạng thái.** Bất định: quy ước "M/YY" không suy ra được từ rulebook; chỉ kỳ vọng mô hình học rằng cách đọc cho **kỳ có dữ liệu và khớp kiểu viết của cả bộ câu** đáng tin hơn.
+### E — Dữ liệu tương phản sinh có hệ thống (RC4, RC5) — sửa theo đề xuất 1
 
-### F — Tài liệu API sinh tự động từ toolkit (trúng RC5; không huấn luyện)
+- **Không còn danh sách trục chọn tay.** Trục tương phản được rút **tự động** từ cấu trúc các chương trình đã kiểm trên câu train: mỗi "khe" là một
+  thành phần của chương trình (kỳ và cách viết kỳ, hàm đo, đối số `by=`, thực thể được đếm, bộ lọc, hướng xếp hạng, đếm hay liệt kê, đơn vị).
+- Với mỗi câu train có chương trình đã kiểm, Qwen gốc sinh một **biến đổi tối thiểu**: đổi đúng một khe → câu′ + chương trình′. Nhãn nhận khi:
+  - chương trình′ chạy được và đáp án khác câu gốc;
+  - S giải câu′ (4 mẫu) không mâu thuẫn với chương trình′; nếu mâu thuẫn, Qwen gốc có suy nghĩ phân xử, không có đa số thì loại.
+- Cách viết (kỳ, viết tắt, không dấu, phương ngữ) cũng do mô hình **tự liệt kê** từ một chỉ dẫn chung và từ câu train. Không có mẫu nào lấy từ câu public.
+- Phân bố trục theo tần suất khe trong chương trình train, không theo lỗi public.
+- Dùng cho bộ phán xử WJR2 và dữ liệu C.
+- Kỳ vọng: giảm nhầm loại "đọc gần đúng" một cách tổng quát. Quy ước nào không suy ra được từ dữ liệu / rulebook (ví dụ "M/YY") có thể vẫn sai, và
+  được chấp nhận là sai.
+- Bằng chứng: Dr.Spider [13], ViLexNorm [14], CAD [8].
 
-- **Cơ chế.** Khối `# API` của prompt sinh từ chính đặc tả toolkit (`api_spec`: mọi hàm công khai, chữ ký, một dòng mô tả từ docstring) thay cho `API_DOC` viết tay; W1 chỉ gắn dòng rulebook với hàm có trong khối này. Không thêm luật nào: chỉ bảo đảm S nhìn thấy mọi công cụ nó được phép gọi.
-- **Bằng chứng.** `purchased_qty_base` vắng trong prompt nên gần như không mẫu nào dùng. Rủi ro: S học trên `API_DOC` cũ nên bố cục mới có thể gây lệch → đo ghép cặp một lần chạy public; nếu âm thì chỉ bổ sung dòng thiếu vào cuối khối, và đưa bố cục mới vào dữ liệu của C.
+### F — Tài liệu API tự sinh từ toolkit (RC5; không huấn luyện)
+
+Như bản 1: `# API` sinh từ `api_spec` (mọi hàm công khai, chữ ký, một dòng docstring). Ở chế độ H, khối này **không** chứa hàm `industry.py`.
+
+### G — LoRA viết tool WT (RC0) — mới
+
+**Câu hỏi của user:** dùng Qwen gốc làm bộ viết tool, hay huấn luyện thêm một LoRA viết tool, độc lập rồi ghép?
+
+| Tiêu chí | Qwen gốc (không adapter, có suy nghĩ) | LoRA WT huấn luyện riêng |
+|---|---|---|
+| Bằng chứng trong repo | G0g (Qwen gốc) ≈ G0f (trọng số S): 37 vs 41 hàm, `pub_noindH` 0.009 vs 0.018. Có suy nghĩ ở trần 4096: 317 / 389 mẫu không kịp đóng `</think>`. 8 mẫu + 2 vòng sửa không hơn | Vai được huấn luyện riêng đều vượt zero-shot rõ: WL1 0.78 vs 0.24; WJB1 +0.010–0.012; JSON có ràng buộc 13 → 56 dòng |
+| Loại lỗi còn lại của W (`docs/17` 13/11 22:20) | dạng giá trị (dict, tỉ lệ thay %), API (`p[...]`), tên bảng sai: lỗi **quy ước**, zero-shot sửa không hết | đúng loại lỗi mà SFT sửa rẻ nhất |
+| Thời gian suy luận (container ≤ 6 h) | suy nghĩ 8–12k token × 6 mẫu × số dòng → chậm, dễ chạm trần `units_max_s` | không suy nghĩ, đầu ra ngắn (~300 token) |
+| Rủi ro "luật Claude" | không có | có, nếu nhãn lấy từ hàm viết tay → nhãn chỉ từ: chương trình đã kiểm bằng **đáp án train của BTC**, hoặc hàm của thầy đạt tự nhất quán và kiểm 13 kỳ; **không** dùng `industry.py` làm nhãn |
+| Chi phí | 0 | sinh dữ liệu ~3 phiên × 2.5 h + huấn luyện ~2.5 h / nhánh |
+
+**Đề xuất: huấn luyện WT, dùng Qwen gốc có suy nghĩ làm thầy sinh dữ liệu và làm nhánh đối chứng.** Đây là chưng cất kèm lọc bằng thực thi
+(STaR [18], LATM [19], CREATOR / CRAFT [20, 21], Self-Debugging [22], CodeT [23], distilling step-by-step [24]).
+
+**Huấn luyện trên Qwen gốc (WT-b) là nhánh chính, WT-s (trên V3A × 0.70) là nhánh kiểm tra.** Lý do:
+- viết tool cần pandas tổng quát, trong khi V3A học hẹp theo 55 khuôn;
+- WT-b độc lập với S, nên khi C thay S bằng S′ thì WT vẫn dùng nguyên được;
+- gộp WT vào Qwen gốc không thêm tham số.
+
+Hai nhánh chạy song song (tài nguyên đủ); cổng G-WT chọn.
+
+**Dữ liệu WT** (prompt đúng như `lrl_gen.unit_items` lúc suy luận; đầu ra JSON `plan, name, signature, doc, triggers, code[]`):
+
+| Nguồn | Nhãn |
+|---|---|
+| (1) thuật ngữ mới từ câu train có chương trình đã kiểm (`lrl_gen --mode newterm`, mở rộng từ 54 lên ~2k): thuật ngữ + định nghĩa do mô hình viết | chương trình đã kiểm, tổng quát theo kỳ `p` (đúng theo đáp án train) |
+| (2) dòng rulebook train × DN train | lời gọi / hàm thầy viết, kiểm 13 kỳ |
+| (3) dòng đối chứng (định nghĩa đổi, cả ngoài toolkit) | hàm thầy, tự nhất quán ≥ 3 / 6, khác hàm gốc ≥ 1 kỳ |
+| (4) **mục ngành tổng hợp**: Qwen gốc tự đặt 10–25 dòng rulebook "ngành" cho bảng sẵn có của từng DN train (giao hàng, lô, nợ, trả góp, nhân viên…) | hàm thầy, tự nhất quán + kiểm 13 kỳ |
+
+Cả 4 nguồn bỏ 6 DN held-out, dành chúng để đo. Ước ~5–7k bản ghi, ~15M token.
+
+**Ghép lúc suy luận:** pha `prepare_units` gộp WT vào bản sao Qwen gốc (WT-b) hoặc S (WT-s), viết hàm cho mọi dòng ngành / mới, rồi
+`units.verify` (13 kỳ) và tự nhất quán như hiện tại. Hàm đã kiểm vào `# SHOP FUNCTIONS` của S / S′. Tổng tham số: 9.65B + 4 adapter
+(S, WT, W2′, WJR2) ≈ 10B < 15B.
 
 ## 4. Prioritization
 
-Mức tăng tính từ số câu chạm tới và tỉ lệ sửa 40–70 %, đã trừ phần trùng. Tất cả là dự báo. Lưu ý hiệu chỉnh: kế hoạch 5 từng dự báo 0.96–0.975 và đạt 0.952.
+Số tăng là dự báo, tính trên **`pub_full_H`** (trung thực). Bản 1 từng dự báo kế hoạch 5 đạt 0.96–0.975 và thực tế 0.952.
 
-| Hạng | Giải pháp | Gốc | Câu chạm tới mỗi log | Tăng PA dự kiến | Chi phí | Tổng quát sang private |
-|---|---|---|---|---|---|---|
-| 1 | **A** sửa đầu ra phán xử | RC3 | ~11 câu lùi về bỏ phiếu rồi sai / bỏ | +0.002 … +0.006 | vài giờ, không huấn luyện | Cao |
-| 2 | **B** định tuyến xung đột rulebook | RC2, RC1a | 6–10 câu sai đồng thuận | +0.006 … +0.012 | huấn luyện ~1–2 h + phán xử lại log | Cao: private có rulebook mới |
-| 3 | **C** S′ + rulebook đối chứng | RC1 | 8–13 (trùng với B) | +0.008 … +0.016 nếu đạt; có thể âm | huấn luyện 6–8 h × 2 seed | Rất cao |
-| 4 | **E** dữ liệu tương phản | RC4 | 6–9 | +0.003 … +0.006 | gộp vào huấn luyện của B / C + WJR2 (~2.5 h) | Trung bình |
-| 5 | **D** kênh thứ hai | RC2, RC5 | 3–6 | +0.002 … +0.006 | +1 mẫu dài / câu, không huấn luyện | Cao |
+| Hạng | Giải pháp | Gốc | Tăng dự kiến `pub_full_H` | Chi phí | Tổng quát sang private |
+|---|---|---|---|---|---|
+| 1 | **G** LoRA viết tool | RC0 | +0.03 … +0.06 | sinh dữ liệu ~7 h phiên + huấn luyện 2 × 2.5 h | rất cao: ngành mới chỉ có thể đúng nhờ hàm do mô hình viết |
+| 2 | **A** đầu ra phán xử | RC3 | +0.002 … +0.006 | vài giờ, không huấn luyện | cao |
+| 3 | **B** định tuyến | RC2, RC1a | +0.004 … +0.010 | huấn luyện ~2 h + phán xử lại | cao |
+| 4 | **C** S′ | RC1 | +0.005 … +0.015 nếu đạt; có thể âm | 2 × 5 h | rất cao |
+| 5 | **E** tương phản hệ thống (qua WJR2 / C) | RC4, RC5 | +0.002 … +0.006 | sinh ~3 h phiên, gộp vào huấn luyện | trung bình |
+| 6 | **F** API tự sinh | RC5 | +0.001 … +0.003 | vài giờ | cao |
+| 7 | **D** kênh thứ hai | RC2 | +0.002 … +0.005 | +1 mẫu dài / câu | cao; chỉ khi còn giờ |
 
-| 6 | **F** tài liệu API tự sinh | RC5 | 1–2 | +0.001 … +0.003 | vài giờ, một lần chạy public | Cao: ngành mới cần thấy đủ hàm |
+Thứ tự triển khai:
+- **H0 ngay** (không cần code mới);
+- **A, F** trong 4 giờ đầu;
+- **sinh dữ liệu thầy** (G, C, E dùng chung) từ T+2;
+- **G** huấn luyện sớm nhất (T+8), vì là đòn bẩy lớn nhất cho hệ không luật;
+- **B, WJR2, C** song song sau đó;
+- **D** chỉ khi còn giờ.
 
-Ưu tiên triển khai: **A và F ngay; B và C chạy song song** (cùng nguồn dữ liệu đối chứng; B là đường an toàn với S đóng băng, C là lời giải gốc); E đi kèm dưới dạng dữ liệu; D chỉ thử khi A + E xong.
+## 5. Đo và quy tắc nhận
 
-## 5. Recommended plan
+| Tập | Câu | Vai |
+|---|---|---|
+| `pub_full_H` | 1000 public gốc, ẩn `industry.py` | **số chính** (chọn cấu hình) |
+| `pub_full` | 1000, còn `industry.py` | tham chiếu, so với kế hoạch cũ |
+| `pub_ho400c_H` | 348 paraphrase public (đã làm sạch) | held-out |
+| `tr_ho400c` | 375 câu của 6 DN train held-out | held-out (không DN nào trong dữ liệu mới) |
+| `pub_hoind_H` | 345 paraphrase của 5 DN ngành | held-out ngành mới |
+| `tr_newterm` | 54 câu thuật ngữ mới | held-out thuật ngữ |
+| `pub_ind_H` | 269 câu gốc DN ngành | đo G (cùng `pub_hoind_H` = 614 câu) |
+| độ chính xác hàm WT | dòng của 6 DN held-out (nguồn 1–4) | đo G offline |
 
-Mốc T0 = 14/11 17:00 UTC; đóng băng T+35 (16/11 04:00 UTC).
-
-| Bước | Việc | Giờ | Tài nguyên | Cổng kiểm chứng |
-|---|---|---|---|---|
-| 0a | **Docker dự phòng** cho `flow_p5_final` (việc D1 còn nợ) để luôn có bản nộp 0.95 | T+0 → 8 | 1 acc | điểm container của đúng cấu hình WJR1 |
-| 0b | **A:** phán xử có ràng buộc trên 4 log đã lưu, 4 biến thể / phiên; **F:** một lần chạy public với khối API tự sinh | T+0 → 4 | 1–2 acc | tỉ lệ đọc được ≥ 95 %; TB 4 log tăng so với 0.952, không log nào giảm |
-| 0c | CPU: sinh dữ liệu đối chứng (xoá / đổi / nhiễu) và cặp tương phản từ cửa hàng train; kiểm nhãn bằng thực thi | T+0 → 4 | CPU | mỗi cặp chạy được, hai nhãn khác nhau đúng như dự định |
-| 1 | Huấn luyện song song: **W2′** (kiểm định tiêu chí), **WJR2** (phán xử + tương phản + câu đồng thuận bị định tuyến), **S′** × 2 seed | T+4 → 13 | 4 acc, FSDP 4×L4 | cửa hàng train giữ ngoài: precision báo "thiếu định nghĩa" ≥ 0.9; độ nhạy rulebook của S′ ≥ 0.95 |
-| 2 | **B** trên public: W2′ → định tuyến → phán xử trên log đã lưu (offline), rồi lượt chạy lại của S | T+7 → 14 | 2 acc | số câu sai đồng thuận / log giảm (hiện 8–19); số câu đúng bị làm hỏng ≤ 1/3 số câu sửa được |
-| 3 | **C** trên public: S′ × 2 seed, cùng bộ phán xử; so ghép cặp với `f5a` / `f5b` | T+13 → 20 | 2–3 acc | tăng ghép cặp z ≥ 2 và hai seed cùng dấu; không đạt → giữ S |
-| 4 | Chọn cấu hình; đường container × 2; thời gian 1,000 câu; cập nhật Docker, `README_SOLUTION` | T+20 → 31 | 2 acc | hai lần chạy lệch ≤ 0.03; trong ngân sách 6 giờ (hiện 56–75 phút / 4×L4) |
-| Lùi | Thành phần nào không qua cổng → tắt bằng cấu hình; mọi thứ trượt → nộp bản 0a | T+31 → 35 | — | — |
-
-Mọi so sánh ghép cặp trên cùng câu; A và B đo được trên log S cố định nên không có nhiễu sinh; C cần ≥ 2 seed (nhiễu giữa lần chạy ~0.01).
+**Quy tắc nhận một thay đổi.**
+1. Thay đổi đo trên log cố định (A, B, WJR2): TB các log tăng, không log public nào giảm, mỗi tập held-out (phán xử lại trên log held-out H0)
+   không giảm quá 0.005.
+2. Thay đổi đổi việc sinh (F, G, C): tăng ghép cặp có z ≥ 2 trên tập đích, và **mỗi** tập held-out không giảm quá 1 SE ghép cặp. C cần 2 seed cùng dấu.
+3. Tăng `pub_full` / `pub_full_H` mà giảm held-out → **loại**.
+4. Báo cả số H, số thường và held-out ở mọi mốc.
+5. Cấu hình nộp: `pub_full_H` cao nhất trong các cấu hình qua cổng held-out.
 
 ## 6. Đánh giá khách quan về mục tiêu 1.0
 
-- **Đã chứng minh:** bộ phán xử huấn luyện +0.010–0.015 (kế hoạch 5); trần 986–987 với S hiện tại, 991 khi gộp nhiều lần chạy; 13 câu sai ở mọi log; hai biến thể phán xử mất 60–80 % phán quyết; S đúng khi được nối đúng dòng rulebook.
-- **Giả thuyết:** bộ kiểm định tiêu chí đủ chính xác để định tuyến mà không phá câu đúng; S′ học dùng rulebook mà không hồi quy như v4; dữ liệu tương phản chuyển được sang quy ước viết của public.
-- **Dự báo cộng dồn:** A → 0.954–0.958; thêm B hoặc C → 0.962–0.972; thêm E / D → tối đa ~0.975–0.98. Sau khi đối chiếu đáp án chuẩn, không còn câu nào "không biết đáp án": mọi câu sai đều có đáp án xác định, nên 1.0 không bị chặn về nguyên tắc. Nhưng nó đòi hỏi sửa hết 13 câu sai ở mọi log, cả các câu chỉ phụ thuộc quy ước viết ("4/26"), mà không làm hỏng câu nào trong 957 câu đang ổn định: **xác suất vẫn thấp**. Mốc thực tế: ≥ 0.965 trước đóng băng.
-- **Rủi ro:** 35 giờ cho ba lần huấn luyện và lưới đánh giá; chính sách chọn trên chính public lạc quan 0.003–0.005; prompt dài hơn làm giảm số request đồng thời.
+- **Đã chứng minh:**
+  - phán xử huấn luyện +0.010–0.015;
+  - W có tác dụng ở ngành mới (+0.119 trên 269 câu, z 3.8), nhưng chỉ lấp được 0.12 / 0.42 khoảng cách tới hàm viết tay;
+  - vai được huấn luyện riêng vượt zero-shot ở mọi lần thử (WL1, WJB1, WJR1).
+- **Giả thuyết:**
+  - WT lấp được phần lớn khoảng cách mà không cần hàm viết tay;
+  - S′ học dùng rulebook mà không hồi quy như v4;
+  - dữ liệu tương phản hệ thống chuyển được sang cách nói thật.
+- **Dự báo (H):** mốc ~0.87 → +G 0.90–0.93 → +A, B, E, F 0.92–0.95 → +C tốt nhất ~0.96. Số thường (còn `industry.py`) dự kiến 0.955–0.97.
+- **1.0** đòi hỏi sửa hết các câu sai ở mọi log (cả quy ước viết không suy ra được) mà không làm hỏng câu ổn định. Xác suất thấp.
+- **Rủi ro:**
+  - 34 giờ cho ~6 lần huấn luyện + lưới đánh giá;
+  - chọn trên chính public lạc quan 0.003–0.005, nên mới cần held-out;
+  - hàm WT sai mà vẫn qua kiểm 13 kỳ → S gọi nhầm. Giảm bằng tự nhất quán ≥ 3 / 6 và đo độ chính xác hàm trên DN held-out.
 
 ## 7. Nguồn tham khảo
 
-1. Ni et al., *LEVER: Learning to Verify Language-to-Code Generation with Execution*, ICML 2023 — arXiv 2302.08468; mã: github.com/niansong1996/lever
+1. Ni et al., *LEVER: Learning to Verify Language-to-Code Generation with Execution*, ICML 2023 — arXiv 2302.08468
 2. Scholak et al., *PICARD: Parsing Incrementally for Constrained Auto-Regressive Decoding*, EMNLP 2021 — arXiv 2109.05093
-3. Zhang et al., *R-Tuning: Instructing LLMs to Say "I Don't Know"*, NAACL 2024 — arXiv 2311.09677; mã: github.com/shizhediao/R-Tuning
-4. Lee et al., *TrustSQL: Benchmarking Text-to-SQL Reliability with Penalty-Based Scoring* — arXiv 2403.15879; mã: github.com/glee4810/TrustSQL
+3. Zhang et al., *R-Tuning: Instructing LLMs to Say "I Don't Know"*, NAACL 2024 — arXiv 2311.09677
+4. Lee et al., *TrustSQL: Benchmarking Text-to-SQL Reliability with Penalty-Based Scoring* — arXiv 2403.15879
 5. Han et al., *R³-SQL: Ranking Reward and Resampling for Text-to-SQL*, ACL Findings 2026 — arXiv 2604.25325
 6. Wei et al., *Symbol Tuning Improves In-Context Learning in Language Models*, EMNLP 2023 — arXiv 2305.08298
 7. Li et al., *Large Language Models with Controllable Working Memory* (KAFT), ACL Findings 2023 — arXiv 2211.05110
 8. Kaushik et al., *Learning the Difference that Makes a Difference with Counterfactually-Augmented Data*, ICLR 2020 — arXiv 1909.12434
 9. Li et al., *BIRD: Can LLM Already Serve as a Database Interface?*, NeurIPS 2023 — https://bird-bench.github.io
 10. Krogh & Vedelsby, *Neural Network Ensembles, Cross Validation, and Active Learning*, NeurIPS 1994
-11. Pourreza et al., *CHASE-SQL: Multi-Path Reasoning and Preference Optimized Candidate Selection*, ICLR 2025 — arXiv 2410.01943 (bỏ phiếu 68.84 → bộ chọn so cặp 73.01, trần 82.79)
-12. Gao et al., *XiYan-SQL: A Multi-Generator Ensemble Framework for Text-to-SQL* — arXiv 2411.08599; mã: github.com/XGenerationLab/XiYan-SQL
+11. Pourreza et al., *CHASE-SQL*, ICLR 2025 — arXiv 2410.01943
+12. Gao et al., *XiYan-SQL* — arXiv 2411.08599
 13. Chang et al., *Dr.Spider: A Diagnostic Evaluation Benchmark towards Text-to-SQL Robustness*, ICLR 2023 — arXiv 2301.08881
-14. Nguyen et al., *ViLexNorm: A Lexical Normalization Corpus for Vietnamese Social Media Text*, EACL 2024
-15. Fan et al., *Grounding NL to SQL Translation with Data-Based Self-Explanations* (CycleSQL), ICDE 2025 — arXiv 2411.02948; mã: github.com/Kaimary/CycleSQL
+14. Nguyen et al., *ViLexNorm*, EACL 2024
+15. Fan et al., *CycleSQL*, ICDE 2025 — arXiv 2411.02948
 16. Huang et al., *Large Language Models Cannot Self-Correct Reasoning Yet*, ICLR 2024 — arXiv 2310.01798
-17. vLLM, *LoRA Adapters* và *Structured Outputs* — https://docs.vllm.ai/en/stable/features/lora/ ; mã: github.com/vllm-project/vllm
-
-Bối cảnh: [15] kiểm chương trình bằng cách diễn đạt ngược về ngôn ngữ tự nhiên — hướng mở rộng cho bộ phán xử nếu còn thời gian; [16] giải thích vì sao phán xử zero-shot trên mọi câu làm hỏng câu đúng, nên bộ phán xử phải được huấn luyện và chỉ xét câu có tín hiệu. Tài liệu nền khác: `docs/11_LITERATURE.md`.
+17. vLLM, *LoRA Adapters* và *Structured Outputs* — https://docs.vllm.ai/en/stable/features/lora/
+18. Zelikman et al., *STaR: Bootstrapping Reasoning With Reasoning*, NeurIPS 2022 — arXiv 2203.14465
+19. Cai et al., *Large Language Models as Tool Makers* (LATM), ICLR 2024 — arXiv 2305.17126 (tách vai "làm tool" / "dùng tool")
+20. Qian et al., *CREATOR: Tool Creation for Disentangling Abstract and Concrete Reasoning of LLMs*, EMNLP Findings 2023 — arXiv 2305.14318
+21. Yuan et al., *CRAFT: Customizing LLMs by Creating and Retrieving from Specialized Toolsets*, ICLR 2024 — arXiv 2309.17428
+22. Chen et al., *Teaching Large Language Models to Self-Debug*, ICLR 2024 — arXiv 2304.05128
+23. Chen et al., *CodeT: Code Generation with Generated Tests*, ICLR 2023 — arXiv 2207.10397
+24. Hsieh et al., *Distilling Step-by-Step!*, ACL Findings 2023 — arXiv 2305.02301

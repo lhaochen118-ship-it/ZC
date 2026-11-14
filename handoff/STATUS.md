@@ -19,9 +19,7 @@ training/data/out/wj/p_rows.jsonl --tag _r`, `w_link.py --max-per-shop 60`, `p_r
 **Việc còn lại trước hạn (16/11 04:00 UTC đóng băng):** D1 Docker cho cấu hình cuối (đăng WJR1 + WL1 vào dataset adapter cuối; `docker/` thêm
 `training/merge.py` + 2 adapter W; chạy `docker/run_public_test.sh`). Quota 14/11 15:00: các acc còn ~14–25 h.
 
-**Đề xuất chiến lược mới (14/11 16:10 UTC, chờ user duyệt):** `proposed plan.pdf` (nguồn `handoff/04_PROPOSED_PLAN.md`) — nguyên nhân gốc của
-các câu còn sai của cấu hình cuối kế hoạch 5 trên 4 log S, 5 giải pháp (sửa đầu ra phán xử: WJR1 chỉ đọc được 19–40 % phán quyết ở `list` / `point`;
-định tuyến xung đột rulebook; S′ + rulebook đối chứng; dữ liệu tương phản; kênh thứ hai), xếp hạng, lịch T+35 h.
+**Đề xuất chiến lược mới v2 (14/11 17:00 UTC, chờ user duyệt):** `proposed plan.pdf` (nguồn `handoff/04_PROPOSED_PLAN.md`, bản 2) + kế hoạch chạy `handoff/05_RUN_PLAN.md` (`run plan.pdf`). Thay đổi so với bản 1: đo trung thực chế độ H (`hide_api: industry` — `flow_p5_final` hiện vẫn cho S gọi `industry.py` viết tay), cổng held-out cho mọi quyết định, E sinh có hệ thống (không lấy trục từ câu public sai), C thêm định nghĩa ngoài toolkit, giải pháp mới G = LoRA viết tool WT (huấn luyện độc lập, thầy = Qwen gốc có suy nghĩ). Token 14 acc đã lưu `~/.kaggle` (14/11 16:44); quota 334 h.
 
 ## 1. Hệ nộp
 

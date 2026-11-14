@@ -190,3 +190,7 @@ hàm của W (dữ liệu UD của v4).
 bỏ phiếu thường trên cùng log 0.920); `pub_ind` 0.859, `pub_noind` 0.741; W 12 hàm (698 s), đánh giá 2022 s. **Kém v3a** (S + W 0.936,
 `pub_noind` 0.830) → v4 (seed 2) không giúp public; chờ seed 1 và lưới biến thể.
 
+**14/11 03:10 — G1 v4 seed 1:** `pub_full` 0.921 (bỏ phiếu thường 0.925) — cả hai seed v4 < v3a (0.936) → **S = v3a × 0.70**.
+Phát lại ngưỡng trên public (3 lần chạy v3a / v4s1 / v4s2): bỏ phiếu θ 0 / 0.3 / 0.4 / 0.5 / 0.6 và V θ 0 / 0.2 / 0.3 / 0.45 chỉ đổi ±0.005;
+trung bình bỏ phiếu θ 0.5 = 0.927, V θ 0.45 = 0.922 → trên public V không có lợi (lợi ở held-out). Chọn cuối ở F1 sau lưới k16 / soup.
+

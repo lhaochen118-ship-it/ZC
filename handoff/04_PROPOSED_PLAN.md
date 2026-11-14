@@ -7,7 +7,7 @@
 ## 1. Hiện trạng và cách phân tích
 
 - **Hệ hiện tại** (`configs/flow_p5_final.json`): S = Qwen3.5-9B + LoRA v3a × 0.70 viết chương trình (4–16 mẫu / câu, đóng băng); W1 gắn dòng rulebook với lời gọi toolkit đã chạy thử; W2 (linker WL1) nối mỗi câu với dòng rulebook; W3 (bộ phán xử WJR1) chọn giữa các nhóm đáp án ở câu có mẫu bất đồng.
-- Tôi dựng lại đáp án public (`rebuild_public_gt.py`) và phát lại chính sách cuối trên 4 log S đã lưu: **0.949 / 0.953 / 0.958 / 0.949, TB 0.952** — khớp số đã báo cáo. Đường container thật (bộ phán xử cũ WJB1): 0.943 / 0.941.
+- Đáp án: file `score 1.jsonl` của user (chính xác 100 %); bản dựng lại bằng `rebuild_public_gt.py` trùng nó ở cả 1,000 câu. Tôi phát lại chính sách cuối trên 4 log S đã lưu: **0.949 / 0.953 / 0.958 / 0.949, TB 0.952** — khớp số đã báo cáo. Đường container thật (bộ phán xử cũ WJB1): 0.943 / 0.941.
 - Chỉ phân tích câu public gốc; không đề xuất nào được xây từ từng câu sai.
 
 | Phép đo (4 log: `f5a`, `f5b`, `pva3k16`, `g1v3apf2`) | Giá trị |
@@ -28,7 +28,7 @@
 | **RC2** | **Sai đồng thuận là vô hình.** Bộ phán xử chỉ xét câu có mẫu bất đồng; các mẫu cùng prompt nên lỗi tương quan | 8–19 câu mỗi log không bao giờ được xem lại | ~45 % số câu chưa đúng | Phán mọi câu thì hỏng câu đúng (zero-shot 0.941 so với 0.947) → cần tín hiệu chọn *câu nào* đáng xét lại |
 | **RC3** | **Bộ phán xử mất phần lớn phán quyết ở hai trong ba biến thể.** WJR1 không suy nghĩ vẫn lập luận văn xuôi tới trần token, không in `<choice>` | Câu bất đồng lùi về bỏ phiếu | `f5a`: 30 / 94 câu bất đồng lùi về bỏ phiếu, 11 trong đó sai hoặc bỏ | 352 / 470 đầu ra `list` không có phán quyết; cùng lỗi đã gặp ở W1 (PDF 2 §9 mục 3) |
 | **RC4** | **Lệch quy ước cách nói giữa train và public**, S và bộ phán xử cùng mù vì chung trọng số và cùng dữ liệu gốc | "4/26", "5/25" đọc thành ngày thay vì tháng / năm; "đh" → đĩa; "từng bên doanh thu bao nhiêu" → so sánh; trợ từ "z" → cỡ Z | ~6–10 câu mỗi log, phần lớn có mẫu đúng | Kỳ viết gọn: 26 % câu public, 0 % câu train; bộ phán xử chọn cách đọc "ngày" 3 / 3 phiếu ở "4/26 doanh thu" |
-| RC5 | Thiếu năng lực ghép bước | Không log nào có mẫu đúng (đổi đơn vị khi nhập, đếm lô sắp hết hạn, gộp cỡ qua nhiều hãng); đoàn hệ bảo hành chỉ có mẫu đúng thiểu số | 3–4 câu | Gộp 11 lần chạy: trần 991 / 1000 |
+| RC5 | **Nhầm đối tượng được đếm** và **hàm không có trong tài liệu API của prompt** | Hỏi số **lô** sắp hết hạn (đáp án 14) → S liệt kê **sản phẩm**; hỏi số **máy** đã bảo hành (5) → đa số mẫu đếm **lượt** (4); hỏi số viên **nhập** (1,500) → S đếm số **bán** (1,409) | 3–4 câu, 2 câu không log nào có mẫu đúng | Câu "nhập bao nhiêu viên": hàm `purchased_qty_base` có trong toolkit nhưng **không có trong `API_DOC`** viết tay → 1 / 32 mẫu gọi tới. Câu đếm lô: `lots_expiring` có sẵn, 0 / 32 mẫu lấy `len(...)`. Đây không phải câu mơ hồ: cả ba đều có đáp án xác định |
 
 Tách bạch: "trả lời bừa câu *thân thiện nhất*" và "sai câu *ưa chuộng nhất*" là biểu hiện; gốc chung là S không coi rulebook là đầu vào quyết định (RC1), và hệ không có cơ chế nghi ngờ một đáp án đồng thuận (RC2). Kế hoạch 5 đã chứng minh phần "chọn ứng viên" (+0.010–0.015) nhưng giữ S đóng băng nên chưa chạm tới gốc này.
 
@@ -65,11 +65,16 @@ Tách bạch: "trả lời bừa câu *thân thiện nhất*" và "sai câu *ưa
 - **Bằng chứng.** Lợi ích của tổ hợp tỉ lệ với mức khác nhau giữa các thành viên [10]; CHASE-SQL và XiYan-SQL dựa vào nhiều bộ sinh khác kiểu [11, 12]. Trong repo: LoRA động đã chạy đúng sau `merge.py vllm` (0.951 so với 0.950); gộp mẫu hai lần chạy nâng trần 986 → 991 nhưng bộ phán xử hiện tại chưa tận dụng được.
 - **Rủi ro.** Mô hình gốc viết chương trình yếu hơn S → nhiều bất đồng sai; chỉ có lợi khi bộ phán xử đã được sửa (A) và học thêm (E). **Trạng thái:** giả thuyết.
 
-### E — Dữ liệu tương phản về cách nói, dùng chung cho bộ phán xử và S′ (trúng RC4)
+### E — Dữ liệu tương phản về cách nói và đối tượng đếm, dùng chung cho bộ phán xử và S′ (trúng RC4, RC5)
 
-- **Cơ chế.** Mô hình sinh *cặp tương phản tối thiểu* quanh các cách đọc gần nhau (tháng / năm ↔ ngày / tháng; số đơn ↔ số ngày ↔ số lượng; liệt kê từng bên ↔ so sánh), nhãn kiểm bằng thực thi, viết theo nhiều kiểu chữ (không dấu, viết tắt, phương ngữ). Bổ sung vào dữ liệu phán xử (WJR2) và dữ liệu của C.
+- **Cơ chế.** Mô hình sinh *cặp tương phản tối thiểu* quanh các cách đọc gần nhau (tháng / năm ↔ ngày / tháng; số đơn ↔ số ngày ↔ số lượng; liệt kê từng bên ↔ so sánh; **đối tượng đếm**: lô ↔ sản phẩm, máy ↔ lượt, nhập ↔ bán; đếm ↔ liệt kê), nhãn kiểm bằng thực thi, viết theo nhiều kiểu chữ (không dấu, viết tắt, phương ngữ). Bổ sung vào dữ liệu phán xử (WJR2) và dữ liệu của C.
 - **Bằng chứng.** Dr.Spider: mô hình bền nhất vẫn mất 14 % (50.7 % ở nhiễu khó nhất) khi câu hỏi bị biến đổi [13]; ViLexNorm [14]. Trong repo: paraphrase và câu nhiễu là hai loại dữ liệu có lợi rõ nhất.
 - **Trạng thái.** Bất định: quy ước "M/YY" không suy ra được từ rulebook; chỉ kỳ vọng mô hình học rằng cách đọc cho **kỳ có dữ liệu và khớp kiểu viết của cả bộ câu** đáng tin hơn.
+
+### F — Tài liệu API sinh tự động từ toolkit (trúng RC5; không huấn luyện)
+
+- **Cơ chế.** Khối `# API` của prompt sinh từ chính đặc tả toolkit (`api_spec`: mọi hàm công khai, chữ ký, một dòng mô tả từ docstring) thay cho `API_DOC` viết tay; W1 chỉ gắn dòng rulebook với hàm có trong khối này. Không thêm luật nào: chỉ bảo đảm S nhìn thấy mọi công cụ nó được phép gọi.
+- **Bằng chứng.** `purchased_qty_base` vắng trong prompt nên gần như không mẫu nào dùng. Rủi ro: S học trên `API_DOC` cũ nên bố cục mới có thể gây lệch → đo ghép cặp một lần chạy public; nếu âm thì chỉ bổ sung dòng thiếu vào cuối khối, và đưa bố cục mới vào dữ liệu của C.
 
 ## 4. Prioritization
 
@@ -83,7 +88,9 @@ Mức tăng tính từ số câu chạm tới và tỉ lệ sửa 40–70 %, đ�
 | 4 | **E** dữ liệu tương phản | RC4 | 6–9 | +0.003 … +0.006 | gộp vào huấn luyện của B / C + WJR2 (~2.5 h) | Trung bình |
 | 5 | **D** kênh thứ hai | RC2, RC5 | 3–6 | +0.002 … +0.006 | +1 mẫu dài / câu, không huấn luyện | Cao |
 
-Ưu tiên triển khai: **A ngay; B và C chạy song song** (cùng nguồn dữ liệu đối chứng; B là đường an toàn với S đóng băng, C là lời giải gốc); E đi kèm dưới dạng dữ liệu; D chỉ thử khi A + E xong.
+| 6 | **F** tài liệu API tự sinh | RC5 | 1–2 | +0.001 … +0.003 | vài giờ, một lần chạy public | Cao: ngành mới cần thấy đủ hàm |
+
+Ưu tiên triển khai: **A và F ngay; B và C chạy song song** (cùng nguồn dữ liệu đối chứng; B là đường an toàn với S đóng băng, C là lời giải gốc); E đi kèm dưới dạng dữ liệu; D chỉ thử khi A + E xong.
 
 ## 5. Recommended plan
 
@@ -92,7 +99,7 @@ Mốc T0 = 14/11 17:00 UTC; đóng băng T+35 (16/11 04:00 UTC).
 | Bước | Việc | Giờ | Tài nguyên | Cổng kiểm chứng |
 |---|---|---|---|---|
 | 0a | **Docker dự phòng** cho `flow_p5_final` (việc D1 còn nợ) để luôn có bản nộp 0.95 | T+0 → 8 | 1 acc | điểm container của đúng cấu hình WJR1 |
-| 0b | **A:** phán xử có ràng buộc trên 4 log đã lưu, 4 biến thể / phiên | T+0 → 3 | 1 acc | tỉ lệ đọc được ≥ 95 %; TB 4 log tăng so với 0.952, không log nào giảm |
+| 0b | **A:** phán xử có ràng buộc trên 4 log đã lưu, 4 biến thể / phiên; **F:** một lần chạy public với khối API tự sinh | T+0 → 4 | 1–2 acc | tỉ lệ đọc được ≥ 95 %; TB 4 log tăng so với 0.952, không log nào giảm |
 | 0c | CPU: sinh dữ liệu đối chứng (xoá / đổi / nhiễu) và cặp tương phản từ cửa hàng train; kiểm nhãn bằng thực thi | T+0 → 4 | CPU | mỗi cặp chạy được, hai nhãn khác nhau đúng như dự định |
 | 1 | Huấn luyện song song: **W2′** (kiểm định tiêu chí), **WJR2** (phán xử + tương phản + câu đồng thuận bị định tuyến), **S′** × 2 seed | T+4 → 13 | 4 acc, FSDP 4×L4 | cửa hàng train giữ ngoài: precision báo "thiếu định nghĩa" ≥ 0.9; độ nhạy rulebook của S′ ≥ 0.95 |
 | 2 | **B** trên public: W2′ → định tuyến → phán xử trên log đã lưu (offline), rồi lượt chạy lại của S | T+7 → 14 | 2 acc | số câu sai đồng thuận / log giảm (hiện 8–19); số câu đúng bị làm hỏng ≤ 1/3 số câu sửa được |
@@ -106,7 +113,7 @@ Mọi so sánh ghép cặp trên cùng câu; A và B đo được trên log S c�
 
 - **Đã chứng minh:** bộ phán xử huấn luyện +0.010–0.015 (kế hoạch 5); trần 986–987 với S hiện tại, 991 khi gộp nhiều lần chạy; 13 câu sai ở mọi log; hai biến thể phán xử mất 60–80 % phán quyết; S đúng khi được nối đúng dòng rulebook.
 - **Giả thuyết:** bộ kiểm định tiêu chí đủ chính xác để định tuyến mà không phá câu đúng; S′ học dùng rulebook mà không hồi quy như v4; dữ liệu tương phản chuyển được sang quy ước viết của public.
-- **Dự báo cộng dồn:** A → 0.954–0.958; thêm B hoặc C → 0.962–0.972; thêm E / D → tối đa ~0.975–0.98. Đúng 1.0 đòi hỏi giải cả 3–4 câu chưa lần chạy nào có mẫu đúng và mọi câu mơ hồ về quy ước viết: **xác suất thấp**. Mốc thực tế: ≥ 0.965 trước đóng băng.
+- **Dự báo cộng dồn:** A → 0.954–0.958; thêm B hoặc C → 0.962–0.972; thêm E / D → tối đa ~0.975–0.98. Sau khi đối chiếu đáp án chuẩn, không còn câu nào "không biết đáp án": mọi câu sai đều có đáp án xác định, nên 1.0 không bị chặn về nguyên tắc. Nhưng nó đòi hỏi sửa hết 13 câu sai ở mọi log, cả các câu chỉ phụ thuộc quy ước viết ("4/26"), mà không làm hỏng câu nào trong 957 câu đang ổn định: **xác suất vẫn thấp**. Mốc thực tế: ≥ 0.965 trước đóng băng.
 - **Rủi ro:** 35 giờ cho ba lần huấn luyện và lưới đánh giá; chính sách chọn trên chính public lạc quan 0.003–0.005; prompt dài hơn làm giảm số request đồng thời.
 
 ## 7. Nguồn tham khảo

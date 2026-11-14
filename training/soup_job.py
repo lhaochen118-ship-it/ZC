@@ -179,6 +179,13 @@ def evaluate(a, model, res, t0, out_dir, eval_config, tag="eval", gpus=None, wor
         for p in (os.path.join(ev, "run", f), os.path.join(ev, f)):
             if os.path.isfile(p): shutil.copy(p, out_dir); break
     for p in __import__("glob").glob(os.path.join(ev, "units", "raw_unit*.jsonl")): shutil.copy(p, out_dir)   # plan 4 W: what the writer wrote
+    if a.runner == "predict":                                          # the solver's samples (re-judging offline) + the W phases' files
+        wk = f"{a.tmp}/work_{tag}"
+        for src, dst in ((os.path.join(wk, "llm_0", "logs.jsonl"), "solver_logs.jsonl"), (os.path.join(wk, "links", "links.jsonl"), "links.jsonl"),
+                         (os.path.join(wk, "units", "cards_unit.jsonl"), "cards_unit.jsonl")):
+            if os.path.isfile(src): shutil.copy(src, os.path.join(out_dir, dst))
+        if os.path.isdir(os.path.join(wk, "judge")): shutil.copytree(os.path.join(wk, "judge"), os.path.join(out_dir, "judge"), dirs_exist_ok=True,
+                                                                     ignore=shutil.ignore_patterns("ctx.json"))
     if a.runner == "predict" and os.path.isdir(os.path.join(ev, "logs")):
         shutil.copytree(os.path.join(ev, "logs"), os.path.join(out_dir, "logs"), dirs_exist_ok=True)
     res.update(eval_rc=rc, eval_s=round(time.time() - t1))

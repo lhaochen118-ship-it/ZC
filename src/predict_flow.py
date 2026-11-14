@@ -119,7 +119,7 @@ def resolve_adapter(name):
     if not name: return ""
     if os.path.isfile(os.path.join(name, "adapter_config.json")): return name
     import glob
-    for root in (os.path.dirname(HERE), HERE, "/models", "/kaggle/input"):
+    for root in [r for r in (os.environ.get("ZC_ADAPTER_ROOT", ""), os.path.dirname(HERE), HERE, "/models", "/kaggle/input") if r]:
         for pat in (os.path.join(root, "**", name, "adapter", "adapter_config.json"), os.path.join(root, "**", name, "adapter_config.json")):
             c = sorted(glob.glob(pat, recursive=True))
             if c: return os.path.dirname(c[0])

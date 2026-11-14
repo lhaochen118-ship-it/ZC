@@ -1,0 +1,6 @@
+[
+ {"acc": "yuan1103", "name": "wjl1b", "jobs": "automation/jobs/wjl1.jobs", "est_h": 2.8,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "yuan1103/zc-v3a-adapter", "--train-data", "wj", "--no-preflight"]},
+ {"acc": "anderson1202", "name": "wjp1b", "jobs": "automation/jobs/wjp1.jobs", "est_h": 2.7,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "anderson1202/zc-v3a-adapter", "--train-data", "wj", "--no-preflight"]}
+]

@@ -133,9 +133,10 @@ def worker(a):
     if a.fake_responder:
         g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g); fake = g["responder"]
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": gen_prompt(it, api)}] for it in items]
+    eng = None
     if fake: texts = [fake(c) for c in convs]
-    else:
-        eng = engine(a, False)
+    else:                                                              # ONE engine for both stages (a second vLLM engine in the same
+        eng = engine(a, False)                                         # process found the GPU still held: tg2 14/11 17:42)
         texts = eng.gen(convs, [0.8] * len(convs), [7000 + j for j in range(len(convs))], 700, think=False, json_schema=GEN_SCHEMA)[0]
     cands = []
     for it, t in zip(items, texts):
@@ -152,22 +153,21 @@ def worker(a):
         cands.append(dict(id=f"{it['id']}~c{zlib.crc32(q2.encode()) % 10**6}", business_id=it["business_id"], as_of_date=it["as_of_date"],
                           slot=list(it["slot"]), question=q2, program=p2, answer=ans2, orig_question=it["question"], orig_program=it["program"],
                           orig_answer=ans0))
+    tag = os.path.splitext(os.path.basename(a.items_local))[0]           # items_<k>: one output per worker
+    with open(os.path.join(a.out, f"generated_{tag}.jsonl"), "w", encoding="utf-8") as w:   # stage 1 kept even if stage 2 fails
+        for c in cands: w.write(json.dumps(c, ensure_ascii=False, default=str) + "\n")
     # blind back-check of the contrast pairs (thinking)
     todo = [c for c in cands if c["slot"][0] != "style"]
     order = [rng.random() < 0.5 for _ in todo]
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": check_prompt(c["question"], c["as_of_date"],
               [c["program"], c["orig_program"]] if o else [c["orig_program"], c["program"]])}] for c, o in zip(todo, order)]
     if fake: texts = [fake(c) for c in convs]
-    else:
-        del eng; import gc; gc.collect()
-        eng = engine(a, True)
-        texts = eng.gen(convs, [0.0] * len(convs), [9000 + j for j in range(len(convs))], 3072, think=True)[0]
+    else: texts = eng.gen(convs, [0.0] * len(convs), [9000 + j for j in range(len(convs))], 3072, think=True)[0]
     for c, o, t in zip(todo, order, texts):
         m = re.findall(r"<choice>\s*([12])\s*</choice>", (t or "").split("</think>")[-1])
         pick = int(m[-1]) if m else None
         c["backcheck"] = pick is not None and (pick == 1) == o
     keep = [c for c in cands if c["slot"][0] == "style" or c.get("backcheck")]
-    tag = os.path.splitext(os.path.basename(a.items_local))[0]           # items_<k>: one output per worker
     with open(os.path.join(a.out, f"contrast_{tag}.jsonl"), "w", encoding="utf-8") as w:
         for c in keep: w.write(json.dumps(c, ensure_ascii=False, default=str) + "\n")
     print(f"[contrast {i}/{n}] items {len(items)} generated {len(cands)} back-checked {sum(1 for c in todo if c.get('backcheck'))}/{len(todo)} kept {len(keep)}", flush=True)

@@ -194,3 +194,7 @@ bỏ phiếu thường trên cùng log 0.920); `pub_ind` 0.859, `pub_noind` 0.74
 Phát lại ngưỡng trên public (3 lần chạy v3a / v4s1 / v4s2): bỏ phiếu θ 0 / 0.3 / 0.4 / 0.5 / 0.6 và V θ 0 / 0.2 / 0.3 / 0.45 chỉ đổi ±0.005;
 trung bình bỏ phiếu θ 0.5 = 0.927, V θ 0.45 = 0.922 → trên public V không có lợi (lợi ở held-out). Chọn cuối ở F1 sau lưới k16 / soup.
 
+**14/11 03:41 — lưới public (1):** soup V3A × 0.70 + V4S1 × 0.5 + V4S2 × 0.5 (k 8): 0.925 (bỏ phiếu 0.928) < v3a. **k_max 16** (k_fast 4) với
+V4S2: 0.916 → **0.926** (bỏ phiếu 0.920 → 0.932), đánh giá 2022 → 2601 s → nhiều mẫu hơn có ích. v3b xong (87 bước, 19.2M token, loss 0.027):
+chỉ đánh giá public (k 8 `g1v3bpf`, k 16 `pv3bk16`).
+

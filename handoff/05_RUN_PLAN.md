@@ -231,3 +231,12 @@ pub_ho400c 0.581, tr_ho400c 0.901, pub_hoind 0.455, tr_newterm 0.852 (thường:
 (z −1.6 so với trung bình hai seed, thua cả ở cửa hàng không ngành: khối API mới làm lệch tiền tố S đã học), held-out lẫn lộn (pub_hoind
 +0.044, pub_ho400c +0.023, train 0). **Qwen gốc có suy nghĩ làm bộ viết hàm (EWBT2)**: 2 hàm qua kiểm, 614 câu kém W = S → không dùng lúc
 suy luận; chỉ làm thầy sinh dữ liệu offline (TG1 có 6 mẫu, đồng thuận ≥ 3).
+
+**20:00 – TG1 hỏng vì chế độ suy nghĩ (lặp lại lỗi kế hoạch 4).** tg1p0: Qwen gốc suy nghĩ lặp vòng ("Wait, I need to check…") không đóng
+`</think>` trong 7–8k token ở 304 / 447 mẫu → giữ 7 / 243 dòng; bước rowgen chỉ ra 3 / 240 dòng. Đây đúng là G0b của kế hoạch 4 (317 / 389
+mẫu ở 4,096 token) — lẽ ra phải biết trước. Huỷ p1–p3 và TG1n. Sửa: thầy **không suy nghĩ** + JSON có ràng buộc (rowgen: mảng
+`ROWGEN_SCHEMA`; unit: `UNIT_SCHEMA`), 8 mẫu / dòng, đồng thuận ≥ 3, gộp dòng thuật ngữ mới vào cùng job (TG1b, 4 phiên). Thêm nguồn nhãn
+không phụ thuộc thầy: `training/data/wt_from_programs.py` biến chương trình đã kiểm (đúng theo đáp án train) của mỗi thuật ngữ TG0 thành hàm
+theo kỳ `p` (thay lời gọi kỳ bằng `p` trên AST), giữ khi gọi lại cho đúng đáp án đã kiểm.
+**S′ đẩy không chờ TG1** (S2S1 / S2S2 trên nguynduylm, 23.1M token: replay + thuật ngữ mới trong `# RULES` + 1,005 cặp tương phản / cách viết).
+**WJR2D** (quynhle07) = LoRA chồng trên V3A × 0.70 + WJR1, 1 epoch trên 1,738 bản ghi tương phản + 1,000 bản ghi WJR1.

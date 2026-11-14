@@ -113,6 +113,19 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     return f if n else None
 
 
+def resolve_adapter(name):
+    """a LoRA adapter directory given by path or by name (searched next to the code, under /models and /kaggle/input:
+    <root>/**/<name>/adapter/adapter_config.json or <root>/**/<name>/adapter_config.json); '' when none."""
+    if not name: return ""
+    if os.path.isfile(os.path.join(name, "adapter_config.json")): return name
+    import glob
+    for root in (os.path.dirname(HERE), HERE, "/models", "/kaggle/input"):
+        for pat in (os.path.join(root, "**", name, "adapter", "adapter_config.json"), os.path.join(root, "**", name, "adapter_config.json")):
+            c = sorted(glob.glob(pat, recursive=True))
+            if c: return os.path.dirname(c[0])
+    raise SystemExit(f"adapter {name} not found (no silent fallback)")
+
+
 def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     """plan 5 W2 (docs/18): with "links_gen": 1 in the config, the model links every question of the split to the rulebook rows it
     uses (src/link.py; inputs only), one shard of the shops per GPU. Returns the --links path, or None (config without it). The
@@ -124,7 +137,9 @@ def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     if not cards:                                                       # the compiled cards of the config (their toolkit hints)
         refs = os.path.join(HERE, "refs", "lrl")
         cards = ",".join(os.path.join(refs, x) for x in str(c.get("lrl") or "").split(",") if x and "compile" in x and os.path.isfile(os.path.join(refs, x)))
+    lora = resolve_adapter(c.get("links_lora") or os.environ.get("LINK_LORA") or "")
     base = [sys.executable, os.path.join(HERE, "link.py"), split, out, "--model", model, "--quant", "fp8", "--k", str(int(c.get("links_k", 3) or 3)), "--max-df", str(c.get("links_max_df", 0.0) or 0.0)] + \
+           (["--lora", lora] if lora else []) + \
            (["--cards", cards] if cards else []) + (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
     devs = visible_gpus()
     ng = 1 if fake else max(1, len(devs))
@@ -154,7 +169,7 @@ def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     return f
 
 
-def judge_phase(cfg, a, dirs, units, log, t0):
+def judge_phase(cfg, a, dirs, units, log, t0, links=None):
     """plan 5 W3 (docs/18): with "judge": 1 in the config, src/judge.py reads the solver's logged samples (run 1) and the judge model
     (W: "judge_model" = a merged S+W checkpoint, or the solver's model + "judge_lora" = a LoRA-W adapter applied by vLLM) picks
     the candidate / unanswerable / abstain under the config's policy. Returns its submission file, or None (no judge configured,
@@ -168,16 +183,13 @@ def judge_phase(cfg, a, dirs, units, log, t0):
     if lim < 300: log(f"judge: skipped ({left:.0f}s left)"); return None
     out = os.path.join(a.work, "judge"); os.makedirs(out, exist_ok=True)
     wm = c.get("judge_model") or os.environ.get("W_MODEL") or a.model
-    lora = c.get("judge_lora") or os.environ.get("W_LORA") or ""
-    if lora and not os.path.isabs(lora):
-        for base in (os.path.dirname(HERE), HERE, "/models"):
-            if os.path.isdir(os.path.join(base, lora)): lora = os.path.join(base, lora); break
+    lora = resolve_adapter(c.get("judge_lora") or os.environ.get("W_LORA") or "")
     mode = c.get("judge_mode", "list")
     cmd = [sys.executable, os.path.join(HERE, "judge.py"), a.split, out, "--model", wm, "--logs", logs_f, "--variants", mode,
            "--k", str(int(c.get("judge_k", 5))), "--tau", str(c.get("judge_tau", 0.6)), "--denom", str(c.get("judge_denom", "all")),
            "--u-answers", str(int(c.get("judge_u_answers", 1))), "--keep-unanimous", str(c.get("judge_keep_unanimous", 0.0)), "--only-split", str(int(c.get("judge_only_split", 1))),
            "--cache", os.path.join(a.work, "cache")] + (["--units", units] if units else []) + (["--lora", lora] if lora else []) + \
-          (["--fake-responder", a.fake_responder] if a.fake_responder else [])
+          (["--fake-responder", a.fake_responder] if a.fake_responder else []) + (["--links", links] if links and int(c.get("judge_links", 1)) else [])
     p = subprocess.Popen(cmd, stdout=open(os.path.join(out, "judge.log"), "w"), stderr=subprocess.STDOUT, start_new_session=True)
     try: rc = p.wait(timeout=lim)
     except subprocess.TimeoutExpired:
@@ -211,10 +223,24 @@ def prepare_lrl(cfg, split, work, model, log, fake=""):
         log(f"lrl: compiled cards of this rulebook are shipped ({len(have)} card files)"); return ",".join(have)
     out = os.path.join(work, "lrl"); os.makedirs(out, exist_ok=True)
     t = time.time()
-    for mode in ("compile", "aliases"):
+    cm = c.get("lrl_compile_mode", "compile")                         # plan 5 W1: "bind" = executable, checked toolkit bindings
+    devs = visible_gpus(); ng = 1 if fake else max(1, len(devs))
+    def job(mode, i, n):
         cmd = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", mode, "--quant", "fp8"] + \
-              (["--fake-responder", fake] if fake else [])
-        rc = run(cmd, log); log(f"lrl: {mode} for this split rc={rc} ({time.time() - t:.0f}s)")
+              (["--samples", str(int(c.get("lrl_bind_samples", 4)))] if mode == "bind" else []) + \
+              (["--shard", f"{i}/{n}"] if n > 1 else []) + (["--fake-responder", fake] if fake else [])
+        env = dict(os.environ, **({"CUDA_VISIBLE_DEVICES": devs[i % len(devs)]} if n > 1 and devs else {}))
+        return subprocess.Popen(cmd, env=env, stdout=open(os.path.join(out, f"{mode}{i}.log"), "w"), stderr=subprocess.STDOUT)
+    n1 = ng if cm == "bind" else 1                                      # compile / bind shards on every GPU, aliases after them
+    procs = [job(cm, i, n1) for i in range(n1)]
+    rcs = [p.wait() for p in procs]
+    if n1 > 1:
+        with open(os.path.join(out, "cards_compile.jsonl"), "w", encoding="utf-8") as w:
+            for i in range(n1):
+                p = os.path.join(out, f"cards_compile_{i}of{n1}.jsonl")
+                if os.path.isfile(p): w.write(open(p, encoding="utf-8").read())
+    log(f"lrl: {cm} for this split rc={rcs} ({time.time() - t:.0f}s)")
+    rc = job("aliases", 0, 1).wait(); log(f"lrl: aliases for this split rc={rc} ({time.time() - t:.0f}s)")
     new = [os.path.join(out, f) for f in ("cards_compile.jsonl", "cards_aliases.jsonl") if os.path.isfile(os.path.join(out, f))]
     keep = [f for f in have if not any(k in os.path.basename(f) for k in ("compile", "alias"))]   # other splits' cards do not apply
     return ",".join(keep + new)
@@ -285,7 +311,7 @@ def main():
         out_i, rc = agent(i, left, ld); last = time.time() - s0; dirs.append(out_i)
         run([sys.executable, os.path.join(HERE, "vote.py"), vote_sub] + dirs + ["--min-conf", str(a.min_conf), "--log-dir", logs], log)
         n = merge_sub.merge(a.split, final, [vote_sub], quiet=True); log(f"after run {i + 1}: {n}")
-    jv = judge_phase(cfg, a, dirs, uv, log, t0)                       # plan 5 W3: the judge re-decides from the solver's samples
+    jv = judge_phase(cfg, a, dirs, uv, log, t0, kv)                       # plan 5 W3: the judge re-decides from the solver's samples
     if jv: n = merge_sub.merge(a.split, final, [jv, os.path.join(dirs[0], "submission.jsonl")], quiet=True); log(f"after the judge: {n}")
     log(f"end: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}  ({time.time() - t0:.0f}s)")
 

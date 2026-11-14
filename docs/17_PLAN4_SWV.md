@@ -164,3 +164,7 @@ cách chọn) trên log thật: `pub_noindH` −0.107 → **+0.018**, `tr_newter
 **14/11 00:57 — G0g (W = Qwen gốc, còn lại như G0f):** 37 hàm (981 s); `pub_noindH` 0.009 (V phát lại 0.045), `tr_newterm` 0.833 (V 0.815)
 — ngang G0f (W = S: 0.018 / 0.036; 0.796 / 0.778) → **giữ W = trọng số S** (một mô hình trong image, đúng giới hạn 15B).
 
+**14/11 00:58 — g1v3apf2 (S + W mới, hàm ngành có sẵn, v3a × 0.70; không V do lỗi trên):** `pub_full` **0.936** (961 / 25 / 14) — cao nhất
+của hệ không luật viết tay (Q2 0.928; g1v3apf W cũ 0.919); `pub_ind` 0.900, `pub_noind` 0.830; W 15 hàm (775 s), đánh giá 1994 s. Phát lại V:
+`pub_full` 0.929 (bỏ thêm 7 câu đúng; ở held-out V +0.05 / +0.01 — đổi chác chấp nhận được theo quy tắc held-out trước).
+

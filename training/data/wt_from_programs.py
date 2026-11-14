@@ -34,12 +34,14 @@ def convert(c):
     if len(segs) != 1: return None
     per = segs.pop()
 
+    seg = ast.get_source_segment(src, expr)                              # node offsets of the sub-parse refer to seg, not src
+
     class R(ast.NodeTransformer):
         def visit_Call(self, n):
-            if isinstance(n.func, ast.Name) and n.func.id in dm.PERIOD_API and ast.get_source_segment(src, n) == per:
+            if isinstance(n.func, ast.Name) and n.func.id in dm.PERIOD_API and ast.get_source_segment(seg, n) == per:
                 return ast.copy_location(ast.Name(id="p", ctx=ast.Load()), n)
             return self.generic_visit(n)
-    body = R().visit(ast.parse(ast.get_source_segment(src, expr), mode="eval")).body
+    body = R().visit(ast.parse(seg, mode="eval")).body
     if any(isinstance(n, ast.Name) and n.id == "TODAY" for n in ast.walk(body)): return None   # still depends on the asking day
     name = slug(c["term"])
     return f"def {name}(p):\n    return {ast.unparse(body)}", name, per, kv["type"].value

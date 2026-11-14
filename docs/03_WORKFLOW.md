@@ -1,6 +1,6 @@
 # 03 — Quy trình làm việc
 
-*Cập nhật 13/11/2026 (§8 vòng học luật của kế hoạch 3; §5 vòng lặp kế hoạch 2: public gốc + held-out, sàng lọc → xác nhận; §1b quota / 12 h; §7 bàn giao qua `Process/`). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
+*Cập nhật 14/11/2026 (§9 quy trình kế hoạch 5: S đóng băng, W huấn luyện riêng, đánh giá phán xử offline); 13/11/2026 (§8 vòng học luật của kế hoạch 3; §5 vòng lặp kế hoạch 2: public gốc + held-out, sàng lọc → xác nhận; §1b quota / 12 h; §7 bàn giao qua `Process/`). Giữ tinh thần quy trình gốc (`docs/RESEARCH_WORKFLOW.pdf`), đổi đích từ "paper" sang "điểm PA
 tối đa trên private test, trong 6 giờ, tái lập được".*
 
 ## 1. Nguyên tắc chung
@@ -114,3 +114,18 @@ Hybrid (user 08/11): mô hình viết chương trình trả lời mọi câu; lu
 4. **Nội hoá**: dữ liệu v3 (`<spec>`, phong cách, thẻ trong prompt) → SFT FSDP (chuỗi checkpoint qua acc khi một acc không đủ giờ).
 5. **Đánh giá** Q / Q2 / P (+ thẻ) song song nhiều acc → quy tắc giữ / bỏ `docs/12` §4, đổi bản nộp `docs/16` §5.4 → lặp.
 6. Bàn giao: `automation/archive_runs.py` + 3 PDF + `READING_GUIDE.md`.
+
+## 9. Quy trình kế hoạch 5 (14/11) — dùng tiếp cho kế hoạch mới
+
+1. **Chẩn đoán trước khi đề xuất**: phát lại log đã có với đáp án public (`automation/rebuild_public_gt.py`) → phân nhóm lỗi: có mẫu đúng nhưng
+   thua phiếu / mọi mẫu cùng sai / chưa rõ (`Process/tools/plan5/an3.py`, `err.py`); trần "có mẫu đúng" khi gộp nhiều log (`an4.py`, `pool.py`).
+2. **Tách vai để quy công**: mỗi vai một adapter, huấn luyện riêng; đo từng vai ghép cặp trên **cùng** log S.
+3. **Mốc zero-shot trước, huấn luyện song song**: đẩy zero-shot (1 phiên, mỗi GPU một biến thể) cùng lúc với các nhánh huấn luyện (mỗi nhánh 1 phiên
+   FSDP 4 GPU, mỗi nhánh một acc).
+4. **Đánh giá offline tối đa**: mọi biến thể phán xử ghi `verdicts.jsonl` → lưới chính sách / kết hợp trên CPU; chọn chính sách **ổn định trên ≥ 2–4
+   log S** (trung bình + thấp nhất), không theo một log.
+5. **Đường container sớm**: khi có ứng viên tốt nhất, chạy ngay container × 2 (2 acc song song) để đo điểm thật + độ tất định; thành phần cải tiến sau
+   được đo lại trên log của chính các lần chạy này.
+6. **Cổng trước khi đẩy**: `tests/run_all.sh` + smoke CPU đúng lệnh (`soup_job ... --fake-responder --subset`) + kiểm độ dài bản ghi / tỉ lệ parse;
+   mỗi acc một lần đẩy tới khi RUNNING (PDF 2 §9).
+

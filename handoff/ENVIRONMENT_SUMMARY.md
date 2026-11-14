@@ -1,4 +1,4 @@
-# Environment Summary — DataMate (cập nhật 13/11/2026)
+# Environment Summary — DataMate (cập nhật 14/11/2026)
 
 *Cấu hình các môi trường dự án dùng. Bài học vận hành ở PDF 2; vận hành Kaggle chi tiết ở `docs/02_KAGGLE_OPS.md`.*
 
@@ -13,7 +13,7 @@
 | vLLM | không có — test CPU dùng mô hình giả (`--fake-responder`) |
 | Repo | `/home/user/ZC`, branch `claude/datamate-v3-0dny90` |
 | Scratch | thư mục scratchpad của phiên (`runs/`, `cache_train/`, `cache_pub/`, `canon/`, worktree) — **mất khi sang khung chat mới**; bản lưu cần thiết ở `Process/` |
-| Token Kaggle | `~/.kaggle/tok_<username>` (chmod 600), 24 acc; xin lại user mỗi container; username từ token: `KAGGLE_API_TOKEN=... kaggle config view` |
+| Token Kaggle | `~/.kaggle/tok_<username>` (chmod 600); 14/11 dùng 11 acc (10 × 4×L4 + `yeshenhi` T4); xin lại user mỗi container; username từ token: `KAGGLE_API_TOKEN=... kaggle config view` |
 | Tác vụ nền | trần 2 giờ (watcher `--max 115` rồi bật lại); container có thể khởi động lại giữa phiên → `automation/resume.py` |
 
 Dựng lại sau khi mất container:
@@ -58,3 +58,15 @@ Acc dùng chung với dự án khác: chỉ thao tác kernel `zc-*`. `automation
 | Chạy | `docker/predict.sh` → `src/predict_flow.py --config configs/flow_final.json` (ngân sách 20,400 s, gộp kết quả mỗi 20 s) |
 | Hướng dẫn | `docker/SETUP_DOCKER.md` (`fetch_assets.sh` → `build.sh` → `run_public_test.sh` → `export_image.sh`), `docker/README_SOLUTION.md` |
 | Đã kiểm | đường container trên Kaggle 4×L4 (0.986); build + chạy trên GPU thật: user làm 15/11 |
+
+## 5. Bổ sung 14/11 (kế hoạch 5)
+
+| Mục | Giá trị |
+|---|---|
+| Gói container | như §1 (`pip install kaggle==2.2.5 xgrammar duckdb markdown xhtml2pdf pandas openpyxl`); đáp án public: `python3 automation/rebuild_public_gt.py` (cần `git fetch --unshallow origin`) |
+| Cache W (CPU) | `training/data/out/_ingest_{train,pub}` (pickle ingest; ~700 MB; tự dựng bởi `w_link.py` / `p_rows.py` / `link.py --cache`) |
+| Dataset Kaggle mới | `nhatlong1103/zc-w-final` (adapter WL1, WJR1, WJB1), `{yuan1103,synchan5704}/zc-w-adapters` (WL1, WJB1) |
+| Kaggle tự giải nén `.gz` trong dataset code (`--train-data`) | gửi file không nén |
+| vLLM 0.32 + fp8 + LoRA | `enable_lora` chạy với Qwen3.5 khi adapter đã qua `training/merge.py vllm`; adapter thô nạp được nhưng không tác dụng |
+| Thời gian đường container 1000 câu (4×L4) | W1 unit ~13 phút, gộp adapter ~1.5 phút / cái, W2 link ~8 phút, S ~40 phút, W3 ~8 phút → 56–75 phút |
+| Watcher | `Process/tools/plan5/watch_loop.sh` (vòng lặp `watch_done.py` → `watch2.out`) + Monitor `tail -F` |

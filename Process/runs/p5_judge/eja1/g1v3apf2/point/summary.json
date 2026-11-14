@@ -1,0 +1,7 @@
+{
+ "variant": "point",
+ "questions": 1000,
+ "requests": 730,
+ "parsed": 640,
+ "s": 256
+}

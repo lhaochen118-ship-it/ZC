@@ -225,3 +225,32 @@ v3ap4,anderson1202/zc-v3ap4-1,RUNNING,resume checkpoint-66 -> 77 (dataset anders
 v3b,phuongnehe/zc-v3b-1,RUNNING,SFT v3b one session (19.5M tokens)
 wr30p1,synchan5704/zc-wr30p1-1,RUNNING,WR30 part 1 (ZC_SESSION_S 6660)
 p3pb2,hieuho669/zc-p3pb2-1,RUNNING,P (WG1 x 0.35) on pub_noind + tr_newterm
+wjb1,nguyenhoa99/zc-wjb1-1,DONE:complete,W3 judge WJB1 training (list+point)
+wjl1b,yuan1103/zc-wjl1b-1,DONE:complete,W3 judge WJL1 training (list)
+wjp1b,anderson1202/zc-wjp1b-1,DONE:complete,W3 judge WJP1 training (point)
+wja1,quynhle07/zc-wja1-1,DONE:complete,W3 judge WJA1 training (list + rejection aug)
+wjr1,quynhtran35/zc-wjr1-1,DONE:complete,W3 judge WJR1 training (list + aug + rulebook rows) = FINAL judge
+wl1b,synchan5704/zc-wl1b-1,DONE:complete,W2 linker WL1 training = FINAL linker
+w1b,anderson1202/zc-w1b-1,DONE:complete,"W1 bind (prose, failed)"
+w1b2,anderson1202/zc-w1b2-1,DONE:complete,W1 bind JSON schema (56/125 bound)
+zjs2,quynhle07/zc-zjs2-1,DONE:complete,zero-shot judge S weights
+zjb2,quynhtran35/zc-zjb2-1,DONE:complete,zero-shot judge base Qwen
+zlk,nguyenhoa99/zc-zlk-1,DONE:complete,S + zero-shot links 0.921
+zlb,quynhtran35/zc-zlb-1,DONE:complete,S + zero-shot links + bind 0.925
+zlw,synchan5704/zc-zlw-1,DONE:complete,S + WL1 links 0.940
+lkw1,synchan5704/zc-lkw1-1,DONE:complete,WL1 linking on public
+ejb1,nguyenhoa99/zc-ejb1-1,DONE:complete,WJB1 judge eval
+ejb1p,nguyenhoa99/zc-ejb1p-1,DONE:complete,WJB1 on pooled logs
+ejb1r,nguyenhoa99/zc-ejb1r-1,DONE:complete,WJB1 + zero-shot links
+ejb1w,nguyenhoa99/zc-ejb1w-1,DONE:complete,WJB1 + WL1 links 0.954
+ejb1z,nguyenhoa99/zc-ejb1z-1,DONE:complete,WJB1 on zlw / pool
+ejl1,yuan1103/zc-ejl1-1,DONE:complete,WJL1 eval
+ejp1,anderson1202/zc-ejp1-1,DONE:complete,WJP1 eval
+eja1,quynhle07/zc-eja1-1,DONE:complete,WJA1 eval
+ejb1lora,nguyenhoa99/zc-ejb1lora-1,DONE:complete,runtime LoRA raw (no effect)
+ejb1lora2,nguyenhoa99/zc-ejb1lora2-1,DONE:complete,runtime LoRA after merge.py vllm (works)
+f5a,yuan1103/zc-f5a-1,DONE:complete,container flow_p5_final (WJB1) 0.943
+f5b,synchan5704/zc-f5b-1,DONE:complete,container flow_p5_final (WJB1) 0.941
+fjb1b,nguyenhoa99/zc-fjb1b-1,DONE:complete,WJB1 ensemble on f5b
+fjr1,quynhtran35/zc-fjr1-1,DONE:complete,WJR1 on f5a/f5b
+ejr1,quynhtran35/zc-ejr1-1,DONE:complete,WJR1 on pva3k16/g1v3apf2

@@ -1,0 +1,16 @@
+run,time,system,log_judged,pub_full,cwa,note
+zlk,2026-11-14T10:50Z,S + zero-shot links (flow_p5_link),-,0.921,955/34/11,links hurt S
+zlb,2026-11-14T11:15Z,S + zero-shot links + W1 bind (flow_p5_lb),-,0.925,956/31/13,
+zlw,2026-11-14T12:30Z,S + WL1 links (flow_p5_lw),-,0.940,964/24/12,vote valid-denom 0.942
+zjs2,2026-11-14T09:20Z,zero-shot judge S weights list+think split-only,pva3k16,0.947,972/25/3,all questions judged: 0.941
+zjb2,2026-11-14T09:35Z,zero-shot judge base Qwen list split-only,pva3k16,0.947,971/24/5,base not allowed in image
+ejb1,2026-11-14T10:10Z,WJB1 list,pva3k16,0.950,973/23/4,
+ejb1,2026-11-14T10:10Z,WJB1 list,g1v3apf2,0.946,971/25/4,vote 0.936
+ejl1,2026-11-14T11:05Z,WJL1 list+think,pva3k16,0.952,976/24/0,pool_ab 0.942
+ejp1,2026-11-14T11:00Z,WJP1 point,pva3k16,0.945,970/25/5,
+ejb1w,2026-11-14T12:20Z,WJB1 list + WL1 links,pva3k16,0.954,976/22/2,ensemble 0.955
+eja1,2026-11-14T13:00Z,WJA1 point_think + WL1 links,pva3k16,0.952,973/21/6,g1v3apf2 0.944
+f5a,2026-11-14T14:05Z,CONTAINER flow_p5_final (WJB1 list),-,0.943,971/28/1,4494 s 4xL4
+f5b,2026-11-14T13:45Z,CONTAINER flow_p5_final (WJB1 list),-,0.941,970/29/1,3373 s; 984/1000 answers = f5a
+fjb1b,2026-11-14T14:20Z,WJB1 ensemble list+point+point_think m0.7,f5b,0.945,,
+fjr1/ejr1,2026-11-14T15:20Z,WJR1 ensemble list+point+point_think m0.5 (FINAL),f5a / f5b / pva3k16 / g1v3apf2,0.949 / 0.953 / 0.958 / 0.949,,mean 0.952 (policy chosen on these logs)

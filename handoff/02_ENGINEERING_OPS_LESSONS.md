@@ -244,3 +244,15 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 | 7 | Link dòng rulebook zero-shot gắn dòng **chung chung** kèm hàm gợi ý vào nhiều câu | S bị kéo sai (0.938 → 0.921) | Lọc dòng nối với > 5 % câu của split (`link.py --max-df 0.05`); dùng linker đã huấn luyện (WL1) |
 | 8 | `watch_done.py` thoát sau mỗi kernel xong; Monitor hết hạn sau 30 phút | dễ bỏ sót sự kiện | Chạy watcher trong vòng lặp nền (`watch_loop.sh` → `watch2.out`) + Monitor `tail -F` persistent; container khởi động lại → `automation/resume.py` |
 | 9 | Đánh giá trên **một** lần chạy S | nhiễu ±0.01 giữa lần chạy | So ghép cặp trên cùng log; xác nhận trên ≥ 2 log S (pva3k16, g1v3apf2) |
+
+### 9.2 Kỹ thuật hiệu quả của kế hoạch 5 (dùng lại)
+
+- **Phán xử offline trên log đã lưu**: W3 chỉ đọc mẫu S trong `logs.jsonl` → mọi biến thể / adapter / chính sách đo lại được mà không chạy lại S
+  (mỗi lần ~10–15 phút / 4 biến thể song song, mỗi GPU một biến thể); chính sách chọn hoàn toàn trên CPU (`tests/replay_judge.py`, `ens2.py`).
+- **Chỉ phán câu có mẫu bất đồng** (`--only-split 1`): ~10 % câu → nhanh ~10 lần và không làm hỏng câu đồng thuận.
+- **Không chờ huấn luyện xong mới chạy container**: chạy đường container với adapter tốt nhất hiện có, rồi phán xử lại log của nó bằng adapter mới.
+- **Adapter W học chồng trên S đã gộp** (`--base-adapters V3A --base-weights 0.70`): gộp `V3A × 0.70 + W × 1.0` = đúng mô hình đã huấn luyện;
+  trong container gộp từng pha (`w_model`, `w_mode: merge`, ~1.5 phút / adapter) hoặc LoRA động sau `merge.py vllm` (`w_mode: lora`).
+- **Mỗi lần chạy container lưu `solver_logs.jsonl`, `links.jsonl`, `cards_unit.jsonl`, phiếu phán xử** (`soup_job --runner predict`).
+- **Dataset adapter riêng cho acc chạy container** (output kernel không mount chéo acc): `Process/tools/publish.sh <acc> <dir> <slug>`.
+- **Huấn luyện**: FSDP 4×L4 1.7–2.1k tok/s, đỉnh 16 GB / GPU với mb 4, max-len 4608–6144; 7–10M token ≈ 2–3 h.

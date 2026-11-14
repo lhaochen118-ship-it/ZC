@@ -16,6 +16,23 @@ Khung chat mới chạy trong container mới: scratch (log lần chạy, cache,
 | `kaggle/quota_2026-11-13.txt` (cũ: `_11-11`) | quota lúc bàn giao 13/11 (làm mới 14/11 00:00 UTC) | lập kế hoạch (số thật: `python3 automation/quota.py`) |
 | `tools/` | công cụ phân tích của phiên (sửa `$S` = scratch): `score_sets.py` (PA theo tập), `cmp_pure_p.py` (lỗi thuần so với P theo kỳ / thực thể / hàm), `period_share.py`, quét tín hiệu sạch `scan_*.py`, `publish.sh` (đăng dataset có `info/`) | phân tích lỗi, đăng adapter / checkpoint |
 
+## Kế hoạch 5 (14/11, `docs/18_PLAN5_TWO_LORA.md`) — đã lưu
+
+| Đường dẫn | Nội dung | Dùng khi |
+|---|---|---|
+| `scores_p5.csv` | điểm public mọi lần chạy / phán xử của kế hoạch 5 | so mốc |
+| `train_data/p5/` | `wj_list*.jsonl.gz` (W3: list, `_aug` có tăng cường từ chối, `_r` có dòng rulebook = dữ liệu WJR1), `wj_point*`, `wj_both*` (WJB1), `p_rows.jsonl.gz` (dòng rulebook câu train theo bộ khớp P), `wl.jsonl.gz` (W2: WL1), `tr_val.logs.jsonl.gz` | huấn luyện lại W: `gunzip` vào `training/data/out/{wj,wl}/` (`--train-data wj` / `wl`) |
+| `runs/p5_solver/` | log S của zlk / zlb / zlw, link (zero-shot, WL1), thẻ unit | phán xử lại offline (`src/judge.py --logs`) |
+| `runs/p5_judge/<run>/<log>/<variant>/verdicts.jsonl.gz` | phiếu của mọi lần phán xử (ứng viên + lựa chọn từng mẫu) | chọn chính sách không cần GPU: `tests/replay_judge.py`, `tools/plan5/ens2.py`, `pol.py` |
+| `runs/f5a`, `runs/f5b` | 2 lần chạy container (solver_logs, links, cards_unit, submission) | mốc container; phán xử lại |
+| `runs/p5_train/<W>/` | `train_metrics.json`, `train.log.gz`, `adapter_config.json` của WJB1, WJL1, WJP1, WJA1, WJR1, WL1 | |
+| `runs/p5_w1b2/` | W1 bind: tóm tắt + đầu ra thô | (thẻ đã lưu ở `src/refs/lrl/compile_public_b.jsonl`) |
+| `tools/plan5/` | `pol.py` (lưới chính sách 1 biến thể), `ens.py` / `ens2.py` (kết hợp biến thể trên nhiều log), `err.py` (phân nhóm lỗi), `pool.py` (gộp log S), `an*.py` (phân tích lỗi), `fake_*.py` (mô hình giả cho smoke), `watch_loop.sh` | sửa đường dẫn `$S` / scratch ở đầu file |
+| `kaggle/kernels.csv` (thêm 29 dòng), `kaggle/plans/plan_*.json` | kernel + plan của kế hoạch 5 | tải output: `kaggle kernels output <id>` |
+
+**Adapter W (không vào git, 320 MB / cái):** dataset `nhatlong1103/zc-w-final` (WL1, WJR1, WJB1 — mỗi cái `<NAME>/adapter/`), bản sao
+`{yuan1103,synchan5704}/zc-w-adapters` (WL1, WJB1); output kernel gốc ở `kaggle/kernels.csv`. Adapter S (V3A) như cũ.
+
 ## Khôi phục nhanh
 
 ```bash
@@ -31,9 +48,10 @@ mkdir -p training/data/out/v3a && gunzip -c Process/train_data/p3/v3a_mix.jsonl.
 
 | Thứ | Cách lấy lại |
 |---|---|
-| Token Kaggle (24 acc) | xin user → `~/.kaggle/tok_<username>` (600); username: `KAGGLE_API_TOKEN=... kaggle config view` |
+| Token Kaggle (11 acc dùng 14/11: nhatlong1103, quynhle07, quynhtran35, nguyenhoa99, yuan1103, synchan5704, anderson1202, loinguyentran, yeshenhi (T4), phatle1578, mucnokieu) | xin user → `~/.kaggle/tok_<username>` (600); username: `KAGGLE_API_TOKEN=... kaggle config view` |
 | Dữ liệu BTC + đáp án public | `kaggle datasets download nhatlong1103/zc-2026 -p data/raw --unzip`; `data/raw/public_gt.jsonl` do user gửi (`score_1.jsonl`) |
-| Cache ingest / bảng chuẩn | `python3 src/ingest.py <split> <S>/cache_{train,pub} 4`; `python3 tests/build_canon.py data/raw/train/train <S>/cache_train <S>/canon` |
+| Cache ingest (W: `training/data/out/_ingest_{train,pub}`) | `python3 training/data/w_link.py` / `p_rows.py` tự dựng; agent: | `python3 src/ingest.py <split> <S>/cache_{train,pub} 4`; `python3 tests/build_canon.py data/raw/train/train <S>/cache_train <S>/canon` |
+| Adapter W kế hoạch 5 | `nhatlong1103/zc-w-final` (xem mục Kế hoạch 5) |
 | Adapter (LoRA, 320 MB / nhánh) | trên Kaggle: `<acc>/zc-wg-adapters` (WG1–4), `nhatlong1103/zc-final-adapter` (WG1 nộp), output kernel `loinguyentran/zc-wg-1`, `bichthuy93/zc-wg2r-1` (WG5–8) |
 | Paraphrase đánh giá | `<acc>/zc-para` (`para_pub.jsonl`, `para_train.jsonl`) |
 | Log của lần chạy không có ở `runs/` | `kaggle kernels output` theo `kaggle/kernels.csv` (output kernel còn trên Kaggle) |

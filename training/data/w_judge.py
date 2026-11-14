@@ -68,8 +68,14 @@ def main():
     ap.add_argument("--aug", type=int, default=0, help="1: also the right candidates dropped from mixed / unanswerable questions "
                     "(the judge sees only wrong programs: label 0, or U when the reference is unanswerable) - teaches rejection")
     ap.add_argument("--tag", default="")
+    ap.add_argument("--rows", default="", help="p_rows.jsonl: the question's rulebook rows go into the judge prompt (as W2 links at inference)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); rnd = random.Random(a.seed)
     A = score.load(a.answers); P = prefixes(a.mix); D1 = programs(a.mix)
+    ROWS = {}
+    if a.rows:
+        for l in open(a.rows, encoding="utf-8"):
+            if l.strip(): x = json.loads(l); ROWS[x["id"]] = x.get("cards") or []
+        print(f"rulebook rows of {len(ROWS)} questions ({sum(1 for v in ROWS.values() if v)} with rows)", flush=True)
     print(f"answers {len(A)}, shop prefixes {len(P)}, checked programs {len(D1)}", flush=True)
     rows = []                                                           # (run, row, cands, n, right flags)
     good = {}                                                           # question id (as logged) -> a right program of some run
@@ -96,7 +102,7 @@ def main():
 
     def rec(kind, run, r, cands, n, plan, choice, mode):
         sysm, biz = P[r["business_id"]]
-        u = biz + "\n\n" + judge.question_block(r["question"], r["as_of_date"], cands, mode, n)
+        u = biz + "\n\n" + judge.question_block(r["question"], r["as_of_date"], cands, mode, n, ROWS.get(r["id"]) if ROWS else None)
         if len(sysm) + len(u) > a.max_chars: return None
         return {"id": r["id"], "business_id": r["business_id"], "source": f"WJ_{mode}_{kind}", "run": run, "choice": choice,
                 "messages": [{"role": "system", "content": sysm}, {"role": "user", "content": u},

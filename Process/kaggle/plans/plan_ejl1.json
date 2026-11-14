@@ -1,0 +1,4 @@
+[
+ {"acc": "yuan1103", "name": "ejl1", "jobs": "automation/jobs/ejl1.jobs", "est_h": 0.8,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yuan1103/zc-wjl1b-1", "--ds", "yuan1103/zc-v3a-adapter", "--train-data", "jlogs", "--no-preflight"]}
+]

@@ -1,0 +1,4 @@
+[
+ {"acc": "quynhle07", "name": "eja1", "jobs": "automation/jobs/eja1.jobs", "est_h": 0.8,
+  "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,quynhle07/zc-wja1-1", "--ds", "quynhle07/zc-v3a-adapter", "--train-data", "jlogs", "--no-preflight"]}
+]

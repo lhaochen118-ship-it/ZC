@@ -101,23 +101,32 @@ def evaluate_all(a, model, res, t0):
 
 
 def judge(a, model, res, t0):
-    """plan 5 W3: src/judge.py on saved solver logs (one variant per GPU inside judge.py); outputs under <out>/judge/."""
-    t1 = time.time(); out = os.path.join(a.out, "judge"); os.makedirs(out, exist_ok=True)
-    cmd = [PY, os.path.join(SRC, "judge.py"), a.split, out, "--model", model, "--logs", a.judge_logs, "--variants", a.judge_variants,
-           "--k", str(a.judge_k), "--only-split", str(a.judge_only_split)]
-    if a.judge_units: cmd += ["--units", a.judge_units]
+    """plan 5 W3: src/judge.py on saved solver logs (one variant per GPU inside judge.py); outputs under <out>/judge/ (several
+    --judge-logs, comma-separated: one after the other, under <out>/judge/<log name>/)."""
+    t1 = time.time(); logs = [x for x in a.judge_logs.split(",") if x]
+    units = [x for x in a.judge_units.split(",")] if a.judge_units else []
+    lora = None
     if a.judge_lora:
-        d = find_adapter(a.judge_lora, a.search)
-        if d is None: sys.exit(f"[soup] judge adapter {a.judge_lora} not found under {a.search}")
-        cmd += ["--lora", d]
-    if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]
-    if a.subset: cmd += ["--subset", str(a.subset)]
-    rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "judge.log"), "w"), stderr=subprocess.STDOUT).returncode
-    res.update(judge_rc=rc, judge_s=round(time.time() - t1), judge_logs=a.judge_logs, judge_variants=a.judge_variants, judge_lora=a.judge_lora)
+        lora = find_adapter(a.judge_lora, a.search)
+        if lora is None: sys.exit(f"[soup] judge adapter {a.judge_lora} not found under {a.search}")
+    rcs = []
+    for n, lg in enumerate(logs):
+        out = os.path.join(a.out, "judge") if len(logs) == 1 else os.path.join(a.out, "judge", lg.split(".")[0])
+        os.makedirs(out, exist_ok=True)
+        cmd = [PY, os.path.join(SRC, "judge.py"), a.split, out, "--model", model, "--logs", lg, "--variants", a.judge_variants,
+               "--k", str(a.judge_k), "--only-split", str(a.judge_only_split)]
+        u = units[n] if n < len(units) else (units[0] if len(units) == 1 and len(logs) == 1 else "")
+        if u: cmd += ["--units", u]
+        if lora: cmd += ["--lora", lora]
+        if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]
+        if a.subset: cmd += ["--subset", str(a.subset)]
+        rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, f"judge{n}.log"), "w"), stderr=subprocess.STDOUT).returncode
+        rcs.append(rc)
+        print(f"[soup] judge {lg} rc {rc}\n" + open(os.path.join(a.out, f"judge{n}.log"), errors="ignore").read()[-800:], flush=True)
+    res.update(judge_rc=rcs, judge_s=round(time.time() - t1), judge_logs=a.judge_logs, judge_variants=a.judge_variants, judge_lora=a.judge_lora)
     json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1)
-    print(f"[soup] judge rc {rc} in {res['judge_s']}s; total {time.time() - t0:.0f}s\n" +
-          open(os.path.join(a.out, "judge.log"), errors="ignore").read()[-1500:], flush=True)
-    if rc != 0: sys.exit(5)
+    print(f"[soup] judge done {rcs} in {res['judge_s']}s; total {time.time() - t0:.0f}s", flush=True)
+    if not any(rc == 0 for rc in rcs): sys.exit(5)
 
 
 def script(a, model, res, t0):

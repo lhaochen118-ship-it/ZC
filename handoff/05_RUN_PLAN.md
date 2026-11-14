@@ -208,3 +208,9 @@ vào cuối (giữ tiền tố đã huấn luyện), không thay toàn bộ. F1 
   0.85 khi không có định nghĩa) → nhãn Unanswerable khi xoá dòng sẽ dạy S′ từ chối sai. S′ giữ: replay (+ hàm cửa hàng không liên quan),
   term (+ dòng nhiễu), term_fn (lời gọi hàm WT kiểm bằng thực thi), contrast / style.
 - **Huấn luyện:** WT-b giữ đường đã chứng minh (mb 4); WT-s bật `--group-by-length` + mb 8 để đo lợi tốc độ (nếu lỗi thì chỉ mất nhánh kiểm tra).
+
+**17:45 – lỗi đo held-out phát hiện và sửa.** H0c xong nhưng chỉ chấm 206 / 1,122 câu: các tập paraphrase (`pub_ho400c`, `pub_hoind`, phần
+paraphrase của `tr_ho400c`) cần dataset `<acc>/zc-para`, plan quên mount; `eval_flow` chỉ dừng khi thiếu toàn bộ. Huỷ h0b, f2, ewts, ewbt
+(`kaggle kernels delete`), đẩy lại h0b2 / h0c2 / f2b / ewts2 / ewbt2 có `zc-para`; `eval_flow` nay dừng hẳn khi thiếu > 10 % câu.
+TG2 lần 1 lỗi: engine vLLM thứ hai trong cùng tiến trình (bước kiểm ngược) không có VRAM → một engine cho cả hai bước, lưu kết quả bước 1
+trước; đẩy lại tg2b.

@@ -35,10 +35,18 @@ def defaults_for(cfg):
     return out
 
 
-def n_gpus():
+def visible_gpus():
+    """the GPU ids this process may use: CUDA_VISIBLE_DEVICES when set (one experiment variant per GPU: soup_job --parallel-gpus),
+    else every GPU nvidia-smi lists."""
+    vis = [x.strip() for x in os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",") if x.strip()]
+    if vis: return vis
     try: out = subprocess.run(["nvidia-smi", "-L"], capture_output=True, text=True, timeout=60).stdout
-    except Exception: return 0
-    return sum(1 for l in out.splitlines() if l.startswith("GPU"))
+    except Exception: return []
+    return [str(i) for i, l in enumerate(l for l in out.splitlines() if l.startswith("GPU"))]
+
+
+def n_gpus():
+    return len(visible_gpus())
 
 
 class Log:
@@ -77,10 +85,11 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
             "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0)),
             "--unit-repairs", str(int(c.get("units_repairs", 1)))] + \
            (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
-    ng = 1 if fake else max(1, n_gpus())                               # one shard of the rows per GPU, in parallel
+    devs = visible_gpus()
+    ng = 1 if fake else max(1, len(devs))                              # one shard of the rows per (visible) GPU, in parallel
     lim = float(c.get("units_max_s", 2700) or 2700)                    # the writer's time cap (a private test with many new rows must
     procs = [subprocess.Popen(base + (["--shard", f"{i}/{ng}"] if ng > 1 else []),   # not eat the solver's budget): a shard still
-                              env=dict(os.environ, **({"CUDA_VISIBLE_DEVICES": str(i)} if ng > 1 else {})),   # running then is killed
+                              env=dict(os.environ, **({"CUDA_VISIBLE_DEVICES": devs[i]} if ng > 1 else {})),   # running then is killed
                               stdout=open(os.path.join(out, f"shard{i}.log"), "w"), stderr=subprocess.STDOUT,   # with its vLLM engine
                               start_new_session=True) for i in range(ng)]                                     # (process group) and
     rcs = []                                                           # the run goes on with the units of the shards that finished

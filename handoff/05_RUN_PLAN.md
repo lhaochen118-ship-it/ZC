@@ -248,3 +248,8 @@ thuận mà bộ phán xử bác với 100 % phiếu: point+think 6 đúng / 1 s
 
 **22:30 – WT-s OOM.** mb 6 × max-len 5,120 + gom theo độ dài (các bản ghi dài nhất cùng micro-batch) → 21.2–21.9 GB / GPU, OOM ở bước đầu.
 Ngưỡng an toàn đo được: ~20.5k token / micro-batch / GPU (mb 4 × 5,120). Đẩy lại `wts2` với mb 4 / batch 64.
+
+**22:45 – WT-b OOM, WT0B học thiếu.** WT-b (mb 4 × 5,120) cũng OOM (16.9 GB cấp phát + 4 GB phân mảnh): bản ghi WT đều dài sát trần
+(prompt viết hàm ~4.3–4.7k token), khác các lần huấn luyện trước (bản ghi ngắn hơn trung bình). WT0B (max-len 4,608) chỉ dùng 238 / 543 bản
+ghi: ước token bằng 0.33 token / ký tự sai với prompt tiếng Việt + mã (thực tế ~0.35–0.36). Sửa: mb 2 × tích luỹ 8 (batch 64 giữ nguyên) +
+`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`; đẩy `wtb2`, `wts3`. Bài học: đo độ dài bằng tokenizer trước khi chọn `--max-len` / mb.

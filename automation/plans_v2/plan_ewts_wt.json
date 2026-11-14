@@ -8,7 +8,7 @@
    "--ms",
    "danbth/qwen3-5-9b/transformers/default/1",
    "--ks",
-   "nhatlong1103/zc-assets,nhatlong1103/zc-wts2-1",
+   "nhatlong1103/zc-assets,nhatlong1103/zc-wts3-1",
    "--ds",
    "nhatlong1103/zc-ad2,nhatlong1103/zc-para",
    "--no-preflight"

@@ -121,8 +121,10 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
 
 def resolve_adapter(name):
     """a LoRA adapter directory given by path or by name (searched next to the code, under /models and /kaggle/input:
-    <root>/**/<name>/adapter/adapter_config.json or <root>/**/<name>/adapter_config.json); '' when none."""
+    <root>/**/<name>/adapter/adapter_config.json or <root>/**/<name>/adapter_config.json); '' when none.
+    'A+B' (v2): stacked adapters (B trained on top of the merged A) -> 'dirA+dirB', merged together with weight 1.0 each."""
     if not name: return ""
+    if "+" in name: return "+".join(resolve_adapter(x) for x in name.split("+") if x)
     if os.path.isfile(os.path.join(name, "adapter_config.json")): return name
     import glob
     for root in [r for r in (os.environ.get("ZC_ADAPTER_ROOT", ""), os.path.dirname(HERE), HERE, "/models", "/kaggle/input") if r]:
@@ -136,10 +138,13 @@ def w_model(adapter, model, work, log, mode="merge"):
     """(model, lora) for a W phase: mode 'merge' = the adapter merged into a copy of the solver's weights (training/merge.py merge;
     cached under work/), 'lora' = the solver + the adapter converted for vLLM's LoRA loader (merge.py vllm)."""
     if not adapter: return model, ""
+    stack = adapter.split("+")                                          # v2: stacked adapters, weight 1.0 each
+    if len(stack) > 1 and mode != "merge": raise SystemExit("stacked W adapters need w_mode merge")
     mp = next((p for p in (os.path.join(os.path.dirname(HERE), "training", "merge.py"), os.path.join(HERE, "training", "merge.py"),
                            os.path.join(HERE, "merge.py")) if os.path.isfile(p)), None)
     if mp is None: raise SystemExit("training/merge.py missing (needed for the W adapters)")
-    name = os.path.basename(os.path.dirname(adapter.rstrip("/"))) if os.path.basename(adapter.rstrip("/")) == "adapter" else os.path.basename(adapter.rstrip("/"))
+    nm = lambda d: os.path.basename(os.path.dirname(d.rstrip("/"))) if os.path.basename(d.rstrip("/")) == "adapter" else os.path.basename(d.rstrip("/"))
+    name = "+".join(nm(d) for d in stack)
     t = time.time()
     if mode == "lora":
         out = os.path.join(work, f"lora_{name}")
@@ -149,7 +154,7 @@ def w_model(adapter, model, work, log, mode="merge"):
         return model, out
     out = os.path.join(work, f"model_{name}")
     if not os.path.isfile(os.path.join(out, "config.json")):
-        rc = run([sys.executable, mp, "merge", model, out, adapter], log)
+        rc = run([sys.executable, mp, "merge", model, out, ",".join(stack), "--weights", ",".join(["1.0"] * len(stack))], log)
         if rc != 0: raise SystemExit(f"merge.py merge {adapter} failed")
         log(f"W adapter {name} merged into the solver's weights ({time.time() - t:.0f}s)")
     return out, ""

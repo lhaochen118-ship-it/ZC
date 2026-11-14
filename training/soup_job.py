@@ -36,6 +36,7 @@ def main():
     ap.add_argument("--judge-logs", default="", help="judge: the solver log file (name under training/data/out, shipped with --train-data)")
     ap.add_argument("--judge-units", default=""); ap.add_argument("--judge-variants", default="list")
     ap.add_argument("--judge-k", type=int, default=5); ap.add_argument("--judge-only-split", type=int, default=1)
+    ap.add_argument("--judge-links", default="", help="judge: links.jsonl per --judge-logs entry (comma-separated, '-' = none)")
     ap.add_argument("--script", default="", help="runner script: a src/ script run as <script> <split> <out>/script --model <merged> "
                     "<--script-args> (e.g. lrl_gen.py --mode bind: the rule writer with the solver's merged weights)")
     ap.add_argument("--script-args", default="", help="runner script: extra arguments, space-separated (use ',' for spaces inside none)")
@@ -118,6 +119,8 @@ def judge(a, model, res, t0):
         u = units[n] if n < len(units) else (units[0] if len(units) == 1 and len(logs) == 1 else "")
         if u: cmd += ["--units", u]
         if lora: cmd += ["--lora", lora]
+        lk = [x for x in a.judge_links.split(",")] if a.judge_links else []
+        if n < len(lk) and lk[n] not in ("", "-"): cmd += ["--links", lk[n]]
         if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]
         if a.subset: cmd += ["--subset", str(a.subset)]
         rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, f"judge{n}.log"), "w"), stderr=subprocess.STDOUT).returncode

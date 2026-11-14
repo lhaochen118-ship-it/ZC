@@ -87,10 +87,22 @@ def show_code(code):
     return c if len(c) <= CODE_CHARS else c[:CODE_CHARS] + "\n# … (cut)"
 
 
-def question_block(question, as_of, cands, mode="list", n_samples=0):
-    """per-question part: # QUESTION, # CANDIDATES, # TASK. mode 'list': every candidate with its share of the solver's samples;
-    'point': the given candidates without shares (the caller passes one candidate: a yes (1) / no (0, U) check)."""
-    lines = [f"# QUESTION (today = {as_of})\n{question.strip()}", "",
+def rules_block(cards):
+    """the rulebook rows linked to the question (W2, src/link.py cards; training: the rows P's matcher reads on a training
+    question), as the judge sees them: '- term: definition -> toolkit hint'."""
+    if not cards: return ""
+    out = []
+    for c in cards[:4]:
+        t = f"- {str(c.get('content') or '').strip()[:300]}"
+        if c.get("code_hint"): t += f" -> {c['code_hint']}"
+        out.append(t)
+    return "# RULEBOOK ROWS FOR THIS QUESTION (definitions the answer must follow)\n" + "\n".join(out) + "\n\n"
+
+
+def question_block(question, as_of, cands, mode="list", n_samples=0, rules=None):
+    """per-question part: (# RULEBOOK ROWS), # QUESTION, # CANDIDATES, # TASK. mode 'list': every candidate with its share of the
+    solver's samples; 'point': the given candidates without shares (the caller passes one candidate: a yes (1) / no (0, U) check)."""
+    lines = [rules_block(rules) + f"# QUESTION (today = {as_of})\n{question.strip()}", "",
              "# CANDIDATES (programs written for this question and what each returned)"]
     for i, c in enumerate(cands, 1):
         share = f" (written by {c['n']} of {n_samples} samples)" if mode == "list" and n_samples else ""
@@ -239,7 +251,7 @@ def unanimous(cands, n):
     return len(cands) == 1 and cands[0]["n"] == n
 
 
-def build_requests(rows, ctxs, mode, k, only_split=True):
+def build_requests(rows, ctxs, mode, k, only_split=True, links=None):
     """(meta, conversation, temperature, seed) per judge sample. list: k samples per question; point: k per candidate.
     only_split: questions whose samples all ran and agree are not judged (the vote stands; 14/11 zero-shot replay on public:
     judging every question 0.941, only the split ones 0.947 vs the vote 0.938) - ~10 % of the questions."""
@@ -250,7 +262,7 @@ def build_requests(rows, ctxs, mode, k, only_split=True):
         if not cands or ctx is None or (only_split and unanimous(cands, n)): continue
         units = [(None, cands)] if mode == "list" else [(ci, [c]) for ci, c in enumerate(cands)]
         for ci, cs in units:
-            qb = question_block(r["question"], r["as_of_date"], cs, mode, n)
+            qb = question_block(r["question"], r["as_of_date"], cs, mode, n, (links or {}).get(i))
             conv = [{"role": "system", "content": ctx["system"]}, {"role": "user", "content": ctx["business"] + "\n\n" + qb}]
             for j in range(k):
                 reqs.append(({"id": i, "cand": ci, "j": j}, conv, 0.0 if j == 0 else 0.7, 100003 * (qi % 9973) + 131 * ((ci or 0) + 1) + j))
@@ -264,7 +276,12 @@ def run_variant(a, variant, out):
     if os.environ.get("ZC_SMOKE") == "1" or a.subset: rows = dict(list(rows.items())[:a.subset or 12])
     ctxs = json.load(open(a.ctx, encoding="utf-8"))
     k = min(a.k, 3) if think else a.k                                   # thinking samples are ~10x the tokens: fewer of them
-    reqs, cands_of = build_requests(rows, ctxs, mode, k, bool(a.only_split))
+    links = None
+    if a.links:                                                         # W2 rows of each question in the judge's prompt
+        links = {}
+        for l in open(find_file(a.links), encoding="utf-8"):
+            if l.strip(): x = json.loads(l); links[x["id"]] = x.get("cards") or []
+    reqs, cands_of = build_requests(rows, ctxs, mode, k, bool(a.only_split), links)
     reqs.sort(key=lambda x: (rows[x[0]["id"]].get("business_id", ""), x[0]["id"]))      # one shop's prefix at a time (prefix cache)
     mt = 1280 if think else a.max_tokens
     if a.fake_responder:
@@ -316,6 +333,7 @@ def main():
     ap.add_argument("--tau", type=float, default=0.6); ap.add_argument("--denom", default="all")
     ap.add_argument("--u-answers", type=int, default=1); ap.add_argument("--keep-unanimous", type=float, default=0.0)
     ap.add_argument("--only-split", type=int, default=1, help="judge only the questions whose samples disagree or failed")
+    ap.add_argument("--links", default="", help="links.jsonl of src/link.py: the question's rulebook rows go into the judge's prompt")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     if a.variant: return run_variant(a, a.variant, a.out)
     t0 = time.time()
@@ -332,7 +350,7 @@ def main():
     argv = [sys.executable, os.path.abspath(__file__), a.split]
     common = ["--model", a.model, "--logs", a.logs, "--ctx", a.ctx, "--k", str(a.k), "--quant", a.quant, "--max-len", str(a.max_len)] + \
              ["--max-tokens", str(a.max_tokens), "--tau", str(a.tau), "--denom", a.denom, "--u-answers", str(a.u_answers),
-              "--keep-unanimous", str(a.keep_unanimous), "--only-split", str(a.only_split)] + (["--lora", a.lora] if a.lora else []) + (["--subset", str(a.subset)] if a.subset else []) + \
+              "--keep-unanimous", str(a.keep_unanimous), "--only-split", str(a.only_split)] + (["--links", a.links] if a.links else []) + (["--lora", a.lora] if a.lora else []) + (["--subset", str(a.subset)] if a.subset else []) + \
              (["--fake-responder", a.fake_responder] if a.fake_responder else [])
     procs, waiting = [], list(enumerate(variants))
     slots = devs or ["cpu"]; free = list(slots); rcs = {}

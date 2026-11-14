@@ -198,3 +198,6 @@ trung bình bỏ phiếu θ 0.5 = 0.927, V θ 0.45 = 0.922 → trên public V kh
 V4S2: 0.916 → **0.926** (bỏ phiếu 0.920 → 0.932), đánh giá 2022 → 2601 s → nhiều mẫu hơn có ích. v3b xong (87 bước, 19.2M token, loss 0.027):
 chỉ đánh giá public (k 8 `g1v3bpf`, k 16 `pv3bk16`).
 
+**14/11 04:10 — lưới public (2):** V4S1 k 16: 0.924 (bỏ phiếu 0.926); soup k 16: 0.926 (0.932); **v3a × 0.70 k 16: 0.935 có V, 0.938 bỏ phiếu
+thường** (k 8: 0.929 / 0.936; đánh giá 2431 s, W 16 hàm 774 s) — cao nhất của hệ không luật viết tay. Chờ v3b k 8 / k 16.
+

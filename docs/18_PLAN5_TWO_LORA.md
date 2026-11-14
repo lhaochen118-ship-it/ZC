@@ -119,3 +119,7 @@ chung chung kèm hàm ("Đơn tính vào doanh thu → revenue(p)" ở 27 % câu
 (1800 bản ghi, nhãn bộ khớp P trên câu train): độ chính xác so với bộ khớp P trên public 0.78 (zero-shot 0.24). Gộp mẫu hai lần chạy S nâng trần
 có-mẫu-đúng 986 → 991 nhưng phán xử chưa tận dụng được. Lỗi còn lại sau phán xử chủ yếu là **kiến thức rulebook** (prompt phán xử không có dòng
 rulebook) → `judge.py --links` (dòng W2 trong prompt), WJR1 = phán xử huấn luyện kèm dòng rulebook (nhãn bộ khớp P trên câu train).
+
+**14/11 12:30 — kết quả tốt nhất đến nay (offline, log pva3k16):** W3 WJB1 + dòng rulebook do WL1 nối trong prompt phán xử: **0.954** (kết hợp biến thể
+0.955; bỏ phiếu 0.938). S + link WL1 (zlw): 0.940 (ngang mốc). LoRA động vLLM fp8 với adapter thô: không tác dụng → thử `merge.py vllm` (ejb1lora2);
+container mặc định gộp adapter W theo pha (`w_mode: merge`). Lỗi vận hành và quy tắc tránh: PDF 2 §9.

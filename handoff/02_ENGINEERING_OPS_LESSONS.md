@@ -230,3 +230,17 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 | Nhiều biến thể | mỗi biến thể một phiên DP 4 trên acc riêng khi còn nhiều acc (nhanh nhất về thời gian tường: lưới 9 biến thể public xong trong ~2 h); `soup_job --parallel-gpus 4` (mỗi GPU một biến thể, hợp nhất mô hình một lần) khi thiếu phiên | lưới 14/11: 9 phiên song song trên 8 acc |
 | Quota | 4×L4 tốn ~2 h quota / giờ tường; acc 30 h ≈ 12–15 h tường / tuần; `launch_many.py` kiểm quota và trần 11 h / phiên | 14/11: 29 acc × 30 h |
 
+
+## 9. Kế hoạch 5 (14/11) — lỗi đã phạm, cách tránh (BẮT BUỘC đọc trước khi đẩy kernel)
+
+| # | Lỗi | Hậu quả | Quy tắc tránh |
+|---|---|---|---|
+| 1 | Hai lần đẩy (fanout) **cùng acc** liên tiếp; kernel đầu bị Kaggle giữ hàng đợi > 8 phút → tự huỷ + đẩy lại sau khi lần đẩy thứ hai đã thay dataset `<acc>/zc-code` | kernel chết "STALE CODE" (wjl1, wjp1: mất ~1.7 h) | **Mỗi acc chỉ một lần đẩy cho tới khi kernel trước báo RUNNING** (`tail <run>/<slug>.log`); cần 2 phiên cùng lúc → đẩy acc khác |
+| 2 | Gửi file `.gz` trong `--train-data` | Kaggle tự giải nén dataset → tên file đổi, job "not found" (zjs, zjb) | Gửi file **không nén**; mọi tra cứu file thử cả tên có / không `.gz` (`judge.find_file`) |
+| 3 | Mô hình đã fine-tune viết code (S) được giao việc khác **không ràng buộc định dạng** (W1 bind, W3 không suy nghĩ) | 78 % dòng rulebook lập luận văn xuôi tới trần token, không ra JSON (w1b); 95 % đầu ra phán xử không có `<choice>` | Việc cấu trúc của W → **JSON schema / structured output** của vLLM ngay từ đầu, hoặc dùng adapter đã huấn luyện cho đúng định dạng |
+| 4 | Bản ghi huấn luyện dài hơn `--max-len` | bị bỏ qua lặng lẽ (`records ... longer than max_len skipped`) | Đo độ dài bản ghi (ký tự / 2.5 ≈ token) **trước** khi đẩy; đặt `--max-len` ≥ p99 |
+| 5 | LoRA động của vLLM trên mô hình fp8 với adapter thô (chưa chuyển tên module) | nạp không lỗi nhưng **không có tác dụng** (ejb1lora: 0 % parsed) | Chuyển bằng `training/merge.py vllm` trước, hoặc gộp adapter vào bản sao mô hình (mặc định `w_mode: merge`); luôn kiểm tra tỉ lệ parse sau lần chạy đầu |
+| 6 | `preflight.py` không chạy được smoke của script trong `training/` | báo FAIL dù test CPU PASS (mất ~40 phút chờ) | Với job `training/*.py`: chạy `tests/run_all.sh` + smoke trực tiếp `soup_job.py ... --fake-responder --subset` trên CPU, rồi `--no-preflight` |
+| 7 | Link dòng rulebook zero-shot gắn dòng **chung chung** kèm hàm gợi ý vào nhiều câu | S bị kéo sai (0.938 → 0.921) | Lọc dòng nối với > 5 % câu của split (`link.py --max-df 0.05`); dùng linker đã huấn luyện (WL1) |
+| 8 | `watch_done.py` thoát sau mỗi kernel xong; Monitor hết hạn sau 30 phút | dễ bỏ sót sự kiện | Chạy watcher trong vòng lặp nền (`watch_loop.sh` → `watch2.out`) + Monitor `tail -F` persistent; container khởi động lại → `automation/resume.py` |
+| 9 | Đánh giá trên **một** lần chạy S | nhiễu ±0.01 giữa lần chạy | So ghép cặp trên cùng log; xác nhận trên ≥ 2 log S (pva3k16, g1v3apf2) |

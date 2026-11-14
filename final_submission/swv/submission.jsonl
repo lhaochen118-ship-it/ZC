@@ -20,12 +20,12 @@
 {"id": "q_040d437fdf09", "type": "number", "answer": 70324}
 {"id": "q_049f0a34efdc", "type": "number", "answer": 197}
 {"id": "q_04e55a8f8c0c", "type": "number", "answer": 69630}
-{"id": "q_052834325528", "type": "percent", "answer": 54.36}
+{"id": "q_052834325528", "type": "percent", "answer": 42.66}
 {"id": "q_0537f6e4f5ab", "type": "date", "answer": "2025-05"}
 {"id": "q_05421814d0e3", "type": "number", "answer": 2826100}
 {"id": "q_0594583b3d46", "type": "number", "answer": 400700000}
 {"id": "q_05ab1c71dcaa", "type": "string", "answer": "La Minh Dương"}
-{"id": "q_05cde771f4c3", "type": "number", "answer": 221054}
+{"id": "q_05cde771f4c3", "type": "number", "answer": 226846}
 {"id": "q_0641a621b596", "type": "list", "answer": [233818700, 248568700, 237185200]}
 {"id": "q_06b7f437fcc4", "type": "number", "answer": 25180500}
 {"id": "q_06de4545fe25", "type": "number", "answer": 14}
@@ -36,7 +36,7 @@
 {"id": "q_0878814b6a76", "type": "string", "answer": "Cty Trương Hoa"}
 {"id": "q_08b923f3c5c5", "type": "string", "answer": "Cty Mai Hải"}
 {"id": "q_08c521dda3d9", "type": "number", "answer": 1974947000}
-{"id": "q_08f075b54698", "type": "number", "answer": 14783}
+{"id": "q_08f075b54698", "type": "unanswerable", "answer": null}
 {"id": "q_09542f67d04a", "type": "number", "answer": 71465}
 {"id": "q_099a18d1ed60", "type": "number", "answer": 466616500}
 {"id": "q_09e3efc66c68", "type": "number", "answer": 169866}
@@ -64,10 +64,10 @@
 {"id": "q_0ef1608808dd", "type": "number", "answer": 530899800}
 {"id": "q_0ef28ee17f12", "type": "number", "answer": 151}
 {"id": "q_0f59f61affd1", "type": "number", "answer": 4947}
-{"id": "q_0f7d15097a8c", "type": "abstain"}
+{"id": "q_0f7d15097a8c", "type": "number", "answer": 4917}
 {"id": "q_1019063a351e", "type": "number", "answer": 54100000}
 {"id": "q_101a2b744e56", "type": "number", "answer": 4}
-{"id": "q_101e84f9b702", "type": "number", "answer": 164406262}
+{"id": "q_101e84f9b702", "type": "number", "answer": 186355417}
 {"id": "q_102720daf6a9", "type": "number", "answer": 685034500}
 {"id": "q_1040545087b6", "type": "number", "answer": 55500000}
 {"id": "q_105bc863feea", "type": "number", "answer": 267653200}
@@ -119,8 +119,8 @@
 {"id": "q_1f1a1f45b377", "type": "number", "answer": 6601500}
 {"id": "q_1f7113a48e4b", "type": "number", "answer": 20}
 {"id": "q_1fafcc702c72", "type": "string", "answer": "Pharmaton Essential hộp 30 viên"}
-{"id": "q_1fc8004b6900", "type": "number", "answer": 20}
-{"id": "q_20221903b95b", "type": "unanswerable", "answer": null}
+{"id": "q_1fc8004b6900", "type": "number", "answer": 44}
+{"id": "q_20221903b95b", "type": "number", "answer": 19}
 {"id": "q_203767dd52af", "type": "number", "answer": 8}
 {"id": "q_20b7bbf203c7", "type": "table", "answer": {"columns": ["tho", "hoa_hong"], "rows": [["Đàm Lan An", 8001675], ["Hà Loan Đạt", 7363040], ["Đoàn Bảo Phúc", 6251840], ["Lương Chi Đức", 5608625]]}}
 {"id": "q_20fc83f06434", "type": "number", "answer": 2568866500}
@@ -149,7 +149,7 @@
 {"id": "q_28f2fdb96198", "type": "number", "answer": 52972800}
 {"id": "q_2927db159ea7", "type": "number", "answer": 832}
 {"id": "q_29e1057e3fbd", "type": "percent", "answer": -24.18}
-{"id": "q_29efb04a938b", "type": "unanswerable", "answer": null}
+{"id": "q_29efb04a938b", "type": "percent", "answer": 13.18}
 {"id": "q_29f0281751c0", "type": "percent", "answer": 6.08}
 {"id": "q_2ac539902fe6", "type": "percent", "answer": -19.98}
 {"id": "q_2bd15109007c", "type": "number", "answer": 2096}
@@ -219,14 +219,14 @@
 {"id": "q_3b20bc6d6427", "type": "percent", "answer": 32.35}
 {"id": "q_3b30972705b7", "type": "number", "answer": 1006269600}
 {"id": "q_3b67b4302890", "type": "percent", "answer": 8.21}
-{"id": "q_3b70619cf8cc", "type": "abstain"}
+{"id": "q_3b70619cf8cc", "type": "number", "answer": 77101300}
 {"id": "q_3c935a94dc79", "type": "list", "answer": [2506050, 250200, 1954218]}
-{"id": "q_3cac54cdb967", "type": "abstain"}
+{"id": "q_3cac54cdb967", "type": "number", "answer": 93247100}
 {"id": "q_3cd196c4dc4d", "type": "number", "answer": 29}
 {"id": "q_3d231754f550", "type": "percent", "answer": -6.29}
 {"id": "q_3d519482d665", "type": "number", "answer": 61}
 {"id": "q_3d543c5b23c8", "type": "percent", "answer": 22.74}
-{"id": "q_3da612131082", "type": "abstain"}
+{"id": "q_3da612131082", "type": "string", "answer": "Hà Loan Đạt"}
 {"id": "q_3dd4582ecb10", "type": "percent", "answer": -36.85}
 {"id": "q_3de82903c4c6", "type": "number", "answer": 1562769700}
 {"id": "q_3e30ac2f9cc9", "type": "number", "answer": 38}
@@ -238,7 +238,7 @@
 {"id": "q_3f0d7d1b1eb1", "type": "list", "answer": [36000, 12000]}
 {"id": "q_3f61cde37841", "type": "date", "answer": "2025-08-02"}
 {"id": "q_3f807c338eb9", "type": "number", "answer": 80336000}
-{"id": "q_3fb7bbc8ec8a", "type": "number", "answer": 167}
+{"id": "q_3fb7bbc8ec8a", "type": "number", "answer": 108}
 {"id": "q_403bdc83bc9c", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Mai Loan Đạt", 157000], ["Chung Loan Hiếu", 138000], ["Tống Giang Ngọc", 135000], ["Trương Hoa Hùng", 123000], ["Lâm Hiếu Nam", 119000]]}}
 {"id": "q_4067c5f50ef7", "type": "number", "answer": 470}
 {"id": "q_408c2137f088", "type": "unanswerable", "answer": null}
@@ -298,7 +298,7 @@
 {"id": "q_4cdc20a8b400", "type": "percent", "answer": 2.78}
 {"id": "q_4cffc6443c2c", "type": "number", "answer": 283530300}
 {"id": "q_4d15340145ad", "type": "date", "answer": "2026-08-30"}
-{"id": "q_4d20e306e0bc", "type": "number", "answer": 1}
+{"id": "q_4d20e306e0bc", "type": "number", "answer": 66}
 {"id": "q_4d7022ecbc52", "type": "percent", "answer": 7.82}
 {"id": "q_4df5a9b089cd", "type": "number", "answer": 7146}
 {"id": "q_4df64734eb4d", "type": "number", "answer": 846}
@@ -313,7 +313,7 @@
 {"id": "q_4f77d67fdf9c", "type": "number", "answer": 13}
 {"id": "q_4fe561cc6493", "type": "percent", "answer": 1.91}
 {"id": "q_50152c2cebd6", "type": "number", "answer": 14097}
-{"id": "q_501cc0b20b1b", "type": "abstain"}
+{"id": "q_501cc0b20b1b", "type": "percent", "answer": -50}
 {"id": "q_508b7320c153", "type": "number", "answer": 261978500}
 {"id": "q_5160c511711f", "type": "number", "answer": 15859000}
 {"id": "q_51621c1657c5", "type": "number", "answer": 1074473000}
@@ -339,9 +339,9 @@
 {"id": "q_55929bed8ced", "type": "number", "answer": 501}
 {"id": "q_5598af728eea", "type": "list", "answer": ["Băng cá nhân Urgo Transparent hộp 100 miếng", "Tiffy Dey hộp 25 vỉ x 4 viên", "Panadol 500mg hộp 10 vỉ x 12 viên"]}
 {"id": "q_5599ff7c9e28", "type": "number", "answer": 2740224000}
-{"id": "q_55cfcde4c03f", "type": "number", "answer": 61427500}
+{"id": "q_55cfcde4c03f", "type": "number", "answer": 116}
 {"id": "q_55e2e56d2787", "type": "date", "answer": "2026-05-30"}
-{"id": "q_569dcd86abb4", "type": "number", "answer": 2790000}
+{"id": "q_569dcd86abb4", "type": "number", "answer": 13.5}
 {"id": "q_56f2859cb47d", "type": "number", "answer": 470469}
 {"id": "q_56ffb6b638d7", "type": "percent", "answer": 9.21}
 {"id": "q_57028085023b", "type": "number", "answer": 64003275}
@@ -362,7 +362,7 @@
 {"id": "q_599dbed4790f", "type": "number", "answer": 39}
 {"id": "q_59b28582f30e", "type": "list", "answer": [382834, 387167, 357338]}
 {"id": "q_59f27903845e", "type": "number", "answer": 37}
-{"id": "q_5a5a452f87d4", "type": "number", "answer": 48.09}
+{"id": "q_5a5a452f87d4", "type": "percent", "answer": 48.09}
 {"id": "q_5a9e0b8dce13", "type": "number", "answer": 47}
 {"id": "q_5aad27b686f6", "type": "number", "answer": 125072}
 {"id": "q_5ab41aca6861", "type": "percent", "answer": 29.05}
@@ -401,14 +401,14 @@
 {"id": "q_617cccfd98d1", "type": "number", "answer": 19}
 {"id": "q_618001244985", "type": "number", "answer": 16}
 {"id": "q_61cfc26159fa", "type": "number", "answer": 8999000}
-{"id": "q_62010007db00", "type": "list", "answer": [213277000, 229767000, 233482000]}
+{"id": "q_62010007db00", "type": "list", "answer": [256904000, 276590900, 263459400]}
 {"id": "q_621a456cc773", "type": "number", "answer": 143}
 {"id": "q_622165f81458", "type": "number", "answer": 8}
 {"id": "q_624351bf768f", "type": "number", "answer": 80104100}
 {"id": "q_625ec1abde64", "type": "number", "answer": 10056100}
 {"id": "q_62cb89435b45", "type": "number", "answer": 7260700}
 {"id": "q_62ec9b7dc79b", "type": "list", "answer": ["Xi măng Hà Tiên PCB40 bao 50kg", "Xi măng INSEE Power-S bao 50kg", "Cát xây tô", "Gạch ống 8x8x18 Tuynel", "Ống PVC Bình Minh D32 cây 4m"]}
-{"id": "q_632bc2910cb3", "type": "number", "answer": 176}
+{"id": "q_632bc2910cb3", "type": "number", "answer": 7255000}
 {"id": "q_6396e1b202a6", "type": "list", "answer": [231948500, 239084500, 243796000]}
 {"id": "q_63cf15f33b1c", "type": "string", "answer": "Sinh tố xoài (M)"}
 {"id": "q_64045044c253", "type": "number", "answer": 112}
@@ -455,7 +455,7 @@
 {"id": "q_6d9ad1c46242", "type": "number", "answer": 122462500}
 {"id": "q_6dc8a5070da6", "type": "number", "answer": 167}
 {"id": "q_6dd1a1921d60", "type": "number", "answer": 157125}
-{"id": "q_6e929cf36203", "type": "abstain"}
+{"id": "q_6e929cf36203", "type": "string", "answer": "Tạ Anh Lan"}
 {"id": "q_6eb11974483f", "type": "number", "answer": 817879400}
 {"id": "q_6ed01172bd03", "type": "unanswerable", "answer": null}
 {"id": "q_6f0c8057ccdb", "type": "number", "answer": 195058700}
@@ -469,18 +469,18 @@
 {"id": "q_71ead7c337f8", "type": "number", "answer": 3631}
 {"id": "q_7260611e1637", "type": "number", "answer": 192663000}
 {"id": "q_72e220b80878", "type": "string", "answer": "Đoàn Bảo Thu"}
-{"id": "q_7305db18bf51", "type": "abstain"}
+{"id": "q_7305db18bf51", "type": "number", "answer": 19}
 {"id": "q_733500e5c7a7", "type": "percent", "answer": -26.32}
-{"id": "q_735ea0888aab", "type": "string", "answer": "Vũ Hằng An"}
+{"id": "q_735ea0888aab", "type": "string", "answer": "Giang Phương Hùng"}
 {"id": "q_73aa64c2c7cf", "type": "number", "answer": 15}
 {"id": "q_7470c487f115", "type": "list", "answer": [14000, 31000]}
 {"id": "q_7584b6b0ebbb", "type": "boolean", "answer": true}
 {"id": "q_75f74a3060c8", "type": "number", "answer": 533470}
 {"id": "q_7616f1a1f0ee", "type": "number", "answer": 222284500}
-{"id": "q_763243ad81fd", "type": "number", "answer": 45100000}
+{"id": "q_763243ad81fd", "type": "number", "answer": 1546763000}
 {"id": "q_766d53528ee4", "type": "boolean", "answer": false}
 {"id": "q_7672cf2a7ca9", "type": "number", "answer": 877769700}
-{"id": "q_76bdadbeb802", "type": "string", "answer": "Thân Minh Hạnh"}
+{"id": "q_76bdadbeb802", "type": "string", "answer": "Châu Ngân Anh"}
 {"id": "q_76edb5c73d98", "type": "number", "answer": 23}
 {"id": "q_77085d36e011", "type": "number", "answer": 146562947}
 {"id": "q_77264ae59960", "type": "number", "answer": 1944503}
@@ -494,7 +494,7 @@
 {"id": "q_78737a198776", "type": "percent", "answer": 56.01}
 {"id": "q_78a7454fde5d", "type": "percent", "answer": -0.9}
 {"id": "q_78b932b4a560", "type": "number", "answer": 172773009}
-{"id": "q_78b9ca050ca1", "type": "number", "answer": 57700000}
+{"id": "q_78b9ca050ca1", "type": "number", "answer": 1564120000}
 {"id": "q_78f694893432", "type": "number", "answer": 166}
 {"id": "q_791de98789d5", "type": "string", "answer": "NV005"}
 {"id": "q_792e1070baaf", "type": "percent", "answer": 22.26}
@@ -559,7 +559,7 @@
 {"id": "q_8c88fcb609eb", "type": "percent", "answer": -41.61}
 {"id": "q_8caa49a3fc7d", "type": "number", "answer": 702100}
 {"id": "q_8cb214a6bdcd", "type": "number", "answer": 94}
-{"id": "q_8ce765944937", "type": "number", "answer": 2756250}
+{"id": "q_8ce765944937", "type": "number", "answer": 14}
 {"id": "q_8d52a75f3314", "type": "string", "answer": "Bùi Hải Linh"}
 {"id": "q_8db0ee0aa5d1", "type": "number", "answer": 926729000}
 {"id": "q_8db445924873", "type": "number", "answer": 69}
@@ -654,7 +654,7 @@
 {"id": "q_a7dd46bc4b38", "type": "string", "answer": "Bia Sài Gòn Special lon"}
 {"id": "q_a85371a13fe2", "type": "string", "answer": "Cáp Type-C 1m"}
 {"id": "q_a883b37bc197", "type": "number", "answer": 31}
-{"id": "q_a897b21c864d", "type": "unanswerable", "answer": null}
+{"id": "q_a897b21c864d", "type": "number", "answer": 12}
 {"id": "q_a8d7ce013c6d", "type": "number", "answer": 28600000}
 {"id": "q_a8da9136963f", "type": "number", "answer": 359}
 {"id": "q_a904adc2606a", "type": "percent", "answer": 36.36}
@@ -690,13 +690,13 @@
 {"id": "q_b24515210e17", "type": "number", "answer": 62377706}
 {"id": "q_b290d99f9130", "type": "percent", "answer": -6.15}
 {"id": "q_b2bbe9c1e9fc", "type": "number", "answer": 272}
-{"id": "q_b2eb16844a32", "type": "abstain"}
+{"id": "q_b2eb16844a32", "type": "number", "answer": 5}
 {"id": "q_b3059f66db30", "type": "string", "answer": "Đoàn Bảo Phúc"}
 {"id": "q_b33016c0dd71", "type": "number", "answer": 20000000}
 {"id": "q_b342fe1e1211", "type": "string", "answer": "Hà Loan Đạt"}
 {"id": "q_b362a46fa102", "type": "number", "answer": 182}
 {"id": "q_b36cb72072f1", "type": "number", "answer": 50}
-{"id": "q_b38db1ef2bcc", "type": "string", "answer": "3"}
+{"id": "q_b38db1ef2bcc", "type": "string", "answer": "Tăng Hùng Hà"}
 {"id": "q_b3a65abd54c2", "type": "number", "answer": 2306809000}
 {"id": "q_b3c49510b3b7", "type": "percent", "answer": 16.59}
 {"id": "q_b3c5bd56d757", "type": "number", "answer": 52}
@@ -747,7 +747,7 @@
 {"id": "q_bf314c953c1e", "type": "number", "answer": 18794000}
 {"id": "q_bfbe25641230", "type": "number", "answer": 3100314}
 {"id": "q_bfe72da5b2f7", "type": "number", "answer": 1356573}
-{"id": "q_bfecad2e9a15", "type": "abstain"}
+{"id": "q_bfecad2e9a15", "type": "number", "answer": 13}
 {"id": "q_bff16856342f", "type": "number", "answer": 48274000}
 {"id": "q_c011cf38470d", "type": "number", "answer": 117613}
 {"id": "q_c0287211ca77", "type": "percent", "answer": 66.67}
@@ -763,9 +763,9 @@
 {"id": "q_c28a03d7a959", "type": "abstain"}
 {"id": "q_c2ba3823e50f", "type": "percent", "answer": 1.98}
 {"id": "q_c2eaa7985cf2", "type": "percent", "answer": 6.91}
-{"id": "q_c3158f13ca1c", "type": "abstain"}
+{"id": "q_c3158f13ca1c", "type": "number", "answer": 112}
 {"id": "q_c33e026f59e7", "type": "string", "answer": "Dầu ăn Simply 2L"}
-{"id": "q_c3439f11c9b0", "type": "abstain"}
+{"id": "q_c3439f11c9b0", "type": "number", "answer": 12913800}
 {"id": "q_c34ede239480", "type": "number", "answer": 74}
 {"id": "q_c3652d93727e", "type": "number", "answer": 282622500}
 {"id": "q_c38425d8aec8", "type": "number", "answer": 98}
@@ -783,7 +783,7 @@
 {"id": "q_c788ebe0ce0b", "type": "number", "answer": 26}
 {"id": "q_c78fdf218577", "type": "number", "answer": 792}
 {"id": "q_c803650fe803", "type": "number", "answer": 39}
-{"id": "q_c810dcd56aa3", "type": "abstain"}
+{"id": "q_c810dcd56aa3", "type": "percent", "answer": 8.6}
 {"id": "q_c8c553b90c18", "type": "number", "answer": 1246}
 {"id": "q_c8f95328ca75", "type": "percent", "answer": 17.5}
 {"id": "q_c8fde55544b6", "type": "number", "answer": 671}
@@ -857,7 +857,7 @@
 {"id": "q_dae1955698d3", "type": "number", "answer": 2125000}
 {"id": "q_db00aee1a23d", "type": "number", "answer": 15}
 {"id": "q_db10e5d30a18", "type": "number", "answer": 1164278}
-{"id": "q_dbb084b9361d", "type": "number", "answer": 245571500}
+{"id": "q_dbb084b9361d", "type": "number", "answer": 8328000}
 {"id": "q_dbb9f4aff4c3", "type": "number", "answer": 2220000}
 {"id": "q_dcb25c39e1cc", "type": "number", "answer": 169}
 {"id": "q_dcd34fbf05f0", "type": "percent", "answer": 29.25}
@@ -872,14 +872,14 @@
 {"id": "q_df258c67efec", "type": "number", "answer": 19}
 {"id": "q_dfe6c970b819", "type": "date", "answer": "2025-01-29"}
 {"id": "q_e096ce51b13d", "type": "percent", "answer": -4.97}
-{"id": "q_e0ac213834f6", "type": "number", "answer": 4353551}
+{"id": "q_e0ac213834f6", "type": "number", "answer": 4259801}
 {"id": "q_e0e7974d6923", "type": "percent", "answer": -9.54}
 {"id": "q_e18836a94216", "type": "number", "answer": 12}
 {"id": "q_e2a2674f8f4d", "type": "number", "answer": 85964500}
 {"id": "q_e2ad9e83d06a", "type": "number", "answer": 825818668}
 {"id": "q_e2bedb87cc3d", "type": "number", "answer": 2509876000}
 {"id": "q_e2bfd7f28a9a", "type": "percent", "answer": -3.27}
-{"id": "q_e2e4e0639619", "type": "unanswerable", "answer": null}
+{"id": "q_e2e4e0639619", "type": "string", "answer": "Bia Tiger lon"}
 {"id": "q_e2f1ef732951", "type": "number", "answer": 523525}
 {"id": "q_e322d691b4be", "type": "percent", "answer": -22.58}
 {"id": "q_e36c0b269181", "type": "number", "answer": 15}
@@ -888,7 +888,7 @@
 {"id": "q_e4641e459f38", "type": "list", "answer": ["Đàm Dũng Khánh", "Đinh Thảo Thanh", "Lương Anh Thảo", "Lê Đức Lan", "Tăng Hạnh Long"]}
 {"id": "q_e47610290a38", "type": "list", "answer": ["Trà đào cam sả (M)", "Cà phê sữa (M)", "Trà sữa trân châu (M)", "Cà phê đen (M)", "Nước ép cam (M)"]}
 {"id": "q_e4f0a9bdf74b", "type": "string", "answer": "Cà phê sữa (M)"}
-{"id": "q_e4fc0d18d409", "type": "number", "answer": 85}
+{"id": "q_e4fc0d18d409", "type": "number", "answer": 11}
 {"id": "q_e4fd11ebbadf", "type": "number", "answer": 106139500}
 {"id": "q_e53ff8441ef1", "type": "number", "answer": 897850000}
 {"id": "q_e5fc1ce4c0a1", "type": "number", "answer": 6494800}
@@ -910,7 +910,7 @@
 {"id": "q_eb7f3881e7e9", "type": "date", "answer": "2025-06-28"}
 {"id": "q_ec17ef854d8a", "type": "number", "answer": 233500200}
 {"id": "q_ec61b4f5b9ab", "type": "percent", "answer": -53.1}
-{"id": "q_ec8d9cfa0f6b", "type": "number", "answer": 227956}
+{"id": "q_ec8d9cfa0f6b", "type": "number", "answer": 234644}
 {"id": "q_ec9ca5f0dec1", "type": "number", "answer": 448559000}
 {"id": "q_eced47bf8f4b", "type": "number", "answer": 166285}
 {"id": "q_ed4d0362d039", "type": "unanswerable", "answer": null}
@@ -930,7 +930,7 @@
 {"id": "q_effb17cba303", "type": "number", "answer": 1740}
 {"id": "q_f04b126554e3", "type": "number", "answer": 62}
 {"id": "q_f09bd63b0751", "type": "boolean", "answer": true}
-{"id": "q_f0bb331484b7", "type": "abstain"}
+{"id": "q_f0bb331484b7", "type": "number", "answer": 575}
 {"id": "q_f0c8b2fbb77f", "type": "number", "answer": 42609000}
 {"id": "q_f118a00dc479", "type": "date", "answer": "2025-07-27"}
 {"id": "q_f156d23d04fe", "type": "number", "answer": 139}
@@ -951,12 +951,12 @@
 {"id": "q_f53d89a0743e", "type": "number", "answer": 1072429200}
 {"id": "q_f56bee880344", "type": "number", "answer": 1186091500}
 {"id": "q_f56deeb4120b", "type": "date", "answer": "2025-12"}
-{"id": "q_f5fae09ccd1e", "type": "abstain"}
+{"id": "q_f5fae09ccd1e", "type": "number", "answer": 7}
 {"id": "q_f66f667088cb", "type": "list", "answer": ["Mì Hảo Hảo tôm chua cay", "Nước suối Aquafina 500ml", "Trứng gà so"]}
 {"id": "q_f75e58af3bcb", "type": "number", "answer": 48}
 {"id": "q_f7fcc8fad30b", "type": "number", "answer": 37}
 {"id": "q_f823bf8a8442", "type": "number", "answer": 270167800}
-{"id": "q_f82dc784b8c9", "type": "number", "answer": 1106943600}
+{"id": "q_f82dc784b8c9", "type": "number", "answer": 40125400}
 {"id": "q_f83c96ab5362", "type": "percent", "answer": 17.67}
 {"id": "q_f86ac4d1df98", "type": "date", "answer": "2026-07-26"}
 {"id": "q_f8715dcf6ad0", "type": "number", "answer": 22448}
@@ -976,7 +976,7 @@
 {"id": "q_fa92cbe8434c", "type": "number", "answer": 161771}
 {"id": "q_facbc1f20a16", "type": "list", "answer": [427810500, 486590500, 456510000]}
 {"id": "q_fb290d8944ec", "type": "date", "answer": "2025-07-14"}
-{"id": "q_fb409424a396", "type": "abstain"}
+{"id": "q_fb409424a396", "type": "list", "answer": ["Nhiệt kế điện tử Microlife MT500", "Tiffy Dey hộp 25 vỉ x 4 viên", "Cao Sao Vàng TW3 hộp 3g", "Nước muối sinh lý Natri clorid 0,9% Vĩnh Phúc chai 500ml", "Siro ăn ngon Ích Nhi Plus chai 100ml", "Prednisolon 5mg Boston chai 500 viên", "Panadol Extra hộp 15 vỉ x 12 viên", "Fugacar 500mg hộp 1 viên", "Băng cá nhân Urgo Transparent hộp 100 miếng", "Kudos Vitamin C 1000mg viên sủi tuýp 20 viên", "Hagifen 400mg DHG hộp 10 vỉ x 10 viên", "Zyrtec 10mg hộp 1 vỉ x 10 viên", "Calcium Corbière Extra 10ml hộp 30 ống", "Oresol 245 DHG hộp 20 gói"]}
 {"id": "q_fb4bf09137a7", "type": "boolean", "answer": true}
 {"id": "q_fbaf2023cfb6", "type": "number", "answer": 1409}
 {"id": "q_fbb0ba502475", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Đào Châu Tâm", 234000], ["Chung Khoa Thảo", 86000], ["Đoàn Hiếu Khánh", 86000], ["Lưu Sơn Hằng", 82000], ["Đàm Hà Phúc", 76667]]}}

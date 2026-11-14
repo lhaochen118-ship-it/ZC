@@ -4,6 +4,25 @@
 
 **Tóm tắt.** Sau kế hoạch 5, điểm mất còn lại chia hai phần gần bằng nhau: (1) câu mà **mọi mẫu của S cùng sai** nên không bao giờ được phán xử (8–19 câu mỗi lần chạy), gốc là S chưa từng được dạy dùng rulebook; (2) câu có mẫu đúng nhưng **bộ phán xử chọn sai hoặc không ra phán quyết** (6–15 câu). Đề xuất ba việc theo thứ tự: sửa kênh đầu ra của bộ phán xử (không huấn luyện); định tuyến câu "xung đột rulebook" tới bộ phán xử bằng một bộ nối luật biết báo *thiếu định nghĩa*; huấn luyện S đọc rulebook bằng **rulebook đối chứng**. Ước lượng 0.952 → 0.965–0.975; **1.0 không được bảo đảm** (mục 6).
 
+## 0. Bản tóm tắt để chạy (cho khung chat thực thi)
+
+**Mốc.** Cấu hình `configs/flow_p5_final.json`, public TB **0.952** trên 4 log S (`f5a`, `f5b`, `pva3k16`, `g1v3apf2`). Đáp án chuẩn: `score 1.jsonl` ở gốc repo (trùng `data/raw/public_gt.jsonl` dựng bằng `automation/rebuild_public_gt.py`). Đóng băng container **16/11 04:00 UTC**.
+
+**Còn sai 24–28 câu mỗi log**, ba nhóm: 8–19 câu mọi mẫu S cùng sai (không được phán xử); 6–15 câu có mẫu đúng nhưng mất; 2–5 câu không mẫu nào đúng.
+
+| Thứ tự | Việc | Làm gì | Đo ở đâu | Nhận khi |
+|---|---|---|---|---|
+| 0 | **Docker dự phòng** | D1 cho `flow_p5_final` (`handoff/03_HANDOFF.md` §5) | đường container | có điểm container của đúng cấu hình WJR1 |
+| 1 | **A** sửa đầu ra phán xử | `src/judge.py`: biến thể `list` / `point` sinh có ràng buộc, chỉ in `<choice>k</choice>` (hoặc lấy xác suất token lựa chọn). Hiện WJR1 chỉ đọc được 19–25 % / 35–40 % phán quyết | phán xử lại 4 log đã lưu (`soup_job --runner judge`, `tests/replay_judge.py`) | tỉ lệ đọc được ≥ 95 %; TB > 0.952, không log nào giảm |
+| 1 | **F** khối API tự sinh | `# API` của prompt sinh từ `api_spec` (mọi hàm công khai) thay `dm.API_DOC` viết tay; hiện `purchased_qty_base` không có trong prompt | một lần chạy public, so ghép cặp với `f5a` | không âm; âm thì chỉ thêm dòng thiếu vào cuối khối |
+| 2 | **Dữ liệu** (CPU, chỉ cửa hàng train) | (i) rulebook đối chứng: xoá / đổi định nghĩa / đổi tên thuật ngữ / thêm dòng nhiễu, nhãn tính lại bằng thực thi; (ii) cặp tương phản: tháng-năm ↔ ngày-tháng, đơn ↔ ngày ↔ số lượng, lô ↔ sản phẩm, máy ↔ lượt, nhập ↔ bán, đếm ↔ liệt kê | — | mỗi cặp chạy được, hai nhãn khác nhau đúng dự định |
+| 3 | **B** định tuyến xung đột rulebook (S đóng băng) | Huấn luyện **W2′** (từ `w_link.py` + dữ liệu i): mỗi câu in dòng áp dụng + trạng thái *có định nghĩa / không cần / tiêu chí chủ quan thiếu định nghĩa*. Câu đồng thuận gửi tới bộ phán xử khi "thiếu định nghĩa", hoặc khi có dòng nối mà không ứng viên nào dùng lời gọi đã kiểm (S chạy lại một lượt với dòng đó). Huấn luyện **WJR2** = WJR1 + dữ liệu (ii) + câu đồng thuận bị định tuyến | cửa hàng train giữ ngoài, rồi 4 log public | precision "thiếu định nghĩa" ≥ 0.9; số câu sai đồng thuận / log giảm; câu bị làm hỏng ≤ 1/3 câu sửa được |
+| 3 | **C** S′ đọc rulebook (song song với B) | LoRA chồng trên V3A × 0.70; prompt có lớp ngữ nghĩa đầy đủ của split (thuật ngữ, định nghĩa, lời gọi W1) ở phần đầu dùng chung; dữ liệu = v3a dựng lại theo bố cục mới + (i) + (ii), câu không trả lời được 3–5 %; ~40–50M token, 2 seed | public × 2 seed, cùng bộ phán xử | độ nhạy rulebook ≥ 0.95 trên train giữ ngoài; tăng ghép cặp z ≥ 2, hai seed cùng dấu; không đạt → giữ S |
+| 4 | **D** kênh thứ hai (chỉ khi A xong và còn giờ) | một mẫu mỗi câu bằng trọng số gốc (`w_mode: lora`, tắt adapter theo request), bật suy nghĩ; bất đồng với S → bộ phán xử | 4 log public | tăng ghép cặp, không log nào giảm |
+| 5 | **Đóng gói** | chọn cấu hình, đường container × 2, thời gian 1,000 câu, Docker, `README_SOLUTION` | — | hai lần chạy lệch ≤ 0.03; trong 6 giờ |
+
+**Quy tắc khi chạy.** Không luật viết tay lúc suy luận; không dùng câu public để huấn luyện; so ghép cặp trên cùng câu, ≥ 2 seed cho thay đổi ở S; thành phần nào không qua cổng thì tắt bằng cấu hình; tuân thủ PDF 2 §9 và cổng kiểm tra trong `CLAUDE.md`. Dự báo: A + F → 0.954–0.960; thêm B hoặc C → 0.962–0.972; tốt nhất ~0.98; 1.0 xác suất thấp.
+
 ## 1. Hiện trạng và cách phân tích
 
 - **Hệ hiện tại** (`configs/flow_p5_final.json`): S = Qwen3.5-9B + LoRA v3a × 0.70 viết chương trình (4–16 mẫu / câu, đóng băng); W1 gắn dòng rulebook với lời gọi toolkit đã chạy thử; W2 (linker WL1) nối mỗi câu với dòng rulebook; W3 (bộ phán xử WJR1) chọn giữa các nhóm đáp án ở câu có mẫu bất đồng.

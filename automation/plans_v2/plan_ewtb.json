@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "nhatlong1103",
+  "name": "ewtb",
+  "jobs": "automation/jobs/ewtb.jobs",
+  "est_h": 1.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,nhatlong1103/zc-wtb-1",
+   "--ds",
+   "nhatlong1103/zc-ad2,nhatlong1103/zc-para",
+   "--no-preflight"
+  ]
+ }
+]

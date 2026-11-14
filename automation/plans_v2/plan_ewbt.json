@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "phuongnehe",
+  "name": "ewbt",
+  "jobs": "automation/jobs/ewbt.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "phuongnehe/zc-ad2",
+   "--no-preflight"
+  ]
+ }
+]

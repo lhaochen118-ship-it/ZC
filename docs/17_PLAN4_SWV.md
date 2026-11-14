@@ -161,3 +161,6 @@ cách chọn) trên log thật: `pub_noindH` −0.107 → **+0.018**, `tr_newter
 `pub_noindH` **+0.018** (42 / 40 / 30) vs không W (e0hv) −0.107 → **+0.125**; `tr_newterm` 0.796 vs 0.852 (−3 câu). Phát lại V: `pub_noindH`
 +0.036 vs không W + V +0.018 (+0.018), `tr_newterm` 0.778 vs 0.852. Chờ cặp 614 câu (e0hvp / g0hfp) để kết luận.
 
+**14/11 00:57 — G0g (W = Qwen gốc, còn lại như G0f):** 37 hàm (981 s); `pub_noindH` 0.009 (V phát lại 0.045), `tr_newterm` 0.833 (V 0.815)
+— ngang G0f (W = S: 0.018 / 0.036; 0.796 / 0.778) → **giữ W = trọng số S** (một mô hình trong image, đúng giới hạn 15B).
+

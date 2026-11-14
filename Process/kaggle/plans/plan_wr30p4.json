@@ -3,7 +3,7 @@
   "acc": "anderson1202",
   "name": "wr30p4",
   "jobs": "automation/jobs/wr30r.jobs",
-  "est_h": 11.95,
+  "est_h": 1.0,
   "args": [
    "--ms",
    "danbth/qwen3-5-9b/transformers/default/1",
@@ -16,6 +16,7 @@
    "--no-preflight",
    "--train-data",
    "all30"
-  ]
+  ],
+  "checkpointed": true
  }
 ]

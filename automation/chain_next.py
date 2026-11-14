@@ -43,6 +43,8 @@ def main():
     wall = left / FACTOR - 0.05
     need = float(arg("--remaining-h", "0") or 0)
     sess_h = min(wall, need + SETUP_H + MARGIN_S / 3600 + 0.1) if need else wall
+    sess_h = min(sess_h, 10.9)                                         # a full 30 h account gave 11.95 h > launch_many's 11 h cap:
+                                                                        # the part was refused (wr30p4, 14/11 00:14)
     if sess_h < float(arg("--min-h", "0.6")): print(f"{acc}: {left:.2f} h quota -> {wall:.2f} h wall: too little"); sys.exit(3)
     slug = f"zc-{nxt}-ck"
     stage = os.path.join(os.path.dirname(runs), "ds_" + nxt)

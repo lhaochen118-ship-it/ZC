@@ -57,6 +57,16 @@ giải, W mô hình viết luật thực thi được lúc suy luận, V bộ ch
 bằng `pub_noindH` (= `pub_noind` + `--hide-api industry`). Sau khi xong kế hoạch: dừng, đọc lại findings, đề xuất hướng mới, lên kế
 hoạch chi tiết (chia luồng, batch, thời gian) xong rồi mới chạy (user 13/11).
 
+**Quyết định user 14/11 02:30 (mới nhất, bắt buộc):** (1) hết thời gian, đã có đội đạt 96 % → **không chạy held-out nữa**, chỉ tối ưu
+**public** hướng tới 1.0 (bỏ R1 / G2 và mọi đánh giá held-out mới); (2) chạy xong kế hoạch hiện tại (`docs/17`: G1 public → chọn S → V2 → F1 →
+F2 → D1) thì **tạm dừng**, cập nhật **PDF 1 Scientific Findings** (đóng góp, ý nghĩa khoa học, kết quả tích cực, hạn chế / kết quả âm, bằng
+chứng, điều kiện kiểm chứng) và **PDF 2 Engineering & Operations Lessons** (lập trình, môi trường, quản lý Kaggle, tổ chức thử nghiệm, lỗi
+gặp, cách sửa, bài học), rồi rà soát **xoá** tệp / bản nháp / log lỗi thời chắc chắn không cần (giữ mã, cấu hình, kết quả, tài liệu quan
+trọng); user sẽ đổi mô hình (Fable 5.2) để nghĩ chiến lược mới tới public = 1; (3) **GPU:** mỗi acc 2 phiên commit × 4 L4 (24 GB / GPU, 96 GB /
+phiên; không có L4 → 2 T4): dùng hết cả 4 GPU mỗi phiên — FSDP 4 GPU cho huấn luyện (batch lớn nhất không OOM, gradient accumulation, mixed
+precision), hoặc **mỗi GPU một biến thể thử nghiệm** (4 biến thể / phiên, 8 / acc); không tiết kiệm acc / GPU, chia việc cho ra kết quả nhanh
+nhất (nối checkpoint qua acc); (4) token mới cho nhatlong1103, quynhle07, quynhtran35, nguyenhoa99, yuan1103, synchan5704 (đã lưu `~/.kaggle`).
+
 ## Nguyên tắc user (đã chốt, không hỏi lại)
 
 - Tự động hoá tối đa; chỉ hỏi việc chỉ user làm được (token, nộp portal, accept rules Kaggle trên web).

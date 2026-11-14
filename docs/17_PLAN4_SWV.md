@@ -186,3 +186,7 @@ hàm của W (dữ liệu UD của v4).
 đang chạy để chạy xong, không dùng để quyết định). Phần còn lại: G1 public → chọn S theo public → V2 (bộ chọn học lại trên log train của S)
 → biến thể cấu hình chạy mỗi GPU một biến thể → F1 → F2 → D1 → dừng, PDF 1 / PDF 2, dọn repo.
 
+**14/11 03:03 — G1 v4 seed 2 (V3A × 0.70 + V4S2 × 1.0, S + W + V thật — 1000 / 1000 log có `conf_sel`):** `pub_full` **0.916** (949 / 33 / 18;
+bỏ phiếu thường trên cùng log 0.920); `pub_ind` 0.859, `pub_noind` 0.741; W 12 hàm (698 s), đánh giá 2022 s. **Kém v3a** (S + W 0.936,
+`pub_noind` 0.830) → v4 (seed 2) không giúp public; chờ seed 1 và lưới biến thể.
+

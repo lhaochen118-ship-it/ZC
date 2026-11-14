@@ -157,3 +157,7 @@ e0hv = E0 lặp lại (−0.107 vs −0.036: nhiễu giữa hai lần chạy ~0.
 cách chọn) trên log thật: `pub_noindH` −0.107 → **+0.018**, `tr_newterm` 0.852 → 0.852, `pub_ho400c` 0.603 → **0.652**, `tr_ho400c`
 0.917 → **0.928** → V có ích ở mọi tập. G1 v4 (sau huấn luyện) sẽ là lần đầu đo S + W + V thật.
 
+**14/11 00:56 — G0f (W = trọng số S, mã = mảng dòng, kiểm 13 kỳ, vòng tự sửa; không V do lỗi trên):** 41 hàm đã kiểm (G0e: 12; 867 s).
+`pub_noindH` **+0.018** (42 / 40 / 30) vs không W (e0hv) −0.107 → **+0.125**; `tr_newterm` 0.796 vs 0.852 (−3 câu). Phát lại V: `pub_noindH`
++0.036 vs không W + V +0.018 (+0.018), `tr_newterm` 0.778 vs 0.852. Chờ cặp 614 câu (e0hvp / g0hfp) để kết luận.
+

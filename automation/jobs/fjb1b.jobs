@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/fjb1b --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters V3A,WJB1 --weights 0.70,1.0 --search /kaggle/input --runner judge --judge-logs f5b.logs.jsonl --judge-units f5b.cards_unit.jsonl --judge-links f5b.links.jsonl --judge-variants list,point,list+think,point+think --judge-k 5

@@ -2,7 +2,7 @@
 
 Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3-0dny90`** (repo `lhaochen118-ship-it/ZC`).
 **Khung chat mới: đọc `READING_GUIDE.md` trước** (trạng thái sống `handoff/STATUS.md`; PDF 1 / 2 trong `handoff/`; log, dữ liệu huấn luyện,
-sổ kernel ở `Process/` — `Process/README.md`). **Trạng thái 14/11: đang dừng, chờ user đưa chiến lược mới hướng tới public = 1.**
+sổ kernel ở `Process/` — `Process/README.md`). **Trạng thái 14/11 06:30: user duyệt kế hoạch 5 — `docs/18_PLAN5_TWO_LORA.md` (S đóng băng v3a × 0.70 + LoRA-W huấn luyện riêng: biên dịch rulebook vào schema, nối luật theo câu, phán xử ứng viên; đóng băng 16/11 04:00 UTC; dùng acc hợp lý, không spam — 10 acc L4 là đủ; bộ khớp thuật ngữ của P chỉ được dùng gán nhãn câu train).**
 
 **Lịch sử quyết định (đã thay thế; chi tiết trong PDF 1 / 2 và lịch sử git):** 08/11 hybrid = mô hình sinh code + luật tổng quát hỗ trợ
 (cấm hard code đáp án) và kế hoạch 1 (WP0–WP12, chạy tự động); 09/11 mục tiêu 100 % public bằng cải tiến tổng quát, kế hoạch 2 (hướng R

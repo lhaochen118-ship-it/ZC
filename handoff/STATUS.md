@@ -26,4 +26,6 @@ Không còn kernel nào chạy.
 
 ## 4. Việc tiếp theo
 
-User duyệt chiến lược mới → kế hoạch chi tiết (luồng, batch, thời gian) → chạy. Trước hạn: user build Docker và nộp.
+**Kế hoạch 5 (user duyệt 14/11 06:30): `docs/18_PLAN5_TWO_LORA.md`** — S đóng băng + LoRA-W ba vai huấn luyện riêng; bước kế: P0 (code CPU +
+smoke) → Z (zero-shot) → T1 (huấn luyện W) → E1 / G1. Đáp án public: `python3 automation/rebuild_public_gt.py` (cần `git fetch --unshallow`).
+Token đang có (14/11): 10 acc L4 + `yeshenhi` (T4). Đóng băng 16/11 04:00 UTC; sau đó user build Docker và nộp.

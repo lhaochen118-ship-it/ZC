@@ -21,6 +21,7 @@ Cho Agent nhận dự án ở khung chat mới. Đọc theo thứ tự, dừng k
 
 | File | Khi nào |
 |---|---|
+| `docs/18_PLAN5_TWO_LORA.md` | **kế hoạch đang chạy** (14/11): hai LoRA S / W, lịch theo giờ, acc, cổng G1 / G2, nhật ký §7 |
 | `docs/17_PLAN4_SWV.md` | kế hoạch 4 S–W–V (đã xong) và nhật ký chi tiết §7 (mọi lần chạy 13–14/11) |
 | `docs/00_TASK.md`, `docs/ZAIC_REQUIREMENTS.md` | đề bài, luật chấm, giới hạn (≤ 15B, 6 h, 2×RTX 5090, offline) |
 | `docs/02_KAGGLE_OPS.md`, `docs/05_GPU_OPTIMIZATION.md` | vận hành Kaggle, tối ưu GPU |

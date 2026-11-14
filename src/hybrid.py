@@ -44,6 +44,13 @@ class HybridPipeline(pipeline.Pipeline):
         if self.lib is not None:                                        # generic triggers out, by the run's own questions (inputs)
             self.lib.prune([x["question"] for x in qs], float(getattr(a, "lrl_max_df", 0.02) or 0.02))
         if self.lib is not None: print(f"[hybrid] learned rule cards: {len(self.lib)} ({lp})", flush=True)
+        self.links = None                                               # plan 5 W2: rulebook rows the model linked to each question
+        if getattr(a, "links", ""):                                     # (src/link.py); a named file that is missing stops the run
+            if not os.path.isfile(a.links): raise SystemExit(f"[hybrid] --links {a.links} not found")   # (no silent fallback, 14/11)
+            self.links = {}
+            for l in open(a.links, encoding="utf-8"):
+                if l.strip(): r = json.loads(l); self.links[r["id"]] = r.get("cards") or []
+            print(f"[hybrid] linked rules: {len(self.links)} questions, {sum(1 for v in self.links.values() if v)} with rows ({a.links})", flush=True)
         self.units_all = []                                             # plan 4 W: executable rule units (src/units.py)
         if getattr(a, "units", ""):
             import units as unitsmod
@@ -113,6 +120,11 @@ class HybridPipeline(pipeline.Pipeline):
         shown = h if getattr(a, "hints", 1) and not pure else None
         cards = self.lib.match(q["question"], bid=b, industry=ctx.ind[2] if ctx.ind else None, k=int(getattr(a, "lrl_k", 4) or 4),
                                rulebook=lrl.rb_key(ctx.rulebook)) if self.lib is not None else []
+        if self.links is not None and q["id"] in self.links:            # W2: the rows the model linked, then the shop's value /
+            other = [c for c in cards if c.get("kind") != "definition"][:2]   # lexicon cards (keyword-matched definitions dropped)
+            cards = list(self.links[q["id"]]) + other; st["linked"] = len(self.links[q["id"]])
+            self.stats["linked_q" if st["linked"] else "linked_none"] += 1
+        elif self.links is not None: self.stats["link_missing"] += 1    # (a shard of the linker timed out: keyword cards)
         st["cards"] = cards; st["rule_ids"] = [c.get("id") for c in cards]
         rules = lrl.render(cards)
         st["msgs"] = {v: ctx.messages(q["question"], q["as_of_date"], exs, shown, v, rules) for v in set(self.variants) | {"direct"}}
@@ -255,7 +267,8 @@ class HybridPipeline(pipeline.Pipeline):
             c = agent.canon_of(s["answer"]); votes[c] += 0.5 if s.get("flags") else 1.0; rep.setdefault(c, s["answer"])
         n = max(1, len(st["samples"]))
         top = votes.most_common(1)[0][0] if votes else None
-        log = {"hints": st.get("hints"), "examples": st.get("examples"), "rules": st.get("rule_ids") or None, "stop": st.get("stop", "round2"), "error": st.get("error"),
+        log = {"hints": st.get("hints"), "examples": st.get("examples"), "rules": st.get("rule_ids") or None, "linked": st.get("linked"),
+               "rule_text": [str(c.get("content"))[:160] + (" -> " + str(c["code_hint"]) if c.get("code_hint") else "") for c in (st.get("cards") or [])] or None, "stop": st.get("stop", "round2"), "error": st.get("error"),
                "best": rep[top] if votes else None,
                "samples": [{k: v for k, v in s.items()} for s in st["samples"]]}
         sel = self.selector()

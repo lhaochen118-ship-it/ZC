@@ -14,6 +14,7 @@ Output: <out>/cards_<mode>.jsonl (+ translit.jsonl). Every card is validated: JS
 code_hint exist, a check expression compiles. Usage:
   lrl_gen.py <split> <out> --model M --mode compile|aliases|translit|induce [--cases F] [--cache D] [--quant fp8] [--fake-responder f.py]"""
 import os, re, sys, ast, json, glob, pickle, argparse, hashlib, time
+from collections import Counter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 SYS = ("Bạn giúp xây dựng bộ luật cho một trợ lý viết chương trình Python trả lời câu hỏi của chủ cửa hàng nhỏ ở Việt Nam về dữ "
@@ -106,6 +107,107 @@ def compile_items(split):
              "null nếu không có hàm nào hợp\"}")
         items.append(({"term": term, "definition": definition, "section": sec, "rulebook": rk}, u))
     return items
+
+
+BIND_TASK = ("Viết thẻ luật cho thuật ngữ này. JSON: {\"triggers\": [5-12 cụm từ ngắn chủ cửa hàng có thể gõ trong câu hỏi để nói "
+             "thuật ngữ này: từ đồng nghĩa, cách nói thân mật, viết tắt, viết không dấu], \"content\": \"một câu: thuật ngữ nghĩa là gì và "
+             "tính thế nào\", \"code_hint\": \"MỘT biểu thức Python gọi toolkit (cả TOOLKIT NGÀNH nếu có) tính đúng thuật ngữ này cho kỳ "
+             "p (p là biến kỳ, ví dụ revenue(p, payment=\\\"chuyển khoản\\\"), top_customers(p, 1, by=\\\"n_days\\\")[0], "
+             "avg_ticket(p)); biểu thức phải chạy được và trả về đúng một giá trị; null chỉ khi dòng này không phải đại lượng tính được "
+             "(chỉ là cách ghi, cách làm tròn...)\"}")
+
+
+def bind_items(split):
+    """plan 5 W1 (docs/18): compile_items with the industry toolkit of the row's section in the prompt and a code_hint that must
+    be an executable expression of the period p (checked on the shops of that section: verify_binds)."""
+    import hints as hintsmod, agent, industry
+    rb = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
+    import lrl
+    rk = lrl.rb_key(rb)
+    secs = agent.rulebook_sections(rb); items = []; seen = set()
+    in_sec = {}
+    for title, body in secs.items():
+        for k in hintsmod.rulebook_rows(body): in_sec.setdefault(k, title)
+    for k, (term, definition) in hintsmod.rulebook_rows(rb).items():
+        if (term, definition) in seen: continue
+        seen.add((term, definition))
+        sec = in_sec.get(k)
+        ik = industry.industry_key(sec) if sec else None
+        ind = f"\n\n# TOOLKIT NGÀNH ({sec})\n{industry.INDUSTRY_API.get(ik, '')}" if ik and industry.INDUSTRY_API.get(ik) else ""
+        u = (f"# TOOLKIT\n{api_doc()}{ind}\n\n# RULEBOOK SECTION: {sec or 'chung'}\n# RULE\n| {term} | {definition} |\n\n" + BIND_TASK)
+        items.append(({"term": term, "definition": definition, "section": sec, "rulebook": rk}, u))
+    return items
+
+
+def shop_sections(split, cache=""):
+    """{bid: (C, data_end, T, industry section title or None)} of every shop of the split (ingest + automap)."""
+    import ingest, automap, shopctx
+    rb0 = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read(); out = {}
+    for d in sorted(glob.glob(os.path.join(split, "data", "*"))):
+        b = os.path.basename(d)
+        if not os.path.isdir(d): continue
+        try:
+            bp = os.path.join(cache or "", b + ".pkl")
+            biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(d)
+            rbp = os.path.join(split, "rulebooks", b + ".md")
+            rb = open(rbp, encoding="utf-8").read() if os.path.isfile(rbp) else rb0
+            ind = shopctx.industry_of(rb, biz)
+            out[b] = (automap.build(biz)[0], automap.parse_readme(biz.readme).get("data_end"), biz.tables, ind[0] if ind else None)
+        except Exception as e: print(f"[bind] {b}: {type(e).__name__}: {e}", flush=True)
+    return out
+
+
+def run_hint(hint, shop_t, timeout=20):
+    """the hint evaluated with p = the last full month and the whole data of one shop -> (ok, why, value of the month)."""
+    import dm, pandas as pd, signal
+    C, data_end, T, _ = shop_t
+    end = pd.Timestamp(data_end) if data_end else None
+    shop = dm.Shop(C, end, {"data_end": data_end})
+    if end is None: end = shop.last
+    g = dm.api(shop, end); g["T"] = T or {}
+    k = end.year * 12 + end.month - 2
+    vals = []
+    for P in (dm.month(k // 12, k % 12 + 1), dm.between(pd.Timestamp(end) - pd.Timedelta(days=365 * 3), end)):
+        g["p"] = P
+        def _alarm(*_): raise TimeoutError("hint ran too long")
+        old = signal.signal(signal.SIGALRM, _alarm); signal.alarm(timeout)
+        try: vals.append(eval(compile(hint, "<hint>", "eval"), g))
+        except dm.Unanswerable: vals.append(None)
+        except Exception as e: return False, f"{type(e).__name__}: {str(e)[:160]}", None
+        finally: signal.alarm(0); signal.signal(signal.SIGALRM, old)
+    if all(v is None for v in vals): return False, "Unanswerable on every test period", None
+    return True, "ok", vals[0]
+
+
+def verify_binds(cards, items_meta, shops, k):
+    """per rulebook row (k sample cards in a row): the hints that run on the shops of the row's section (general rows: up to 3
+    shops) -> the most frequent working hint (ties: the greedy sample's); a row without one keeps the greedy card, hint None."""
+    import units
+    out, rep = [], Counter()
+    by_row = {}
+    for c in cards: by_row.setdefault(c["source"], []).append(c)
+    for src, cs in by_row.items():
+        sec = (cs[0].get("trigger") or {}).get("section")
+        pool = [v for v in shops.values() if v[3] == sec] if sec else [v for v in shops.values()]
+        pool = pool[:3]
+        good = Counter(); first = {}
+        for c in cs:
+            h = c.get("code_hint")
+            if not h or "(" not in h: continue
+            ok = bool(pool)
+            for sh in pool:
+                r, why, v = run_hint(h, sh)
+                if not r: ok = False; c["_why"] = why; break
+            if ok: good[h] += 1; first.setdefault(h, len(first))
+        best = cs[0]
+        if good:
+            h = max(good, key=lambda x: (good[x], -first[x]))
+            best = next(c for c in cs if c.get("code_hint") == h); rep["bound"] += 1
+        else:
+            best = dict(best, code_hint=None); rep["unbound"] += 1
+        out.append({k2: v for k2, v in best.items() if not k2.startswith("_")})
+    print(f"[bind] {dict(rep)} rows", flush=True)
+    return out
 
 
 CAT_PARAM = {"payment": "payment", "payment_method": "payment", "method": "payment", "channel": "channel", "group": "group",
@@ -436,6 +538,7 @@ def main():
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     names = api_names()
     if a.mode == "compile": items = compile_items(a.split)
+    elif a.mode == "bind": items = bind_items(a.split)
     elif a.mode == "aliases":
         vf = a.cases if (a.cases and os.path.isfile(a.cases)) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), "") if a.cases else ""
         items = alias_items(a.split, a.cache, vf)
@@ -451,7 +554,7 @@ def main():
     if a.shard:
         i, n = map(int, a.shard.split("/")); items = items[i::n]
     if os.environ.get("ZC_SMOKE") == "1": items = items[:8]
-    if a.mode == "unit" and a.samples > 1:                              # k samples per row (after sharding: a row's samples stay
+    if a.mode in ("unit", "bind") and a.samples > 1:                   # k samples per row (after sharding: a row's samples stay
         items = [it for it in items for _ in range(a.samples)]          # together for the self-consistency choice)
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
     think = a.mode == "induce" or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
@@ -476,9 +579,11 @@ def main():
             print(f"[lrl_gen] constrained JSON unavailable ({type(e).__name__}: {str(e)[:200]}): unconstrained", flush=True)
             return eng[0].gen(convs, temps, seeds, mt, think=think)[0]
     temps = [0.7 if a.mode == "translit" else 0.0] * len(convs)
-    if a.mode == "unit": temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
+    if a.mode in ("unit", "bind"): temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
     texts = generate(convs, temps, 4242)
-    cards = to_cards(a.mode, items, texts, names)
+    cards = to_cards("compile" if a.mode == "bind" else a.mode, items, texts, names)
+    if a.mode == "bind":                                                # W1: only hints that run on the section's shops
+        cards = verify_binds(cards, items, shop_sections(a.split, a.cache), a.samples)
     rep = {}
     if a.mode == "unit":
         ma = 2 if a.samples >= 3 else 1
@@ -498,7 +603,7 @@ def main():
             items, texts = items + it2, texts + tx2
         print(f"[unit] {len(sel)} units verified for {len({u['bid'] for u in sel})} shops; {len(fails)} rows without a working unit", flush=True)
         cards = sel
-    tag = a.mode + (("_" + a.shard.replace("/", "of")) if a.shard else "")
+    tag = ("compile" if a.mode == "bind" else a.mode) + (("_" + a.shard.replace("/", "of")) if a.shard else "")
     with open(os.path.join(a.out, f"cards_{tag}.jsonl"), "w", encoding="utf-8") as f:
         for c in cards: f.write(json.dumps(c, ensure_ascii=False) + "\n")
     with open(os.path.join(a.out, f"raw_{tag}.jsonl"), "w", encoding="utf-8") as f:

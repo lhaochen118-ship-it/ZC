@@ -113,6 +113,87 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     return f if n else None
 
 
+def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
+    """plan 5 W2 (docs/18): with "links_gen": 1 in the config, the model links every question of the split to the rulebook rows it
+    uses (src/link.py; inputs only), one shard of the shops per GPU. Returns the --links path, or None (config without it). The
+    time cap "links_max_s" kills a shard still running (its questions keep the keyword cards)."""
+    if not cfg: return None
+    c = json.load(open(cfg, encoding="utf-8"))
+    if not int(c.get("links_gen", 0) or 0): return None
+    out = os.path.join(work, "links"); os.makedirs(out, exist_ok=True); t = time.time()
+    if not cards:                                                       # the compiled cards of the config (their toolkit hints)
+        refs = os.path.join(HERE, "refs", "lrl")
+        cards = ",".join(os.path.join(refs, x) for x in str(c.get("lrl") or "").split(",") if x and "compile" in x and os.path.isfile(os.path.join(refs, x)))
+    base = [sys.executable, os.path.join(HERE, "link.py"), split, out, "--model", model, "--quant", "fp8", "--k", str(int(c.get("links_k", 3) or 3))] + \
+           (["--cards", cards] if cards else []) + (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
+    devs = visible_gpus()
+    ng = 1 if fake else max(1, len(devs))
+    lim = float(c.get("links_max_s", 1800) or 1800)
+    procs = [subprocess.Popen(base + (["--shard", f"{i}/{ng}"] if ng > 1 else []),
+                              env=dict(os.environ, **({"CUDA_VISIBLE_DEVICES": devs[i]} if ng > 1 else {})),
+                              stdout=open(os.path.join(out, f"shard{i}.log"), "w"), stderr=subprocess.STDOUT, start_new_session=True) for i in range(ng)]
+    rcs = []
+    for i, p in enumerate(procs):
+        try: rcs.append(p.wait(timeout=max(1.0, t + lim - time.time())))
+        except subprocess.TimeoutExpired:
+            import signal
+            try: os.killpg(p.pid, signal.SIGKILL)
+            except Exception: p.kill()
+            p.wait(); rcs.append("timeout"); log(f"links shard {i}: killed at the {lim:.0f}s cap")
+    for i in range(ng):
+        for l in open(os.path.join(out, f"shard{i}.log"), encoding="utf-8", errors="replace").readlines()[-2:]: log(f"links shard {i}: {l.rstrip()[:400]}")
+    f = os.path.join(out, "links.jsonl")
+    if ng > 1:
+        with open(f, "w", encoding="utf-8") as w:
+            for i in range(ng):
+                p = os.path.join(out, f"links_{i}of{ng}.jsonl")
+                if os.path.isfile(p): w.write(open(p, encoding="utf-8").read())
+    n = sum(1 for _ in open(f, encoding="utf-8")) if os.path.isfile(f) else 0
+    log(f"links: rc={rcs}, {n} questions linked ({time.time() - t:.0f}s)")
+    if not n: raise SystemExit("links_gen is set but the linker wrote nothing (no silent fallback)")
+    return f
+
+
+def judge_phase(cfg, a, dirs, units, log, t0):
+    """plan 5 W3 (docs/18): with "judge": 1 in the config, src/judge.py reads the solver's logged samples (run 1) and the judge model
+    (W: "judge_model" = a merged S+W checkpoint, or the solver's model + "judge_lora" = a LoRA-W adapter applied by vLLM) picks
+    the candidate / unanswerable / abstain under the config's policy. Returns its submission file, or None (no judge configured,
+    or not enough time left: the vote's answers stand). The judge's own time cap is "judge_max_s"."""
+    if not cfg: return None
+    c = json.load(open(cfg, encoding="utf-8"))
+    if not int(c.get("judge", 0) or 0): return None
+    logs_f = os.path.join(dirs[0], "logs.jsonl")
+    if not os.path.isfile(logs_f): log("judge: no solver logs"); return None
+    left = a.budget - (time.time() - t0); lim = min(float(c.get("judge_max_s", 1800) or 1800), left - 300)
+    if lim < 300: log(f"judge: skipped ({left:.0f}s left)"); return None
+    out = os.path.join(a.work, "judge"); os.makedirs(out, exist_ok=True)
+    wm = c.get("judge_model") or os.environ.get("W_MODEL") or a.model
+    lora = c.get("judge_lora") or os.environ.get("W_LORA") or ""
+    if lora and not os.path.isabs(lora):
+        for base in (os.path.dirname(HERE), HERE, "/models"):
+            if os.path.isdir(os.path.join(base, lora)): lora = os.path.join(base, lora); break
+    mode = c.get("judge_mode", "list")
+    cmd = [sys.executable, os.path.join(HERE, "judge.py"), a.split, out, "--model", wm, "--logs", logs_f, "--variants", mode,
+           "--k", str(int(c.get("judge_k", 5))), "--tau", str(c.get("judge_tau", 0.6)), "--denom", str(c.get("judge_denom", "all")),
+           "--u-answers", str(int(c.get("judge_u_answers", 1))), "--keep-unanimous", str(c.get("judge_keep_unanimous", 0.0)),
+           "--cache", os.path.join(a.work, "cache")] + (["--units", units] if units else []) + (["--lora", lora] if lora else []) + \
+          (["--fake-responder", a.fake_responder] if a.fake_responder else [])
+    p = subprocess.Popen(cmd, stdout=open(os.path.join(out, "judge.log"), "w"), stderr=subprocess.STDOUT, start_new_session=True)
+    try: rc = p.wait(timeout=lim)
+    except subprocess.TimeoutExpired:
+        import signal
+        try: os.killpg(p.pid, signal.SIGKILL)
+        except Exception: p.kill()
+        p.wait(); log(f"judge: killed at the {lim:.0f}s cap; the vote's answers stand"); return None
+    for l in open(os.path.join(out, "judge.log"), encoding="utf-8", errors="replace").readlines()[-3:]: log(f"judge: {l.rstrip()[:300]}")
+    sub = os.path.join(out, mode.replace("+", "_"), "submission.jsonl")
+    if rc != 0 or not os.path.isfile(sub): log(f"judge: rc {rc}, no submission; the vote's answers stand"); return None
+    import shutil
+    vd = os.path.join(out, mode.replace("+", "_"), "verdicts.jsonl")
+    if os.path.isfile(vd): shutil.copy(vd, os.path.join(a.result, "logs", "judge_verdicts.jsonl"))
+    return sub
+
+
 def prepare_lrl(cfg, split, work, model, log, fake=""):
     """plan 3 (docs/16 §2.3, P2 / P3): when the config uses learned rule cards, a split whose rulebook no shipped compiled card
     belongs to (a new test) gets its own cards first, written by the model from the split's INPUTS only (rulebook rows; the
@@ -176,6 +257,8 @@ def main():
     if lv is not None: extra = extra + ["--lrl", lv]
     uv = prepare_units(cfg, a.split, a.work, a.model, log, a.lrl_fake)
     if uv is not None: extra = extra + ["--units", uv]
+    kv = prepare_link(cfg, a.split, a.work, a.model, log, a.lrl_fake, cards=",".join(x for x in (lv or "").split(",") if "compile" in os.path.basename(x)))
+    if kv is not None: extra = extra + ["--links", kv]
     vote_sub = os.path.join(a.work, "llm_vote.jsonl")
 
     def agent(i, budget, logdir):
@@ -202,6 +285,8 @@ def main():
         out_i, rc = agent(i, left, ld); last = time.time() - s0; dirs.append(out_i)
         run([sys.executable, os.path.join(HERE, "vote.py"), vote_sub] + dirs + ["--min-conf", str(a.min_conf), "--log-dir", logs], log)
         n = merge_sub.merge(a.split, final, [vote_sub], quiet=True); log(f"after run {i + 1}: {n}")
+    jv = judge_phase(cfg, a, dirs, uv, log, t0)                       # plan 5 W3: the judge re-decides from the solver's samples
+    if jv: n = merge_sub.merge(a.split, final, [jv, os.path.join(dirs[0], "submission.jsonl")], quiet=True); log(f"after the judge: {n}")
     log(f"end: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}  ({time.time() - t0:.0f}s)")
 
 

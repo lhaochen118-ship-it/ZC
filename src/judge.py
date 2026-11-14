@@ -183,9 +183,11 @@ def find_file(name, extra=()):
     if os.path.exists(name): return name
     here = os.path.dirname(os.path.abspath(__file__))
     roots = list(extra) + [os.path.join(here, "training", "data", "out"), os.path.join(os.path.dirname(here), "training", "data", "out"), "/kaggle/input"]
+    names = [name] + ([name[:-3]] if name.endswith(".gz") else [name + ".gz"])   # Kaggle unpacks .gz files of a dataset
     for r in roots:
-        c = sorted(glob.glob(os.path.join(r, "**", name), recursive=True))
-        if c: return c[0]
+        for nm in names:
+            c = sorted(glob.glob(os.path.join(r, "**", nm), recursive=True))
+            if c: return c[0]
     sys.exit(f"[judge] {name} not found (looked under {roots})")
 
 
@@ -283,7 +285,7 @@ def run_variant(a, variant, out):
                 for m, t in outs: choices.setdefault(m["cand"], []).append(parse(t, 1))
             flat = choices if mode == "list" else [c for v in choices.values() for c in v]
             n_req += len(flat); n_parsed += sum(1 for c in flat if c is not None)
-            final, conf, how = decide(cands, n, choices, mode)
+            final, conf, how = decide(cands, n, choices, mode, tau=a.tau, denom=a.denom, u_answers=bool(a.u_answers), keep_unanimous=a.keep_unanimous)
             fv.write(json.dumps({"id": i, "business_id": r.get("business_id"), "mode": mode, "variant": variant, "n_samples": n,
                                  "cands": [{"answer": c["answer"], "code": c["code"][:CODE_CHARS], "votes": c["votes"], "n": c["n"]} for c in cands],
                                  "choices": choices, "texts": [t[-400:] for _, t in outs][:12], "final": final, "conf": conf, "how": how},
@@ -305,6 +307,8 @@ def main():
     ap.add_argument("--quant", default="fp8"); ap.add_argument("--max-len", type=int, default=8192); ap.add_argument("--cache", default="")
     ap.add_argument("--ctx", default=""); ap.add_argument("--subset", type=int, default=0); ap.add_argument("--fake-responder", default="")
     ap.add_argument("--prompt", default="full"); ap.add_argument("--max-tokens", type=int, default=160)
+    ap.add_argument("--tau", type=float, default=0.6); ap.add_argument("--denom", default="all")
+    ap.add_argument("--u-answers", type=int, default=1); ap.add_argument("--keep-unanimous", type=float, default=0.0)
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     if a.variant: return run_variant(a, a.variant, a.out)
     t0 = time.time()
@@ -320,7 +324,8 @@ def main():
     devs = predict_flow.visible_gpus() if not a.fake_responder else []
     argv = [sys.executable, os.path.abspath(__file__), a.split]
     common = ["--model", a.model, "--logs", a.logs, "--ctx", a.ctx, "--k", str(a.k), "--quant", a.quant, "--max-len", str(a.max_len)] + \
-             ["--max-tokens", str(a.max_tokens)] + (["--lora", a.lora] if a.lora else []) + (["--subset", str(a.subset)] if a.subset else []) + \
+             ["--max-tokens", str(a.max_tokens), "--tau", str(a.tau), "--denom", a.denom, "--u-answers", str(a.u_answers),
+              "--keep-unanimous", str(a.keep_unanimous)] + (["--lora", a.lora] if a.lora else []) + (["--subset", str(a.subset)] if a.subset else []) + \
              (["--fake-responder", a.fake_responder] if a.fake_responder else [])
     procs, waiting = [], list(enumerate(variants))
     slots = devs or ["cpu"]; free = list(slots); rcs = {}

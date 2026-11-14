@@ -65,6 +65,9 @@ def main():
                     "mixed / all-wrong question)"); ap.add_argument("--cap", type=int, default=3, help="records per question id and kind")
     ap.add_argument("--max-chars", type=int, default=13000); ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--val-run", default="c1a")
+    ap.add_argument("--aug", type=int, default=0, help="1: also the right candidates dropped from mixed / unanswerable questions "
+                    "(the judge sees only wrong programs: label 0, or U when the reference is unanswerable) - teaches rejection")
+    ap.add_argument("--tag", default="")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); rnd = random.Random(a.seed)
     A = score.load(a.answers); P = prefixes(a.mix); D1 = programs(a.mix)
     print(f"answers {len(A)}, shop prefixes {len(P)}, checked programs {len(D1)}", flush=True)
@@ -99,7 +102,7 @@ def main():
                 "messages": [{"role": "system", "content": sysm}, {"role": "user", "content": u},
                              {"role": "assistant", "content": judge.label_text(plan, choice)}]}
 
-    L_mixed, L_wrong, L_right, PT_pos, PT_neg = [], [], [], [], []
+    L_mixed, L_wrong, L_right, PT_pos, PT_neg, L_aug = [], [], [], [], [], []
     seen = Counter(); val_rows = []; st = Counter()
     order = list(range(len(rows))); rnd.shuffle(order)
     for idx in order:
@@ -123,6 +126,11 @@ def main():
             if x is not None:
                 seen[(i, kind, "l")] += 1
                 (L_right if kind == "right" else L_mixed if kind == "mixed" else L_wrong).append(x)
+        # ---- augmentation: only the wrong candidates shown (the judge must reject them all)
+        if a.aug and any(ok) and not all(ok) and seen[(i, "aug")] < 1:
+            wc = [c for c, o in zip(cands, ok) if not o]
+            x = rec("aug", run, r, wc, n, plan, "U" if unans else 0, "list")
+            if x is not None: seen[(i, "aug")] += 1; L_aug.append(x)
         # ---- point records
         for c, o in zip(cands, ok):
             key = (i, "p", o, c["key"])
@@ -131,8 +139,25 @@ def main():
             if x is None: continue
             seen[key] += 1; seen[(i, "p", o)] += 1
             (PT_pos if o else PT_neg).append(x)
+    if a.aug:                                                           # unanswerable questions (the data does not record what they
+        pool = {}                                                       # ask) shown with programs that DO answer something: right
+        for run, r, cands, n, ok in rows:                               # candidates of other questions of the same shop (string / number)
+            if is_val(r["id"].split("~")[0]): continue
+            for c, o in zip(cands, ok):
+                if o and c["answer"].get("type") in ("string", "number", "list"): pool.setdefault(r["business_id"], []).append(c)
+        done = Counter()
+        for run, r, cands, n, ok in rows:
+            i = r["id"]; base = i.split("~")[0]
+            if is_val(base) or A[base]["type"] != "unanswerable" or done[i] or not pool.get(r["business_id"]): continue
+            want = (A[base].get("answer_type") or "")
+            src = pool[r["business_id"]]
+            k = 1 if rnd.random() < 0.6 else 2
+            cs = [dict(x, n=max(1, n - j)) for j, x in enumerate(rnd.sample(src, min(k, len(src))))]
+            x = rec("augU", run, r, cs, n, "Unanswerable | - | -", "U", "list")
+            if x is not None: done[i] += 1; L_aug.append(x)
+        print(f"augmentation: {sum(1 for x in L_aug if x['choice'] == 'U')} unanswerable records with borrowed programs", flush=True)
     rnd.shuffle(L_right); L_right_s = L_right[:a.n_right]
-    lst = L_mixed + L_wrong + L_right_s; rnd.shuffle(lst)
+    lst = L_mixed + L_wrong + L_right_s + L_aug; rnd.shuffle(lst)
     rnd.shuffle(PT_pos); pt = PT_neg + PT_pos[:max(len(PT_neg), 600)]; rnd.shuffle(pt)
     mixd = lst[:] + pt[:len(pt) // 2]; rnd.shuffle(mixd)
 
@@ -143,7 +168,7 @@ def main():
         ch = Counter(str(x["choice"]) for x in recs); src = Counter(x["source"] for x in recs)
         chars = sum(len(m["content"]) for x in recs for m in x["messages"])
         print(f"{name}: {len(recs)} records, ~{chars / 3.1 / 1e6:.1f}M tokens (chars / 3.1); choices {dict(ch.most_common(8))}; {dict(src)}", flush=True)
-    dump("wj_list.jsonl", lst); dump("wj_point.jsonl", pt); dump("wj_both.jsonl", mixd)
+    dump(f"wj_list{a.tag}.jsonl", lst); dump(f"wj_point{a.tag}.jsonl", pt); dump(f"wj_both{a.tag}.jsonl", mixd)
     with gzip.open(os.path.join(a.out, "tr_val.logs.jsonl.gz"), "wt", encoding="utf-8") as f:
         for r in val_rows: f.write(json.dumps(r, ensure_ascii=False) + "\n")
     print(f"stats {dict(st)}; list: mixed {len(L_mixed)}, wrong {len(L_wrong)}, right {len(L_right_s)} of {len(L_right)}; "

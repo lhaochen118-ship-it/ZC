@@ -30,12 +30,16 @@ def main():
                     "(one merge for an A/B; results in <out>/<config name>/)")
     ap.add_argument("--parallel-gpus", type=int, default=0, help="with --eval-configs: run the configs at the same time, one GPU group "
                     "each (4 L4: 4 variants of 1 GPU; 2: 2 variants of 2 GPUs) instead of one after the other on every GPU (user 14/11)")
-    ap.add_argument("--runner", default="eval", choices=["eval", "predict", "judge"],
+    ap.add_argument("--runner", default="eval", choices=["eval", "predict", "judge", "script"],
                     help="predict: the submission path (src/predict_flow.py --config, whole split) instead of eval_flow's sets; "
                          "judge: plan 5 W3 (src/judge.py) on a solver run's saved logs with the merged model")
     ap.add_argument("--judge-logs", default="", help="judge: the solver log file (name under training/data/out, shipped with --train-data)")
     ap.add_argument("--judge-units", default=""); ap.add_argument("--judge-variants", default="list")
     ap.add_argument("--judge-k", type=int, default=5)
+    ap.add_argument("--script", default="", help="runner script: a src/ script run as <script> <split> <out>/script --model <merged> "
+                    "<--script-args> (e.g. lrl_gen.py --mode bind: the rule writer with the solver's merged weights)")
+    ap.add_argument("--script-args", default="", help="runner script: extra arguments, space-separated (use ',' for spaces inside none)")
+    ap.add_argument("--script-shards", type=int, default=0, help="runner script: N processes with --shard i/N, one GPU each")
     ap.add_argument("--judge-lora", default="", help="judge: a LoRA-W adapter (branch name under --search, or a directory) applied at "
                     "run time on the merged model (vLLM LoRA) instead of being merged (--adapters ...,W --weights ...,1.0)")
     a = ap.parse_args()
@@ -63,6 +67,8 @@ def evaluate_all(a, model, res, t0):
     cfgs = [c for c in a.eval_configs.split(",") if c] if a.eval_configs else []
     if a.runner == "judge":
         judge(a, model, res, t0)
+    elif a.runner == "script":
+        script(a, model, res, t0)
     elif not cfgs:
         evaluate(a, model, res, t0, a.out, a.eval_config)
     elif a.parallel_gpus > 1 and len(cfgs) > 1:                        # one experiment variant per GPU group, all at once
@@ -114,6 +120,27 @@ def judge(a, model, res, t0):
     if rc != 0: sys.exit(5)
 
 
+def script(a, model, res, t0):
+    """a src/ script on the merged model; --script-shards N: N processes (--shard i/N), one GPU each."""
+    t1 = time.time(); out = os.path.join(a.out, "script"); os.makedirs(out, exist_ok=True)
+    base = [PY, os.path.join(SRC, a.script), a.split, out, "--model", model] + [x for x in a.script_args.replace(",", " ").split() if x]
+    if a.fake_responder: base += ["--fake-responder", a.fake_responder]
+    n = max(1, a.script_shards)
+    sys.path.insert(0, SRC); import predict_flow
+    devs = predict_flow.visible_gpus() or [str(i) for i in range(n)]
+    procs = []
+    for i in range(n):
+        env = dict(os.environ)
+        if not a.fake_responder and n > 1: env["CUDA_VISIBLE_DEVICES"] = devs[i % len(devs)]
+        procs.append(subprocess.Popen(base + (["--shard", f"{i}/{n}"] if n > 1 else []), env=env,
+                                      stdout=open(os.path.join(a.out, f"script{i}.log"), "w"), stderr=subprocess.STDOUT))
+    rcs = [p.wait() for p in procs]
+    res.update(script=a.script, script_rc=rcs, script_s=round(time.time() - t1))
+    json.dump(res, open(os.path.join(a.out, "result.json"), "w"), indent=1)
+    for i in range(n): print(f"[soup] script shard {i} rc {rcs[i]}:\n" + open(os.path.join(a.out, f"script{i}.log"), errors="ignore").read()[-800:], flush=True)
+    if not any(rc == 0 for rc in rcs): sys.exit(6)
+
+
 def evaluate(a, model, res, t0, out_dir, eval_config, tag="eval", gpus=None, workers=0):
     t1 = time.time(); ev = f"{a.tmp}/{tag}"
     dp = len(gpus) if gpus else a.dp
@@ -131,7 +158,7 @@ def evaluate(a, model, res, t0, out_dir, eval_config, tag="eval", gpus=None, wor
     env = dict(os.environ, ZC_BASE_MODEL=a.model)                     # "units_model": "base" studies only (W = the solver's weights)
     if gpus and not a.fake_responder: env["CUDA_VISIBLE_DEVICES"] = ",".join(gpus)
     rc = subprocess.run(cmd, stdout=open(os.path.join(out_dir, "eval.log"), "w"), stderr=subprocess.STDOUT, env=env).returncode
-    for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl", os.path.join("units", "cards_unit.jsonl")):
+    for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl", os.path.join("units", "cards_unit.jsonl"), os.path.join("links", "links.jsonl")):
         for p in (os.path.join(ev, "run", f), os.path.join(ev, f)):
             if os.path.isfile(p): shutil.copy(p, out_dir); break
     for p in __import__("glob").glob(os.path.join(ev, "units", "raw_unit*.jsonl")): shutil.copy(p, out_dir)   # plan 4 W: what the writer wrote

@@ -128,6 +128,10 @@ def main():
         uv = predict_flow.prepare_units(opt("--config"), sp, out, wm, lambda *m: print(*m, flush=True),
                                         os.environ.get("ZC_UNITS_FAKE", ""), opt("--cache"))
         if uv: extra += ["--units", uv]
+        if "--links" not in rest + extra:                                # plan 5 W2: the model links each question to rulebook rows
+            kv = predict_flow.prepare_link(opt("--config"), sp, out, opt("--model"), lambda *m: print(*m, flush=True),
+                                           os.environ.get("ZC_LINK_FAKE", "") or fake, opt("--cache"))
+            if kv: extra += ["--links", kv]
     cmd = [sys.executable, os.path.join(HERE, "agent.py"), sp, os.path.join(out, "run")] + rest + extra
     rc = subprocess.run(cmd).returncode
     sys.exit(rc)

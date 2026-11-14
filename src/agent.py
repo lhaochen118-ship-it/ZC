@@ -952,6 +952,7 @@ def build_parser():
     ap.add_argument("--verifier", default=""); ap.add_argument("--verifier-weight", type=float, default=0.0)
     ap.add_argument("--calibrator", default=""); ap.add_argument("--theta-abstain", type=float, default=0.5, help="hybrid: answer when conf >= this")
     ap.add_argument("--units", default="", help="hybrid: executable rule units written by the model from the split's rulebook (src/lrl_gen.py --mode unit; files / dirs, comma-separated): verified per shop, shown as # SHOP FUNCTIONS and callable in programs (plan 4 W)")
+    ap.add_argument("--links", default="", help="hybrid (plan 5 W2): rulebook rows linked to each question by the model (src/link.py links.jsonl); they replace the keyword-matched definition cards of the # RULES block")
     ap.add_argument("--selector", default="", help="hybrid: learned answer selector (src/selector.py json, trained on the solver's own logs of TRAINING shops): it picks the answer group and abstains below its theta (plan 4 V; replaces the vote)")
     ap.add_argument("--exclude-bids", default="", help="hybrid: shops whose examples are never retrieved (held-out evaluation)")
     ap.add_argument("--hide-api", default="", help="hybrid: hidden API names, 'industry' = every industry function (pub_noind)")

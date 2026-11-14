@@ -630,6 +630,7 @@ def main():
     ap.add_argument("--rows-per-shop", type=int, default=20); ap.add_argument("--min-agree", type=int, default=0, help="unit: samples that must agree (0 = 2 when samples >= 3)")
     ap.add_argument("--think-tokens", type=int, default=4096, help="unit / rowgen with thinking: output token cap (thinking + JSON)")
     ap.add_argument("--max-num-seqs", type=int, default=0)
+    ap.add_argument("--seed", type=int, default=4242, help="sampling seed base (a second teacher pass draws other rows)")
     ap.add_argument("--think-rowgen", type=int, default=0, help="rowgen: reason first (off: tg1p0 14/11, the base model looped past 8k tokens)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     names = api_names()
@@ -680,7 +681,7 @@ def main():
             return eng[0].gen(convs, temps, seeds, mt, think=think)[0]
     temps = [0.7 if a.mode in ("translit", "rowgen") else 0.0] * len(convs)
     if a.mode in ("unit", "bind"): temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
-    texts = generate(convs, temps, 4242)
+    texts = generate(convs, temps, a.seed)
     cards = to_cards("compile" if a.mode == "bind" else a.mode, items, texts, names)
     if a.mode == "bind":                                                # W1: only hints that run on the section's shops
         cards = verify_binds(cards, items, shop_sections(a.split, a.cache), a.samples)

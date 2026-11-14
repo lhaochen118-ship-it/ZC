@@ -56,7 +56,7 @@ def train_rows(split, shops, per_shop):
 
 def lrl(split, out, mode, model, gpu, extra, a, log):
     cmd = [sys.executable, os.path.join(SRC, "lrl_gen.py"), split, out, "--model", model, "--mode", mode, "--quant", "fp8",
-           "--max-len", str(a.max_len), "--max-num-seqs", str(a.max_num_seqs)] + extra
+           "--max-len", str(a.max_len), "--max-num-seqs", str(a.max_num_seqs), "--seed", str(a.seed)] + extra
     if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]
     env = dict(os.environ)
     if gpu is not None and not a.fake_responder: env["CUDA_VISIBLE_DEVICES"] = str(gpu)
@@ -87,6 +87,7 @@ def main():
                     "looped past 7-8k tokens in 68 % of the samples -> 7 / 243 rows kept); without it: constrained JSON")
     ap.add_argument("--max-len", type=int, default=16384); ap.add_argument("--max-num-seqs", type=int, default=128)
     ap.add_argument("--fake-responder", default=""); ap.add_argument("--cache", default="")
+    ap.add_argument("--seed", type=int, default=4242, help="teacher sampling seed (another pass -> other synthetic rows)")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     model = a.model
     if not os.path.isdir(model):                                         # Kaggle: the mounted Kaggle Model (as run_kaggle resolves it)

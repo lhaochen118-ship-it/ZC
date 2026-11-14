@@ -220,3 +220,8 @@ f5a; không ràng buộc 105/470, 479/1375) nhưng PA từng biến thể không
 f5b…), tổ hợp: list_c+point_c+point_think m0.5 TB 0.946; list_c+point_think 0.950–0.952 vs mốc chạy lại list+point+point_think m0.5 TB
 0.951. **Phát hiện:** đầu ra "không đọc được" của bộ phán xử không suy nghĩ thực chất là phiếu trắng của một bộ phán xử yếu; ép chọn chỉ thêm
 nhiễu. Đòn bẩy phán xử nằm ở chất lượng (huấn luyện WJR2, point+think), không ở định dạng. Cấu hình giữ tổ hợp WJR1 cũ.
+
+**18:28–19:05 – Kaggle API 429 (rate limit) cho mọi acc.** 17 tiến trình theo dõi hỏi trạng thái mỗi 30 s từ cùng một IP (proxy dùng chung)
+→ từ ~18:25 mọi lệnh `kaggle` trả 429; không thấy kernel nào xong dù đã chạy > 1.5 h. Kernel trên Kaggle không bị ảnh hưởng. Sửa:
+`run_kernel.py` hỏi kernel đang chạy mỗi ~150 s (`ZC_POLL_S`, jitter), lùi 4–6 phút khi gặp 429; tạm dừng mọi watcher, một vòng kiểm tra
+thưa (3 phút) chờ API mở lại rồi gắn lại (`automation/resume.py`). Bài học (PDF 2): số watcher × tần suất phải dưới ngưỡng của IP chung.

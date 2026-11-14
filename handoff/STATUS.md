@@ -15,6 +15,7 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | TG0 thuật ngữ mới (Qwen gốc) | nguyenhoa99/zc-tg0-1 | xong | 1,446 / 2,681 thuật ngữ (`training/data/out/tg0`) |
 | A1 phán xử ràng buộc (4 log × 4 biến thể) | nguyenhoa99/zc-a1-1 | xong — **A loại** | đọc được 100 % (point+c 1375/1375 vs 479) nhưng PA không tăng: list_c+point_c+point_think m0.5 TB 0.946; list_c+point_think 0.950–0.952 vs mốc chạy lại list+point+point_think 0.951 (0.944 / 0.956 / 0.958 / 0.947); có log giảm → không qua G-A |
 | F1 `pub_full_H` + F | yuan1103/zc-f1-1 | xong | **pub_full_H 0.847** (903 / 56 / 41); pub_ind 0.550, pub_noind 0.000; 14 hàm W (709 s), 97 phút; F2 held-out → f2b |
+| F2b held-out H + F | yuan1103/zc-f2b-1 | xong | pub_ho400c 0.603 (+0.023, z 1.4), tr_ho400c 0.899 (−0.003), **pub_hoind 0.499 (+0.044, z 2.3)**, tr_newterm 0.852 (0) so với H0b2; G-F chờ H0a2 (nhiễu giữa 2 lần chạy) |
 | TG1 thầy WT p0–p3 | phatle1578, mucnokieu (2 phiên mỗi acc) | chạy | |
 | TG1n thầy cho thuật ngữ mới p0 (p1 sau) | huyenco | chạy | |
 | TG2 cặp tương phản | loinguyentran → tg2b → tg2c → nguyenhoa99/tg2d | chạy lại | tg2: 2 engine vLLM; tg2b/c: chương trình bị HTML-escape (`&quot;`) → sửa |

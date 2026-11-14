@@ -174,6 +174,43 @@ def decide(cands, n_samples, choices, mode="list", tau=0.6, theta=0.5, denom="al
     return va, vc, "vote(judge_split)"
 
 
+def choice_dist(row):
+    """a verdict row's judge samples as shares per choice ('1'..'n', '0', 'U'); point mode: yes-shares normalised over candidates."""
+    from collections import defaultdict
+    out = defaultdict(float)
+    if row["mode"] == "list":
+        ch = [c for c in row["choices"] if c is not None]
+        for c in ch: out[str(c)] += 1 / len(ch)
+        return dict(out)
+    for i, x in (row["choices"] or {}).items():
+        x = [c for c in x if c is not None]
+        if x: out[str(int(i) + 1)] += sum(1 for c in x if c == 1) / len(x)
+    s = sum(out.values())
+    return {k: v / s for k, v in out.items()} if s else {"0": 1.0}
+
+
+def ensemble(rows_by_variant, margin=0.7, denom="valid", u_answers=True):
+    """plan 5 W3 final policy (14/11, four public solver logs: list + point + point+think, margin 0.7 -> 0.948-0.954, the most stable):
+    per question the variants' choice shares are averaged; the top choice wins when its mean share >= margin, else the vote.
+    rows_by_variant: {variant: {id: verdict row}} -> {id: (final, conf, how)}."""
+    vs = list(rows_by_variant); out = {}
+    for i, r in rows_by_variant[vs[0]].items():
+        cands, n = r["cands"], r["n_samples"]
+        rs = [rows_by_variant[v].get(i) for v in vs]
+        if unanimous(cands, n) or not any(x and x["choices"] for x in rs):
+            f, c = vote_decision(cands, n, 0.5, denom); out[i] = (f, c, "vote"); continue
+        tot = {}
+        for x in rs:
+            if not x: continue
+            for k, w in choice_dist(x).items(): tot[k] = tot.get(k, 0.0) + w / len(vs)
+        top = max(tot, key=tot.get) if tot else None
+        if top is None or tot[top] < margin: f, c = vote_decision(cands, n, 0.5, denom); out[i] = (f, c, "vote(judge_split)")
+        elif top == "0": out[i] = ({"type": "abstain"}, tot[top], "judge_none")
+        elif top == "U": out[i] = (({"type": "unanswerable", "answer": None} if u_answers else {"type": "abstain"}), tot[top], "judge_U")
+        else: out[i] = (cands[int(top) - 1]["answer"], tot[top], "judge_pick")
+    return out
+
+
 # ------------------------------------------------------------------ job
 def load_logs(path):
     """solver log rows by id (the last line of an id wins). path: a logs.jsonl(.gz), or a directory holding one."""
@@ -334,6 +371,7 @@ def main():
     ap.add_argument("--u-answers", type=int, default=1); ap.add_argument("--keep-unanimous", type=float, default=0.0)
     ap.add_argument("--only-split", type=int, default=1, help="judge only the questions whose samples disagree or failed")
     ap.add_argument("--links", default="", help="links.jsonl of src/link.py: the question's rulebook rows go into the judge's prompt")
+    ap.add_argument("--ensemble", type=float, default=0.0, help="> 0: after the variants, their choice shares averaged (margin) -> ensemble/")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     if a.variant: return run_variant(a, a.variant, a.out)
     t0 = time.time()
@@ -368,6 +406,18 @@ def main():
                 rcs[v] = p.returncode; procs.remove((p, v, g)); free.append(g)
                 tail = open(os.path.join(a.out, v.replace("+", "_"), "run.log"), encoding="utf-8", errors="replace").read()[-600:]
                 print(f"[judge] variant {v} rc {p.returncode} on {g}:\n{tail}", flush=True)
+    if a.ensemble > 0 and len(variants) > 1:                            # the final policy: the variants' shares averaged
+        R = {}
+        for v in variants:
+            f = os.path.join(a.out, v.replace("+", "_"), "verdicts.jsonl")
+            if os.path.isfile(f): R[v] = {json.loads(l)["id"]: json.loads(l) for l in open(f, encoding="utf-8") if l.strip()}
+        if R:
+            res = ensemble(R, a.ensemble, a.denom, bool(a.u_answers)); eo = os.path.join(a.out, "ensemble"); os.makedirs(eo, exist_ok=True)
+            with open(os.path.join(eo, "submission.jsonl"), "w", encoding="utf-8") as fs, open(os.path.join(eo, "verdicts.jsonl"), "w", encoding="utf-8") as fv:
+                for i, (fin, conf, how) in res.items():
+                    fs.write(json.dumps({"id": i, **fin}, ensure_ascii=False, default=str) + "\n")
+                    fv.write(json.dumps({"id": i, "final": fin, "conf": conf, "how": how, "variants": sorted(R)}, ensure_ascii=False, default=str) + "\n")
+            print(f"[judge] ensemble of {sorted(R)} (margin {a.ensemble}): {dict(Counter(h for _, _, h in res.values()))}", flush=True)
     json.dump({"rcs": rcs, "s": round(time.time() - t0)}, open(os.path.join(a.out, "result.json"), "w"), indent=1)
     print(f"[judge] done {rcs} in {time.time() - t0:.0f}s", flush=True)
     if any(rcs.values()) and not any(rc == 0 for rc in rcs.values()): sys.exit(1)

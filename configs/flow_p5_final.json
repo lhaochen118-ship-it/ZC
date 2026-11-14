@@ -1,5 +1,5 @@
 {
- "_doc": "Plan 5 candidate (S-W): S = Qwen3.5-9B + v3a x 0.70 merged; W = the same weights + LoRA-W adapters applied by vLLM: W1 rule units + checked rulebook bindings (lrl_compile_mode bind), W2 linker WL1 (links_lora; generic rows above links_max_df dropped), W3 judge WJB1 (judge_lora) on the questions whose samples disagree, with the linked rows in its prompt",
+ "_doc": "Plan 5 candidate (S-W): S = Qwen3.5-9B + v3a x 0.70 merged; W = the same weights + LoRA-W adapters applied by vLLM: W1 rule units + checked rulebook bindings (lrl_compile_mode bind), W2 linker WL1 (links_lora; generic rows above links_max_df dropped), W3 judge WJB1 (judge_lora) on the questions whose samples disagree, with the linked rows in its prompt; judge = mean of the list, point and point+think variants' choice shares, margin 0.7 (most stable over four public solver logs: 0.948-0.954)",
  "flow": "hybrid",
  "pipeline": true,
  "quant": "fp8",
@@ -57,12 +57,13 @@
  "lrl_bind_samples": 4,
  "judge": 1,
  "judge_lora": "WJB1",
- "judge_mode": "list",
+ "judge_mode": "list,point,point+think",
  "judge_k": 5,
  "judge_tau": 0.5,
  "judge_denom": "valid",
  "judge_only_split": 1,
  "judge_links": 1,
  "judge_u_answers": 1,
- "judge_max_s": 1800
+ "judge_max_s": 1800,
+ "judge_ensemble": 0.7
 }

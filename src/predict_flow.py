@@ -212,7 +212,7 @@ def judge_phase(cfg, a, dirs, units, log, t0, links=None):
     mode = c.get("judge_mode", "list")
     cmd = [sys.executable, os.path.join(HERE, "judge.py"), a.split, out, "--model", wm, "--logs", logs_f, "--variants", mode,
            "--k", str(int(c.get("judge_k", 5))), "--tau", str(c.get("judge_tau", 0.6)), "--denom", str(c.get("judge_denom", "all")),
-           "--u-answers", str(int(c.get("judge_u_answers", 1))), "--keep-unanimous", str(c.get("judge_keep_unanimous", 0.0)), "--only-split", str(int(c.get("judge_only_split", 1))),
+           "--u-answers", str(int(c.get("judge_u_answers", 1))), "--ensemble", str(c.get("judge_ensemble", 0) or 0), "--keep-unanimous", str(c.get("judge_keep_unanimous", 0.0)), "--only-split", str(int(c.get("judge_only_split", 1))),
            "--cache", os.path.join(a.work, "cache")] + (["--units", units] if units else []) + (["--lora", lora] if lora else []) + \
           (["--fake-responder", a.fake_responder] if a.fake_responder else []) + (["--links", links] if links and int(c.get("judge_links", 1)) else [])
     p = subprocess.Popen(cmd, stdout=open(os.path.join(out, "judge.log"), "w"), stderr=subprocess.STDOUT, start_new_session=True)
@@ -223,10 +223,11 @@ def judge_phase(cfg, a, dirs, units, log, t0, links=None):
         except Exception: p.kill()
         p.wait(); log(f"judge: killed at the {lim:.0f}s cap; the vote's answers stand"); return None
     for l in open(os.path.join(out, "judge.log"), encoding="utf-8", errors="replace").readlines()[-3:]: log(f"judge: {l.rstrip()[:300]}")
-    sub = os.path.join(out, mode.replace("+", "_"), "submission.jsonl")
+    ens = float(c.get("judge_ensemble", 0) or 0) > 0 and "," in mode
+    sub = os.path.join(out, "ensemble" if ens else mode.replace("+", "_"), "submission.jsonl")
     if rc != 0 or not os.path.isfile(sub): log(f"judge: rc {rc}, no submission; the vote's answers stand"); return None
     import shutil
-    vd = os.path.join(out, mode.replace("+", "_"), "verdicts.jsonl")
+    vd = os.path.join(out, "ensemble" if ens else mode.replace("+", "_"), "verdicts.jsonl")
     if os.path.isfile(vd): shutil.copy(vd, os.path.join(a.result, "logs", "judge_verdicts.jsonl"))
     return sub
 

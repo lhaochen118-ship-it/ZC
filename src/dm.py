@@ -162,6 +162,7 @@ def set_calendar(cal):
 
 
 def lunar_to_solar(ly, lm, ld, leap=False):
+    """the solar date of a lunar date (lunar year, month, day; leap month flag) from the shipped calendar."""
     cal = _CAL["cal"]
     r = cal[(cal.lunar_year == int(ly)) & (cal.lunar_month == int(lm)) & (cal.lunar_day == int(ld)) &
             (cal.lunar_leap.astype(str).str.lower().eq("true") == bool(leap))]
@@ -1228,6 +1229,7 @@ class Shop(industry.IndustryMetrics):
         return rank(self.supplier_ranking(p, by), 1)[0]
 
     def purchased_qty_base(self, item, p):
+        """quantity of item bought (purchase receipts) in p, in base units (each receipt line x factor of its unit)."""
         P = self._purchases(p, item); return float((P["qty"] * P.apply(lambda r: self.factor(item, r.get("unit")), axis=1)).sum()) if len(P) else 0.0
 
     def factor(self, item, unit):

@@ -8,7 +8,7 @@ Order (shared parts first, for vLLM's prefix cache; agent.Engine.prefix_of cuts 
 The model writes '<plan>one line</plan>' then '<code> ... ANSWER = {...} </code>' (or the escapes <python> / <sql>).
 Variants: direct (default), rephrase (restate the question inside <plan> first), explore (may call the tools first).
 Logic only: nothing here decides an answer."""
-import re, json
+import os, re, json
 import dm
 
 ROLE = """# ROLE
@@ -78,6 +78,19 @@ def api_short(spec, hide=()):
     return "\n".join(out)
 
 
+def api_extra(spec=None, hide=()):
+    """v2 F: '- More toolkit functions:' lines (signature: first docstring line) for the period / metric functions of api_spec
+    that dm.API_DOC does not name (hidden names are not in the spec). Appended after API_DOC so the trained prefix is unchanged."""
+    import re as _re
+    if spec is None:
+        import api_spec as _as
+        spec = _as.build_api_spec(hide=hide)
+    named = set(_re.findall(r"\b([a-z_][a-z0-9_]*)\(", dm.API_DOC))
+    rows = [e for e in spec if e["group"] in ("period", "metric") and e["name"] not in named]
+    if not rows: return ""
+    return "\n- More toolkit functions: " + "; ".join(f"{e['signature']}" + (f" ({e['doc']})" if e["doc"] else "") for e in rows)
+
+
 def system_block(api_spec=None, hide=(), escapes=("python",), tools_doc="", mode="full"):
     """# ROLE + # API + # OUTPUT FORMAT: identical for every shop of a run (one prefix-cache entry).
     mode full: dm.API_DOC (the base model needs the semantics); compact: signatures only (fine-tuned models, SFT <= 2k tokens)."""
@@ -89,6 +102,8 @@ def system_block(api_spec=None, hide=(), escapes=("python",), tools_doc="", mode
         out = OUTPUT_COMPACT + ("\n" + OUTPUT_SQL if "sql" in escapes else "")
         return f"{ROLE}\n\n# API\n{api}\n\n{out}"
     api = dm.API_DOC
+    if os.environ.get("ZC_API_EXTRA", "0") == "1":                       # v2 F: every public period / metric function the
+        api += api_extra(api_spec, hide)                                # hand-written API_DOC does not mention, from api_spec
     if tools_doc: api += "\n- Tools (deterministic lookups, callable inside the program):\n" + tools_doc
     out = OUTPUT + ("\n" + OUTPUT_SQL if "sql" in escapes else "")
     return f"{ROLE}\n\n# API\n{api}\n\n{out}"

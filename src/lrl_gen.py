@@ -22,13 +22,14 @@ SYS = ("Bạn giúp xây dựng bộ luật cho một trợ lý viết chương 
 
 
 def api_doc():
-    import dm
-    return dm.API_DOC
+    import dm, prompting
+    return dm.API_DOC + (prompting.api_extra() if os.environ.get("ZC_API_EXTRA", "0") == "1" else "")   # v2 F
 
 
 def api_names():
     import api_spec
-    return {e["name"] for e in api_spec.build_api_spec()} | {"TODAY", "ANSWER", "len", "round", "sum", "int", "float", "max", "min", "sorted", "list"}
+    import lrl
+    return {e["name"] for e in api_spec.build_api_spec() if e["name"] not in lrl.hidden_names()} | {"TODAY", "ANSWER", "len", "round", "sum", "int", "float", "max", "min", "sorted", "list"}
 
 
 def first_json(text):
@@ -346,6 +347,21 @@ UNIT_SCHEMA = {"type": "object", "properties": {
     "required": ["plan", "name", "signature", "doc", "triggers", "code"], "additionalProperties": False}
 
 
+def unit_prompt(b, card, term, definition, sec):
+    """the tool writer's prompt for one rulebook row of shop b (card = _tables_card of its tables): the same text at inference
+    (unit_items) and in the WT training data (v2 G, training/data/wt_build.py)."""
+    return (f"# TOOLKIT (đã có sẵn trong chương trình)\n{api_doc()}\n\n# DỮ LIỆU CỦA CỬA HÀNG {b}\n{card}\n\n# VÍ DỤ\n{UNIT_EXAMPLES}\n\n"
+                 f"# DÒNG RULEBOOK CẦN VIẾT HÀM (mục '{sec}')\n| {term} | {definition} |\n\n"
+                 "Viết MỘT hàm Python tính đúng thuật ngữ này trên dữ liệu của cửa hàng: dùng hàm toolkit khi có hàm hợp, nếu không thì pandas "
+                 "trên C hoặc T (đúng tên bảng / cột có ở trên). Tham số đầu là kỳ p (Period: p.mask(series), p.start, p.end) khi thuật ngữ "
+                 "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không đọc file. Nếu dòng này không phải một đại lượng tính được "
+                 "(chỉ là cách ghi, cách làm tròn...) thì name = null và code rỗng. Trả lời bằng MỘT đối tượng JSON: plan (vài câu ngắn: "
+                 "bảng / cột dùng, cách tính), name, signature, doc, triggers, code = MẢNG các dòng mã (mỗi dòng một phần tử, thụt lề 4 dấu "
+                 "cách, không dồn nhiều lệnh vào một dòng). Hàm toolkit, C, T, pd, np, re đã có sẵn: không import chúng. Hàm trả về MỘT giá trị "
+                 "đúng dạng đáp án: một số (tiền, số đếm; tỉ lệ / phần trăm là SỐ PHẦN TRĂM, dùng pct(phần, tổng)), hoặc bảng / danh sách "
+                 "khi thuật ngữ là xếp hạng; không trả dict gộp nhiều đại lượng.")
+
+
 def unit_items(split, cache):
     """per shop of the split: the rows of its rulebook industry section + the rows its rulebook has that neither the training
     nor the public rulebook has (shopctx.rule_changes) -> a prompt asking for ONE function over the shop's tables (or null)."""
@@ -380,17 +396,62 @@ def unit_items(split, cache):
         for term, definition, sec in rows:
             if term in seen: continue
             seen.add(term)
-            u = (f"# TOOLKIT (đã có sẵn trong chương trình)\n{api_doc()}\n\n# DỮ LIỆU CỦA CỬA HÀNG {b}\n{card}\n\n# VÍ DỤ\n{UNIT_EXAMPLES}\n\n"
-                 f"# DÒNG RULEBOOK CẦN VIẾT HÀM (mục '{sec}')\n| {term} | {definition} |\n\n"
-                 "Viết MỘT hàm Python tính đúng thuật ngữ này trên dữ liệu của cửa hàng: dùng hàm toolkit khi có hàm hợp, nếu không thì pandas "
-                 "trên C hoặc T (đúng tên bảng / cột có ở trên). Tham số đầu là kỳ p (Period: p.mask(series), p.start, p.end) khi thuật ngữ "
-                 "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không đọc file. Nếu dòng này không phải một đại lượng tính được "
-                 "(chỉ là cách ghi, cách làm tròn...) thì name = null và code rỗng. Trả lời bằng MỘT đối tượng JSON: plan (vài câu ngắn: "
-                 "bảng / cột dùng, cách tính), name, signature, doc, triggers, code = MẢNG các dòng mã (mỗi dòng một phần tử, thụt lề 4 dấu "
-                 "cách, không dồn nhiều lệnh vào một dòng). Hàm toolkit, C, T, pd, np, re đã có sẵn: không import chúng. Hàm trả về MỘT giá trị "
-                 "đúng dạng đáp án: một số (tiền, số đếm; tỉ lệ / phần trăm là SỐ PHẦN TRĂM, dùng pct(phần, tổng)), hoặc bảng / danh sách "
-                 "khi thuật ngữ là xếp hạng; không trả dict gộp nhiều đại lượng.")
+            u = unit_prompt(b, card, term, definition, sec)
             items.append(({"bid": b, "term": term, "definition": definition, "section": sec, "rulebook": __import__("lrl").rb_key(rb)}, u))
+    return items
+
+
+def _shop_load(split, cache, b):
+    """(C, data_end, T) of shop b (automap canonical tables; cached in _SHOPS for check_units)."""
+    if b in _SHOPS: return _SHOPS[b]
+    import ingest, automap
+    try:
+        bp = os.path.join(cache or "", b + ".pkl")
+        biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", b))
+        _SHOPS[b] = (automap.build(biz)[0], automap.parse_readme(biz.readme).get("data_end"), biz.tables)
+    except Exception as e:
+        print(f"[lrl_gen] {b}: {type(e).__name__}: {e}", flush=True); _SHOPS[b] = None
+    return _SHOPS[b]
+
+
+def rows_items(split, cache, rows_file):
+    """v2 G (teacher data for the tool writer WT): explicit rulebook rows {bid, term, definition, section, src, ...} (training shops
+    only) -> the inference prompt of the tool writer (unit_prompt). Extra fields of a row are kept in the item's meta."""
+    p = rows_file if os.path.isfile(rows_file) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(rows_file)}", recursive=True)), rows_file)
+    rows = [json.loads(l) for l in open(p, encoding="utf-8") if l.strip()]
+    items, cards = [], {}
+    for r in rows:
+        b = r["bid"]
+        if b not in cards:
+            sh = _shop_load(split, cache, b)
+            cards[b] = _tables_card(sh[0], sh[2]) if sh else None
+        if cards[b] is None: continue
+        meta = dict(r, section=r.get("section") or "rulebook", rulebook=r.get("rulebook"))
+        items.append((meta, unit_prompt(b, cards[b], r["term"], r["definition"], meta["section"])))
+    return items
+
+
+def rowgen_items(split, cache, shops, n_rows=20):
+    """v2 G / C (teacher data): per training shop, the base model invents n_rows NEW rulebook rows computable on THIS shop's tables
+    (variants of existing rows that change one element of the definition, and new metrics an owner of such a shop would define),
+    so that the tool writer learns to turn ANY definition into a function, not to recall the training rulebook."""
+    import hints as hintsmod
+    rb = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
+    known = "\n".join(f"| {t} | {d[:140]} |" for t, d in hintsmod.rulebook_rows(rb).values())
+    items = []
+    for b in shops:
+        sh = _shop_load(split, cache, b)
+        if not sh: continue
+        u = (f"# DỮ LIỆU CỦA CỬA HÀNG {b}\n{_tables_card(sh[0], sh[2])}\n\n# RULEBOOK HIỆN CÓ (thuật ngữ | định nghĩa)\n{known}\n\n"
+             f"# NHIỆM VỤ\nViết {n_rows} dòng rulebook MỚI mà chủ cửa hàng này có thể tự đặt, mỗi dòng là MỘT đại lượng TÍNH ĐƯỢC từ bảng dữ liệu "
+             "của chính cửa hàng ở trên (dùng đúng bảng / cột có thật). Khoảng một phần ba là BIẾN THỂ của một dòng rulebook hiện có: đổi đúng "
+             "một yếu tố của định nghĩa (ngưỡng, cửa sổ thời gian, đối tượng được đếm, điều kiện lọc, cách gộp, tiêu chí xếp hạng, cách xử lý "
+             "hoà) — ghi tên dòng gốc vào variant_of. Phần còn lại là đại lượng MỚI kiểu một ngành / cửa hàng tự đặt (ưu tiên đại lượng cần "
+             "bảng hoặc cột riêng của cửa hàng này, kết hợp nhiều điều kiện, tỉ lệ, xếp hạng có điều kiện). Định nghĩa phải CHÍNH XÁC, không mơ "
+             "hồ: đối tượng, kỳ (nếu phụ thuộc kỳ), điều kiện, đơn vị, cách xếp hạng / hoà. Không viết dòng về cách ghi chép hay làm tròn. Tên "
+             "thuật ngữ 2-6 từ tiếng Việt, khác mọi thuật ngữ hiện có. Trả lời bằng MỘT mảng JSON: "
+             "[{\"term\": \"...\", \"definition\": \"...\", \"variant_of\": \"tên dòng gốc\" hoặc null}, ...]")
+        items.append(({"bid": b, "n_rows": n_rows}, u))
     return items
 
 
@@ -450,9 +511,21 @@ def to_cards(mode, items, texts, names):
             if m and m.group(1) != name: code = code.replace(f"def {m.group(1)}(", f"def {name}(", 1)
             u = {"kind": "unit", "bid": meta["bid"], "term": meta["term"], "definition": meta["definition"][:400], "section": meta.get("section"),
                  "rulebook": meta.get("rulebook"), "name": name, "signature": str(j.get("signature") or name)[:120], "doc": str(j.get("doc") or "")[:300],
-                 "triggers": [str(t) for t in (j.get("triggers") or [])][:8], "code": code[:3000]}
+                 "triggers": [str(t) for t in (j.get("triggers") or [])][:8], "code": code[:3000], "plan": str(j.get("plan") or "")[:700]}
+            for k in ("src", "variant_of", "orig_id", "qid"):                # v2 G: provenance of a teacher row
+                if meta.get(k) is not None: u[k] = meta[k]
             u["id"] = "U" + hashlib.sha1(json.dumps([u["bid"], u["term"], code], ensure_ascii=False).encode()).hexdigest()[:8]
             out.append(u)
+        elif mode == "rowgen":
+            seen = set()
+            for e in (j if isinstance(j, list) else [j]):
+                if not isinstance(e, dict): continue
+                t, d = str(e.get("term") or "").strip(), str(e.get("definition") or "").strip()
+                if not t or not d or len(d) < 15 or t.lower() in seen or not (1 <= len(t.split()) <= 8): continue
+                seen.add(t.lower())
+                v = e.get("variant_of"); v = str(v).strip() if v not in (None, "", "null") else None
+                out.append({"bid": meta["bid"], "term": t, "definition": d[:500], "variant_of": v, "section": "tổng hợp",
+                            "src": "synth_variant" if v else "synth_new"})
         elif mode == "induce":
             for e in (j if isinstance(j, list) else [j]):
                 if not isinstance(e, dict): continue
@@ -543,6 +616,11 @@ def main():
     ap.add_argument("--shard", default=""); ap.add_argument("--samples", type=int, default=3, help="unit: samples per rulebook row")
     ap.add_argument("--think-units", type=int, default=0, help="unit: the writer reasons first (4096-token cap)")
     ap.add_argument("--unit-repairs", type=int, default=1, help="unit: self-debugging rounds (a failed function + its error -> new samples)")
+    ap.add_argument("--rows", default="", help="unit (v2 G teacher): explicit rows jsonl {bid, term, definition, ...} instead of the split's industry / new rows")
+    ap.add_argument("--shops", default="", help="rowgen: comma list of shops (default: every shop of the split)")
+    ap.add_argument("--rows-per-shop", type=int, default=20); ap.add_argument("--min-agree", type=int, default=0, help="unit: samples that must agree (0 = 2 when samples >= 3)")
+    ap.add_argument("--think-tokens", type=int, default=4096, help="unit / rowgen with thinking: output token cap (thinking + JSON)")
+    ap.add_argument("--max-num-seqs", type=int, default=0)
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
     names = api_names()
     if a.mode == "compile": items = compile_items(a.split)
@@ -557,7 +635,10 @@ def main():
     elif a.mode == "induce":
         p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
         items = induce_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
-    elif a.mode == "unit": items = unit_items(a.split, a.cache)
+    elif a.mode == "unit": items = rows_items(a.split, a.cache, a.rows) if a.rows else unit_items(a.split, a.cache)
+    elif a.mode == "rowgen":
+        shops = [x for x in a.shops.split(",") if x] or sorted(os.path.basename(d) for d in glob.glob(os.path.join(a.split, "data", "*")) if os.path.isdir(d))
+        items = rowgen_items(a.split, a.cache, shops, a.rows_per_shop)
     else: sys.exit(f"unknown mode {a.mode}")
     if a.shard:
         i, n = map(int, a.shard.split("/")); items = items[i::n]
@@ -565,10 +646,10 @@ def main():
     if a.mode in ("unit", "bind") and a.samples > 1:                   # k samples per row (after sharding: a row's samples stay
         items = [it for it in items for _ in range(a.samples)]          # together for the self-consistency choice)
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
-    think = a.mode == "induce" or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
+    think = a.mode in ("induce", "rowgen") or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
                                                                         # lrl0c reasoned past the cap (13/11); the task is simple
     eng = [None]
-    mt = (4096 if a.mode == "unit" else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else 900))   # unit: the writer often reasons in
+    mt = (a.think_tokens if a.mode in ("unit", "rowgen") else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else 900))   # unit: the writer often reasons in
     js = UNIT_SCHEMA if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else None)       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
                                                                         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap
     def generate(convs, temps, seed0):                                  # without reaching their JSON (13/11)
@@ -579,14 +660,15 @@ def main():
         if eng[0] is None:
             sys.argv = [sys.argv[0]]; import agent
             eng[0] = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
-                                                     gpu_util=0.9, max_num_seqs=0, max_batched_tokens=0, spec_mtp=0, prefix_budget=0))
+                                                     gpu_util=0.9, max_num_seqs=a.max_num_seqs, max_batched_tokens=16384 if a.max_num_seqs else 0,
+                                                     spec_mtp=0, prefix_budget=0))
         seeds = [seed0 + i for i in range(len(convs))]
         try: return eng[0].gen(convs, temps, seeds, mt, think=think, json_schema=js)[0]
         except Exception as e:                                          # a schema this vLLM / xgrammar refuses: unconstrained
             if js is None: raise
             print(f"[lrl_gen] constrained JSON unavailable ({type(e).__name__}: {str(e)[:200]}): unconstrained", flush=True)
             return eng[0].gen(convs, temps, seeds, mt, think=think)[0]
-    temps = [0.7 if a.mode == "translit" else 0.0] * len(convs)
+    temps = [0.7 if a.mode in ("translit", "rowgen") else 0.0] * len(convs)
     if a.mode in ("unit", "bind"): temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
     texts = generate(convs, temps, 4242)
     cards = to_cards("compile" if a.mode == "bind" else a.mode, items, texts, names)
@@ -594,7 +676,7 @@ def main():
         cards = verify_binds(cards, items, shop_sections(a.split, a.cache), a.samples)
     rep = {}
     if a.mode == "unit":
-        ma = 2 if a.samples >= 3 else 1
+        ma = a.min_agree or (2 if a.samples >= 3 else 1)
         prompts = {(m["bid"], m["term"]): (m, u) for m, u in items}
         check_units(cards, a.split, a.cache)
         sel, fails = select_units(cards, ma)

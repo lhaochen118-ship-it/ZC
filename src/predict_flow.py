@@ -297,6 +297,11 @@ def main():
     if a.config and not os.path.isfile(a.config): log(f"config {a.config} not found: defaults"); a.config = ""
     cfg = a.config or next((p for p in (os.path.join(os.path.dirname(HERE), "configs", "flow_final.json"), os.path.join(HERE, "configs", "flow_final.json"))
                             if os.path.isfile(p)), "")
+    try:                                                              # mode H (user 14/11): hidden toolkit names for every phase
+        hz = json.load(open(cfg, encoding="utf-8")).get("hide_api") if cfg else ""
+        if hz: os.environ["ZC_HIDE_API"] = hz; log(f"hide_api: {hz} (exported to every phase)")
+        if cfg and int(json.load(open(cfg, encoding="utf-8")).get("api_extra", 0) or 0): os.environ["ZC_API_EXTRA"] = "1"; log("api_extra: on")
+    except Exception as e: log(f"hide_api: config unreadable ({e})")
     merge_sub.merge(a.split, final, [], quiet=True)                  # a complete (abstain) file from the first second
     ng = n_gpus(); dp = a.dp or ng
     if a.fake_responder:

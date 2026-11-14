@@ -82,6 +82,7 @@ def vote(samples, need=2):
 
 def card_index(paths, rb_key):
     """{term: compiled card} of the cards compiled from this rulebook (their toolkit hints)."""
+    import lrl
     out = {}
     here = os.path.dirname(os.path.abspath(__file__))
     for f in [x for x in (paths or "").split(",") if x]:
@@ -93,7 +94,7 @@ def card_index(paths, rb_key):
             if not src.startswith("rulebook:"): continue
             rk = (c.get("trigger") or {}).get("rulebook")
             if rk and rk != rb_key: continue
-            out.setdefault(src[len("rulebook:"):], c)
+            out.setdefault(src[len("rulebook:"):], lrl.strip_hidden(c))    # mode H: no hint calling a hidden function
     return out
 
 

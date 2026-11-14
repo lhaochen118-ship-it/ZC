@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "yuan1103",
+  "name": "f2",
+  "jobs": "automation/jobs/f2.jobs",
+  "est_h": 1.7,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "yuan1103/zc-ad2",
+   "--no-preflight"
+  ]
+ }
+]

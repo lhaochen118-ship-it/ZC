@@ -92,7 +92,8 @@ def rules_block(cards):
     question), as the judge sees them: '- term: definition -> toolkit hint'."""
     if not cards: return ""
     out = []
-    for c in cards[:4]:
+    import lrl
+    for c in [lrl.strip_hidden(x) for x in cards[:4]]:                   # mode H: hidden toolkit names never shown
         t = f"- {str(c.get('content') or '').strip()[:300]}"
         if c.get("code_hint"): t += f" -> {c['code_hint']}"
         out.append(t)
@@ -112,6 +113,11 @@ def question_block(question, as_of, cands, mode="list", n_samples=0, rules=None)
 
 def label_text(plan, choice):
     return f"<plan>{' '.join(str(plan).split()).replace('<', ' ')}</plan>\n<choice>{choice}</choice>"
+
+
+# v2 A (14/11): the no-think variants of a trained judge wrote prose up to the token cap (WJR1: 19-25 % / 35-40 % parsable) ->
+# variant suffix "+c" constrains the output to the trained format itself (structured outputs, regex): a short plan, one choice.
+CHOICE_RE = r"<plan>[^<>\n]{1,120}</plan>\n<choice>([0-9]|U)</choice>"
 
 
 _CH = re.compile(r"<choice>\s*\[?\s*([0-9]{1,2}|[Uu])\s*\]?\s*</choice>")
@@ -309,6 +315,7 @@ def build_requests(rows, ctxs, mode, k, only_split=True, links=None):
 def run_variant(a, variant, out):
     os.makedirs(out, exist_ok=True); t0 = time.time()
     mode = "point" if variant.startswith("point") else "list"; think = "+think" in variant
+    cons = "+c" in variant.split("+think")[0] and not think            # constrained format (no-think variants only)
     rows = load_logs(find_file(a.logs))
     if os.environ.get("ZC_SMOKE") == "1" or a.subset: rows = dict(list(rows.items())[:a.subset or 12])
     ctxs = json.load(open(a.ctx, encoding="utf-8"))
@@ -320,7 +327,7 @@ def run_variant(a, variant, out):
             if l.strip(): x = json.loads(l); links[x["id"]] = x.get("cards") or []
     reqs, cands_of = build_requests(rows, ctxs, mode, k, bool(a.only_split), links)
     reqs.sort(key=lambda x: (rows[x[0]["id"]].get("business_id", ""), x[0]["id"]))      # one shop's prefix at a time (prefix cache)
-    mt = 1280 if think else a.max_tokens
+    mt = 1280 if think else (160 if cons else a.max_tokens)
     if a.fake_responder:
         g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
         texts = [g["responder"](c) for _, c, _, _ in reqs]
@@ -330,7 +337,8 @@ def run_variant(a, variant, out):
         if lora and os.path.isfile(lora): lora = os.path.dirname(lora)
         eng = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora=lora, quant=a.quant,
                                               gpu_util=0.92, max_num_seqs=128, max_batched_tokens=16384, spec_mtp=0, prefix_budget=0))
-        texts, ntok = eng.gen([c for _, c, _, _ in reqs], [t for _, _, t, _ in reqs], [s for _, _, _, s in reqs], mt, think=think)
+        texts, ntok = eng.gen([c for _, c, _, _ in reqs], [t for _, _, t, _ in reqs], [s for _, _, _, s in reqs], mt, think=think,
+                              regex=CHOICE_RE if cons else None)
         print(f"[judge] {variant}: {len(reqs)} requests, {ntok} tokens out, {time.time() - t0:.0f}s", flush=True)
     by = {}
     for (m, _, _, _), t in zip(reqs, texts): by.setdefault(m["id"], []).append((m, t))

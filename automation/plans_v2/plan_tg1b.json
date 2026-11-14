@@ -1,0 +1,28 @@
+[
+ {
+  "acc": "phatle1578",
+  "name": "tg1p2",
+  "jobs": "automation/jobs/tg1p2.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "mucnokieu",
+  "name": "tg1p3",
+  "jobs": "automation/jobs/tg1p3.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight"
+  ]
+ }
+]

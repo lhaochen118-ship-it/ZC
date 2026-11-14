@@ -22,6 +22,8 @@ run() {                                     # run <name> <timeout s> <command...
 run test_ingest_robust 300 python3 tests/test_ingest_robust.py
 run test_engine_batching 300 python3 tests/test_engine_batching.py
 run test_sandbox 300 python3 tests/test_sandbox.py
+run test_mode_h 120 python3 tests/test_mode_h.py
+run test_judge_constrained 120 python3 tests/test_judge_constrained.py
 run test_agent_v2 900 python3 tests/test_agent_v2.py $SPLIT $S/t_v2
 run test_plausibility 900 python3 tests/test_plausibility.py $SPLIT $CACHE
 run test_qnorm 900 python3 tests/test_qnorm.py $SPLIT $S/t_qn

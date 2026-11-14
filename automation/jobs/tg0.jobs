@@ -1,0 +1,4 @@
+run_kaggle.py train OUT/TG0/nt0 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode newterm --cases training/data/out/wt/newterm_in.jsonl --shard 0/4
+run_kaggle.py train OUT/TG0/nt1 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode newterm --cases training/data/out/wt/newterm_in.jsonl --shard 1/4
+run_kaggle.py train OUT/TG0/nt2 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode newterm --cases training/data/out/wt/newterm_in.jsonl --shard 2/4
+run_kaggle.py train OUT/TG0/nt3 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode newterm --cases training/data/out/wt/newterm_in.jsonl --shard 3/4

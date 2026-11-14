@@ -733,7 +733,7 @@ class Engine:
         cuts = [c for c in (p.find(m) for m in Engine.PREFIX_MARKS) if c > 0]
         return p[:min(cuts)] if cuts else p
 
-    def gen(self, convs, temps, seeds, max_tokens, think=None, json_schema=None):
+    def gen(self, convs, temps, seeds, max_tokens, think=None, json_schema=None, regex=None):
         """Requests sharing a business prefix form a group. Groups are packed into waves whose distinct prefixes fit in
         about half of the KV cache (`--prefix-budget` tokens); per wave, every prefix is prefilled once by a 1-token
         warm-up request (one batched call), then all requests of the wave are generated in ONE call, so the scheduler
@@ -756,13 +756,14 @@ class Engine:
             if warm: self.llm.generate(warm, [SamplingParams(max_tokens=1)] * len(warm), use_tqdm=False, lora_request=self.lora)
             members = [i for _, m in wave for i in m]
             so = {}
-            if json_schema is not None:                                 # constrained JSON output (plan 4 W: the unit writer)
+            if json_schema is not None or regex is not None:            # constrained output (plan 4 W: JSON of the unit writer;
+                kw = {"json": json_schema} if json_schema is not None else {"regex": regex}   # v2 A: the judge's trained format)
                 try:
                     from vllm.sampling_params import StructuredOutputsParams
-                    so = {"structured_outputs": StructuredOutputsParams(json=json_schema)}
+                    so = {"structured_outputs": StructuredOutputsParams(**kw)}
                 except ImportError:
                     from vllm.sampling_params import GuidedDecodingParams
-                    so = {"guided_decoding": GuidedDecodingParams(json=json_schema)}
+                    so = {"guided_decoding": GuidedDecodingParams(**kw)}
             sps = [SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=fitted[i][1], seed=seeds[i], **so) for i in members]
             outs = self.llm.generate([fitted[i][0] for i in members], sps, use_tqdm=False, lora_request=self.lora)
             for i, o in zip(members, outs): texts[i] = o.outputs[0].text; ntok += len(o.outputs[0].token_ids)
@@ -955,6 +956,7 @@ def build_parser():
     ap.add_argument("--links", default="", help="hybrid (plan 5 W2): rulebook rows linked to each question by the model (src/link.py links.jsonl); they replace the keyword-matched definition cards of the # RULES block")
     ap.add_argument("--selector", default="", help="hybrid: learned answer selector (src/selector.py json, trained on the solver's own logs of TRAINING shops): it picks the answer group and abstains below its theta (plan 4 V; replaces the vote)")
     ap.add_argument("--exclude-bids", default="", help="hybrid: shops whose examples are never retrieved (held-out evaluation)")
+    ap.add_argument("--api-extra", type=int, default=0, help="v2 F: append to the API block the public toolkit functions API_DOC does not name (api_spec)")
     ap.add_argument("--hide-api", default="", help="hybrid: hidden API names, 'industry' = every industry function (pub_noind)")
     ap.add_argument("--bank-holdout", type=int, default=0, help="hybrid: the held-out shops' checked examples in the bank (final model only)")
     ap.add_argument("--config", default="", help="JSON file of default flag values (configs/<name>.json); command-line flags override")

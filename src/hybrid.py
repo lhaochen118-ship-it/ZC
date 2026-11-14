@@ -28,6 +28,8 @@ class HybridPipeline(pipeline.Pipeline):
         a.k = max(1, int(a.k_max))                                      # Pipeline.run: fast mode = k_now < a.k
         super().__init__(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, claim_dir)
         self.hide = tuple(x for x in (getattr(a, "hide_api", "") or "").split(",") if x)
+        if self.hide: os.environ["ZC_HIDE_API"] = ",".join(self.hide)      # mode H: lrl / link / judge / units drop hidden names
+        if int(getattr(a, "api_extra", 0) or 0): os.environ["ZC_API_EXTRA"] = "1"   # v2 F (prompting.api_extra)
         self.escapes = tuple(x for x in (getattr(a, "escape", "python") or "").split(",") if x and x != "none")
         self.spec = api_spec.build_api_spec(hide=self.hide)
         self.bank = retrieval.Bank.load(include_holdout=bool(getattr(a, "bank_holdout", 0)))
@@ -53,7 +55,7 @@ class HybridPipeline(pipeline.Pipeline):
             if not os.path.isfile(a.links): raise SystemExit(f"[hybrid] --links {a.links} not found")   # (no silent fallback, 14/11)
             self.links = {}
             for l in open(a.links, encoding="utf-8"):
-                if l.strip(): r = json.loads(l); self.links[r["id"]] = r.get("cards") or []
+                if l.strip(): r = json.loads(l); self.links[r["id"]] = [lrl.strip_hidden(c) for c in (r.get("cards") or [])]
             print(f"[hybrid] linked rules: {len(self.links)} questions, {sum(1 for v in self.links.values() if v)} with rows ({a.links})", flush=True)
         self.units_all = []                                             # plan 4 W: executable rule units (src/units.py)
         if getattr(a, "units", ""):

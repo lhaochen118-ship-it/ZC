@@ -118,6 +118,11 @@ def main():
         extra += ["--hard-deadline", str(int(dl - 600))]                # so the run writes its answers (no fast mode: same results)
     def opt(name):
         return rest[rest.index(name) + 1] if name in rest and rest.index(name) + 1 < len(rest) else ""
+    try:                                                                # mode H (user 14/11): every phase (units, links, cards,
+        hz = json.load(open(opt("--config"), encoding="utf-8")).get("hide_api") if opt("--config") else ""   # judge) hides them
+        if hz: os.environ["ZC_HIDE_API"] = hz
+        if opt("--config") and int(json.load(open(opt("--config"), encoding="utf-8")).get("api_extra", 0) or 0): os.environ["ZC_API_EXTRA"] = "1"
+    except Exception: pass
     if opt("--config") and "--units" not in rest + extra:               # plan 4 W: the model writes this split's rule units first
         import predict_flow                                             # (from the eval split's rulebook / shop data, no answer)
         fake = extra[extra.index("--fake-responder") + 1] if "--fake-responder" in extra else ""

@@ -43,9 +43,38 @@ def _trig_keys(c):
     return out
 
 
+def hidden_names():
+    """toolkit names hidden from this run (config hide_api, exported as $ZC_HIDE_API by predict_flow / eval_flow / hybrid):
+    'industry' = every function of the hand-written industry module (mode H, user 14/11: no hand-written industry rule)."""
+    h = {x for x in os.environ.get("ZC_HIDE_API", "").split(",") if x}
+    if "industry" in h:
+        try:
+            import industry
+            h |= set(industry.INDUSTRY_NAMES) | set(industry.HELPERS)
+        except Exception: pass
+    return h - {"industry"}
+
+
+def mentions(text, names):
+    """does a code hint / check expression name one of these functions?"""
+    return bool(text) and bool(names) and bool(re.search(r"\b(" + "|".join(sorted(map(re.escape, names))) + r")\b", str(text)))
+
+
+def strip_hidden(card, names=None):
+    """the card without the parts that call a hidden function (its definition text stays: it was written by the model from the
+    rulebook); unchanged when nothing is hidden."""
+    names = hidden_names() if names is None else names
+    if not names or not isinstance(card, dict): return card
+    out = dict(card)
+    if mentions(out.get("code_hint"), names): out["code_hint"] = None; out["hint_hidden"] = True
+    if mentions(out.get("check"), names): out["check"] = None
+    return out
+
+
 class Library:
     def __init__(self, cards):
-        self.cards = [c for c in cards if c and not c.get("disabled")]
+        hid = hidden_names()
+        self.cards = [strip_hidden(c, hid) for c in cards if c and not c.get("disabled")]
         for c in self.cards: c["_keys"] = _trig_keys(c)
 
     @classmethod

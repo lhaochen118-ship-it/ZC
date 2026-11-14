@@ -7,7 +7,7 @@ import os, sys, json, glob, csv, time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); sys.path.insert(0, os.path.join(ROOT, "src"))
 import score
 
-SETS = ("pub_full", "pub_ho400c", "tr_ho400c", "pub_noind", "tr_newterm", "pub_ho", "tr_ho", "pub_ho400", "tr_ho400", "lrl_ab0",
+SETS = ("pub_full", "pub_ho400c", "tr_ho400c", "pub_noind", "tr_newterm", "pub_ind", "pub_hoind", "pub_ho", "tr_ho", "pub_ho400", "tr_ho400", "lrl_ab0",
         "tr_dev_para_a", "tr_dev_para_b", "tr_dev_all", "d3sel")
 
 

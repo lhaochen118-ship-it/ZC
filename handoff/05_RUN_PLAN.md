@@ -245,3 +245,6 @@ theo kỳ `p` (thay lời gọi kỳ bằng `p` trên AST), giữ khi gọi lạ
 thuận mà bộ phán xử bác với 100 % phiếu: point+think 6 đúng / 1 sai (f5a), 14 / 0 (f5b), 6 / 1 (pva3k16), 13 / 3 (g1v3apf2); point+c
 35–42 đúng / 1–6 sai. Ghi đè đáp án đồng thuận sẽ mất điểm ở mọi ngưỡng → không đưa vào. RC2 (sai đồng thuận vô hình) cần bộ kiểm khác hẳn
 (chưa có trong kế hoạch này).
+
+**22:30 – WT-s OOM.** mb 6 × max-len 5,120 + gom theo độ dài (các bản ghi dài nhất cùng micro-batch) → 21.2–21.9 GB / GPU, OOM ở bước đầu.
+Ngưỡng an toàn đo được: ~20.5k token / micro-batch / GPU (mb 4 × 5,120). Đẩy lại `wts2` với mb 4 / batch 64.

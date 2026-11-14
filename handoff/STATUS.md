@@ -21,9 +21,17 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | EWBT2 W = Qwen gốc có suy nghĩ (H, 614 câu) | phuongnehe/zc-ewbt2-1 | xong | pub_ind 0.539, pub_hoind 0.455; chỉ 2 hàm qua kiểm (1,552 s) → kém W = S; suy nghĩ lúc suy luận không phải lời giải |
 | bl1 B-lite: phán xử xem lại câu đồng thuận (4 log public, WJR1) | anderson1202/zc-bl1-1 | xong — **B-lite loại** | câu đồng thuận bị bác chắc chắn: point+think 6 đúng / 1 sai (f5a), 14 / 0 (f5b), 6 / 1, 13 / 3; point+c 35 / 1 … → ghi đè chỉ mất điểm; bộ phán xử không thấy lỗi đồng thuận |
 | jh0b phán xử WJR1 trên log held-out H0b2 | nguyenhoa99/zc-jh0b-1 | xong | **mốc held-out H có phán xử: pub_ho400c 0.609, tr_ho400c 0.909, pub_hoind 0.470, tr_newterm 0.852** (bỏ phiếu cùng log: 0.563 / 0.901 / 0.426 / 0.852) |
-| TG1 thầy WT p0–p3 | phatle1578, mucnokieu (2 phiên mỗi acc) | chạy | |
-| TG1n thầy cho thuật ngữ mới p0 (p1 sau) | huyenco | chạy | |
-| TG2 cặp tương phản | loinguyentran → tg2b → tg2c → nguyenhoa99/tg2d | chạy lại | tg2: 2 engine vLLM; tg2b/c: chương trình bị HTML-escape (`&quot;`) → sửa |
+| TG1 thầy WT (suy nghĩ) | phatle1578, mucnokieu | **hỏng → huỷ** | p0 giữ 7 / 243 dòng: Qwen gốc suy nghĩ lặp vòng quá 7–8k token (304 / 447 mẫu) — lỗi G0b kế hoạch 4 |
+| TG1b thầy WT (không suy nghĩ, JSON ràng buộc, 8 mẫu, đồng thuận ≥ 3) | phatle1578, mucnokieu ×2 | xong | 2,654 dòng → giữ 782 hàm (train_rule 143, biến thể 145, mới 18, thuật ngữ mới 476) |
+| Hàm từ chương trình đã kiểm (`wt_from_programs.py`, CPU) | CPU | xong | 1,249 / 1,446 thuật ngữ → hàm của `p`, kiểm lại bằng thực thi (cân bằng còn 917) |
+| Dữ liệu WT (`wt_build.py`) | CPU | xong | 864 bản ghi (3.5M token) + 265 dòng đo (6 DN held-out) |
+| WT-b / WT-s huấn luyện | nhatlong1103 ×2 | chạy | |
+| WT0B (chỉ 543 hàm từ chương trình) → EWT0 (614 câu H) | anderson1202 | chạy | kiểm tra tích hợp WT |
+| ewu_ref: độ chính xác hàm W = S, W = Qwen gốc (265 dòng held-out) | synchan5704 | chạy | |
+| TG1n (thuật ngữ mới, suy nghĩ) | huyenco | huỷ | gộp vào TG1b |
+| TG2 cặp tương phản | nguyenhoa99/zc-tg2d-1 | xong (lần 4) | **1,005 cặp** (729 tương phản, kiểm ngược mù 97 %; 276 cách viết); lỗi trước: 2 engine vLLM, HTML-escape `&quot;` |
+| WJR2D (LoRA chồng V3A×0.70 + WJR1; 1,738 bản ghi tương phản + 1,000 WJR1) | quynhle07 | xong | 9.2M token, 1.72k tok/s, đỉnh 16.4 GB; đánh giá ej2 đang chạy |
+| S′ seed 1 / 2 (replay + thuật ngữ mới trong # RULES + tương phản / cách viết; 23.1M token) | nguynduylm ×2 | chạy | |
 
 ## 0. Kế hoạch 5 — kết quả (public, đáp án chuẩn)
 

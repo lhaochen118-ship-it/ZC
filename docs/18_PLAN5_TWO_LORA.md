@@ -123,3 +123,7 @@ rulebook) → `judge.py --links` (dòng W2 trong prompt), WJR1 = phán xử hu�
 **14/11 12:30 — kết quả tốt nhất đến nay (offline, log pva3k16):** W3 WJB1 + dòng rulebook do WL1 nối trong prompt phán xử: **0.954** (kết hợp biến thể
 0.955; bỏ phiếu 0.938). S + link WL1 (zlw): 0.940 (ngang mốc). LoRA động vLLM fp8 với adapter thô: không tác dụng → thử `merge.py vllm` (ejb1lora2);
 container mặc định gộp adapter W theo pha (`w_mode: merge`). Lỗi vận hành và quy tắc tránh: PDF 2 §9.
+
+**14/11 13:00 — WJA1 (tăng cường từ chối) + link WL1:** 0.952 / 0.944 — không hơn WJB1. LoRA động sau `merge.py vllm` đúng như gộp (0.951 vs 0.950) →
+`w_mode: "lora"` dùng được trong container (không cần bản sao 19 GB / pha). **F5** (đường container, `configs/flow_p5_final.json`, W gộp theo pha) × 2
+song song: f5a yuan1103, f5b synchan5704 (12:42 →).

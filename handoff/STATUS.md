@@ -19,6 +19,10 @@ training/data/out/wj/p_rows.jsonl --tag _r`, `w_link.py --max-per-shop 60`, `p_r
 **Việc còn lại trước hạn (16/11 04:00 UTC đóng băng):** D1 Docker cho cấu hình cuối (đăng WJR1 + WL1 vào dataset adapter cuối; `docker/` thêm
 `training/merge.py` + 2 adapter W; chạy `docker/run_public_test.sh`). Quota 14/11 15:00: các acc còn ~14–25 h.
 
+**Đề xuất chiến lược mới (14/11 16:10 UTC, chờ user duyệt):** `proposed plan.pdf` (nguồn `handoff/04_PROPOSED_PLAN.md`) — nguyên nhân gốc của
+các câu còn sai của cấu hình cuối kế hoạch 5 trên 4 log S, 5 giải pháp (sửa đầu ra phán xử: WJR1 chỉ đọc được 19–40 % phán quyết ở `list` / `point`;
+định tuyến xung đột rulebook; S′ + rulebook đối chứng; dữ liệu tương phản; kênh thứ hai), xếp hạng, lịch T+35 h.
+
 ## 1. Hệ nộp
 
 | Thành phần | Giá trị |

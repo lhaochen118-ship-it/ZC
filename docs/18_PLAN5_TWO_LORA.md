@@ -98,3 +98,9 @@ hợp lệ: 0.942). Trọng số S không suy nghĩ: chỉ 5 % đầu ra có `<c
 --only-split 1` mặc định (~90 / 1000 câu, nhanh ~10 lần). W1 lần 1 (`w1b`): 98 / 125 dòng lập luận văn xuôi quá trần → JSON có ràng buộc (`w1b2`).
 
 **14/11 09:30 — WJB1 xong** (list + point, 3025 bản ghi, 10.1M token, 143 bước, 2 h 32, loss 0.27 → 0.002, 1.72k tok/s, đỉnh 16.4 GB / GPU).
+
+**14/11 10:10 — E1: WJB1 (W3 huấn luyện, list + point) phán trên 2 lần chạy S public, chỉ câu bất đồng:** list **0.950** (pva3k16; bỏ phiếu 0.938) /
+**0.946** (g1v3apf2; bỏ phiếu 0.936); list+think 0.949 / 0.948; point 0.947 / 0.939 → W3 có ích ổn định +0.010–0.012 (zero-shot tốt nhất 0.947).
+Lỗi còn lại trên pva3k16 (27): 13 câu 4 / 4 mẫu đồng thuận sai (không câu nào có mẫu đúng: phẩm chất chủ quan 4, thuật ngữ rulebook 5, kỳ / tỉ
+trọng / bỉm 4) → việc của W1 / W2 (zlk, zlb); 14 câu bất đồng (phán xử chia phiếu hoặc chọn sai). W1 v2 (`w1b2`, JSON có ràng buộc): 56 / 125
+dòng rulebook public có lời gọi toolkit đã chạy trên dữ liệu (`src/refs/lrl/compile_public_b.jsonl`).

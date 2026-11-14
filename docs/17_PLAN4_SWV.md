@@ -172,3 +172,9 @@ của hệ không luật viết tay (Q2 0.928; g1v3apf W cũ 0.919); `pub_ind` 0
 **0.415** (220 / 77 / 48); V phát lại 0.535 / 0.458. Có hàm ngành viết tay (g1v3apf2) `pub_ind` 0.900 → ngành mới thật mất ~0.42 trên DN
 ngành: khoảng W phải lấp. (Tập con `pub_noindH` lần này −0.188: ba lần chạy cùng cấu hình −0.036 / −0.107 / −0.188.)
 
+**14/11 01:05 — g0hfp: W CÓ TÁC DỤNG (kết luận W2).** Cùng 614 câu, hàm ngành ẩn, v3a × 0.70, không V; W = trọng số S, 17 hàm cho 5 DN (629 s):
+`pub_ind` 0.476 → **0.595** (+0.119, SE ghép cặp 0.031, z 3.8; 28 câu tốt hơn / 7 kém hơn), `pub_hoind` (held-out) 0.415 → **0.493**
+(+0.078, SE 0.023, z 3.3; 27 / 10). Có V (phát lại): 0.535 → 0.595, 0.458 → 0.525. → **giữ W** (W2 xong). W mới lấp ~0.12 / 0.42 khoảng
+cách tới hàm viết tay (0.900) → hướng cải tiến tiếp cho W (sau kế hoạch): nhiều mẫu hơn, ví dụ mẫu tốt hơn, vòng tự sửa thứ 2, S học dùng
+hàm của W (dữ liệu UD của v4).
+

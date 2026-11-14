@@ -1,0 +1,19 @@
+[
+ {
+  "acc": "quynhle07",
+  "name": "ej2",
+  "jobs": "automation/jobs/ej2.jobs",
+  "est_h": 1.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,quynhle07/zc-wjr2d-1",
+   "--ds",
+   "quynhle07/zc-ad2",
+   "--train-data",
+   "jlogs",
+   "--no-preflight"
+  ]
+ }
+]

@@ -44,7 +44,7 @@ lexical-normalisation noise in the ViLexNorm style) written by Qwen3.5-9B. No pu
 
 | Set | PA |
 |---|---|
-| Public test, original 1000 questions | **0.938** (this configuration); container path: see `final_submission/swv/score.json` |
+| Public test, original 1000 questions | **0.938** (this configuration); container path (`predict_flow`, 4×L4, 39 min) **0.922**; run-to-run spread ~±0.01 |
 | 614 questions of the 5 public shops with an industry section, industry functions hidden (a new industry) | W written by the model: 0.476 → 0.595 (originals), 0.415 → 0.493 (paraphrases) |
 
 ## Run

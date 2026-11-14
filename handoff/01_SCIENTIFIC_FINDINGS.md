@@ -75,7 +75,7 @@ thực thi được lúc suy luận (dòng rulebook ngành / thuật ngữ mới
 | Đo W trực tiếp (offline, dùng hàm viết tay chỉ làm thước): 3 / 9 hàm W đúng gần như mọi tháng; lỗi chủ yếu là dạng giá trị (dict nhiều đại lượng, tỉ lệ thay vì %) và lỗi API → kiểm tra trên 13 kỳ + vòng tự sửa (lỗi chạy thật đưa lại cho W) đưa số hàm dùng được 12 → 41 | `docs/17` §7 13/11 22:20, G0f |
 | **V có ích** (phát lại trên log thật, cùng mẫu): held-out `pub_ho400c` 0.603 → 0.652, `tr_ho400c` 0.917 → 0.928, ngành mới không W −0.107 → +0.018 | g1v3aho, e0hv |
 | **Nhiều mẫu hơn có ích:** k_max 16 (k_fast 4) thay 8: v3a 0.936 → **0.938**, V4S2 0.920 → 0.932 (bỏ phiếu thường), thời gian đánh giá +20–30 % | pva3k16, pvs2k16 |
-| **Hệ nộp cuối (S–W, không luật viết tay): public 0.938** = v3a × 0.70 + W + k_max 16 + bỏ phiếu thường | pva3k16; `configs/flow_final.json` |
+| **Hệ nộp cuối (S–W, không luật viết tay): public 0.938** (đường eval) / **0.922** (đường container, lần chạy khác: dao động giữa lần chạy ~±0.01) = v3a × 0.70 + W + k_max 16 + bỏ phiếu thường | pva3k16, f2a3; `configs/flow_final.json` |
 
 ### 5.2 Kết quả tiêu cực và hạn chế
 

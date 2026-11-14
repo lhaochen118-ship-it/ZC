@@ -175,7 +175,7 @@ def judge_phase(cfg, a, dirs, units, log, t0):
     mode = c.get("judge_mode", "list")
     cmd = [sys.executable, os.path.join(HERE, "judge.py"), a.split, out, "--model", wm, "--logs", logs_f, "--variants", mode,
            "--k", str(int(c.get("judge_k", 5))), "--tau", str(c.get("judge_tau", 0.6)), "--denom", str(c.get("judge_denom", "all")),
-           "--u-answers", str(int(c.get("judge_u_answers", 1))), "--keep-unanimous", str(c.get("judge_keep_unanimous", 0.0)),
+           "--u-answers", str(int(c.get("judge_u_answers", 1))), "--keep-unanimous", str(c.get("judge_keep_unanimous", 0.0)), "--only-split", str(int(c.get("judge_only_split", 1))),
            "--cache", os.path.join(a.work, "cache")] + (["--units", units] if units else []) + (["--lora", lora] if lora else []) + \
           (["--fake-responder", a.fake_responder] if a.fake_responder else [])
     p = subprocess.Popen(cmd, stdout=open(os.path.join(out, "judge.log"), "w"), stderr=subprocess.STDOUT, start_new_session=True)

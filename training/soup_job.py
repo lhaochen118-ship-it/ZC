@@ -35,7 +35,7 @@ def main():
                          "judge: plan 5 W3 (src/judge.py) on a solver run's saved logs with the merged model")
     ap.add_argument("--judge-logs", default="", help="judge: the solver log file (name under training/data/out, shipped with --train-data)")
     ap.add_argument("--judge-units", default=""); ap.add_argument("--judge-variants", default="list")
-    ap.add_argument("--judge-k", type=int, default=5)
+    ap.add_argument("--judge-k", type=int, default=5); ap.add_argument("--judge-only-split", type=int, default=1)
     ap.add_argument("--script", default="", help="runner script: a src/ script run as <script> <split> <out>/script --model <merged> "
                     "<--script-args> (e.g. lrl_gen.py --mode bind: the rule writer with the solver's merged weights)")
     ap.add_argument("--script-args", default="", help="runner script: extra arguments, space-separated (use ',' for spaces inside none)")
@@ -104,7 +104,7 @@ def judge(a, model, res, t0):
     """plan 5 W3: src/judge.py on saved solver logs (one variant per GPU inside judge.py); outputs under <out>/judge/."""
     t1 = time.time(); out = os.path.join(a.out, "judge"); os.makedirs(out, exist_ok=True)
     cmd = [PY, os.path.join(SRC, "judge.py"), a.split, out, "--model", model, "--logs", a.judge_logs, "--variants", a.judge_variants,
-           "--k", str(a.judge_k)]
+           "--k", str(a.judge_k), "--only-split", str(a.judge_only_split)]
     if a.judge_units: cmd += ["--units", a.judge_units]
     if a.judge_lora:
         d = find_adapter(a.judge_lora, a.search)

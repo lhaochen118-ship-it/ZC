@@ -235,13 +235,19 @@ def _ctx_worker(split, b, cache, units_path, prompt_mode):
     return shop_contexts(split, [b], cache, units_path, prompt_mode, workers=1)[b]
 
 
-def build_requests(rows, ctxs, mode, k):
-    """(meta, conversation, temperature, seed) per judge sample. list: k samples per question; point: k per candidate."""
+def unanimous(cands, n):
+    return len(cands) == 1 and cands[0]["n"] == n
+
+
+def build_requests(rows, ctxs, mode, k, only_split=True):
+    """(meta, conversation, temperature, seed) per judge sample. list: k samples per question; point: k per candidate.
+    only_split: questions whose samples all ran and agree are not judged (the vote stands; 14/11 zero-shot replay on public:
+    judging every question 0.941, only the split ones 0.947 vs the vote 0.938) - ~10 % of the questions."""
     reqs, cands_of = [], {}
     for qi, (i, r) in enumerate(rows.items()):
         cands, n = candidates(r); cands_of[i] = (cands, n)
         ctx = ctxs.get(r.get("business_id"))
-        if not cands or ctx is None: continue
+        if not cands or ctx is None or (only_split and unanimous(cands, n)): continue
         units = [(None, cands)] if mode == "list" else [(ci, [c]) for ci, c in enumerate(cands)]
         for ci, cs in units:
             qb = question_block(r["question"], r["as_of_date"], cs, mode, n)
@@ -258,7 +264,7 @@ def run_variant(a, variant, out):
     if os.environ.get("ZC_SMOKE") == "1" or a.subset: rows = dict(list(rows.items())[:a.subset or 12])
     ctxs = json.load(open(a.ctx, encoding="utf-8"))
     k = min(a.k, 3) if think else a.k                                   # thinking samples are ~10x the tokens: fewer of them
-    reqs, cands_of = build_requests(rows, ctxs, mode, k)
+    reqs, cands_of = build_requests(rows, ctxs, mode, k, bool(a.only_split))
     reqs.sort(key=lambda x: (rows[x[0]["id"]].get("business_id", ""), x[0]["id"]))      # one shop's prefix at a time (prefix cache)
     mt = 1280 if think else a.max_tokens
     if a.fake_responder:
@@ -309,6 +315,7 @@ def main():
     ap.add_argument("--prompt", default="full"); ap.add_argument("--max-tokens", type=int, default=160)
     ap.add_argument("--tau", type=float, default=0.6); ap.add_argument("--denom", default="all")
     ap.add_argument("--u-answers", type=int, default=1); ap.add_argument("--keep-unanimous", type=float, default=0.0)
+    ap.add_argument("--only-split", type=int, default=1, help="judge only the questions whose samples disagree or failed")
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     if a.variant: return run_variant(a, a.variant, a.out)
     t0 = time.time()
@@ -325,7 +332,7 @@ def main():
     argv = [sys.executable, os.path.abspath(__file__), a.split]
     common = ["--model", a.model, "--logs", a.logs, "--ctx", a.ctx, "--k", str(a.k), "--quant", a.quant, "--max-len", str(a.max_len)] + \
              ["--max-tokens", str(a.max_tokens), "--tau", str(a.tau), "--denom", a.denom, "--u-answers", str(a.u_answers),
-              "--keep-unanimous", str(a.keep_unanimous)] + (["--lora", a.lora] if a.lora else []) + (["--subset", str(a.subset)] if a.subset else []) + \
+              "--keep-unanimous", str(a.keep_unanimous), "--only-split", str(a.only_split)] + (["--lora", a.lora] if a.lora else []) + (["--subset", str(a.subset)] if a.subset else []) + \
              (["--fake-responder", a.fake_responder] if a.fake_responder else [])
     procs, waiting = [], list(enumerate(variants))
     slots = devs or ["cpu"]; free = list(slots); rcs = {}

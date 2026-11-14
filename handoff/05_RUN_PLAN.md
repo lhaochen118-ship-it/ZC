@@ -214,3 +214,9 @@ paraphrase của `tr_ho400c`) cần dataset `<acc>/zc-para`, plan quên mount; `
 (`kaggle kernels delete`), đẩy lại h0b2 / h0c2 / f2b / ewts2 / ewbt2 có `zc-para`; `eval_flow` nay dừng hẳn khi thiếu > 10 % câu.
 TG2 lần 1 lỗi: engine vLLM thứ hai trong cùng tiến trình (bước kiểm ngược) không có VRAM → một engine cho cả hai bước, lưu kết quả bước 1
 trước; đẩy lại tg2b.
+
+**18:05 – G-A: A loại.** Phán xử lại 4 log public bằng WJR1: biến thể có ràng buộc đọc được 100 % (list+c 470/470, point+c 1375/1375 trên
+f5a; không ràng buộc 105/470, 479/1375) nhưng PA từng biến thể không tăng (point_c 0.939 vs point 0.928 trên f5a, nhưng 0.935 vs 0.939 trên
+f5b…), tổ hợp: list_c+point_c+point_think m0.5 TB 0.946; list_c+point_think 0.950–0.952 vs mốc chạy lại list+point+point_think m0.5 TB
+0.951. **Phát hiện:** đầu ra "không đọc được" của bộ phán xử không suy nghĩ thực chất là phiếu trắng của một bộ phán xử yếu; ép chọn chỉ thêm
+nhiễu. Đòn bẩy phán xử nằm ở chất lượng (huấn luyện WJR2, point+think), không ở định dạng. Cấu hình giữ tổ hợp WJR1 cũ.

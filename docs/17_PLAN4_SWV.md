@@ -178,3 +178,7 @@ ngành: khoảng W phải lấp. (Tập con `pub_noindH` lần này −0.188: ba
 cách tới hàm viết tay (0.900) → hướng cải tiến tiếp cho W (sau kế hoạch): nhiều mẫu hơn, ví dụ mẫu tốt hơn, vòng tự sửa thứ 2, S học dùng
 hàm của W (dữ liệu UD của v4).
 
+**14/11 02:00 — g0hfq (W mạnh hơn: 8 mẫu / hàng, 2 vòng tự sửa; V chạy thật lần đầu — 613 / 614 log có `conf_sel`):** 19 hàm (609 s);
+`pub_ind` 0.5725, `pub_hoind` 0.4754 (có V). So ghép cặp với W mặc định g0hfp (cùng V phát lại): `pub_ind` −0.022 (SE 0.022), `pub_hoind`
+−0.049 (SE 0.022) → **không nhận**; giữ W mặc định (5 mẫu, 1 vòng tự sửa).
+

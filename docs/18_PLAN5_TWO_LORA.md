@@ -104,3 +104,18 @@ hợp lệ: 0.942). Trọng số S không suy nghĩ: chỉ 5 % đầu ra có `<c
 Lỗi còn lại trên pva3k16 (27): 13 câu 4 / 4 mẫu đồng thuận sai (không câu nào có mẫu đúng: phẩm chất chủ quan 4, thuật ngữ rulebook 5, kỳ / tỉ
 trọng / bỉm 4) → việc của W1 / W2 (zlk, zlb); 14 câu bất đồng (phán xử chia phiếu hoặc chọn sai). W1 v2 (`w1b2`, JSON có ràng buộc): 56 / 125
 dòng rulebook public có lời gọi toolkit đã chạy trên dữ liệu (`src/refs/lrl/compile_public_b.jsonl`).
+
+**14/11 11:50 — E1 xong ba adapter W3 + Z-link (public, chỉ phán câu bất đồng, mẫu số hợp lệ):**
+
+| Phán xử | pva3k16 (vote 0.938) | g1v3apf2 (vote 0.936) | gộp pva3k16 + zlk |
+|---|---|---|---|
+| zero-shot S (think) / Qwen gốc | 0.947 / 0.947 | — | — |
+| **WJB1** (list + point) | **0.950** (kết hợp biến thể 0.953) | 0.946 / 0.948 | 0.945–0.950 (kết hợp 0.953) |
+| WJL1 (list) | 0.949–0.952 | — | 0.942 |
+| WJP1 (point) | 0.941–0.945 | — | 0.935–0.940 |
+
+S + link zero-shot (zlk) 0.921, + W1 bind (zlb) 0.925 < 0.938: link sửa đúng câu thuật ngữ (trung thành, ưa chuộng, khách quen…) nhưng dòng
+chung chung kèm hàm ("Đơn tính vào doanh thu → revenue(p)" ở 27 % câu) kéo câu khác sai → `link.py --max-df 0.05`. Linker huấn luyện **WL1**
+(1800 bản ghi, nhãn bộ khớp P trên câu train): độ chính xác so với bộ khớp P trên public 0.78 (zero-shot 0.24). Gộp mẫu hai lần chạy S nâng trần
+có-mẫu-đúng 986 → 991 nhưng phán xử chưa tận dụng được. Lỗi còn lại sau phán xử chủ yếu là **kiến thức rulebook** (prompt phán xử không có dòng
+rulebook) → `judge.py --links` (dòng W2 trong prompt), WJR1 = phán xử huấn luyện kèm dòng rulebook (nhãn bộ khớp P trên câu train).

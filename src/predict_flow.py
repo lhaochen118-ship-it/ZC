@@ -126,6 +126,29 @@ def resolve_adapter(name):
     raise SystemExit(f"adapter {name} not found (no silent fallback)")
 
 
+def w_model(adapter, model, work, log, mode="merge"):
+    """(model, lora) for a W phase: mode 'merge' = the adapter merged into a copy of the solver's weights (training/merge.py merge;
+    cached under work/), 'lora' = the solver + the adapter converted for vLLM's LoRA loader (merge.py vllm)."""
+    if not adapter: return model, ""
+    mp = next((p for p in (os.path.join(os.path.dirname(HERE), "training", "merge.py"), os.path.join(HERE, "training", "merge.py"),
+                           os.path.join(HERE, "merge.py")) if os.path.isfile(p)), None)
+    if mp is None: raise SystemExit("training/merge.py missing (needed for the W adapters)")
+    name = os.path.basename(os.path.dirname(adapter.rstrip("/"))) if os.path.basename(adapter.rstrip("/")) == "adapter" else os.path.basename(adapter.rstrip("/"))
+    t = time.time()
+    if mode == "lora":
+        out = os.path.join(work, f"lora_{name}")
+        if not os.path.isfile(os.path.join(out, "adapter_config.json")):
+            rc = run([sys.executable, mp, "vllm", model, adapter, out], log)
+            if rc != 0: raise SystemExit(f"merge.py vllm {adapter} failed")
+        return model, out
+    out = os.path.join(work, f"model_{name}")
+    if not os.path.isfile(os.path.join(out, "config.json")):
+        rc = run([sys.executable, mp, "merge", model, out, adapter], log)
+        if rc != 0: raise SystemExit(f"merge.py merge {adapter} failed")
+        log(f"W adapter {name} merged into the solver's weights ({time.time() - t:.0f}s)")
+    return out, ""
+
+
 def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     """plan 5 W2 (docs/18): with "links_gen": 1 in the config, the model links every question of the split to the rulebook rows it
     uses (src/link.py; inputs only), one shard of the shops per GPU. Returns the --links path, or None (config without it). The
@@ -138,6 +161,7 @@ def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
         refs = os.path.join(HERE, "refs", "lrl")
         cards = ",".join(os.path.join(refs, x) for x in str(c.get("lrl") or "").split(",") if x and "compile" in x and os.path.isfile(os.path.join(refs, x)))
     lora = resolve_adapter(c.get("links_lora") or os.environ.get("LINK_LORA") or "")
+    if lora and not fake: model, lora = w_model(lora, model, work, log, c.get("w_mode", "merge"))
     base = [sys.executable, os.path.join(HERE, "link.py"), split, out, "--model", model, "--quant", "fp8", "--k", str(int(c.get("links_k", 3) or 3)), "--max-df", str(c.get("links_max_df", 0.0) or 0.0)] + \
            (["--lora", lora] if lora else []) + \
            (["--cards", cards] if cards else []) + (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
@@ -184,6 +208,7 @@ def judge_phase(cfg, a, dirs, units, log, t0, links=None):
     out = os.path.join(a.work, "judge"); os.makedirs(out, exist_ok=True)
     wm = c.get("judge_model") or os.environ.get("W_MODEL") or a.model
     lora = resolve_adapter(c.get("judge_lora") or os.environ.get("W_LORA") or "")
+    if lora and not a.fake_responder: wm, lora = w_model(lora, wm, a.work, log, c.get("w_mode", "merge"))
     mode = c.get("judge_mode", "list")
     cmd = [sys.executable, os.path.join(HERE, "judge.py"), a.split, out, "--model", wm, "--logs", logs_f, "--variants", mode,
            "--k", str(int(c.get("judge_k", 5))), "--tau", str(c.get("judge_tau", 0.6)), "--denom", str(c.get("judge_denom", "all")),

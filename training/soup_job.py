@@ -110,6 +110,11 @@ def judge(a, model, res, t0):
     if a.judge_lora:
         lora = find_adapter(a.judge_lora, a.search)
         if lora is None: sys.exit(f"[soup] judge adapter {a.judge_lora} not found under {a.search}")
+        conv = os.path.join(a.tmp, "lora_vllm")                         # module names / target_modules as vLLM's loader expects
+        rc = subprocess.run([PY, os.path.join(HERE, "merge.py"), "vllm", model, lora, conv], stdout=open(os.path.join(a.out, "lora_conv.log"), "w"),
+                            stderr=subprocess.STDOUT).returncode     # (14/11 ejb1lora: the raw adapter loaded but had no effect)
+        if rc == 0 and os.path.isfile(os.path.join(conv, "adapter_config.json")): lora = conv
+        else: sys.exit(f"[soup] merge.py vllm failed rc {rc}")
     rcs = []
     for n, lg in enumerate(logs):
         out = os.path.join(a.out, "judge") if len(logs) == 1 else os.path.join(a.out, "judge", lg.split(".")[0])

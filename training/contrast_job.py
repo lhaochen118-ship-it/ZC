@@ -147,7 +147,8 @@ def worker(a):
         rawf.write(json.dumps({"id": it["id"], "slot": it["slot"], "text": (t or "")[-1500:]}, ensure_ascii=False) + "\n")
         j = first_json(t)
         if not isinstance(j, dict) or not j.get("question") or "ANSWER" not in str(j.get("program")): why["no_json"] += 1; continue
-        q2, p2 = j["question"].strip(), j["program"].strip()
+        import html                                                    # tg2c: the constrained JSON came with &quot; inside the
+        q2, p2 = html.unescape(j["question"]).strip(), html.unescape(j["program"]).strip()   # program string (473 / 490 failed to run)
         if q2 == it["question"].strip(): why["same_question"] += 1; continue
         ok, ans2 = run_program(a.split, it["business_id"], it["as_of_date"], p2)
         if not ok: why["new_fails"] += 1; continue

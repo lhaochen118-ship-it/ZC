@@ -1,58 +1,21 @@
 # CLAUDE.md — bộ nhớ dự án (Claude Code tự đọc file này mỗi phiên)
 
 Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3-0dny90`** (repo `lhaochen118-ship-it/ZC`).
-**Khung chat mới: đọc `READING_GUIDE.md` trước** (trạng thái sống `handoff/STATUS.md`; bản lưu không nằm trong code — log, dữ liệu huấn luyện, sổ kernel — ở `Process/`, xem `Process/README.md`) (bàn giao: `handoff/STATUS.md`, `handoff/03_HANDOFF.pdf`,
-`handoff/01_SCIENTIFIC_FINDINGS.pdf`, `handoff/02_ENGINEERING_OPS_LESSONS.pdf`, `handoff/environment_summary.pdf`).
+**Khung chat mới: đọc `READING_GUIDE.md` trước** (trạng thái sống `handoff/STATUS.md`; PDF 1 / 2 trong `handoff/`; log, dữ liệu huấn luyện,
+sổ kernel ở `Process/` — `Process/README.md`). **Trạng thái 14/11: đang dừng, chờ user đưa chiến lược mới hướng tới public = 1.**
 
-**Quyết định mới nhất (user, 08/11): hybrid framework = AI Agent sinh code + luật tổng quát hỗ trợ.** Cấm hard code
-**answer**: luật sinh thẳng code Python / đáp án 100 % mà không qua mô hình. Được hard code **logic**: quy tắc tổng quát
-nhận diện ý định câu hỏi, đọc data, viết schema (`ingest`, `automap`; Agent viết thêm mô tả schema khi cần), toolkit
-nghiệp vụ (`dm`, `industry`), làm sạch câu, ví dụ few-shot, kiểm tra bằng code — để Agent sinh code nhanh / chính xác hơn.
-Code trả lời của **mọi** câu do mô hình sinh; chương trình luật (`qparse`) chỉ là gợi ý / kiểm chéo. Chi tiết:
-`handoff/03_HANDOFF.md` §2.1; **thiết kế + tổng quan tài liệu + kế hoạch thí nghiệm: `docs/06_HYBRID_FRAMEWORK.md`**
-(luồng 8 bước, giao thức xử lý câu sai, điểm tin cậy + sinh lại, precheck, tool, mô hình phụ, chưng cất);
-**kế hoạch chính + đặc tả triển khai + lộ trình 08–16/11: `docs/08_MASTER_PLAN.md`** — user đã duyệt; **việc của khung chat
-kế tiếp: triển khai code đúng theo tài liệu này (gói việc §8 theo thứ tự WP0 → WP12, đặc tả §5, quy tắc quyết định §10)**;
-**phương án đào sâu (tool cho Agent, sinh có ràng buộc ngữ pháp, mô hình phụ, chưng cất, chọn / tin cậy): `docs/09_OPTIONS_DEEP_DIVE.md`**. Luồng nộp hiện tại (`src/predict_flow.py`, stage 1 luật trả lời thẳng → `canon_llm.py` →
-`agent.py`) phải được thay. Đo bằng held-out: paraphrase public k=1,2 và paraphrase train
-(`src/paraphrase_llm.py`, `eval_split.py --perturb-q para:`, `stress_flow.py --modes para:`) và 6 DN train giữ ngoài
-huấn luyện; được phân tích lỗi trên public gốc, k=0 public và train (không xem từng câu held-out). Mốc so sánh: v34 held-out public 0.602; v28 (LLM) public gốc 0.921.
+**Lịch sử quyết định (đã thay thế; chi tiết trong PDF 1 / 2 và lịch sử git):** 08/11 hybrid = mô hình sinh code + luật tổng quát hỗ trợ
+(cấm hard code đáp án) và kế hoạch 1 (WP0–WP12, chạy tự động); 09/11 mục tiêu 100 % public bằng cải tiến tổng quát, kế hoạch 2 (hướng R
+luật tổng quát / M mô hình); 12/11 chốt P (public 0.994) + Docker; 13/11 kế hoạch 3 (luật do mô hình học). Vẫn áp dụng: **cấm hard code
+đáp án** (luật / chương trình sinh thẳng đáp án không qua mô hình); phân tích lỗi chỉ trên public gốc / train, không xem từng câu held-out;
+không train trên public / private test.
 
-**CHẾ ĐỘ CHẠY TỰ ĐỘNG (user, 08/11 — bắt buộc):** Claude Code chạy tự động cho đến khi thực thi xong **toàn bộ** kế hoạch
-`docs/08_MASTER_PLAN.md` (WP0 → WP12). **Không được dừng lại** trước khi xong; không hỏi ý kiến user (chỉ xin những thứ chỉ user
-làm được: token, acc mới, nộp portal). **Hết hạn mức sử dụng của Claude (phiên 5 giờ)** giữa chừng → tạm dừng; khi hạn mức reset
-thì tự động chạy tiếp từ chỗ dở. (Hết quota GPU Kaggle → làm phần code / CPU, chạy tiếp phần GPU khi quota reset hoặc có acc mới.)
-Tiếp tục đúng chỗ dở nhờ bảng "Tiến độ WP" trong `handoff/STATUS.md` (cập nhật sau mỗi bước; không làm lại bước đã xong; kernel
-đang chạy thì attach). Ngay đầu khung chat mới: tạo routine tự tiếp tục mỗi giờ (`create_trigger`, tiếp tục vào chính phiên này)
-với lời nhắc "đọc handoff/STATUS.md, làm tiếp bước chưa xong đầu tiên của docs/08; không dừng đến khi xong toàn bộ kế hoạch" —
-routine là cơ chế đánh thức lại sau khi hạn mức Claude reset; chỉ xoá routine khi toàn bộ kế hoạch đã xong.
+**`final_submission/submission.jsonl` (user 10/11):** file nộp public có PA cao nhất đến nay (`python3 automation/update_final_submission.py
+<run_dir>` chỉ thay khi PA cao hơn, ghi `score.json`); file public của hệ nộp mới (S–W) ở `final_submission/swv/`.
 
-**NHIỆM VỤ SAU KẾ HOẠCH 1 (user, 09/11 — bắt buộc, đọc nguyên văn `docs/13_TASK_AFTER_PLAN1.md`):** xong WP0 → WP12 thì chấm public gốc
-với `data/raw/public_gt.jsonl` (= `score 1.jsonl`, chỉ để chấm) và liệt kê mọi câu sai; **điều kiện dừng cuối cùng = 100 % public gốc**
-đạt bằng cải tiến tổng quát mà **không giảm held-out** (pub_ho, paraphrase train, tr_ho; cải tiến tăng public mà giảm held-out → loại; báo
-cả hai số ở mọi mốc). Chưa đạt → vòng Phân tích lỗi (`docs/10_ERROR_ANALYSIS.md`, taxonomy 7 nhóm) → Tài liệu ngoài
-(`docs/11_LITERATURE.md`) → Kế hoạch 2 (`docs/12_PLAN2.md`, gói WP-P2-xx, lưới thí nghiệm song song) → Triển khai → Đo, lặp lại
-("Vòng n" trong `docs/12_PLAN2.md`); bảng "Tiến độ P2" trong `handoff/STATUS.md`. **Kế hoạch 1 đã chạy hết; việc hiện tại = kế hoạch 2
-`docs/12_PLAN2.md` (gói WP-P2-01…10, quy tắc giữ / bỏ §4)**; **user 10/11: hai hướng — R (thêm luật tổng quát, trước mắt) và M (§6:
-cải tiến mô hình từ bản không luật 0.939 — mô hình phụ, fine-tune lại, dataset ngoài, chưng cất, RL — chạy song song đến public = 1.0,
-không thêm luật)**; công cụ: `tests/list_wrong.py`, `tests/hint_audit.py`, `tests/replay_vote.py`. Kaggle: mỗi acc tối đa 2 phiên GPU + 5 phiên CPU,
-dùng hết slot một acc rồi mới sang acc khác; việc không cần GPU đưa lên phiên CPU.
-
-**Quyết định user 12/11:** không cần chờ public 100 % mới dừng. Triển khai **hết kế hoạch hiện tại** (`handoff/STATUS.md` §4: P seed 2 + đường container → chốt cấu hình nộp; WG9–12 sau quota 14/11 → sàng lọc / xác nhận; chốt bản nộp + Docker trước 15/11), rồi **dừng lại cùng user phân tích và xây dựng kế hoạch mới** phát triển mô hình hướng tới score = 1, sau đó mới chạy thử nghiệm tiếp.
-
-**`final_submission/submission.jsonl` (user 10/11):** luôn là file nộp public có PA cao nhất đến nay; sau **mỗi** lần chạy GPU có public gốc,
-chạy `python3 automation/update_final_submission.py <run_dir>` (chỉ thay khi PA cao hơn; ghi `final_submission/score.json`) rồi commit + push.
-
-**Quyết định user 13/11 (bắt buộc):** duyệt **kế hoạch 3** `docs/16_PLAN3_LEARNED_RULES.md` (kiểm tra: `docs/15_AUDIT.md`) — "thực hiện hết":
-mô hình thuần + **lớp luật do mô hình tự học** (quy nạp từ lỗi train, biên dịch rulebook lúc suy luận, bí danh giá trị, ViLexNorm; luật chỉ học từ train,
-nhận bằng A/B trên DN khác), dữ liệu v3, gói WP3-00 → WP3-10 đến 16/11, rồi **H2** sau 16/11 (RL thưởng theo PA, mô hình chuẩn hoá câu). **Đổi bản nộp**
-(§5.4) khi hệ mới có held-out gộp ≥ P và public ≥ 0.985. **WP3-04:** huấn luyện lại P trên đủ 30 DN, giữ nếu public ≥ 0.993. Tiến độ: bảng "Tiến độ P3"
-trong `handoff/STATUS.md`. (13/11 08:30: bàn giao sang khung chat mới; routine cũ đã tắt — phiên mới tạo routine theo `READING_GUIDE.md` §0.) Vẫn áp dụng: kiểm quota trước khi chạy (không đủ → tối ưu: FSDP 4 GPU, chuỗi checkpoint qua acc, chia shard; vẫn không đủ →
-giải pháp khác; không có thì không chạy), tốc độ trước, không tiết kiệm acc / GPU.
-
-**Quyết định user 13/11 tối (mới nhất, bắt buộc):** (1) **ngừng phát triển luật viết tay** (hints / qparse / qnorm / cờ, precheck viết tay
+**Quyết định user 13/11 tối (bắt buộc):** (1) **ngừng phát triển luật viết tay** (hints / qparse / qnorm / cờ, precheck viết tay
 của P) — khi vận hành thật có nhiều tình huống mới; luật nếu có **phải do mô hình tự viết**; (2) **bản nộp cuối là hệ mới không luật viết
-tay** (S–W–V), kể cả khi điểm thấp hơn P; (3) WR30 chạy xong chỉ làm dự phòng. Kế hoạch hiện tại: **`docs/17_PLAN4_SWV.md`** (S mô hình
+tay** (S–W–V), kể cả khi điểm thấp hơn P; (3) WR30 chạy xong chỉ làm dự phòng. Kế hoạch 4 (xong 14/11): **`docs/17_PLAN4_SWV.md`** (S mô hình
 giải, W mô hình viết luật thực thi được lúc suy luận, V bộ chọn học được; gói V1, W1, S1–S3, W2, G1–G2, R1, F1–F2, D1). Đo ngành mới
 bằng `pub_noindH` (= `pub_noind` + `--hide-api industry`). Sau khi xong kế hoạch: dừng, đọc lại findings, đề xuất hướng mới, lên kế
 hoạch chi tiết (chia luồng, batch, thời gian) xong rồi mới chạy (user 13/11).

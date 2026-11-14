@@ -1,1 +1,0 @@
-[{"acc": "thnliu", "name": "p2r12pred", "jobs": "automation/jobs/p2r12pred.jobs", "est_h": 1.0, "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,thnliu/zc-m2w3-1", "--ds", "thnliu/zc-final-adapter", "--no-preflight"]}]

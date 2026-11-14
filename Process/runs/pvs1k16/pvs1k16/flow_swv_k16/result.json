@@ -1,0 +1,15 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/quynhtran35/zc-v3a-adapter/V3A/adapter",
+  "V4S1": "/kaggle/input/datasets/quynhtran35/zc-v4s1-adapter/V4S1/adapter"
+ },
+ "weights": [
+  0.7,
+  1.0
+ ],
+ "merge_rc": 0,
+ "merge_s": 1135,
+ "config": "configs/flow_swv_k16.json",
+ "eval_rc": 0,
+ "eval_s": 2385
+}

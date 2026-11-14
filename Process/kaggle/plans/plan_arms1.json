@@ -1,3 +1,0 @@
-[
- {"acc": "synchan5704", "name": "armsr1a", "jobs": "automation/jobs/arms_r1a.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels", "--ds", "synchan5704/zc-para", "--train-data", "sft", "--no-preflight"]}
-]

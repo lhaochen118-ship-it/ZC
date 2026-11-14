@@ -1,5 +1,0 @@
-[
- {"acc": "quynhle07", "name": "finala", "jobs": "automation/jobs/final_a.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para,quynhle07/zc-adapters-wf", "--no-preflight"]},
- {"acc": "quynhle07", "name": "finalb", "jobs": "automation/jobs/final_b.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para,quynhle07/zc-adapters-wf", "--no-preflight"]},
- {"acc": "phatle1578", "name": "finalstress", "jobs": "automation/jobs/final_stress.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "phatle1578/zc-para,phatle1578/zc-adapters-w8", "--no-preflight"]}
-]

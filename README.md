@@ -9,14 +9,11 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 - Phương án cũ còn nguyên ở branch `claude/peaceful-carson-0dny90` (v1: LLM tự viết chương trình pandas cho từng câu) và
   `claude/funny-euler-ceut3o` (v2: toolkit nghiệp vụ, chưa chạy với LLM).
 
-## Trạng thái 08/11/2026
+## Trạng thái 14/11/2026
 
-- Hai đường đã xây: **đường LLM** (`src/agent.py`: Qwen3.5-9B ánh xạ dữ liệu theo DN + sinh chương trình trên toolkit
-  `dm` / `industry`, bỏ phiếu, đồng thuận ánh xạ; v28 public 0.921) và **đường luật** (`src/rules_first.py`; public
-  1000 / 1000 trong mẫu, yếu trên cách hỏi mới). Luồng nộp hiện tại `src/predict_flow.py` là rule-first.
-- **User chốt 08/11: hybrid framework** — Agent sinh code cho mọi câu; luật tổng quát chỉ hỗ trợ (ý định, schema,
-  toolkit, kiểm tra), không sinh thẳng đáp án. Thiết kế: `docs/06_HYBRID_FRAMEWORK.md`. Việc tiếp theo:
-  `handoff/03_HANDOFF.pdf`; trạng thái sống: `handoff/STATUS.md`; cách đọc repo: `READING_GUIDE.md`.
+- **Hệ nộp (S–W, không luật viết tay):** Qwen3.5-9B + LoRA v3a × 0.70 viết chương trình cho mọi câu (S) và tự viết hàm luật từ rulebook
+  của cửa hàng (W); `configs/flow_final.json`; **public 0.938**. Hệ cũ P (luật tổng quát viết tay hỗ trợ, public 0.994) giữ làm dự phòng.
+- Dự án đang dừng chờ chiến lược mới hướng tới public = 1. Bắt đầu: `READING_GUIDE.md` → `handoff/STATUS.md` → PDF 1 / 2 trong `handoff/`.
 
 ## Đọc theo thứ tự
 
@@ -28,7 +25,7 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 | 4 | `docs/03_WORKFLOW.md` | Quy trình làm việc + nguyên tắc user đã chốt |
 | 5 | `docs/02_KAGGLE_OPS.md` | Vận hành Kaggle (GPU L4, dataset, lệnh) |
 | 6 | `docs/05_GPU_OPTIMIZATION.md` (tóm tắt trong `CLAUDE.md`) | Playbook tốc độ GPU: đo, data parallel, prefix cache, pipeline, work stealing |
-| — | `EXPERIMENT_LOG.md` | Nhật ký thí nghiệm (entry 0–27) |
+| — | `handoff/01_SCIENTIFIC_FINDINGS.pdf`, `02_ENGINEERING_OPS_LESSONS.pdf` | Phát hiện khoa học; kinh nghiệm kỹ thuật / vận hành (thay nhật ký cũ) |
 
 ## Cấu trúc
 

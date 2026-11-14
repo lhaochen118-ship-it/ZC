@@ -1,4 +1,0 @@
-[
- {"acc": "phatle1578", "name": "finala", "jobs": "automation/jobs/final_a.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "phatle1578/zc-para,phatle1578/zc-adapters-w8", "--no-preflight"]},
- {"acc": "nhatlong1103", "name": "finalb", "jobs": "automation/jobs/final_b.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nhatlong1103/zc-para,nhatlong1103/zc-final-adapter", "--no-preflight"]}
-]

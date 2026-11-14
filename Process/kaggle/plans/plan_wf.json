@@ -1,4 +1,0 @@
-[
- {"acc": "quynhle07", "name": "soupwf4", "jobs": "automation/jobs/soup_wf4.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para,quynhle07/zc-adapters-wf", "--no-preflight"]},
- {"acc": "quynhle07", "name": "wisewf05", "jobs": "automation/jobs/wise_wf4_a05.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para,quynhle07/zc-adapters-wf", "--no-preflight"]}
-]

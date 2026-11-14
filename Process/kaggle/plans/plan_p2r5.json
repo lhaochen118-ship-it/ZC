@@ -1,4 +1,0 @@
-[
- {"acc": "nhatlong1103", "name": "p2r5i", "jobs": "automation/jobs/p2r5i.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nhatlong1103/zc-para,nhatlong1103/zc-final-adapter", "--no-preflight"]},
- {"acc": "nhatlong1103", "name": "p2r5is1", "jobs": "automation/jobs/p2r5is1.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nhatlong1103/zc-para,nhatlong1103/zc-final-adapter", "--no-preflight"]}
-]

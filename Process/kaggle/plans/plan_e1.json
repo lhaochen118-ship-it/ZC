@@ -1,6 +1,0 @@
-[
- {"acc": "quynhtran35", "name": "e1full", "jobs": "automation/jobs/e1_full.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhtran35/zc-para"]},
- {"acc": "quynhle07", "name": "e1review", "jobs": "automation/jobs/e1_review.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para"]},
- {"acc": "nguyenhoa99", "name": "e1think", "jobs": "automation/jobs/e1_think.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nguyenhoa99/zc-para"]},
- {"acc": "yuan1103", "name": "e1sql", "jobs": "automation/jobs/e1_sql.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets"]}
-]

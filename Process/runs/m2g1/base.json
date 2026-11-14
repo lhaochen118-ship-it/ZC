@@ -1,9 +1,0 @@
-{
- "base_adapters": {
-  "WG1": "/kaggle/input/datasets/anderson1202/zc-wg-adapters/WG1/adapter"
- },
- "base_weights": [
-  0.35
- ],
- "merge_s": 92
-}

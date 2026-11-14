@@ -1,4 +1,0 @@
-[
- {"acc": "nguyenhoa99", "name": "m0dev", "jobs": "automation/jobs/m0dev.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nguyenhoa99/zc-para,nguyenhoa99/zc-final-adapter", "--no-preflight"]},
- {"acc": "nguyenhoa99", "name": "m0para", "jobs": "automation/jobs/m0para.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nguyenhoa99/zc-para,nguyenhoa99/zc-final-adapter", "--no-preflight"]}
-]

@@ -1,7 +1,7 @@
 # training/ — how the fine-tuned model is reproduced
 
 Everything here runs offline from the organisers' **training** split only (never the public / private test: the factory's
-tests check it). Order (docs/08_MASTER_PLAN.md §5.9, §7, WP4–WP7):
+tests check it). Order (plan 1 WP4–WP7; history in PDF 2):
 
 1. **Canonical tables** of every training shop: `python3 tests/build_canon.py data/raw/train/train <ingest_cache> <canon_dir>`
    (`src/automap.py`, deterministic).

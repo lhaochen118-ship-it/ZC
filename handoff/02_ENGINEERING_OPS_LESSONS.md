@@ -1,4 +1,4 @@
-# PDF 2 — Engineering & Operations Lessons (DataMate, đến 13/11/2026)
+# PDF 2 — Engineering & Operations Lessons (DataMate, đến 14/11/2026)
 
 *Phạm vi: kinh nghiệm lập trình, cấu hình môi trường, quản lý Kaggle, tổ chức thử nghiệm, lỗi đã gặp và cách sửa,
 bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạng thái và việc tiếp theo ở PDF 3; cấu hình máy ở
@@ -196,3 +196,37 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
   adapter / checkpoint ở lại Kaggle (`Process/kaggle/kernels.csv`).
 - Watcher phải chạy bằng `run_in_background` (lệnh `&` trong shell không báo về); container khởi động lại → `automation/resume.py <runs>`
   rồi watcher mới.
+
+## 8. Bài học 13–14/11 (kế hoạch 4 S–W–V)
+
+### 8.1 Lỗi đã gặp và cách sửa
+
+| Lỗi | Hậu quả | Sửa |
+|---|---|---|
+| Đường dẫn cấu hình `src/refs/selector/...` không có trong kernel Kaggle (code đóng gói thành `<stage>/refs/...`); bộ nạp **lặng lẽ** quay về bỏ phiếu | V không chạy ở mọi lần đo ~8 giờ (G0…G0e, g1v3apf, g1v3aho, e0hv, 5 kernel đợt 00:05) | thử cả hai bố cục; thiếu file → dừng; test bố cục kernel (`tests/test_selector_flow.py`); log có `conf_sel` |
+| W viết mã một dòng nối bằng `;` (một `#` nuốt phần sau), văn xuôi tới trần token, chép khuôn câu lệnh | 12 / 125 mẫu dùng được | sinh có ràng buộc JSON (vLLM structured outputs, schema có `plan` ≤ 700 ký tự), `code` = mảng dòng, bỏ `import toolkit` |
+| W trả dict nhiều đại lượng, tỉ lệ thay vì %, lỗi chỉ ở một số tháng | hàm "chạy được" nhưng sai | kiểm trên 12 tháng + toàn kỳ, loại dict tên biến, lỗi > ¼ số kỳ → loại; vòng tự sửa với lỗi thật |
+| `predict_flow.n_gpus` đếm mọi GPU bằng `nvidia-smi` và gán GPU tuyệt đối cho shard của W | chạy song song mỗi GPU một biến thể sẽ giẫm GPU nhau | `visible_gpus()` theo `CUDA_VISIBLE_DEVICES` |
+| `chain_next.py` lấy độ dài phiên = quota / 2.5 = 11.95 h khi acc đủ 30 h | `launch_many` (trần 11 h) từ chối, WR30 phần 4 không chạy 1 giờ | trần 10.9 h |
+| Thư mục run cũ còn `*.attach.log` có `STATUS=DONE` | watcher (ưu tiên attach log) không báo kernel mới cùng tên | đổi tên log / output cũ trước khi chạy lại cùng tên |
+| `ref_loss` sau khi dừng vì hạn phiên chỉ chạy ở một số rank (FSDP) | NCCL watchdog, mất adapter v3b lần 1 | chỉ khi `world == 1` và không `stopped_early` |
+| Đĩa container đầy (99 %) giữa bộ test | test dừng nửa chừng | xoá checkpoint / dataset staging cũ (`ds_*`, `runs/wr30p*`), cache pip; cache test sạch (chỉ `biz_*.pkl`) |
+
+### 8.2 Tổ chức thử nghiệm
+
+- **Mỗi GPU một biến thể:** `training/soup_job.py --eval-configs a.json,b.json,... --parallel-gpus 4` hợp nhất mô hình một lần rồi chạy các
+  cấu hình cùng lúc, mỗi cấu hình một nhóm GPU (cache riêng, chia CPU worker). Khi còn nhiều acc rảnh, nhanh nhất là mỗi biến thể một phiên
+  DP 4 trên acc riêng (~35 phút / 1000 câu); chế độ mỗi GPU một biến thể dùng khi thiếu acc / phiên.
+- Đo thành phần bằng **so ghép cặp** (cùng câu, cùng S, chỉ khác thành phần) và **phát lại offline** trên log (bộ chọn, ngưỡng) — không cần GPU.
+- Trần thời gian cho bước W trong container (`units_max_s`, giết cả nhóm tiến trình kèm engine vLLM) để bài nộp không mất khi W chậm.
+- Trước khi đẩy: CPU `tests/run_all.sh` (26 test), smoke `eval_flow` với mô hình giả cho từng cấu hình mới.
+
+### 8.3 Dùng GPU (user 14/11: 2 phiên × 4 L4 mỗi acc, không tiết kiệm acc / GPU)
+
+| Việc | Cách chia | Số đo |
+|---|---|---|
+| Huấn luyện LoRA (r 32) | FSDP trên cả 4 L4 (`training/full_job.py`), micro-batch 4, batch hiệu dụng 64 bằng gradient accumulation, bf16; nối checkpoint qua acc khi một phiên không đủ (`chain_next.py`) | 1.74k tok/s (v4: 11M token / 50 bước ≈ 1.9 h; v3b 19.2M / 87 bước ≈ 3.2 h); WR30 phần cuối 11.1k tok/s (chuỗi ngắn) |
+| Đánh giá một cấu hình | DP 4 (một bản mô hình / GPU, vLLM fp8, `gpu_util` 0.92 → KV gần hết 24 GB / GPU), hàng đợi động theo DN | `pub_full` 1000 câu, tính cả W (≈ 11–13 phút, 4 shard song song): k 8 ≈ 34 phút, k 16 ≈ 41–43 phút |
+| Nhiều biến thể | mỗi biến thể một phiên DP 4 trên acc riêng khi còn nhiều acc (nhanh nhất về thời gian tường: lưới 9 biến thể public xong trong ~2 h); `soup_job --parallel-gpus 4` (mỗi GPU một biến thể, hợp nhất mô hình một lần) khi thiếu phiên | lưới 14/11: 9 phiên song song trên 8 acc |
+| Quota | 4×L4 tốn ~2 h quota / giờ tường; acc 30 h ≈ 12–15 h tường / tuần; `launch_many.py` kiểm quota và trần 11 h / phiên | 14/11: 29 acc × 30 h |
+

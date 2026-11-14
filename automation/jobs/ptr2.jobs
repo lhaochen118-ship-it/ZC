@@ -1,1 +1,0 @@
-run_kaggle.py train OUT/ptr2 --script paraphrase_llm.py --model Qwen/Qwen3.5-9B --n 4 --quant fp8

@@ -1,1 +1,0 @@
-b093d46 User task after plan 1 recorded (docs/13_TASK_AFTER_PLAN1.md verbatim): stop only at 100 % public original via general improvements without held-out loss; error analysis / literature / plan 2 loop; CLAUDE.md pointer, STATUS 'Tiến độ P2' table

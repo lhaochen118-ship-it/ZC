@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/q1s9a35 --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters QS9 --weights 0.35 --sets pub_full,pub_ho400,tr_ho400 --eval-config configs/flow_pure.json

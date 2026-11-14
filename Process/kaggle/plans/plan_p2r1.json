@@ -1,5 +1,0 @@
-[
- {"acc": "nhatlong1103", "name": "p2r1a", "jobs": "automation/jobs/p2r1a.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nhatlong1103/zc-para,nhatlong1103/zc-final-adapter", "--no-preflight"]},
- {"acc": "nhatlong1103", "name": "p2r1b", "jobs": "automation/jobs/p2r1b.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nhatlong1103/zc-para,nhatlong1103/zc-final-adapter", "--no-preflight"]},
- {"acc": "mucnokieu", "name": "p2r1c", "jobs": "automation/jobs/p2r1c.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "mucnokieu/zc-para,mucnokieu/zc-final-adapter", "--no-preflight"]}
-]

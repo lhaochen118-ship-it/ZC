@@ -1,9 +1,0 @@
-[
- {"acc": "quynhtran35", "name": "e0", "jobs": "automation/jobs/v35_e0.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhtran35/zc-para"]},
- {"acc": "quynhtran35", "name": "e0think", "jobs": "automation/jobs/v35_e0_think.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhtran35/zc-para"]},
- {"acc": "quynhle07", "name": "s0", "jobs": "automation/jobs/v35_s0.jobs", "args": ["--ms", "google/gemma-4/transformers/gemma-4-12b-it/2", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para"]},
- {"acc": "quynhle07", "name": "abfull", "jobs": "automation/jobs/v35_ab_full.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "quynhle07/zc-para"]},
- {"acc": "nguyenhoa99", "name": "abgram", "jobs": "automation/jobs/v35_ab_gram.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nguyenhoa99/zc-para"]},
- {"acc": "nguyenhoa99", "name": "abnoind", "jobs": "automation/jobs/v35_ab_noind.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nguyenhoa99/zc-para"]},
- {"acc": "synchan5704", "name": "abnoacc", "jobs": "automation/jobs/v35_ab_noacc.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "synchan5704/zc-para"]}
-]

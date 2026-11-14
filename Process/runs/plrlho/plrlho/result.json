@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "WG1": "/kaggle/input/datasets/linhmai24/zc-wg-adapters/WG1/adapter"
+ },
+ "weights": [
+  0.35
+ ],
+ "merge_rc": 0,
+ "merge_s": 95,
+ "eval_rc": 0,
+ "eval_s": 1351
+}

@@ -1,4 +1,0 @@
-[
- {"acc": "linhmai24", "name": "p2r11s34", "jobs": "automation/jobs/p2r11s34.jobs", "est_h": 1.6, "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "linhmai24/zc-para,linhmai24/zc-final-adapter", "--no-preflight"]},
- {"acc": "linhmai24", "name": "p2r11s34s1", "jobs": "automation/jobs/p2r11s34s1.jobs", "est_h": 1.6, "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "linhmai24/zc-para,linhmai24/zc-final-adapter", "--no-preflight"]}
-]

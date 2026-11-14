@@ -1,4 +1,0 @@
-[
- {"acc": "mucnokieu", "name": "pfwc05allthink", "jobs": "automation/jobs/pf_wc05_allthink.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "mucnokieu/zc-para,mucnokieu/zc-adapters-m1", "--no-preflight"]},
- {"acc": "mucnokieu", "name": "pfwc05thinks1", "jobs": "automation/jobs/pf_wc05_think_s1.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "mucnokieu/zc-para,mucnokieu/zc-adapters-m1", "--no-preflight"]}
-]

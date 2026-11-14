@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/wg3r --script training/arms_job.py --model Qwen/Qwen3.5-9B --train --arms WG9=d1_full.jsonl,d2mix_full.jsonl|seed=31+WG10=d1_full.jsonl,d2mix_full.jsonl|seed=32+WG11=d1_full.jsonl,d2_full.jsonl,d2b_full.jsonl|seed=33,budget=2.1e7+WG12=d1_full.jsonl,d2_full.jsonl,d2b_full.jsonl|seed=34 --data wg --budget 14.7e6 --no-eval --max-len 4608 --mb 2

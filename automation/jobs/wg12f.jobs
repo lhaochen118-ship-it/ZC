@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/WG12 --script training/full_job.py --model Qwen/Qwen3.5-9B --train --data wg --r 32 --alpha 64 --lr 2e-4 --epochs 1 --mb 4 --eff-batch 64 --max-len 4608 --no-eval --files d1_full.jsonl,d2_full.jsonl,d2b_full.jsonl --seed 34 --budget 14.7e6

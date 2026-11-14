@@ -1,7 +1,0 @@
-[
- {"acc": "yuan1103", "name": "d3self", "jobs": "automation/jobs/d3_self.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--train-data", "d3", "--no-preflight"]},
- {"acc": "anderson1202", "name": "d3qwen27", "jobs": "automation/jobs/d3_qwen27.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1,nsalzman/qwen3-6-27b-fp8/transformers/fp8/6", "--ks", "nhatlong1103/zc-assets", "--train-data", "d3", "--no-preflight"]},
- {"acc": "anderson1202", "name": "d3gemma31", "jobs": "automation/jobs/d3_gemma31.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1,google/gemma-4/transformers/gemma-4-31b-it/1", "--ks", "nhatlong1103/zc-assets", "--train-data", "d3", "--no-preflight"]},
- {"acc": "loinguyentran", "name": "d3qwen35a3b", "jobs": "automation/jobs/d3_qwen35a3b.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1,zerabytex/qwen-3-6-35b-a3b-fp8/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--train-data", "d3", "--no-preflight"]},
- {"acc": "loinguyentran", "name": "d3gptoss", "jobs": "automation/jobs/d3_gptoss.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1,danielhanchen/gpt-oss-120b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--train-data", "d3", "--no-preflight"]}
-]

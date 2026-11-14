@@ -1,4 +1,0 @@
-[
- {"acc": "nguyenhoa99", "name": "wisea07", "jobs": "automation/jobs/wise_s4_a07.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nguyenhoa99/zc-para,nguyenhoa99/zc-adapters-r1,nguyenhoa99/zc-adapters-r2", "--no-preflight"]},
- {"acc": "nguyenhoa99", "name": "wisea035", "jobs": "automation/jobs/wise_s4_a035.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nguyenhoa99/zc-para,nguyenhoa99/zc-adapters-r1,nguyenhoa99/zc-adapters-r2", "--no-preflight"]}
-]

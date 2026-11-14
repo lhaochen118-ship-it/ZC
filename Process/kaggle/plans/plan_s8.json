@@ -1,4 +1,0 @@
-[
- {"acc": "huyenco", "name": "soup8v2a05", "jobs": "automation/jobs/soup8v2_a05.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "huyenco/zc-para,huyenco/zc-adapters-wc,huyenco/zc-adapters-wc2", "--no-preflight"]},
- {"acc": "synchan5704", "name": "soup8v2a035", "jobs": "automation/jobs/soup8v2_a035.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "synchan5704/zc-para,synchan5704/zc-adapters-wc8", "--no-preflight"]}
-]

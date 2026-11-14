@@ -1,0 +1,12 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/huuhien95/zc-v3a-adapter/V3A/adapter"
+ },
+ "weights": [
+  0.35
+ ],
+ "merge_rc": 0,
+ "merge_s": 225,
+ "eval_rc": 0,
+ "eval_s": 1273
+}

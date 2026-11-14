@@ -1,6 +1,0 @@
-[
- {"acc": "huyenco", "name": "p2r3g", "jobs": "automation/jobs/p2r3g.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "huyenco/zc-para,huyenco/zc-final-adapter", "--no-preflight"]},
- {"acc": "huyenco", "name": "p2r3gs1", "jobs": "automation/jobs/p2r3gs1.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "huyenco/zc-para,huyenco/zc-final-adapter", "--no-preflight"]},
- {"acc": "nhatlong1103", "name": "p2r3d", "jobs": "automation/jobs/p2r3d.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nhatlong1103/zc-para,nhatlong1103/zc-final-adapter", "--no-preflight"]},
- {"acc": "nhatlong1103", "name": "p2r3cs1", "jobs": "automation/jobs/p2r3cs1.jobs", "args": ["--ms", "danbth/qwen3-5-9b/transformers/default/1", "--ks", "nhatlong1103/zc-assets", "--ds", "nhatlong1103/zc-para,nhatlong1103/zc-final-adapter", "--no-preflight"]}
-]

@@ -1,0 +1,21 @@
+[
+ {
+  "acc": "duylnng",
+  "name": "s3a",
+  "jobs": "automation/jobs/s3a.jobs",
+  "est_h": 2.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,yeshenhi/zc-train-wheels",
+   "--ds",
+   "duylnng/zc-ad3",
+   "--train-data",
+   "s3a",
+   "--no-preflight",
+   "--env",
+   "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True"
+  ]
+ }
+]

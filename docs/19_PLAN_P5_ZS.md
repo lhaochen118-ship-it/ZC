@@ -105,3 +105,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 14:40 **P02 + phán xử không trần** (E88 tự phán xử câu bất đồng, 4618 s): ensemble **0.788** (Δ +0.007 vs bỏ phiếu P02 0.781, z 1.1); point+think 0.781, list 0.775, point 0.768. Tốt nhất zero-shot tới giờ: **0.788** (Δ +0.034 vs mốc 0.754). Phán xử MoE chậm (77 phút) → trong luồng cần trần ≥ 5400 s (P02x đang đo).
 - 15:10 **C2** (framework 0.952 + T01 + k24): **0.913** (953 / 40 / 7; −0.039 vs 0.952, z −5.7) → kém; chờ C1 (chỉ + T01) để tách T01 với k24.
 - 15:20 **C1** (framework 0.952 + T01): **0.905** (947 / 42 / 11; −0.047, z −6.6). Trước khi kết luận T01 hại bản tuned: chạy **C0 = `flow_p5_final` trên code hiện tại** (neo EXP-003) để loại trừ trôi code từ D1 (14/11).
+- 15:25 **I02** (giải mã ràng buộc grammar toolkit): **0.675** (Δ −0.079, z −7.4), **337 phút** (ngân sách 20,400 s gần hết, phán xử bị bỏ), util GPU 8 % (mask grammar tính trên CPU) → **loại** (sai cả điểm lẫn tốc độ).

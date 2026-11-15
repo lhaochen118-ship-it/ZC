@@ -75,3 +75,6 @@ chính lần chạy, không tốn GPU.
 | es2s1p | S′ seed 1 | 0.861 | 0.860 | hai seed S′ đều < mốc (0.856 / 0.861) → S′ riêng loại; chờ S′ + WT-b |
 | pwtb | WT-b viết hàm (20 hàm, W = S: 14) | 0.855 | 0.850 | pub_ind 0.561 (mốc 0.606): hàm đúng hơn trên train held-out chưa thành điểm public — S gọi hàm ở 10 % mẫu |
 | pwtb8 | WT-b, 8 mẫu + 2 vòng sửa (21 hàm) | 0.846 | 0.837 | kém hơn |
+| ps2b | S′ seed 2 + WT-b | 0.830 | — | 69 sai: S′ và WT-b cùng kéo xuống |
+| (offline, log H0a / pwtb) | mẫu gọi hàm cửa hàng: hàm do S viết đúng 0.514 khi được gọi; hàm WT-b đúng **0.149** | — | — | WT-b viết hàm "lười" gọi hàm toolkit không liên quan (vd. `so_sua` = `top_customers`) vẫn qua kiểm thực thi 13 kỳ; câu mà đa số mẫu gọi hàm: S 13 đúng / 4 sai, WT-b 7 đúng / 10 sai → **loại G1 WT-b / WT-s**; hướng mới B′: bộ viết hàm = S (16 mẫu, có suy nghĩ + budget forcing) |
+| (offline) | gộp mẫu 2 lần chạy mốc (≈ k 32), bỏ phiếu thuần θ 0.5 | 0.857 (từng lần 0.851 / 0.855) | — | thêm mẫu gần như không tăng: đòn bẩy là chất lượng mẫu ở câu ngành (mẫu đúng ~0.2 ở câu khó) |

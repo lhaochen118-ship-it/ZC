@@ -613,6 +613,33 @@ def to_cards(mode, items, texts, names):
     return out
 
 
+def force_json(eng, convs, temps, seeds, think_tokens, schema, answer_tokens=2560):
+    """two-phase decoding for a thinking writer: (1) think, stopping at '</think>' or at think_tokens; (2) the rendered prompt +
+    the thought + '</think>' continued under the JSON schema. Every sample ends in a parseable answer (plan 4 G0b: 317 / 389
+    single-pass thoughts were still open at the cap, so those rows had no unit). Returns the texts '<thought></think>\\n\\n<json>'."""
+    from vllm import SamplingParams
+    so = {}
+    try:
+        from vllm.sampling_params import StructuredOutputsParams
+        so = {"structured_outputs": StructuredOutputsParams(json=schema)}
+    except ImportError:
+        from vllm.sampling_params import GuidedDecodingParams
+        so = {"guided_decoding": GuidedDecodingParams(json=schema)}
+    fitted = [eng.fit(c, think_tokens + answer_tokens, True) for c in convs]
+    idx = [i for i, (p, _) in enumerate(fitted) if p is not None]
+    sp = lambda i, n, **kw: SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=n, seed=seeds[i], **kw)
+    outs = eng.llm.generate([fitted[i][0] for i in idx], [sp(i, max(256, fitted[i][1] - answer_tokens), stop=["</think>"]) for i in idx],
+                            use_tqdm=False, lora_request=eng.lora)
+    thoughts = {i: o.outputs[0].text.split("</think>")[0].rstrip() for i, o in zip(idx, outs)}
+    p2 = [fitted[i][0] + thoughts[i] + "\n</think>\n\n" for i in idx]
+    outs2 = eng.llm.generate(p2, [sp(i, answer_tokens, **so) for i in idx], use_tqdm=False, lora_request=eng.lora)
+    texts = [""] * len(convs)
+    for i, o in zip(idx, outs2): texts[i] = thoughts[i] + "\n</think>\n\n" + o.outputs[0].text
+    print(f"[lrl_gen] budget forcing: {len(idx)} samples, {sum(len(o.outputs[0].token_ids) >= max(256, fitted[i][1] - answer_tokens) for i, o in zip(idx, outs))} "
+          f"thoughts closed at the cap", flush=True)
+    return texts
+
+
 def check_units(cands, split, cache):
     """run every not yet checked candidate unit on its shop's data (src/units.py verify): sets u['_ok'], u['_why'] (and '_sig')."""
     import units, ingest, automap
@@ -693,6 +720,7 @@ def main():
     ap.add_argument("--max-len", type=int, default=8192); ap.add_argument("--fake-responder", default="")
     ap.add_argument("--shard", default=""); ap.add_argument("--samples", type=int, default=3, help="unit: samples per rulebook row")
     ap.add_argument("--think-units", type=int, default=0, help="unit: the writer reasons first (4096-token cap)")
+    ap.add_argument("--think-force", type=int, default=1, help="unit with thinking: budget forcing (think to the cap, close, constrained JSON)")
     ap.add_argument("--unit-repairs", type=int, default=1, help="unit: self-debugging rounds (a failed function + its error -> new samples)")
     ap.add_argument("--rows", default="", help="unit (v2 G teacher): explicit rows jsonl {bid, term, definition, ...} instead of the split's industry / new rows")
     ap.add_argument("--shops", default="", help="rowgen: comma list of shops (default: every shop of the split)")
@@ -744,7 +772,9 @@ def main():
                                                      gpu_util=0.9, max_num_seqs=a.max_num_seqs, max_batched_tokens=16384 if a.max_num_seqs else 0,
                                                      spec_mtp=0, prefix_budget=0))
         seeds = [seed0 + i for i in range(len(convs))]
-        try: return eng[0].gen(convs, temps, seeds, mt, think=think, json_schema=js)[0]
+        if think and a.mode == "unit" and a.think_force:               # v2 B': budget forcing (s1, Muennighoff et al. 2025) — the
+            return force_json(eng[0], convs, temps, seeds, mt, UNIT_SCHEMA)   # writer thinks up to the cap, the thought is closed and the
+        try: return eng[0].gen(convs, temps, seeds, mt, think=think, json_schema=js)[0]   # answer is decoded as constrained JSON
         except Exception as e:                                          # a schema this vLLM / xgrammar refuses: unconstrained
             if js is None: raise
             print(f"[lrl_gen] constrained JSON unavailable ({type(e).__name__}: {str(e)[:200]}): unconstrained", flush=True)

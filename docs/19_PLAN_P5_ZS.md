@@ -100,3 +100,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   V3A / WL1 / WJR1 chỉ áp được cho Qwen3.5-9B; E88 + 9B > 15B (không hợp lệ). Đẩy: C1 = 0.952 + T01, C2 = C1 + k24 (9B tuned, có
   `industry.py`), C3 = E88 zero-shot + `industry.py` + T01 + trần phán xử 5400 s, C4 = E88 + `industry.py`; chuẩn bị fine-tune LoRA S trên E88 bf16
   (cắt từ bf16 chính thức trong kernel, FSDP 4×L4, LoRA attention + linear-attention + shared expert; ghép LoRA vào FP8 để phục vụ).
+- 13:45 **V02 seed 2** (4B phán xử, log B00-S s1): point+think 0.750 (Δ −0.005), ensemble 0.738 → gộp 2 seed point+think ≈ +0.005: **không xác nhận**, loại.

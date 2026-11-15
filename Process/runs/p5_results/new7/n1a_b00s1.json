@@ -1,0 +1,19 @@
+{
+ "candidates": 2840,
+ "fidelity": 0.9944,
+ "flagged": 6,
+ "questions_with_flag": 4,
+ "s": 205,
+ "base": {
+  "PA": 0.755,
+  "correct": 831,
+  "wrong": 76,
+  "abstain": 93
+ },
+ "n1a_drop": {
+  "PA": 0.755,
+  "correct": 831,
+  "wrong": 76,
+  "abstain": 93
+ }
+}

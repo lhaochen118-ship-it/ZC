@@ -1,4 +1,5 @@
 run,config,PA_container,PA_ensemble,correct,wrong,abstain,PA_pub_ind,PA_pub_noind,dZS_vs_B00S,z,wall_min,gpu_util,peak_gb
+c0,flow_p5_final,0.921,0.921,956,35,9,0.8699,0.9398,0.167,12.94,68,35.9,21.2
 c2,flow_c2_t01k24,0.913,0.913,953,40,7,0.881,0.9248,0.159,12.12,70,38.4,21.6
 c1,flow_c1_t01,0.905,0.905,947,42,11,0.8662,0.9193,0.151,11.37,76,30.2,21.1
 c3,flow_c3_moe_ind_t01,0.87,0.87,928,58,14,0.881,0.8659,0.116,8.85,115,44.9,22.0

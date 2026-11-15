@@ -1,0 +1,24 @@
+[
+ {
+  "acc": "mxuanquy",
+  "name": "e4m",
+  "jobs": "automation/jobs/p5/e4m.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,mxuanquy/zc-mgs3-1,mxuanquy/zc-mgl3-1,mxuanquy/zc-mgj3-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "mxuanquy",
+  "name": "e3s1",
+  "jobs": "automation/jobs/p5/e3s1.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,mxuanquy/zc-mgs3-1,mxuanquy/zc-mgl3-1,mxuanquy/zc-mgj3-1",
+   "--no-preflight"
+  ]
+ }
+]

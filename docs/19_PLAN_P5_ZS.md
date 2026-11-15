@@ -111,3 +111,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   B00-S s0 trong 144 s, trung thực 0.995): **0 ứng viên đổi đáp án** → không tác dụng; N1-B đóng theo cổng. N7-A / N3-A / N6-A: prompt dựng
   offline (`new7_build.py`), một lượt vLLM chung (`src/new7_gen.py`), chấm CPU (`new7_score.py`).
 - 16:05 **P02 seed 2 = 0.777** (Δ +0.023 vs B00-S, z 2.0) → **P02 xác nhận qua 2 seed**: TB 0.779 (Δ +0.025; z 2.3 / 2.0). Backbone zero-shot tốt nhất: MoE tỉa theo tác vụ 88 expert (13.96B).
+- 16:05 **C3** (MoE E88 zero-shot + `industry.py` + T01 + phán xử 5400 s, framework 0.952 không LoRA) = **0.870** (928 / 58 / 14) vs B00-I (9B zero-shot + industry) 0.818. E4 lỗi (failover sang caotienminh1 trước khi chặn → STALE CODE) → chạy lại E4 + E3 seed 2 trên acc mới mxuanquy (30 h) sau khi ghép 3 LoRA tại đó.

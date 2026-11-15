@@ -93,3 +93,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | pwts | WT-s viết hàm (20 hàm) | 0.846 | — | 62 sai; cùng hướng WT-b → loại |
 | pwtbk24 | WT-b + k24 | 0.849 | — | loại (WT-b, k24 đều không giúp) |
 | pwtbma1 | WT-b, giữ hàm không cần đồng thuận (29 hàm) | 0.848 | — | thêm hàm → thêm sai (64) → loại |
+| ps1b | S′ seed 1 + WT-b | 0.842 | — | loại |

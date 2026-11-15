@@ -56,6 +56,6 @@ Cho Agent nhận dự án ở khung chat mới. Đọc theo thứ tự, dừng k
 
 1. Sửa lỗi gộp container (phán xử bỏ trả lời bị S ghi đè) + test CPU + xác nhận offline trên `Process/runs/v2/h0a`.
 2. Thu + chấm + lưu kết quả 7 kernel còn chạy lúc bàn giao; ghi `handoff/06` §5.
-3. S″: `uq_filter` → `s3_build` (s3f) → `plan_s3f`; `plan_es3ar` khi s3a xong; `plan_phut` sau khi `tests/run_all.sh` PASS.
+3. S″: `uq_filter` → `s3_build` (s3f) → `plan_s3f`; `plan_es3ar` khi s3a xong; `plan_phut` (bộ test đã ALL PASS 15/11 04:40).
 4. Chọn cấu hình nộp (điểm container chế độ H cao nhất) → `configs/flow_v2_final.json` → Docker + 1 lần chạy bố cục image trên Kaggle, trước
    **16/11 04:00 UTC**.

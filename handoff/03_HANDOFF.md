@@ -72,8 +72,8 @@ Kết quả nào đã về trước khi đóng phiên được ghi ở `handoff/
      `python3 training/data/s3_build.py training/data/out/s3f --unitq training/data/out/s3/uqf --units training/data/out/s3/units_train.jsonl --name s3f.jsonl --u2 1500 --replay 600`
      → đẩy `automation/plans_v2/plan_s3f.json` (duylnng phiên 2);
    - khi s3a xong: đẩy `plan_es3ar.json` (đo S″-A trên hàm H0a, cùng acc duylnng); so ghép cặp với H0a.
-4. **phut** (S viết hàm có suy nghĩ + budget forcing, `plan_phut.json`, caotienminh1): mã đã có, test `test_force_json` PASS; bộ test đầy đủ
-   phải PASS trước khi đẩy.
+4. **phut** (S viết hàm có suy nghĩ + budget forcing, `plan_phut.json`, caotienminh1): mã đã có; **`tests/run_all.sh` ALL PASS** (15/11 04:40, gồm `test_force_json`)
+   → sẵn sàng đẩy.
 5. **Chọn cấu hình nộp** = cấu hình chế độ H có điểm container cao nhất (sau bước 1), cập nhật `configs/flow_v2_final.json`; nếu S đổi (S″), thêm
    adapter vào `nhatlong1103/zc-final-adapter` (soup.json: V3A 0.70 + S3A 1.0) và sửa `src/adapter_hashes.json`.
 6. **Docker trước 16/11 04:00 UTC:** `docker/fetch_assets.sh` (mô hình + `ADAPTER_DS` + `W_ADAPTER_DS=nhatlong1103/zc-w-v2`) → `build.sh` →

@@ -1,16 +1,19 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-15 06:10 UTC. User 06:00: báo cáo score, **ngắt các hướng không tiềm năng**, user sẽ đổi hướng nghiên cứu. Đóng băng 16/11
-04:00 UTC. Findings mới nhất: PDF 1 §9 (tích cực §9.2, tiêu cực §9.3, đang chạy §9.4). Lỗi + cách tránh: PDF 2 §10.*
+*Cập nhật 2026-11-15 07:00 UTC. User 06:00: báo cáo score, **ngắt các hướng không tiềm năng**, user sẽ đổi hướng nghiên cứu (chờ chỉ thị;
+không đẩy kernel mới). Đóng băng 16/11 04:00 UTC. Findings: PDF 1 §9. Lỗi + cách tránh: PDF 2 §10. Nhật ký kết quả: `handoff/06` §7.*
 
-**Tốt nhất chế độ H:** mốc `configs/flow_v2_final.json` (= `flow_p5_final_h`) 0.863 ensemble (container sau sửa gộp = ensemble); WT-b v2 0.864
-(≈ mốc, hướng WT đã đóng). Hàm cửa hàng do S viết đóng góp +0.03 (không hàm: 0.834). Lỗi gộp container đã sửa (`merge_sub first_decides`).
+**Tốt nhất chế độ H:** phux2n (I3, 2 ví dụ tự sinh / cửa hàng) **0.869** nhưng ghép cặp +0.006 (z +0.7) = nhiễu (chỉ 14 ví dụ cho 3 cửa hàng sống
+qua kiểm thực thi); mốc `configs/flow_v2_final.json` 0.859–0.863 (3 lần: H0a, H0a2, pfix; pfix có sửa gộp → container = ensemble). Hàm cửa hàng do
+S viết đóng góp +0.03 (không hàm: 0.834).
 
-**Đã đóng (ngắt 06:05):** WT (mọi biến thể), thêm mẫu (k24, u16), S′, F, phán xử / ngưỡng, Qwen gốc làm kênh 2.
+**Đã đóng:** WT (mọi biến thể), thêm mẫu (k24, u16), S′, F, phán xử / ngưỡng, Qwen gốc làm kênh 2 (06:05); bộ viết hàm có suy nghĩ (phut 0.839,
+z −2.3; ngắt phmq2t 06:53).
 
-**Còn chạy (hướng chưa đo, nhắm chất lượng hàm cửa hàng — PDF 1 §9.4):** pfix, phux, phux2n, phcodeb, phux2b, phqcb, phuvb, phmq, phmqx,
-phmquv, phqcuv?, phquvx, phmqc, phall, phmq2, phmq2uv, phmq2x, phmq2t, phut; S″: es3ar (đo S″-A), s3f → es3fr. Kết quả về 06:50–08:30;
-chấm bằng `python3 Process/tools/v2/grid_report.py <runs dir>`.
+**Kết quả giai đoạn C:** pfix 0.859, phux 0.857 (16 ví dụ / 2 cửa hàng), phux2n 0.869, phut 0.839.
+
+**Còn chạy (watcher `watch.out` + Monitor):** phcodeb, phux2b, phqcb, phuvb, phmq, phmqx, phmquv, phquvx, phmqc, phall, phmq2, phmq2uv, phmq2x;
+S″: es3ar (S″-A), es3fr (S″-A′, đẩy 06:32). Kết quả tới ~08:45; chấm `python3 Process/tools/v2/grid_report.py <runs dir>`.
 
 ## Tiến độ v2 (lịch sử, 14/11 17:05 → 15/11 03:40)
 | Bước | Acc / kernel | Trạng thái | Kết quả |

@@ -94,7 +94,8 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
             "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0)),
             "--unit-repairs", str(int(c.get("units_repairs", 1))), "--think-tokens", str(int(c.get("units_think_tokens", 4096))),
             "--max-len", str(int(c.get("units_max_len", 16384 if int(c.get("units_think", 0) or 0) else 8192))),
-            "--min-agree", str(int(c.get("units_min_agree", 0) or 0))] + \
+            "--min-agree", str(int(c.get("units_min_agree", 0) or 0)), "--units-multi", str(int(c.get("units_multi", 0) or 0)),
+            "--units-qctx", str(int(c.get("units_qctx", 0) or 0))] + \
            (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
     devs = visible_gpus()
     ng = 1 if fake else max(1, len(devs))                              # one shard of the rows per (visible) GPU, in parallel

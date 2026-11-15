@@ -96,3 +96,23 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | ps1b | S′ seed 1 + WT-b | 0.842 | — | loại |
 | pwtbu24 | WT-b, 24 mẫu viết hàm | 0.846 | — | loại |
 | pbase | Qwen gốc làm bộ giải (kênh thứ 2 để gộp) | — | 0.753 (container) | quá yếu → loại |
+| pwtbw1r | WT-b + W1 sinh lại chế độ H | 0.847 | 0.845 (container) | loại |
+| phu16 | S viết hàm 16 mẫu, đồng thuận ≥ 3 (15 hàm) | 0.853 | 0.847 | không giúp: hàm sai lặp lại (đếm xe 0/32, tỉ lệ bảo hành 0/18, khách phải trả 0/46) |
+| phnou | không hàm (đối chứng) | 0.834 | 0.831 | **hàm do S viết đóng góp ~+0.03** |
+| pwtbv2 | WT-b v2 (+204 hàm tổng hợp) | **0.864** | 0.859 | ≈ mốc (0.863 / 0.860); tốt hơn WT-b v1 (0.855) |
+
+## 7. Giai đoạn C (04:40 UTC, user: chạy tiếp, nhiều biến thể song song) — sửa gộp + I2–I5
+
+- **Sửa lỗi gộp container** (`merge_sub first_decides`): từ đây container = ensemble.
+- I2 `units_code`: S thấy mã nguồn hàm. I3 `unit_examples`: ví dụ tự sinh của chính cửa hàng (Qwen viết câu + chương trình gọi hàm, kiểm thực thi).
+  I4 `units_multi`: 1–3 hàm / dòng rulebook. I5 `units_qctx`: bộ viết hàm thấy câu hỏi thật của cửa hàng có dùng thuật ngữ.
+
+| Lần chạy | Cấu hình | Acc |
+|---|---|---|
+| pfix | mốc (đã sửa gộp) | loinguyentran |
+| phcode | I2 | loinguyentran |
+| phux / phux2 / phux2n / phux1c | I3 (1) / I3 (2) + I2 / I3 (2) / I3 (1) + I2 | thnliu, linhmai24 |
+| phmu / phqc | I4 / I5 | phatle1578 |
+| phmq / phmqx | I4 + I5 / I4 + I5 + I3 (2) | lelynhan |
+| phut | S viết hàm có suy nghĩ + budget forcing | caotienminh1 |
+| s3a → es3ar, s3f | S″-A / S″-A′ (UQ lọc: giữ 709 / 1,336 cặp S đồng ý) | duylnng |

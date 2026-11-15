@@ -353,6 +353,21 @@ UNIT_SCHEMA = {"type": "object", "properties": {
     "required": ["plan", "name", "signature", "doc", "triggers", "code"], "additionalProperties": False}
 
 
+UNIT_MULTI_SCHEMA = {"type": "object", "properties": {                # v2 I4: 1-3 functions per rulebook row
+    "plan": {"type": "string", "maxLength": 900},
+    "functions": {"type": "array", "minItems": 0, "maxItems": 3, "items": {"type": "object", "properties": {
+        "name": {"type": "string", "maxLength": 48}, "signature": {"type": "string", "maxLength": 120}, "doc": {"type": "string", "maxLength": 300},
+        "triggers": {"type": "array", "items": {"type": "string", "maxLength": 60}, "maxItems": 8},
+        "code": {"type": "array", "items": {"type": "string", "maxLength": 200}, "maxItems": 40}},
+        "required": ["name", "signature", "doc", "triggers", "code"], "additionalProperties": False}}},
+    "required": ["plan", "functions"], "additionalProperties": False}
+UNIT_MULTI_TAIL = ("\n\nCÓ THỂ VIẾT 1–3 HÀM cho dòng này: một hàm cho mỗi đại lượng mà dòng định nghĩa (một dòng có thể định nghĩa vài đại lượng, "
+                   "ví dụ một số đếm và một số trung bình); nếu dòng định nghĩa một cách nhóm / phân loại (ví dụ cách xác định nhóm của một "
+                   "mặt hàng hay một khách), viết hàm trả BẢNG đại lượng chính (số lượng, doanh thu hoặc số đơn) theo nhóm đó trong kỳ p, sắp "
+                   "giảm dần. Mỗi hàm theo đúng các quy tắc trên. Trả lời JSON: {\"plan\": ..., \"functions\": [{name, signature, doc, triggers, "
+                   "code}, ...]} (functions rỗng khi dòng không phải đại lượng tính được).")
+
+
 def unit_prompt(b, card, term, definition, sec):
     """the tool writer's prompt for one rulebook row of shop b (card = _tables_card of its tables): the same text at inference
     (unit_items) and in the WT training data (v2 G, training/data/wt_build.py)."""
@@ -405,6 +420,33 @@ def unit_items(split, cache):
             u = unit_prompt(b, card, term, definition, sec)
             items.append(({"bid": b, "term": term, "definition": definition, "section": sec, "rulebook": __import__("lrl").rb_key(rb)}, u))
     return items
+
+
+def add_question_context(split, items, n=6):
+    """v2 I5 (15/11): the writer sees how the owner asks about the term — up to n questions of THIS shop in the split (inference
+    inputs, no answers) whose accent-free text contains the accent-free term (or one of its words of >= 4 letters when none does),
+    so the function's shape (a total, a ranking table, a parameter) matches the questions. Returns the items with the block added."""
+    import dm
+    qs = [json.loads(l) for l in open(os.path.join(split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    by = {}
+    for q in qs: by.setdefault(q["business_id"], []).append(q)
+    out = []
+    for m, u in items:
+        pool = by.get(m["bid"], [])
+        def has(q, phrase):                                             # accented match; accent-free only for a question typed
+            ql = q["question"].lower()                                  # without diacritics ('hãng' must not match 'hàng')
+            w = lambda x, t: re.search(r"(?<!\w)" + re.escape(x) + r"(?!\w)", t)
+            na = lambda x: "".join(c for c in __import__("unicodedata").normalize("NFD", x.replace("đ", "d").replace("Đ", "D")) if not __import__("unicodedata").combining(c))
+            return bool(w(phrase.lower(), ql) or (na(ql) == ql and w(na(phrase.lower()), ql)))
+        hit = [q for q in pool if has(q, m["term"])]
+        if not hit:
+            ws = [x for x in m["term"].split() if len(x) >= 3]
+            hit = [q for q in pool if ws and all(has(q, x) for x in ws)]
+        if hit:
+            u = u + "\n\n# CÂU HỎI CỦA CHỦ CỬA HÀNG CÓ DÙNG THUẬT NGỮ NÀY (để hàm đúng dạng cách hỏi; không trả lời chúng)\n" + \
+                "\n".join(f"- {q['question']}" for q in hit[:n])
+        out.append((m, u))
+    return out
 
 
 def _shop_load(split, cache, b):
@@ -568,6 +610,9 @@ def to_cards(mode, items, texts, names):
             t, d, q = (str(j.get(k) or "").strip() for k in ("term", "definition", "question"))
             if t and d and q and t.lower() in q.lower() and 2 <= len(t.split()) <= 6 and q != meta["orig_question"]:
                 out.append(dict(meta, term=t, definition=d, question=q, row=f"| {t} | {d} |"))
+        elif mode == "unit" and isinstance(j, dict) and isinstance(j.get("functions"), list):   # v2 I4: several functions per row
+            out += to_cards("unit", [(meta, None)] * len(j["functions"][:3]),
+                            [json.dumps(dict(f, plan=j.get("plan")), ensure_ascii=False) for f in j["functions"][:3] if isinstance(f, dict)], names)
         elif mode == "unit" and isinstance(j, dict):
             if not j.get("name") or not j.get("code"): continue
             name = re.sub(r"[^0-9a-zA-Z_]", "_", str(j["name"]))[:48].strip("_") or "unit"
@@ -658,7 +703,7 @@ def check_units(cands, split, cache):
         if ok: u["verified"] = {"sample": str(sample)[:200]}
 
 
-def select_units(cands, min_agree=2):
+def select_units(cands, min_agree=2, multi=0):
     """per (shop, term), among the candidates that ran with a non-degenerate result: the one whose results on the test periods most
     candidates share (self-consistency over the samples; ties -> fewer errors, then the earliest sample = temperature 0); kept when
     at least min_agree candidates share it. Returns (units, {row: why not})."""
@@ -668,6 +713,20 @@ def select_units(cands, min_agree=2):
         k = (u["bid"], u["term"])
         if u.get("_ok"): good[k].append(u)
         else: fails.setdefault(k, u.get("_why") or "not checked")
+    if multi:                                                          # v2 I4: every computation (result signature) that at least
+        for k, us in good.items():                                     # min_agree samples share is a unit (at most 3 per row)
+            votes = Counter(u.get("_sig") for u in us); names = set()
+            for sig, v in votes.most_common(3):
+                if v < min_agree: break
+                best = min((u for u in us if u.get("_sig") == sig), key=lambda u: (u.get("_nerr", 0), us.index(u)))
+                b = {x: y for x, y in best.items() if not x.startswith("_")}
+                if b["name"] in names or b["name"] in {o["name"] for o in out if o["bid"] == b["bid"]}:
+                    nn = f"{b['name']}_{len(names) + 2}"; b["code"] = b["code"].replace(f"def {b['name']}(", f"def {nn}(", 1)
+                    b["signature"] = b["signature"].replace(b["name"], nn, 1); b["name"] = nn
+                names.add(b["name"]); b["verified"] = dict(best.get("verified") or {}, agree=f"{v}/{len(us)} runnable samples")
+                out.append(b); fails.pop(k, None)
+            if not any(o["bid"] == k[0] and o["term"] == k[1] for o in out): fails[k] = f"no agreement ({votes.most_common(1)[0][1]} / {len(us)})"
+        return out, fails
     for k, us in good.items():
         votes = Counter(u.get("_sig") for u in us)
         best = max(us, key=lambda u: (votes[u.get("_sig")], -u.get("_nerr", 0), -us.index(u)))
@@ -721,6 +780,8 @@ def main():
     ap.add_argument("--shard", default=""); ap.add_argument("--samples", type=int, default=3, help="unit: samples per rulebook row")
     ap.add_argument("--think-units", type=int, default=0, help="unit: the writer reasons first (4096-token cap)")
     ap.add_argument("--think-force", type=int, default=1, help="unit with thinking: budget forcing (think to the cap, close, constrained JSON)")
+    ap.add_argument("--units-qctx", type=int, default=0, help="unit: show up to N of the split's questions that use the term (v2 I5)")
+    ap.add_argument("--units-multi", type=int, default=0, help="unit: 1-3 functions per rulebook row (v2 I4), every agreed computation kept")
     ap.add_argument("--unit-repairs", type=int, default=1, help="unit: self-debugging rounds (a failed function + its error -> new samples)")
     ap.add_argument("--rows", default="", help="unit (v2 G teacher): explicit rows jsonl {bid, term, definition, ...} instead of the split's industry / new rows")
     ap.add_argument("--shops", default="", help="rowgen: comma list of shops (default: every shop of the split)")
@@ -744,6 +805,8 @@ def main():
         p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
         items = induce_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
     elif a.mode == "unit": items = rows_items(a.split, a.cache, a.rows) if a.rows else unit_items(a.split, a.cache)
+    if a.mode == "unit" and a.units_multi: items = [(m, u + UNIT_MULTI_TAIL) for m, u in items]
+    if a.mode == "unit" and a.units_qctx: items = add_question_context(a.split, items, a.units_qctx)
     elif a.mode == "unitq": items = unitq_items(a.split, a.rows, a.samples)
     elif a.mode == "rowgen":
         shops = [x for x in a.shops.split(",") if x] or sorted(os.path.basename(d) for d in glob.glob(os.path.join(a.split, "data", "*")) if os.path.isdir(d))
@@ -759,7 +822,7 @@ def main():
                                                                         # lrl0c reasoned past the cap (13/11); the task is simple
     eng = [None]
     mt = (a.think_tokens if a.mode in ("unit", "rowgen") else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else (5000 if a.mode == "rowgen" else (700 if a.mode == "unitq" else 900))))   # unit: the writer often reasons in
-    js = UNIT_SCHEMA if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else (ROWGEN_SCHEMA if a.mode == "rowgen" and not think else (UNITQ_SCHEMA if a.mode == "unitq" else None)))       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
+    js = (UNIT_MULTI_SCHEMA if a.units_multi else UNIT_SCHEMA) if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else (ROWGEN_SCHEMA if a.mode == "rowgen" and not think else (UNITQ_SCHEMA if a.mode == "unitq" else None)))       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
                                                                         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap
     def generate(convs, temps, seed0):                                  # without reaching their JSON (13/11)
         if not convs: return []
@@ -773,7 +836,7 @@ def main():
                                                      spec_mtp=0, prefix_budget=0))
         seeds = [seed0 + i for i in range(len(convs))]
         if think and a.mode == "unit" and a.think_force:               # v2 B': budget forcing (s1, Muennighoff et al. 2025) — the
-            return force_json(eng[0], convs, temps, seeds, mt, UNIT_SCHEMA)   # writer thinks up to the cap, the thought is closed and the
+            return force_json(eng[0], convs, temps, seeds, mt, UNIT_MULTI_SCHEMA if a.units_multi else UNIT_SCHEMA)   # writer thinks up to the cap, the thought is closed and the
         try: return eng[0].gen(convs, temps, seeds, mt, think=think, json_schema=js)[0]   # answer is decoded as constrained JSON
         except Exception as e:                                          # a schema this vLLM / xgrammar refuses: unconstrained
             if js is None: raise
@@ -792,7 +855,7 @@ def main():
         ma = a.min_agree or (2 if a.samples >= 3 else 1)
         prompts = {(m["bid"], m["term"]): (m, u) for m, u in items}
         check_units(cards, a.split, a.cache)
-        sel, fails = select_units(cards, ma)
+        sel, fails = select_units(cards, ma, multi=a.units_multi)
         for r in range(max(0, a.unit_repairs)):                        # self-debugging: execution errors back to the writer
             it2, cv2 = repair_convs(cards, prompts, sel, ma, max(2, min(3, a.samples)))
             if not cv2: break
@@ -800,7 +863,7 @@ def main():
             tx2 = generate(cv2, [0.0 if i % k2 == 0 else 0.7 for i in range(len(cv2))], 90000 + 1000 * r)
             new = to_cards("unit", it2, tx2, names)
             check_units(new, a.split, a.cache); cards += new
-            n0 = len(sel); sel, fails = select_units(cards, ma)
+            n0 = len(sel); sel, fails = select_units(cards, ma, multi=a.units_multi)
             rep[f"repair{r + 1}"] = {"rows": len(cv2) // k2, "parsed": len(new), "units_before": n0, "units_after": len(sel)}
             print(f"[unit] repair round {r + 1}: {len(cv2) // k2} rows, {len(new)} parsed -> units {n0} -> {len(sel)}", flush=True)
             items, texts = items + it2, texts + tx2

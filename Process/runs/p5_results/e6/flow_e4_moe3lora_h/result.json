@@ -1,0 +1,8 @@
+{
+ "adapters": "NONE",
+ "merge_rc": 0,
+ "merge_s": 0,
+ "config": "configs/flow_e4_moe3lora_h.json",
+ "eval_rc": 0,
+ "eval_s": 8147
+}

@@ -1,0 +1,239 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T13:59:47Z
+hide_api: industry (exported to every phase)
+model /tmp/models/Qwen3.6-35B-A3B-E88-FP8  dp 4  config configs/flow_p5_zs_p02xk.json  runs up to 1
+lrl: bind for this split rc=[1, 1, 1, 1] (264s)
+lrl: aliases for this split rc=1 (733s)
+units shard 0: Traceback (most recent call last):
+units shard 0:   File "/kaggle/working/code/lrl_gen.py", line 886, in <module>
+units shard 0:     main()
+units shard 0:     ~~~~^^
+units shard 0:   File "/kaggle/working/code/lrl_gen.py", line 849, in main
+units shard 0:     texts = generate(convs, temps, a.seed)
+units shard 0:   File "/kaggle/working/code/lrl_gen.py", line 836, in generate
+units shard 0:     eng[0] = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
+units shard 0:              ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 0:                                              gpu_util=0.9, max_num_seqs=a.max_num_seqs, max_batched_tokens=16384 if a.max_num_seqs else 0,
+units shard 0:                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 0:                                              spec_mtp=0, prefix_budget=0))
+units shard 0:                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 0:   File "/kaggle/working/code/agent.py", line 690, in __init__
+units shard 0:     try: self.llm = LLM(**base, **kw_, **spec_); kw, spec = kw_, spec_; break
+units shard 0:                     ~~~^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 0:   File "/usr/local/lib/python3.13/dist-packages/vllm/entrypoints/llm.py", line 342, in __init__
+units shard 0:     self.llm_engine = LLMEngine.from_engine_args(
+units shard 0:                       ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+units shard 0:         engine_args=engine_args, usage_context=UsageContext.LLM_CLASS
+units shard 0:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 0:     )
+units shard 0:     ^
+units shard 0:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/llm_engine.py", line 191, in from_engine_args
+units shard 0:     return cls(
+units shard 0:         vllm_config=vllm_config,
+units shard 0:     ...<4 lines>...
+units shard 0:         multiprocess_mode=enable_multiprocessing,
+units shard 0:     )
+units shard 0:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/llm_engine.py", line 116, in __init__
+units shard 0:     self.engine_core = EngineCoreClient.make_client(
+units shard 0:                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+units shard 0:         multiprocess_mode=multiprocess_mode,
+units shard 0:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 0:     ...<4 lines>...
+units shard 0:         renderer=renderer,
+units shard 0:         ^^^^^^^^^^^^^^^^^^
+units shard 0:     )
+units shard 0:     ^
+units shard 0:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/core_client.py", line 126, in make_client
+units shard 1: Traceback (most recent call last):
+units shard 1:   File "/kaggle/working/code/lrl_gen.py", line 886, in <module>
+units shard 1:     main()
+units shard 1:     ~~~~^^
+units shard 1:   File "/kaggle/working/code/lrl_gen.py", line 849, in main
+units shard 1:     texts = generate(convs, temps, a.seed)
+units shard 1:   File "/kaggle/working/code/lrl_gen.py", line 836, in generate
+units shard 1:     eng[0] = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
+units shard 1:              ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 1:                                              gpu_util=0.9, max_num_seqs=a.max_num_seqs, max_batched_tokens=16384 if a.max_num_seqs else 0,
+units shard 1:                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 1:                                              spec_mtp=0, prefix_budget=0))
+units shard 1:                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 1:   File "/kaggle/working/code/agent.py", line 690, in __init__
+units shard 1:     try: self.llm = LLM(**base, **kw_, **spec_); kw, spec = kw_, spec_; break
+units shard 1:                     ~~~^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 1:   File "/usr/local/lib/python3.13/dist-packages/vllm/entrypoints/llm.py", line 342, in __init__
+units shard 1:     self.llm_engine = LLMEngine.from_engine_args(
+units shard 1:                       ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+units shard 1:         engine_args=engine_args, usage_context=UsageContext.LLM_CLASS
+units shard 1:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 1:     )
+units shard 1:     ^
+units shard 1:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/llm_engine.py", line 191, in from_engine_args
+units shard 1:     return cls(
+units shard 1:         vllm_config=vllm_config,
+units shard 1:     ...<4 lines>...
+units shard 1:         multiprocess_mode=enable_multiprocessing,
+units shard 1:     )
+units shard 1:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/llm_engine.py", line 116, in __init__
+units shard 1:     self.engine_core = EngineCoreClient.make_client(
+units shard 1:                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+units shard 1:         multiprocess_mode=multiprocess_mode,
+units shard 1:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 1:     ...<4 lines>...
+units shard 1:         renderer=renderer,
+units shard 1:         ^^^^^^^^^^^^^^^^^^
+units shard 1:     )
+units shard 1:     ^
+units shard 1:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/core_client.py", line 126, in make_client
+units shard 2: Traceback (most recent call last):
+units shard 2:   File "/kaggle/working/code/lrl_gen.py", line 886, in <module>
+units shard 2:     main()
+units shard 2:     ~~~~^^
+units shard 2:   File "/kaggle/working/code/lrl_gen.py", line 849, in main
+units shard 2:     texts = generate(convs, temps, a.seed)
+units shard 2:   File "/kaggle/working/code/lrl_gen.py", line 836, in generate
+units shard 2:     eng[0] = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
+units shard 2:              ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 2:                                              gpu_util=0.9, max_num_seqs=a.max_num_seqs, max_batched_tokens=16384 if a.max_num_seqs else 0,
+units shard 2:                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 2:                                              spec_mtp=0, prefix_budget=0))
+units shard 2:                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 2:   File "/kaggle/working/code/agent.py", line 690, in __init__
+units shard 2:     try: self.llm = LLM(**base, **kw_, **spec_); kw, spec = kw_, spec_; break
+units shard 2:                     ~~~^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 2:   File "/usr/local/lib/python3.13/dist-packages/vllm/entrypoints/llm.py", line 342, in __init__
+units shard 2:     self.llm_engine = LLMEngine.from_engine_args(
+units shard 2:                       ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+units shard 2:         engine_args=engine_args, usage_context=UsageContext.LLM_CLASS
+units shard 2:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 2:     )
+units shard 2:     ^
+units shard 2:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/llm_engine.py", line 191, in from_engine_args
+units shard 2:     return cls(
+units shard 2:         vllm_config=vllm_config,
+units shard 2:     ...<4 lines>...
+units shard 2:         multiprocess_mode=enable_multiprocessing,
+units shard 2:     )
+units shard 2:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/llm_engine.py", line 116, in __init__
+units shard 2:     self.engine_core = EngineCoreClient.make_client(
+units shard 2:                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+units shard 2:         multiprocess_mode=multiprocess_mode,
+units shard 2:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 2:     ...<4 lines>...
+units shard 2:         renderer=renderer,
+units shard 2:         ^^^^^^^^^^^^^^^^^^
+units shard 2:     )
+units shard 2:     ^
+units shard 2:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/core_client.py", line 126, in make_client
+units shard 3: Traceback (most recent call last):
+units shard 3:   File "/kaggle/working/code/lrl_gen.py", line 886, in <module>
+units shard 3:     main()
+units shard 3:     ~~~~^^
+units shard 3:   File "/kaggle/working/code/lrl_gen.py", line 849, in main
+units shard 3:     texts = generate(convs, temps, a.seed)
+units shard 3:   File "/kaggle/working/code/lrl_gen.py", line 836, in generate
+units shard 3:     eng[0] = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
+units shard 3:              ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 3:                                              gpu_util=0.9, max_num_seqs=a.max_num_seqs, max_batched_tokens=16384 if a.max_num_seqs else 0,
+units shard 3:                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 3:                                              spec_mtp=0, prefix_budget=0))
+units shard 3:                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 3:   File "/kaggle/working/code/agent.py", line 690, in __init__
+units shard 3:     try: self.llm = LLM(**base, **kw_, **spec_); kw, spec = kw_, spec_; break
+units shard 3:                     ~~~^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 3:   File "/usr/local/lib/python3.13/dist-packages/vllm/entrypoints/llm.py", line 342, in __init__
+units shard 3:     self.llm_engine = LLMEngine.from_engine_args(
+units shard 3:                       ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+units shard 3:         engine_args=engine_args, usage_context=UsageContext.LLM_CLASS
+units shard 3:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 3:     )
+units shard 3:     ^
+units shard 3:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/llm_engine.py", line 191, in from_engine_args
+units shard 3:     return cls(
+units shard 3:         vllm_config=vllm_config,
+units shard 3:     ...<4 lines>...
+units shard 3:         multiprocess_mode=enable_multiprocessing,
+units shard 3:     )
+units shard 3:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/llm_engine.py", line 116, in __init__
+units shard 3:     self.engine_core = EngineCoreClient.make_client(
+units shard 3:                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+units shard 3:         multiprocess_mode=multiprocess_mode,
+units shard 3:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+units shard 3:     ...<4 lines>...
+units shard 3:         renderer=renderer,
+units shard 3:         ^^^^^^^^^^^^^^^^^^
+units shard 3:     )
+units shard 3:     ^
+units shard 3:   File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/core_client.py", line 126, in make_client
+units: rc=[1, 1, 1, 1], 0 verified units (288s)
+links shard 0: (MainProcess pid=8280) WARNING 11-15 14:24:30 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 0: (MainProcess pid=8280) WARNING 11-15 14:24:30 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 8958
+links shard 1: (MainProcess pid=8281) WARNING 11-15 14:24:23 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 1: (MainProcess pid=8281) WARNING 11-15 14:24:23 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 9211
+links shard 2: (MainProcess pid=8282) INFO 11-15 14:24:18 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 2: (MainProcess pid=8282) INFO 11-15 14:24:18 [core_client.py:777] [shutdown] MPClient: complete
+links shard 3: (MainProcess pid=8283) INFO 11-15 14:24:29 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 3: (MainProcess pid=8283) INFO 11-15 14:24:29 [core_client.py:777] [shutdown] MPClient: complete
+links: rc=[0, 0, 0, 0], 1000 questions linked (464s)
+[dp] ingested 14 businesses in 49s
+--- shard0 rc=0
+DONE 1000 questions in 6125s
+(MainProcess pid=12118) INFO 11-15 16:07:28 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=13296) INFO 11-15 16:07:28 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=13296) INFO 11-15 16:07:28 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=13296) INFO 11-15 16:07:28 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=13296) INFO 11-15 16:07:28 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=12118) WARNING 11-15 16:07:32 [core_client.py:817] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+(MainProcess pid=12118) INFO 11-15 16:07:32 [core_client.py:770] [shutdown] MPClient: start timeout=default
+(MainProcess pid=12118) INFO 11-15 16:07:32 [core_client.py:772] [shutdown] MPClient: stopping engine manager
+(MainProcess pid=12118) INFO 11-15 16:07:32 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+(MainProcess pid=12118) INFO 11-15 16:07:32 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+(MainProcess pid=12118) INFO 11-15 16:07:32 [core_client.py:777] [shutdown] MPClient: complete
+
+--- shard1 rc=0
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+(MainProcess pid=12119) INFO 11-15 15:43:44 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=13289) INFO 11-15 15:43:44 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=13289) INFO 11-15 15:43:44 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=13289) INFO 11-15 15:43:44 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=13289) INFO 11-15 15:43:44 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=12119) WARNING 11-15 15:43:48 [core_client.py:817] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+(MainProcess pid=12119) INFO 11-15 15:43:48 [core_client.py:770] [shutdown] MPClient: start timeout=default
+(MainProcess pid=12119) INFO 11-15 15:43:48 [core_client.py:772] [shutdown] MPClient: stopping engine manager
+(MainProcess pid=12119) INFO 11-15 15:43:48 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+(MainProcess pid=12119) INFO 11-15 15:43:48 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+(MainProcess pid=12119) INFO 11-15 15:43:48 [core_client.py:777] [shutdown] MPClient: complete
+
+--- shard2 rc=0
+DONE 1000 questions in 5265s
+(MainProcess pid=12120) INFO 11-15 15:53:08 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=13394) INFO 11-15 15:53:08 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=13394) INFO 11-15 15:53:08 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=13394) INFO 11-15 15:53:08 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=13394) INFO 11-15 15:53:08 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=12120) WARNING 11-15 15:53:12 [core_client.py:817] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+(MainProcess pid=12120) INFO 11-15 15:53:12 [core_client.py:770] [shutdown] MPClient: start timeout=default
+(MainProcess pid=12120) INFO 11-15 15:53:12 [core_client.py:772] [shutdown] MPClient: stopping engine manager
+(MainProcess pid=12120) INFO 11-15 15:53:12 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+(MainProcess pid=12120) INFO 11-15 15:53:12 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+(MainProcess pid=12120) INFO 11-15 15:53:12 [core_client.py:777] [shutdown] MPClient: complete
+
+--- shard3 rc=0
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+(MainProcess pid=12121) INFO 11-15 15:37:06 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=13401) INFO 11-15 15:37:06 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=13401) INFO 11-15 15:37:06 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=13401) INFO 11-15 15:37:06 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=13401) INFO 11-15 15:37:06 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=12121) WARNING 11-15 15:37:10 [core_client.py:817] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+(MainProcess pid=12121) INFO 11-15 15:37:10 [core_client.py:770] [shutdown] MPClient: start timeout=default
+(MainProcess pid=12121) INFO 11-15 15:37:10 [core_client.py:772] [shutdown] MPClient: stopping engine manager
+(MainProcess pid=12121) INFO 11-15 15:37:10 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+(MainProcess pid=12121) INFO 11-15 15:37:10 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+(MainProcess pid=12121) INFO 11-15 15:37:10 [core_client.py:777] [shutdown] MPClient: complete
+
+DP DONE 4 shards in 6184s
+after run 1: [939]
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 806, 'judge_pick': 144, 'vote(judge_split)': 46, 'judge_none': 4}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 4984s
+after the judge: [1000, 0]
+end: 2026-11-15T17:30:42Z  (12655s)

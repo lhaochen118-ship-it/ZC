@@ -131,3 +131,8 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 17:00 Chạy lại các lượt bị lỗi template (đường dẫn không có 'qwen3', code sau 09:05): C0 → C0L, C1 → C1L (đã đẩy), **C2 → C2L** (nguyenmanh0404), **E1 / E2 → E1L / E2L** (think mặc định như code cũ; caohuyen74, tự đẩy khi E1 / E2 xong). Không bị ảnh hưởng: B00, P02, C3 / C4, E3–E6 (đường dẫn có 'qwen3'), S01, V01 / V02, Q01, L02 (đẩy trước khi sửa).
 - 17:25 **E1** (MoE E88 + LoRA MS1 4M token, framework 0.952 có industry, mẫu direct không suy nghĩ) = **0.857** ≈ C4 (zero-shot, 0.861) → MS1 chưa giúp ở chế độ không suy nghĩ; chờ E1L (suy nghĩ như code cũ) và E3 (đủ 3 LoRA).
 - 17:30 **P02x** (P02 chế độ H + T01 + phán xử 5400 s, không luật viết tay) = **0.800** (887 / 87 / 26; Δ +0.046 vs B00-S, z 3.7) → **hệ chế độ H zero-shot tốt nhất** (vs P02 0.781, P02 + phán xử offline 0.788). 174 phút trên 4×L4 (phán xử 75 phút).
+- 19:20 (worker khởi động lại ~17:15–19:05; đã `resume.py` + watcher + đẩy lại chuỗi bị mất). Kết quả: **P02xk** (+k24) 0.794 < P02x 0.800 (k24 không
+  giúp, như PDF 1); **E3** (MoE + MS1 / ML1 / MJ1, industry) 0.856, **E5** 0.0 (link nạp mô hình từ mount 27 phút → bị cắt), **E6** (α 0.7, chế độ H)
+  0.784. **Hai lỗi hạ tầng phát hiện** (đã sửa, commit FIX): (1) `lrl_gen` không khởi tạo được vLLM với MoE 15.5 GB (mặc định 256 seq / util 0.9)
+  → **mọi lượt E88 không có thẻ W1 lẫn hàm cửa hàng** (P02, P02x, P03, C3, C4, E1, E3…); (2) mô hình W đọc thẳng từ mount. → Chạy lại
+  P02xF, C3F (namhunhh), E3F, E4F (bichthuy93) với code đã sửa.

@@ -101,3 +101,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   `industry.py`), C3 = E88 zero-shot + `industry.py` + T01 + trần phán xử 5400 s, C4 = E88 + `industry.py`; chuẩn bị fine-tune LoRA S trên E88 bf16
   (cắt từ bf16 chính thức trong kernel, FSDP 4×L4, LoRA attention + linear-attention + shared expert; ghép LoRA vào FP8 để phục vụ).
 - 13:45 **V02 seed 2** (4B phán xử, log B00-S s1): point+think 0.750 (Δ −0.005), ensemble 0.738 → gộp 2 seed point+think ≈ +0.005: **không xác nhận**, loại.
+- 14:05 **C5** (framework 0.952, phán xử WJR1 thay bằng Qwen3.5-4B, log D1): ensemble 0.930 (−0.022, z −4.7), point+think 0.938 (−0.014, z −3.0) — kém WJR1 (0.952) → **loại**.

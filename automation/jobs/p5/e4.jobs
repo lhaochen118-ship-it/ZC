@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/e4 --script training/soup_job.py --model Qwen/Qwen3.6-35B-A3B-E88-MS1-FP8 --adapters NONE --search /kaggle/input --runner predict --eval-configs configs/flow_e4_moe3lora_h.json

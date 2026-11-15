@@ -1,0 +1,35 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T05:33:19Z
+hide_api: industry (exported to every phase)
+units_code: on
+model /tmp/soup_phall/merged  dp 4  config configs/flow_hall.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units: rc=[0, 0, 1, 0], 17 verified units (748s)
+unit examples: 15 for 2 shops (153s)
+unit verify (rc 0, 512s): 15 questions, kept 17 / 17 functions; dropped []
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_phall/work_flow_hall/model_WL1 in 470s
+W adapter WL1 merged into the solver's weights (473s)
+links: rc=[0, 0, 0, 0], 1000 questions linked (914s)
+freed model_WL1
+[dp] ingested 14 businesses in 49s
+--- shard0 rc=0
+DONE 1000 questions in 2155s
+
+--- shard1 rc=0
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+--- shard2 rc=0
+DONE 1000 questions in 2229s
+
+--- shard3 rc=0
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+DP DONE 4 shards in 2291s
+after run 1: [964]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_phall/work_flow_hall/model_WJR1 in 491s
+W adapter WJR1 merged into the solver's weights (495s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 849, 'judge_pick': 66, 'vote(judge_split)': 52, 'judge_none': 33}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1713s
+freed model_WJR1
+after the judge: [1000, 0]
+end: 2026-11-15T07:27:13Z  (6834s)

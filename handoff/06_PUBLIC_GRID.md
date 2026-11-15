@@ -133,3 +133,16 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | phmqc | 0.862 (906 / 44 / 50) | I4 + I5 + I2 (S thấy mã hàm): ≈ mốc (z −0.1); **shard 2 viết hàm cũng hỏng** (17 hàm) |
 | phmquv | 0.840 (893 / 53 / 54) | I4 + I5 + I3 + I6 (S kiểm hàm, bỏ 2 / 15): **shard 2 hỏng** (15 hàm) → không kết luận được; z −2.4 |
 | (sự cố 07:40) | shard 2 / 4 của bộ viết hàm thoát rc 1 ở 3 / 4 lần chạy I4 + I5 (phmqx, phmqc, phmquv; phmq thì không) → mất hàm dev_011 và nửa dev_012; log chỉ giữ 3 dòng cuối (dòng tắt vLLM) nên không thấy traceback; không tái hiện được trên CPU (mô hình giả không sinh hàm). Sửa ghi log: shard hỏng → ghi traceback (40 dòng) vào eval.log. Kết luận I4 + I5 chỉ dựa vào phmq (0.859) |
+| phmq2 | 0.856 (907 / 51 / 42) | I4b (lời dặn có ngày chốt + tham số lọc) + I5: 20 hàm, ≈ mốc (z −0.9) |
+| phmq2x | 0.850 (902 / 52 / 46) | I4b + I5 + I3 (2; 21 ví dụ / 3 cửa hàng): z −1.3 |
+| phall | 0.850 (902 / 52 / 46) | I4 + I5 + I2 + I6 + I3 (3 / hàm): shard 2 hỏng (17 hàm); z −1.4 |
+| phquvx | 0.839 (896 / 57 / 47) | I5 + I6 (S kiểm hàm, bỏ 3 / 17) + I3 (3 / hàm, 23 ví dụ / 4 cửa hàng): không sự cố, **z −2.7** → I6 + I3 (3 / hàm) kém |
+| phcodeb | 0.867 (914 / 47 / 39) | I2 (S thấy mã nguồn hàm) riêng: z +0.4 = nhiễu |
+| phux2b | 0.855 (906 / 51 / 43) | I3 (2) + I2: z −0.9 (phux2n = I3 (2) không I2: 0.869) → hai điểm trái chiều = nhiễu |
+| phuvb | 0.855 (908 / 53 / 39) | I6 (S kiểm hàm, bỏ 3 / 16): z −0.9 |
+| phmq2uv | 0.853 (899 / 46 / 55) | I4b + I5 + I6 (bỏ 3 / 15): z −1.1 |
+| phqcb | 0.849 (905 / 56 / 39) | I5 (câu thật của cửa hàng) riêng: z −1.6 |
+| es3ar | 0.863 (906 / 43 / 51) | S″-A (UQ lọc, dùng lại hàm + link của H0a): = H0a (+0.000) |
+| es3fr | 0.856 (908 / 52 / 40) | S″-A′ (s3f): z −0.7 |
+
+**Tổng kết giai đoạn C (11:15):** 18 lần chạy I2–I7 + S″, **không biến thể nào vượt mốc có ý nghĩa** (cao nhất phux2n 0.869 z +0.7, phcodeb 0.867 z +0.4; cặp phux2n / phux2b trái chiều cho thấy nhiễu ±0.01). Kém có ý nghĩa: phut (bộ viết có suy nghĩ, z −2.3), phquvx (I5 + I6 + I3 3 / hàm, z −2.7). I6 (S kiểm hàm) luôn ≤ mốc (−0.008 … −0.024). I3 chỉ sinh được 14–23 ví dụ cho 2–4 / 15 cửa hàng → chưa thực sự được thử. S″ (dữ liệu tăng cường) = mốc. Cấu hình nộp giữ nguyên `flow_v2_final.json`.

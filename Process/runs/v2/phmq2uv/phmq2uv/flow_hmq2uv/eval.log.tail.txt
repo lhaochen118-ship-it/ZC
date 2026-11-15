@@ -1,0 +1,34 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T05:49:23Z
+hide_api: industry (exported to every phase)
+model /tmp/soup_phmq2uv/merged  dp 4  config configs/flow_hmq2uv.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units: rc=[0, 0, 0, 0], 15 verified units (695s)
+unit examples: 20 for 4 shops (147s)
+unit verify (rc 0, 513s): 20 questions, kept 12 / 15 functions; dropped [('dev_012', 'tuyen_binh_quyen_phieu', '0/3'), ('dev_011', 'tien_thu_may_cu', '0/2'), ('dev_013', 'phi_ship', '0/2')]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_phmq2uv/work_flow_hmq2uv/model_WL1 in 82s
+W adapter WL1 merged into the solver's weights (84s)
+links: rc=[0, 0, 0, 0], 1000 questions linked (538s)
+freed model_WL1
+[dp] ingested 14 businesses in 49s
+--- shard0 rc=0
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+--- shard1 rc=0
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+--- shard2 rc=0
+DONE 1000 questions in 1719s
+
+--- shard3 rc=0
+DONE 1000 questions in 1565s
+
+DP DONE 4 shards in 3673s
+after run 1: [942]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_phmq2uv/work_flow_hmq2uv/model_WJR1 in 83s
+W adapter WJR1 merged into the solver's weights (86s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 862, 'judge_pick': 57, 'vote(judge_split)': 44, 'judge_none': 37}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1529s
+freed model_WJR1
+after the judge: [1000, 0]
+end: 2026-11-15T07:49:12Z  (7189s)

@@ -1,0 +1,45 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T06:13:55Z
+hide_api: industry (exported to every phase)
+model /tmp/soup_es3ar/merged  dp 4  config configs/flow_h_reuse.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units: reused configs/reuse/h0a_units.jsonl
+links: reused configs/reuse/h0a_links.jsonl
+[dp] ingested 14 businesses in 50s
+--- shard0 rc=0
+[pipe] dev_013 chunk 2/4 done | 246 questions here, 880541 tok in 2150s (410 tok/s)
+[pipe] dev_011 chunk 2/3 done | 247 questions here, 883613 tok in 2154s (410 tok/s)
+[pipe] DONE 18 chunks, 247 questions here, 883613 tok in 2154s
+DONE 1000 questions in 2461s
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+--- shard1 rc=0
+[pipe] dev_003 chunk 7/9 done | 255 questions here, 624549 tok in 1596s (391 tok/s)
+[pipe] dev_006 chunk 7/7 done | 256 questions here, 626085 tok in 1598s (392 tok/s)
+[pipe] DONE 17 chunks, 256 questions here, 626085 tok in 1598s
+DONE 1000 questions in 1905s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+--- shard2 rc=0
+[pipe] dev_007 chunk 2/4 done | 236 questions here, 502673 tok in 1141s (440 tok/s)
+[pipe] dev_014 chunk 2/4 done | 238 questions here, 519852 tok in 1246s (417 tok/s)
+[pipe] dev_006 chunk 6/7 done | 239 questions here, 523733 tok in 1370s (382 tok/s)
+[pipe] DONE 16 chunks, 239 questions here, 523733 tok in 1370s
+DONE 1000 questions in 1677s
+
+--- shard3 rc=0
+[pipe] dev_012 chunk 2/4 done | 252 questions here, 1193311 tok in 3071s (389 tok/s)
+[pipe] dev_012 chunk 1/4 done | 255 questions here, 1211743 tok in 3105s (390 tok/s)
+[pipe] dev_012 chunk 3/4 done | 258 questions here, 1220959 tok in 3120s (391 tok/s)
+[pipe] DONE 18 chunks, 258 questions here, 1220959 tok in 3120s
+DONE 1000 questions in 3426s
+
+DP DONE 4 shards in 3490s
+after run 1: [943]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_es3ar/work_flow_h_reuse/model_WJR1 in 481s
+W adapter WJR1 merged into the solver's weights (483s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 861, 'judge_pick': 62, 'vote(judge_split)': 45, 'judge_none': 32}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1559s
+freed model_WJR1
+after the judge: [1000, 0]
+end: 2026-11-15T07:46:16Z  (5541s)

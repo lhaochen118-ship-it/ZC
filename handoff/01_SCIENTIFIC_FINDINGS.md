@@ -185,20 +185,27 @@ thấp hơn ensemble 0–0.013 do lỗi gộp, §9.3).
 | Số đo trên phân phối nguồn (dòng held-out DN train) dự báo sai phân phối đích (rulebook DN mới) | WT-b | bài học phương pháp |
 | Kiểm thực thi (chạy được, không suy biến, tự nhất quán) **không kiểm nghĩa** | hàm sai qua kiểm ở mọi bộ viết | cần tín hiệu nghĩa độc lập (I6) |
 
-### 9.4 Đang chạy lúc 06:05 (chưa có kết quả; ghi vào `handoff/06` §5 khi về)
+### 9.4 Giai đoạn C (06:05 → 11:15): chất lượng hàm cửa hàng + S″ — kết quả
 
-Tất cả nhắm vào chất lượng hàm cửa hàng (§9.2) hoặc cách S dùng hàm; đều là năng lực mô hình, không luật viết tay:
+Tất cả là năng lực mô hình, không luật viết tay. Ghép cặp so với H0a (ensemble; nhiễu giữa 3 lần chạy mốc ≈ ±0.004, giữa 2 biến thể gần giống ≈ ±0.01).
 
-| Ý tưởng | Cấu hình | Lần chạy |
+| Ý tưởng | Lần chạy → public (z) | Kết luận |
 |---|---|---|
-| I2 S thấy mã nguồn hàm | `units_code` | phcodeb, phux2b (+I3) |
-| I3 ví dụ tự sinh của chính cửa hàng (Qwen viết câu + chương trình gọi hàm, kiểm thực thi) | `unit_examples` | phux, phux2n, phux2b, phmqx, phquvx, phmq2x, phall |
-| I4 / I4b 1–3 hàm mỗi dòng rulebook (b: + đại lượng tại một ngày qua `p.end`, tham số lọc mặc định None) | `units_multi`, `unit_multi_v` | phmq, phmqx, phmquv, phmqc, phall, phmq2, phmq2uv, phmq2x, phmq2t |
-| I5 bộ viết hàm thấy câu hỏi thật của cửa hàng có thuật ngữ (đầu vào, không đáp án) | `units_qctx` | phqcb, phmq*, phqcuv, phquvx, phall |
-| I6 S tự giải câu tự sinh không có hàm; bỏ hàm bị S phủ định | `unit_verify` | phuvb, phmquv, phquvx, phmq2uv, phall |
-| Bộ viết hàm có suy nghĩ + budget forcing | `units_think` + `force_json` | phut, phmq2t |
-| S″-A / S″-A′ data augmentation (U1 câu gọi hàm, lọc bằng uqchk) | LoRA chồng V3A × 0.70 | es3ar (đo S″-A), s3f (huấn luyện A′) → es3fr |
-| Mốc sau sửa gộp | `flow_p5_final_h` | pfix |
+| Mốc sau sửa gộp | pfix 0.859 | container = ensemble; mốc 0.859–0.863 |
+| I2 S thấy mã nguồn hàm (`units_code`) | phcodeb 0.867 (+0.4); phmqc 0.862 (−0.1, shard hỏng) | trong nhiễu |
+| I3 ví dụ tự sinh của cửa hàng (`unit_examples`) | phux 0.857 (−0.6); phux2n **0.869** (+0.7); phux2b (+I2) 0.855 (−0.9) | **chưa được thử thật**: kiểm thực thi chỉ giữ 14–23 ví dụ cho 2–4 / 15 cửa hàng; phux2n / phux2b trái chiều = nhiễu |
+| I4 / I4b 1–3 hàm / dòng (`units_multi`, `unit_multi_v`) | phmq 0.859 (28 hàm, pub_ind 0.617); phmq2 0.856; phmq2x 0.850 | nhiều hàm hơn, pub_ind nhích, tổng = mốc |
+| I5 câu thật của cửa hàng cho bộ viết (`units_qctx`) | phqcb 0.849 (−1.6) | không giúp |
+| I6 S tự kiểm hàm, bỏ hàm bị phủ định (`unit_verify`) | phuvb 0.855, phmq2uv 0.853, phmquv 0.840*, phall 0.850*, phquvx 0.839 (**−2.7**) | **luôn ≤ mốc** → đóng; bỏ cả hàm đúng (S không có hàm sai cùng kiểu) |
+| Bộ viết hàm có suy nghĩ + budget forcing | phut 0.839 (**−2.3**; sai 46 → 65) | đóng (phmq2t ngắt) |
+| S″-A / S″-A′ (UQ lọc bằng uqchk, LoRA chồng V3A × 0.70) | es3ar 0.863 (+0.000), es3fr 0.856 (−0.7) | = mốc: thêm 709 cặp câu gọi hàm không đổi hành vi S |
+
+\* shard 2 / 4 của bộ viết hàm thoát rc 1 ở 4 lần chạy I4 + I5 (phmqx 0.840, phmqc, phmquv, phall) → mất hàm dev_011, nửa dev_012; không kết luận
+được. Đã sửa ghi log (traceback của shard hỏng vào `eval.log`); nguyên nhân chưa rõ (không tái hiện trên CPU).
+
+**Kết luận giai đoạn C:** 18 lần chạy, không biến thể nào vượt mốc có ý nghĩa thống kê; giới hạn nằm ở **ngữ nghĩa** hàm S viết cho 2 cửa hàng
+(dev_014, dev_012), không ở cách trình bày / kiểm / số lượng hàm. Cấu hình nộp giữ `configs/flow_v2_final.json`. Hướng còn mở: tăng sản lượng
+ví dụ I3 (hiện ≤ 23) để thử thật; mô hình viết hàm mạnh hơn (`docs/proposed_method_1_b.md`, `docs/execution_plan_0`).
 
 ### 9.5 Điều kiện kiểm chứng
 

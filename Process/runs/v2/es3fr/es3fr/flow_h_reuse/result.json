@@ -1,0 +1,15 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/duylnng/zc-ad3/V3A/adapter",
+  "S3F": "/kaggle/input/notebooks/duylnng/zc-s3f-1/results/S3F/adapter"
+ },
+ "weights": [
+  0.7,
+  1.0
+ ],
+ "merge_rc": 0,
+ "merge_s": 192,
+ "config": "configs/flow_h_reuse.json",
+ "eval_rc": 0,
+ "eval_s": 4121
+}

@@ -1,0 +1,45 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T06:47:22Z
+hide_api: industry (exported to every phase)
+model /tmp/soup_es3fr/merged  dp 4  config configs/flow_h_reuse.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units: reused configs/reuse/h0a_units.jsonl
+links: reused configs/reuse/h0a_links.jsonl
+[dp] ingested 14 businesses in 50s
+--- shard0 rc=0
+<program>:1: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+[pipe] dev_014 chunk 1/4 done | 244 questions here, 771947 tok in 1856s (416 tok/s)
+[pipe] dev_012 chunk 3/4 done | 250 questions here, 803325 tok in 2043s (393 tok/s)
+[pipe] DONE 19 chunks, 250 questions here, 803325 tok in 2043s
+DONE 1000 questions in 2340s
+
+--- shard1 rc=0
+[pipe] dev_013 chunk 1/4 done | 251 questions here, 726521 tok in 1810s (401 tok/s)
+[pipe] dev_012 chunk 2/4 done | 255 questions here, 741855 tok in 1935s (383 tok/s)
+[pipe] DONE 16 chunks, 255 questions here, 741855 tok in 1935s
+DONE 1000 questions in 2232s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+--- shard2 rc=0
+[pipe] dev_014 chunk 2/4 done | 247 questions here, 745168 tok in 1814s (411 tok/s)
+[pipe] dev_006 chunk 2/7 done | 248 questions here, 745967 tok in 1830s (408 tok/s)
+[pipe] dev_012 chunk 1/4 done | 249 questions here, 749039 tok in 1902s (394 tok/s)
+[pipe] DONE 17 chunks, 249 questions here, 749039 tok in 1902s
+DONE 1000 questions in 2199s
+
+--- shard3 rc=0
+[pipe] dev_011 chunk 1/3 done | 245 questions here, 874425 tok in 2171s (403 tok/s)
+[pipe] dev_011 chunk 2/3 done | 246 questions here, 880569 tok in 2196s (401 tok/s)
+[pipe] DONE 17 chunks, 246 questions here, 880569 tok in 2196s
+DONE 1000 questions in 2493s
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+DP DONE 4 shards in 2552s
+after run 1: [955]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_es3fr/work_flow_h_reuse/model_WJR1 in 80s
+W adapter WJR1 merged into the solver's weights (83s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 869, 'vote(judge_split)': 35, 'judge_pick': 66, 'judge_none': 30}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1479s
+freed model_WJR1
+after the judge: [1000, 0]
+end: 2026-11-15T07:56:03Z  (4121s)

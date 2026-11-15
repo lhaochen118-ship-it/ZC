@@ -1,19 +1,16 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-15 07:00 UTC. User 06:00: báo cáo score, **ngắt các hướng không tiềm năng**, user sẽ đổi hướng nghiên cứu (chờ chỉ thị;
-không đẩy kernel mới). Đóng băng 16/11 04:00 UTC. Findings: PDF 1 §9. Lỗi + cách tránh: PDF 2 §10. Nhật ký kết quả: `handoff/06` §7.*
+*Cập nhật 2026-11-15 11:15 UTC. User 06:00: báo cáo score, ngắt hướng không tiềm năng, **user sẽ đổi hướng nghiên cứu (chờ chỉ thị; không
+đẩy kernel mới)**. Đóng băng 16/11 04:00 UTC. Findings: PDF 1 §9 (giai đoạn C §9.4). Lỗi + cách tránh: PDF 2 §10. Nhật ký: `handoff/06` §7.*
 
-**Tốt nhất chế độ H:** phux2n (I3, 2 ví dụ tự sinh / cửa hàng) **0.869** nhưng ghép cặp +0.006 (z +0.7) = nhiễu (chỉ 14 ví dụ cho 3 cửa hàng sống
-qua kiểm thực thi); mốc `configs/flow_v2_final.json` 0.859–0.863 (3 lần: H0a, H0a2, pfix; pfix có sửa gộp → container = ensemble). Hàm cửa hàng do
-S viết đóng góp +0.03 (không hàm: 0.834).
+**Không còn kernel v2 nào chạy.** Giai đoạn C xong (18 lần chạy I2–I7 + S″): **không biến thể nào vượt mốc có ý nghĩa** — cao nhất phux2n 0.869
+(z +0.7), phcodeb 0.867 (z +0.4); kém có ý nghĩa: phut (bộ viết có suy nghĩ, z −2.3), phquvx (I6 + I3, z −2.7); I6 luôn ≤ mốc; S″ = mốc
+(es3ar 0.863, es3fr 0.856). Mốc `configs/flow_v2_final.json` 0.859–0.863 (container = ensemble sau sửa gộp) → **cấu hình nộp giữ nguyên**.
 
-**Đã đóng:** WT (mọi biến thể), thêm mẫu (k24, u16), S′, F, phán xử / ngưỡng, Qwen gốc làm kênh 2 (06:05); bộ viết hàm có suy nghĩ (phut 0.839,
-z −2.3; ngắt phmq2t 06:53).
+**Sự cố mở:** shard 2 / 4 của bộ viết hàm thoát rc 1 ở 4 lần chạy I4 + I5 (nguyên nhân chưa rõ; đã sửa log để lần sau thấy traceback).
 
-**Kết quả giai đoạn C:** pfix 0.859, phux 0.857 (16 ví dụ / 2 cửa hàng), phux2n 0.869, phut 0.839, phmq 0.859 (28 hàm), phmqx 0.840, phmqc 0.862, phmquv 0.840 (3 lần này: shard 2 viết hàm hỏng → 15–17 hàm, không kết luận được; đã sửa log để thấy traceback).
-
-**Còn chạy (watcher `watch.out` + Monitor):** phcodeb, phux2b, phqcb, phuvb, phquvx, phall, phmq2, phmq2uv, phmq2x;
-S″: es3ar (S″-A), es3fr (S″-A′, đẩy 06:32). Kết quả tới ~08:45; chấm `python3 Process/tools/v2/grid_report.py <runs dir>`.
+**Việc còn lại trước đóng băng:** Docker chế độ H cho cấu hình nộp (PDF 3 §5 bước 6); xoá routine `trig_015hi1s1WHshqorFZC7DWY9j` khi xong.
+Song song: một phiên khác đã đẩy `docs/proposed_method_1_b.md`, `docs/execution_plan_0` (hướng mới, chưa chạy ở phiên này).
 
 ## Tiến độ v2 (lịch sử, 14/11 17:05 → 15/11 03:40)
 | Bước | Acc / kernel | Trạng thái | Kết quả |

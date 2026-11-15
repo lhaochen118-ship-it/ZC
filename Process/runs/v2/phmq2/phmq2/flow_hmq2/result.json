@@ -1,0 +1,13 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/anderson1202/zc-ad2/V3A/adapter"
+ },
+ "weights": [
+  0.7
+ ],
+ "merge_rc": 0,
+ "merge_s": 92,
+ "config": "configs/flow_hmq2.json",
+ "eval_rc": 0,
+ "eval_s": 5868
+}

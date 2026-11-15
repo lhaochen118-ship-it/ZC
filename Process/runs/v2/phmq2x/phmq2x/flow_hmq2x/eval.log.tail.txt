@@ -1,0 +1,49 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T05:41:00Z
+hide_api: industry (exported to every phase)
+model /tmp/soup_phmq2x/merged  dp 4  config configs/flow_hmq2x.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units: rc=[0, 0, 0, 0], 20 verified units (682s)
+unit examples: 21 for 3 shops (153s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_phmq2x/work_flow_hmq2x/model_WL1 in 85s
+W adapter WL1 merged into the solver's weights (88s)
+links: rc=[0, 0, 0, 0], 1000 questions linked (536s)
+freed model_WL1
+[dp] ingested 14 businesses in 49s
+--- shard0 rc=0
+[pipe] dev_013 chunk 2/4 done | 254 questions here, 1097156 tok in 2796s (392 tok/s)
+[pipe] dev_013 chunk 3/4 done | 255 questions here, 1100228 tok in 2821s (390 tok/s)
+[pipe] DONE 18 chunks, 255 questions here, 1100228 tok in 2821s
+DONE 1000 questions in 3088s
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+--- shard1 rc=0
+[pipe] dev_008 chunk 3/7 done | 244 questions here, 645184 tok in 1444s (447 tok/s)
+[pipe] dev_014 chunk 2/4 done | 249 questions here, 690732 tok in 1623s (426 tok/s)
+[pipe] dev_012 chunk 3/4 done | 251 questions here, 696876 tok in 1688s (413 tok/s)
+[pipe] DONE 17 chunks, 251 questions here, 696876 tok in 1688s
+DONE 1000 questions in 1955s
+
+--- shard2 rc=0
+[pipe] dev_007 chunk 2/4 done | 239 questions here, 538297 tok in 1262s (427 tok/s)
+[pipe] dev_014 chunk 1/4 done | 243 questions here, 571691 tok in 1337s (428 tok/s)
+[pipe] dev_004 chunk 4/6 done | 244 questions here, 574763 tok in 1451s (396 tok/s)
+[pipe] DONE 17 chunks, 244 questions here, 574763 tok in 1451s
+DONE 1000 questions in 1719s
+
+--- shard3 rc=0
+[pipe] dev_014 chunk 4/4 done | 249 questions here, 630374 tok in 1573s (401 tok/s)
+[pipe] dev_006 chunk 7/7 done | 250 questions here, 635745 tok in 1673s (380 tok/s)
+[pipe] DONE 17 chunks, 250 questions here, 635745 tok in 1673s
+DONE 1000 questions in 1940s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+DP DONE 4 shards in 3147s
+after run 1: [951]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_phmq2x/work_flow_hmq2x/model_WJR1 in 83s
+W adapter WJR1 merged into the solver's weights (86s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 866, 'vote(judge_split)': 48, 'judge_pick': 59, 'judge_none': 27}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1529s
+freed model_WJR1
+after the judge: [1000, 0]
+end: 2026-11-15T07:23:18Z  (6138s)

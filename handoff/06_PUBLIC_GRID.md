@@ -124,3 +124,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | Lần chạy | Điểm | Ghi chú |
 |---|---|---|
 | pfix | 0.859 (905 / 46 / 49) | lặp mốc thứ 3 có sửa gộp: container = ensemble; mốc thật ≈ 0.859–0.863 (nhiễu giữa các lần ≈ ±0.004) |
+| phux | 0.857 (904 / 47 / 49) | I3 (1 ví dụ / cửa hàng): chỉ sinh được 16 ví dụ cho 2 / 15 cửa hàng (kiểm thực thi loại gần hết) → gần như không tác động; ≈ mốc |

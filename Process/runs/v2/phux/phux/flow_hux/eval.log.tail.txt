@@ -1,0 +1,49 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T04:52:28Z
+hide_api: industry (exported to every phase)
+model /tmp/soup_phux/merged  dp 4  config configs/flow_hux.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units: rc=[0, 0, 0, 0], 16 verified units (768s)
+unit examples: 16 for 2 shops (146s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_phux/work_flow_hux/model_WL1 in 81s
+W adapter WL1 merged into the solver's weights (83s)
+links: rc=[0, 0, 0, 0], 1000 questions linked (522s)
+freed model_WL1
+[dp] ingested 14 businesses in 48s
+--- shard0 rc=0
+[pipe] dev_014 chunk 1/4 done | 245 questions here, 798270 tok in 2090s (382 tok/s)
+[pipe] dev_012 chunk 1/4 done | 246 questions here, 801342 tok in 2107s (380 tok/s)
+[pipe] dev_013 chunk 1/4 done | 247 questions here, 804414 tok in 2114s (381 tok/s)
+[pipe] DONE 16 chunks, 247 questions here, 804414 tok in 2114s
+DONE 1000 questions in 2381s
+
+--- shard1 rc=0
+<program>:1: UserWarning: Boolean Series key will be reindexed to match DataFrame index.
+[pipe] dev_012 chunk 2/4 done | 249 questions here, 904844 tok in 2162s (419 tok/s)
+[pipe] dev_012 chunk 3/4 done | 251 questions here, 909363 tok in 2236s (407 tok/s)
+[pipe] DONE 17 chunks, 251 questions here, 909363 tok in 2236s
+DONE 1000 questions in 2503s
+
+--- shard2 rc=0
+[pipe] dev_001 chunk 6/6 done | 229 questions here, 628191 tok in 1513s (415 tok/s)
+[pipe] dev_014 chunk 2/4 done | 233 questions here, 646160 tok in 1573s (411 tok/s)
+[pipe] dev_006 chunk 7/7 done | 234 questions here, 649775 tok in 1680s (387 tok/s)
+[pipe] DONE 17 chunks, 234 questions here, 649775 tok in 1680s
+DONE 1000 questions in 1947s
+
+--- shard3 rc=0
+[pipe] dev_011 chunk 2/3 done | 268 questions here, 688402 tok in 1728s (398 tok/s)
+[pipe] DONE 19 chunks, 268 questions here, 688402 tok in 1728s
+DONE 1000 questions in 1994s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+DP DONE 4 shards in 2560s
+after run 1: [954]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_phux/work_flow_hux/model_WJR1 in 98s
+W adapter WJR1 merged into the solver's weights (101s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 870, 'judge_pick': 59, 'vote(judge_split)': 33, 'judge_none': 38}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1440s
+freed model_WJR1
+after the judge: [1000, 0]
+end: 2026-11-15T06:24:55Z  (5547s)

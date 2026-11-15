@@ -1,0 +1,13 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/linhmai24/zc-ad3/V3A/adapter"
+ },
+ "weights": [
+  0.7
+ ],
+ "merge_rc": 0,
+ "merge_s": 128,
+ "config": "configs/flow_hux2n.json",
+ "eval_rc": 0,
+ "eval_s": 6194
+}

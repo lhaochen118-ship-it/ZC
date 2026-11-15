@@ -125,3 +125,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 |---|---|---|
 | pfix | 0.859 (905 / 46 / 49) | lặp mốc thứ 3 có sửa gộp: container = ensemble; mốc thật ≈ 0.859–0.863 (nhiễu giữa các lần ≈ ±0.004) |
 | phux | 0.857 (904 / 47 / 49) | I3 (1 ví dụ / cửa hàng): chỉ sinh được 16 ví dụ cho 2 / 15 cửa hàng (kiểm thực thi loại gần hết) → gần như không tác động; ≈ mốc |
+| phux2n | **0.869** (907 / 38 / 55) | I3 (2 ví dụ / cửa hàng): cao nhất chế độ H tới nay nhưng ghép cặp +0.006 (z +0.7) = trong nhiễu; chỉ 14 ví dụ cho 3 cửa hàng sống qua kiểm thực thi → chưa thể quy hiệu ứng cho I3 |

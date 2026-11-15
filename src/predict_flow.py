@@ -310,10 +310,18 @@ def resolve_model(name):
     """P5: a W-phase model given by name in the config (a merged checkpoint mounted from a kernel output: <mount>/**/models/<name>/)."""
     if not name or os.path.isdir(name): return name
     import glob
-    for pat in (f"/tmp/models/{name}/config.json", f"/kaggle/input/**/models/{name}/config.json"):
-        c = glob.glob(pat, recursive=True)
-        if c: return os.path.dirname(c[0])
-    raise SystemExit(f"model {name} not found (no silent fallback)")
+    local = f"/tmp/models/{name}"
+    if os.path.isfile(os.path.join(local, ".complete")): return local
+    c = glob.glob(f"/kaggle/input/**/models/{name}/config.json", recursive=True)
+    if not c: raise SystemExit(f"model {name} not found (no silent fallback)")
+    import fcntl                                                        # 15/11 E5: 4 processes loading a 15 GB model from the network
+    os.makedirs("/tmp/models", exist_ok=True)                           # mount took 27 min (link phase killed at its cap): copy it once
+    with open(f"/tmp/models/.{name}.lock", "w") as lk:                  # to local disk, the other phases / processes reuse the copy
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        if not os.path.isfile(os.path.join(local, ".complete")):
+            subprocess.run(["cp", "-r", os.path.dirname(c[0]) + "/.", local], check=True)
+            open(os.path.join(local, ".complete"), "w").write(c[0])
+    return local
 
 
 def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):

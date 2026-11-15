@@ -834,7 +834,8 @@ def main():
         if eng[0] is None:
             sys.argv = [sys.argv[0]]; import agent
             eng[0] = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
-                                                     gpu_util=0.9, max_num_seqs=a.max_num_seqs, max_batched_tokens=16384 if a.max_num_seqs else 0,
+                                                     gpu_util=0.92, max_num_seqs=a.max_num_seqs or 128, max_batched_tokens=16384,   # P5 15/11: vLLM's defaults
+                                                     # (256 seqs, util 0.9) failed to start the 15.5 GB pruned MoE on an L4 -> no cards / units in every E88 run
                                                      spec_mtp=0, prefix_budget=0))
         seeds = [seed0 + i for i in range(len(convs))]
         if think and a.mode == "unit" and a.think_force:               # v2 B': budget forcing (s1, Muennighoff et al. 2025) — the

@@ -83,3 +83,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   zero-shot (ghép cặp vs B00-S, z 6.3) — chỉ để chẩn đoán, không dùng (vi phạm §1.2).
 - 11:05 **M02 (Qwen3.5-4B)**: xem bảng `Process/scores_p5zs.csv`.
 - 11:50 **V01 / V02** (Qwen3.5-4B phán xử log B00-S s0): V01 (mọi câu) ensemble **0.715** (Δ −0.038, z −3.9), list 0.650, point 0.602; V02 (chỉ 261 câu bất đồng) ensemble **0.715** (Δ −0.038, z −3.9). **Loại**: verifier 4B zero-shot làm hỏng câu đúng của bỏ phiếu. Cũng: **T01 0.764** (Δ +0.010, z 1.0, nhiễu), **M01 0.709** (Δ −0.045, z −3.6; phán xử 14B không khởi tạo được trên 1 GPU), **M02 0.717** (Δ −0.037, z −3.0).
+- 11:55 **V02 với point+think** (4B suy nghĩ, chấm từng ứng viên, chỉ câu bất đồng): **0.769** (Δ +0.016 so với bỏ phiếu 0.753); ensemble 0.750, list 0.701, point 0.692.

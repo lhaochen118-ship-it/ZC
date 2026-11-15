@@ -1,8 +1,16 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-14 15:30 UTC. Kế hoạch 5 (`docs/18_PLAN5_TWO_LORA.md`) **xong phần thử nghiệm, đang DỪNG** chờ user đưa chiến lược mới (khung chat
-Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §9 (`handoff/02_ENGINEERING_OPS_LESSONS.md`).*
+*Cập nhật 2026-11-15 03:40 UTC. **Kế hoạch v2 đang chạy** (user 14/11 17:00: chế độ H, không luật viết tay; user 15/11 01:15: **dừng
+held-out, chỉ thử nhiều giải pháp trên public**, chọn điểm cao nhất). Mốc chế độ H `pub_full_H` **0.863** (H0a = H0a2). Lưới public:
+`handoff/06_PUBLIC_GRID.md`; data augmentation S″: `handoff/07_DATA_AUG_PLAN.md`. Đóng băng 16/11 04:00 UTC. Lỗi vận hành + quy tắc
+tránh: PDF 2 §9 (`handoff/02_ENGINEERING_OPS_LESSONS.md`).*
 
+**Đang chạy (03:40):** lưới A/B còn lại (pwts, pwtbk24, ps1b, pwtbw1r, pwtbu24, pwtbma1, pbase, pwtbv2 — đều dùng WT-b, dự kiến kém mốc);
+B′ bộ viết hàm = S: phu16 (caotienminh1), phnou (mucnokieu), phut (chờ test CPU); S″-A huấn luyện (duylnng/zc-s3a-1); kiểm ngược UQ
+uqchk_a/b (lelynhan) → S″-A′. Docker: dataset W adapter `nhatlong1103/zc-w-v2` (WL1, WJR1) đã đăng, sha256 khớp `src/adapter_hashes_w.json`.
+
+**Kết quả public chế độ H tới giờ:** mốc 0.863 / 0.863; F1 0.847; S′ 0.861 / 0.856; WT-b 0.855; WT-b8 0.846; S′ + WT-b 0.830. Hàm WT-b sai
+nghĩa trên public (mẫu gọi hàm đúng 0.149, hàm của S 0.514) → G1 loại.
 ## Tiến độ v2 (kế hoạch chạy `handoff/05_RUN_PLAN.md`; T0 = 17:05 UTC 14/11, user duyệt 17:00)
 
 | Bước | Acc / kernel | Trạng thái | Kết quả |

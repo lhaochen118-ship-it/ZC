@@ -62,3 +62,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   acc ghi đè phiên bản code dataset) → đẩy lại.
 - 10:13 **P02 / P03 chạy** (dinhthinh ×2): E88 15.46 GB / 13.955B, E92 15.96 GB / 14.459B tham số (gồm vision; < 15B), cắt từ FP8 chính thức theo
   keep-list saliency của tác vụ.
+- 10:20 **L02 α = 0.5**: container **0.804** (875 / 71 / 54). Đường α: 0.5 → 0.804, 0.70 → 0.860, 1.0 → 0.827 (đỉnh gần 0.70).

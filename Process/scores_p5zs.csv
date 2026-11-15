@@ -1,2 +1,3 @@
 run,config,PA_container,PA_ensemble,correct,wrong,abstain,PA_pub_ind,PA_pub_noind,dZS_vs_B00S,z,wall_min,gpu_util,peak_gb
 l02a100,flow_p5_final_h,0.827,0.827,894,67,39,0.4944,0.9494,,,74,39.3,20.9
+l02a050,flow_p5_final_h,0.804,0.804,875,71,54,0.5204,0.9083,,,82,37.6,21.2

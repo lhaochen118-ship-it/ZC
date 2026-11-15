@@ -1,0 +1,13 @@
+{
+ "adapters": "NONE",
+ "merge_rc": 0,
+ "merge_s": 0,
+ "script": "lrl_gen.py",
+ "script_rc": [
+  0,
+  0,
+  0,
+  0
+ ],
+ "script_s": 2174
+}

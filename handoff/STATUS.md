@@ -1,18 +1,19 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-15 03:40 UTC. **Kế hoạch v2 đang chạy** (user 14/11 17:00: chế độ H, không luật viết tay; user 15/11 01:15: **dừng
-held-out, chỉ thử nhiều giải pháp trên public**, chọn điểm cao nhất). Mốc chế độ H `pub_full_H` **0.863** (H0a = H0a2). Lưới public:
-`handoff/06_PUBLIC_GRID.md`; data augmentation S″: `handoff/07_DATA_AUG_PLAN.md`. Đóng băng 16/11 04:00 UTC. Lỗi vận hành + quy tắc
-tránh: PDF 2 §9 (`handoff/02_ENGINEERING_OPS_LESSONS.md`).*
+*Cập nhật 2026-11-15 04:30 UTC. **TẠM DỪNG theo user (15/11 04:00)**: các kernel đang chạy được để chạy xong, **không khởi tạo tiến trình mới**
+cho tới khi khung chat mới nhận việc. Routine mỗi giờ đã tắt. Đóng băng container **16/11 04:00 UTC**. Đọc `READING_GUIDE.md` → PDF 3
+(`handoff/03_HANDOFF.pdf`) cho việc tiếp theo; kết quả: PDF 1 §9; lỗi + cách tránh: PDF 2 §10.*
 
-**Đang chạy (03:40):** lưới A/B còn lại (pwts, pwtbk24, ps1b, pwtbw1r, pwtbu24, pwtbma1, pbase, pwtbv2 — đều dùng WT-b, dự kiến kém mốc);
-B′ bộ viết hàm = S: phu16 (caotienminh1), phnou (mucnokieu), phut (chờ test CPU); S″-A huấn luyện (duylnng/zc-s3a-1); kiểm ngược UQ
-uqchk_a/b (lelynhan) → S″-A′. Docker: dataset W adapter `nhatlong1103/zc-w-v2` (WL1, WJR1) đã đăng, sha256 khớp `src/adapter_hashes_w.json`.
+**Cấu hình nộp hiện tại:** `configs/flow_v2_final.json` (= `flow_p5_final_h`, chế độ H) — public **0.863 ensemble / 0.860 container**
+(H0a; H0a2 0.863 / 0.859). 14 biến thể v2 đã đo đều ≤ mốc (`Process/scores_v2.csv`, `handoff/06_PUBLIC_GRID.md` §5).
 
-**Kết quả public chế độ H tới giờ:** mốc 0.863 / 0.863; F1 0.847; S′ 0.861 / 0.856; WT-b 0.855; WT-b8 0.846; S′ + WT-b 0.830. Hàm WT-b sai
-nghĩa trên public (mẫu gọi hàm đúng 0.149, hàm của S 0.514) → G1 loại.
-## Tiến độ v2 (kế hoạch chạy `handoff/05_RUN_PLAN.md`; T0 = 17:05 UTC 14/11, user duyệt 17:00)
+**Việc số 1 cho khung mới:** sửa lỗi gộp container (`merge_sub.read` bỏ abstain của phán xử → container thấp hơn phán xử 0.003–0.013; PDF 3 §5).
 
+**Đang chạy lúc bàn giao** (kernel id: `Process/kaggle/kernels_v2.csv`): phu16 (`caotienminh1`), phnou (`mucnokieu`), s3a huấn luyện S″-A
+(`duylnng`), uqchka/b (`lelynhan`), pwtbw1r (`huyenco`), pbase (`anderson1202`), pwtbv2 (`phuongnehe`). Đã chuẩn bị chưa đẩy: `plan_phut`,
+`plan_s3f` (sau `uq_filter`), `plan_es3ar` (sau s3a). Docker: `nhatlong1103/zc-w-v2` (WL1, WJR1) đã đăng + kiểm sha256.
+
+## Tiến độ v2 (lịch sử, 14/11 17:05 → 15/11 03:40)
 | Bước | Acc / kernel | Trạng thái | Kết quả |
 |---|---|---|---|
 | Chế độ H không rò rỉ (thẻ W1 / link / phán xử / W1 bind) | CPU | xong | 14 / 125 thẻ public từng gợi ý hàm `industry.py` → đã lọc; `tests/test_mode_h.py` |
@@ -44,49 +45,9 @@ nghĩa trên public (mẫu gọi hàm đúng 0.149, hàm của S 0.514) → G1 l
 | Đo S′ trên public H (held-out huỷ theo user 15/11) | nguynduylm ×2 | xong — **S′ riêng loại** | seed 1 0.861, seed 2 0.856 (mốc 0.863) |
 | ewuwtb: độ chính xác hàm WT-b (265 dòng held-out) | synchan5704 | xong | **0.596** (giữ 244, đúng 158; nhãn chương trình đã kiểm 98 / 157) vs W = S 0.517: **+0.079, z 2.82** (39 tốt hơn / 18 kém hơn) |
 | ewuwts: độ chính xác hàm WT-s | synchan5704 | xong | 0.566 (đúng 150; chương trình đã kiểm 100 / 157) < WT-b 0.596 → **WT-b là nhánh chính** (LoRA trên Qwen gốc giữ kỹ năng pandas tổng quát) |
-| Đo WT đầu-cuối (614 câu H: ewtb, ewts_wt) | nhatlong1103 ×2 | chạy | |
+| Đo WT đầu-cuối (614 câu H: ewtb, ewts_wt) | nhatlong1103 ×2 | huỷ (user 15/11: dừng held-out) | |
+| Lưới public (15/11 01:30 →) | 16 acc | xem `handoff/06_PUBLIC_GRID.md` §5 | mọi biến thể ≤ mốc 0.863 |
+| UQ sinh câu dùng hàm (S″) | lelynhan/zc-uq-1 | xong | 1,336 cặp chạy được; ~15 % sai kỳ (kiểm 30) → kiểm ngược uqchk |
 
-## 0. Kế hoạch 5 — kết quả (public, đáp án chuẩn)
 
-| Hệ | Public |
-|---|---|
-| Kế hoạch 4 (S + W unit, bỏ phiếu) | 0.938 |
-| F5 container × 2 (S + W1 bind + W2 linker WL1 + W3 phán xử WJB1) | 0.943 / 0.941 (`final_submission/swv/`) |
-| **Cấu hình cuối `configs/flow_p5_final.json`** (W3 = WJR1, tổ hợp 3 biến thể, ngưỡng 0.5) — phán xử lại offline trên 4 log S | **0.949–0.958, TB 0.952** |
-
-Adapter (LoRA, học chồng trên V3A × 0.70): WL1 (`synchan5704/zc-wl1b-1` output; dataset `{yuan1103,synchan5704}/zc-w-adapters`), WJB1
-(`nguyenhoa99/zc-wjb1-1`; trong `zc-w-adapters`), **WJR1** (`quynhtran35/zc-wjr1-1` output); cả 3 adapter ở **`Process/adapters/` (Git LFS)** và Kaggle `nhatlong1103/zc-w-final`. Log: `Process/runs/f5a`,
-`f5b`, `training/data/out/jlogs/` (không commit), dữ liệu W: `training/data/out/{wj,wl}` (dựng lại: `training/data/w_judge.py --aug 1 --rows
-training/data/out/wj/p_rows.jsonl --tag _r`, `w_link.py --max-per-shop 60`, `p_rows.py`).
-
-**Việc còn lại trước hạn (16/11 04:00 UTC đóng băng):** D1 Docker cho cấu hình cuối (đăng WJR1 + WL1 vào dataset adapter cuối; `docker/` thêm
-`training/merge.py` + 2 adapter W; chạy `docker/run_public_test.sh`). Quota 14/11 15:00: các acc còn ~14–25 h.
-
-**Đề xuất chiến lược mới v2 (14/11 17:00 UTC, chờ user duyệt):** `proposed plan.pdf` (nguồn `handoff/04_PROPOSED_PLAN.md`, bản 2) + kế hoạch chạy `handoff/05_RUN_PLAN.md` (`run plan.pdf`). Thay đổi so với bản 1: đo trung thực chế độ H (`hide_api: industry` — `flow_p5_final` hiện vẫn cho S gọi `industry.py` viết tay), cổng held-out cho mọi quyết định, E sinh có hệ thống (không lấy trục từ câu public sai), C thêm định nghĩa ngoài toolkit, giải pháp mới G = LoRA viết tool WT (huấn luyện độc lập, thầy = Qwen gốc có suy nghĩ). Token 14 acc đã lưu `~/.kaggle` (14/11 16:44); quota 334 h.
-
-## 1. Hệ nộp
-
-| Thành phần | Giá trị |
-|---|---|
-| Luồng | `configs/flow_final.json` = S–W, không luật viết tay: S viết chương trình mọi câu, W viết hàm luật từ rulebook (5 mẫu, 1 vòng tự sửa, trần 45 phút), thẻ luật do mô hình biên dịch, k_fast 4 / k_max 16, bỏ phiếu thường θ 0.5 |
-| Mô hình | Qwen3.5-9B + v3a × 0.70 gộp; `nhatlong1103/zc-final-adapter` (bản 14/11 04:35), sha256 `src/adapter_hashes.json` |
-| Public gốc | **0.938** (eval, pva3k16) / **0.922** (đường container f2a3, 39 phút trên 4×L4; `final_submission/swv/`) |
-| Dự phòng P | `configs/flow_p_final.json` + WG1 × 0.35 (bản cũ của dataset, `src/adapter_hashes_p.json`): public 0.994; `final_submission/submission.jsonl` vẫn là file P (PA cao nhất) |
-| Docker | `docker/` cập nhật (README_SOLUTION, assets.env, import check); user build trước hạn 16/11 23:59 GMT+7 |
-
-## 2. Kết quả chính kế hoạch 4 (public, `Process/scores_p3.csv`)
-
-v3a k 8 / k 16: 0.936 / 0.938; + V4S1 0.925 / 0.926; + V4S2 0.920 / 0.932; soup 0.928 / 0.932; v3b 0.926 / 0.925 (bỏ phiếu thường). W ở ngành mới
-(614 câu, ẩn hàm ngành): +0.119 / +0.078 (z 3.8 / 3.3). V không lợi trên public. Lỗi còn lại (39): 17 có mẫu đúng, 22 không mẫu nào đúng.
-
-## 3. Tài nguyên
-
-Token 29 acc ở `~/.kaggle/tok_*` (mất khi đổi container). Quota 14/11 ~05:00: phần lớn acc còn 25–30 h (làm mới 21/11). Adapter trên Kaggle:
-`<acc>/zc-v3a-adapter` (≥ 13 acc), `zc-v4s{1,2}-adapter`, `zc-v3b-adapter`; WR30 (30 DN, dự phòng) ở output `anderson1202/zc-wr30p4-1`.
-Không còn kernel nào chạy.
-
-## 4. Việc tiếp theo
-
-**Kế hoạch 5 (user duyệt 14/11 06:30): `docs/18_PLAN5_TWO_LORA.md`** — S đóng băng + LoRA-W ba vai huấn luyện riêng; bước kế: P0 (code CPU +
-smoke) → Z (zero-shot) → T1 (huấn luyện W) → E1 / G1. Đáp án public: `python3 automation/rebuild_public_gt.py` (cần `git fetch --unshallow`).
-Token đang có (14/11): 10 acc L4 + `yeshenhi` (T4). Đóng băng 16/11 04:00 UTC; sau đó user build Docker và nộp.
+*(Trạng thái kế hoạch 4–5 trước 14/11 17:00: PDF 1 §5, §8; lịch sử git.)*

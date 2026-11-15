@@ -1,0 +1,45 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-14T17:27:13Z
+model /tmp/soup_d1/merged  dp 4  config configs/flow_p5_final.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units: rc=[0, 0, 0, 0], 16 verified units (771s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_d1/work_flow_p5_final/model_WL1 in 463s
+W adapter WL1 merged into the solver's weights (466s)
+links: rc=[0, 0, 0, 0], 1000 questions linked (901s)
+[dp] ingested 14 businesses in 48s
+--- shard0 rc=0
+[pipe] dev_014 chunk 4/4 done | 254 questions here, 433626 tok in 1059s (409 tok/s)
+[pipe] DONE 18 chunks, 254 questions here, 433626 tok in 1059s
+DONE 1000 questions in 1322s
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+--- shard1 rc=0
+[pipe] dev_014 chunk 2/4 done | 240 questions here, 537453 tok in 1275s (421 tok/s)
+[pipe] dev_007 chunk 1/4 done | 241 questions here, 539550 tok in 1313s (411 tok/s)
+[pipe] dev_004 chunk 3/6 done | 242 questions here, 542586 tok in 1363s (398 tok/s)
+[pipe] DONE 16 chunks, 242 questions here, 542586 tok in 1363s
+DONE 1000 questions in 1626s
+
+--- shard2 rc=0
+[pipe] dev_010 chunk 2/4 done | 249 questions here, 459276 tok in 1019s (451 tok/s)
+[pipe] dev_005 chunk 5/6 done | 250 questions here, 471504 tok in 1075s (438 tok/s)
+[pipe] dev_003 chunk 7/9 done | 252 questions here, 479408 tok in 1130s (424 tok/s)
+[pipe] DONE 18 chunks, 252 questions here, 479408 tok in 1130s
+DONE 1000 questions in 1393s
+
+--- shard3 rc=0
+[pipe] dev_006 chunk 6/7 done | 250 questions here, 473502 tok in 1111s (426 tok/s)
+[pipe] dev_004 chunk 4/6 done | 251 questions here, 475600 tok in 1125s (423 tok/s)
+[pipe] dev_013 chunk 1/4 done | 252 questions here, 476460 tok in 1157s (412 tok/s)
+[pipe] DONE 17 chunks, 252 questions here, 476460 tok in 1157s
+DONE 1000 questions in 1420s
+
+DP DONE 4 shards in 1685s
+after run 1: [991]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_d1/work_flow_p5_final/model_WJR1 in 453s
+W adapter WJR1 merged into the solver's weights (456s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 897, 'vote(judge_split)': 30, 'judge_pick': 71, 'judge_none': 2}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 944s
+after the judge: [994, 1]
+end: 2026-11-14T18:46:35Z  (4762s)

@@ -1,0 +1,38 @@
+eval split: 614 questions of ['pub_ind', 'pub_hoind'] (0 ids without text: [])
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_ewt0/flow_wt0b_h/model_WT0B in 83s
+W adapter WT0B merged into the solver's weights (85s)
+units: tool writer WT0B on base
+units: rc=[0, 0, 0, 0], 14 verified units (539s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_ewt0/flow_wt0b_h/model_WL1 in 89s
+W adapter WL1 merged into the solver's weights (91s)
+links: rc=[0, 0, 0, 0], 614 questions linked (495s)
+[dp] ingested 4 businesses in 5s
+--- shard0 rc=0
+[pipe] dev_013 chunk 7/9 done | 158 questions here, 1282679 tok in 3300s (389 tok/s)
+[hybrid] stats {'linked_none': 126, 'linked_q': 33, 'gen': 1767, 'answered': 132, 'stop_early': 111, 'precheck_error': 397, 'exec_error': 331, 'stop_round2': 47, 'abstained': 26}
+[pipe] dev_013 chunk 2/9 done | 159 questions here, 1285751 tok in 3309s (389 tok/s)
+[pipe] DONE 11 chunks, 159 questions here, 1285751 tok in 3309s
+DONE 614 questions in 3574s
+
+--- shard1 rc=0
+[pipe] dev_013 chunk 6/9 done | 150 questions here, 1227721 tok in 3224s (381 tok/s)
+[hybrid] stats {'linked_none': 112, 'linked_q': 39, 'gen': 1726, 'answered': 129, 'stop_early': 105, 'exec_error': 316, 'precheck_error': 402, 'stop_round2': 45, 'abstained': 21}
+[pipe] dev_010 chunk 5/9 done | 151 questions here, 1230793 tok in 3245s (379 tok/s)
+[pipe] DONE 11 chunks, 151 questions here, 1230793 tok in 3245s
+DONE 614 questions in 3510s
+
+--- shard2 rc=0
+[pipe] dev_012 chunk 6/7 done | 142 questions here, 1151708 tok in 2988s (385 tok/s)
+[pipe] dev_014 chunk 9/10 done | 144 questions here, 1153210 tok in 3003s (384 tok/s)
+[pipe] DONE 9 chunks, 144 questions here, 1153210 tok in 3003s
+DONE 614 questions in 3268s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+--- shard3 rc=0
+[pipe] dev_014 chunk 5/10 done | 159 questions here, 1348926 tok in 3457s (390 tok/s)
+[pipe] dev_013 chunk 1/9 done | 160 questions here, 1351998 tok in 3461s (391 tok/s)
+[hybrid] stats {'linked_q': 39, 'linked_none': 121, 'gen': 1959, 'answered': 134, 'stop_early': 108, 'precheck_error': 461, 'exec_error': 429, 'abstained': 26, 'stop_round2': 52}
+[pipe] DONE 10 chunks, 160 questions here, 1351998 tok in 3461s
+DONE 614 questions in 3726s
+
+DP DONE 4 shards in 3743s

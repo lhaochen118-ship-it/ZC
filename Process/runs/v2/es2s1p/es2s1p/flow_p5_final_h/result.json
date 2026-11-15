@@ -1,0 +1,15 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/nguynduylm/zc-ad2/V3A/adapter",
+  "S2S1": "/kaggle/input/notebooks/nguynduylm/zc-s2s1-1/results/S2S1/adapter"
+ },
+ "weights": [
+  0.7,
+  1.0
+ ],
+ "merge_rc": 0,
+ "merge_s": 332,
+ "config": "configs/flow_p5_final_h.json",
+ "eval_rc": 0,
+ "eval_s": 6013
+}

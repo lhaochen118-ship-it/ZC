@@ -1,0 +1,48 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T00:20:25Z
+hide_api: industry (exported to every phase)
+model /tmp/soup_es2s2p/merged  dp 4  config configs/flow_p5_final_h.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units: rc=[0, 0, 0, 0], 15 verified units (789s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_es2s2p/work_flow_p5_final_h/model_WL1 in 84s
+W adapter WL1 merged into the solver's weights (86s)
+links: rc=[0, 0, 0, 0], 1000 questions linked (533s)
+freed model_WL1
+[dp] ingested 14 businesses in 49s
+--- shard0 rc=0
+[pipe] dev_003 chunk 6/9 done | 246 questions here, 960696 tok in 2358s (407 tok/s)
+[pipe] dev_012 chunk 2/4 done | 248 questions here, 965352 tok in 2375s (406 tok/s)
+[pipe] dev_012 chunk 3/4 done | 252 questions here, 977640 tok in 2445s (400 tok/s)
+[pipe] DONE 18 chunks, 252 questions here, 977640 tok in 2445s
+DONE 1000 questions in 2710s
+
+--- shard1 rc=0
+[pipe] dev_007 chunk 2/4 done | 251 questions here, 679471 tok in 1624s (418 tok/s)
+[pipe] dev_014 chunk 3/4 done | 256 questions here, 738353 tok in 1830s (404 tok/s)
+[pipe] dev_012 chunk 1/4 done | 259 questions here, 747115 tok in 1922s (389 tok/s)
+[pipe] DONE 17 chunks, 259 questions here, 747115 tok in 1922s
+DONE 1000 questions in 2188s
+
+--- shard2 rc=0
+[pipe] dev_013 chunk 1/4 done | 242 questions here, 909957 tok in 2272s (400 tok/s)
+[pipe] dev_013 chunk 2/4 done | 243 questions here, 913028 tok in 2280s (401 tok/s)
+[pipe] dev_011 chunk 2/3 done | 244 questions here, 916100 tok in 2296s (399 tok/s)
+[pipe] DONE 17 chunks, 244 questions here, 916100 tok in 2296s
+DONE 1000 questions in 2561s
+
+--- shard3 rc=0
+[pipe] dev_004 chunk 4/6 done | 245 questions here, 527213 tok in 1381s (382 tok/s)
+[pipe] DONE 17 chunks, 245 questions here, 527213 tok in 1381s
+DONE 1000 questions in 1647s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+DP DONE 4 shards in 2771s
+after run 1: [960]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_es2s2p/work_flow_p5_final_h/model_WJR1 in 88s
+W adapter WJR1 merged into the solver's weights (90s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 865, 'judge_pick': 60, 'vote(judge_split)': 43, 'judge_none': 32}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1529s
+freed model_WJR1
+after the judge: [952, 17]
+end: 2026-11-15T01:55:43Z  (5719s)

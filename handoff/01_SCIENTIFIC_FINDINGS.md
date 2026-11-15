@@ -1,4 +1,4 @@
-# PDF 1 — Scientific Findings (DataMate, đến 14/11/2026)
+# PDF 1 — Scientific Findings (DataMate, đến 15/11/2026)
 
 *Phạm vi: đóng góp, ý nghĩa khoa học, kết quả tích cực và tiêu cực, bằng chứng, điều kiện kiểm chứng. Kinh nghiệm kỹ thuật /
 vận hành ở PDF 2; trạng thái / vị trí / việc tiếp theo ở PDF 3 và `handoff/STATUS.md`. Số liệu: `Process/scores.csv` (kế hoạch 1–2),
@@ -139,3 +139,69 @@ thực thi được lúc suy luận (dòng rulebook ngành / thuật ngữ mới
 
 **Hạn chế:** chọn ngưỡng / tổ hợp trên chính public (4 log) → lạc quan ~0.003–0.005; ~10 câu mọi mẫu S cùng sai (câu chủ quan, thuật ngữ rulebook mà
 S không gọi đúng hàm) nằm ngoài tầm phán xử; phán xử chọn sai ~10 câu bất đồng.
+
+
+## 9. Kế hoạch v2 — chế độ H, không hàm ngành viết tay (14/11 17:00 → 15/11 04:00; `handoff/04`–`07`)
+
+**Bối cảnh.** User 14/11 17:00: bản nộp chạy **chế độ H** (`hide_api: industry` — mọi hàm `industry.py` viết tay bị ẩn khỏi S, thẻ luật, link,
+phán xử, W1); mọi cải tiến phải là năng lực mô hình tự học. User 15/11 01:15: dừng held-out, thử nhiều giải pháp trên public, chọn điểm
+cao nhất. Số liệu: `Process/scores_v2.csv` (mọi lần chạy), log `Process/runs/v2/`, nhật ký `handoff/06_PUBLIC_GRID.md` §5.
+
+**Hai con số mỗi lần chạy:** *container* = `<config>/submission.jsonl` (file Docker sẽ ghi) và *ensemble* = `judge/ensemble/submission.jsonl`
+(quyết định của bộ phán xử). Container luôn thấp hơn 0.000–0.013 vì một lỗi gộp (§9.3, PDF 3 §5 bước 1).
+
+### 9.1 Kết quả (public 1000 câu, chế độ H)
+
+| Hệ | ensemble | container | đúng / sai / bỏ (container) |
+|---|---|---|---|
+| Kế hoạch 5 có `industry.py` (D1, tham chiếu) | 0.952 | 0.951 | 973 / 22 / 5 |
+| **Mốc chế độ H** `flow_p5_final_h` (H0a / H0a2) | **0.863 / 0.863** | **0.860 / 0.859** | 915 / 55 / 30 |
+| F: khối API tự sinh (F1) | 0.847 | 0.842 | |
+| S′ seed 1 / 2 (học đọc `# RULES` + cặp tương phản) | 0.861 / 0.856 | 0.846 / 0.843 | |
+| k_max 24 (phk24) | 0.857 | 0.852 | 911 / 59 / 30 |
+| WT-b viết hàm (pwtb) / 8 mẫu + 2 vòng sửa (pwtb8) | 0.855 / 0.846 | 0.855 / 0.838 | |
+| WT-s (pwts) / WT-b + k24 / WT-b u24 / WT-b min_agree 1 | 0.853 / — / 0.848 / 0.851 | 0.846 / 0.849 / 0.846 / 0.848 | |
+| S′ + WT-b (ps1b / ps2b) | 0.855 / 0.841 | 0.842 / 0.830 | |
+| Phán xử lại log H (jh: list+c, point+c, list+think …; θ, ngưỡng) | 0.849–0.866 | — | |
+
+**Không giải pháp nào vượt mốc.** Các lần chạy còn đang chạy lúc bàn giao (kết quả ghi vào `handoff/06` §5 khi xong): pwtbw1r, pbase,
+pwtbv2 (đều WT-b → dự kiến kém mốc), **phu16** (S viết hàm 16 mẫu), **phnou** (không hàm, đối chứng), S″-A huấn luyện, uqchk_a/b.
+
+### 9.2 Kết luận khoa học
+
+| Kết luận | Bằng chứng |
+|---|---|
+| **Ẩn `industry.py` mất ~9 điểm** (0.952 → 0.863); 76 / 93 câu chưa đúng nằm ở 5 DN có mục ngành (`pub_ind` 0.606, `pub_noind` 0.125) | H0a vs D1 |
+| **Nút thắt là chất lượng mẫu ở câu ngành, không phải số mẫu hay chọn mẫu**: ở 143 câu khó (vòng 2) mỗi mẫu đúng ~0.20 (ngành) / ~0.60 (không ngành); direct ≈ think | `Process/tools/v2/var_acc2.py` trên H0a, H0a2 |
+| Thêm mẫu không giúp: gộp mẫu 2 lần chạy (≈ k 32) bỏ phiếu thuần 0.857 vs 0.851 / 0.855; k24 thêm cả đúng lẫn sai (911 / 59 vs 915 / 55) | `pool.py`, phk24 |
+| Phán xử / ngưỡng không phải đòn bẩy ở chế độ H: mọi tổ hợp 0.849–0.866 trên cùng log | jh, θ-grid |
+| **Hàm do mô hình viết là đòn bẩy, nhưng chỉ khi đúng nghĩa**: mẫu S gọi hàm do S viết đúng 0.514; gọi hàm WT-b đúng **0.149**; câu mà đa số mẫu gọi hàm: S-hàm 13 đúng / 4 sai, WT-b-hàm 7 đúng / 10 sai | `unit_use.py`, `unit_final.py` trên H0a, pwtb |
+| **WT-b chính xác hơn trên dòng held-out của DN train (0.596 vs 0.517, z 2.8) nhưng sai nghĩa trên rulebook public** — viết hàm "lười" gọi hàm toolkit không liên quan (`so_sua` = `top_customers`, `thu_may_cu` = số đơn) vẫn qua kiểm thực thi 13 kỳ + tự nhất quán. Đo trên phân phối train không dự báo được phân phối DN mới; kiểm thực thi không kiểm *nghĩa* | ewuwtb vs pwtb |
+| Bộ viết hàm dao động giữa lần chạy (14 → 12 hàm cùng cấu hình); public có 31 dòng ngành, chỉ ~12–14 thành hàm; dòng định nghĩa khái niệm (Dòng máy, hãng, Trả góp) cần tham số không phải kỳ → bị loại ở kiểm tra | H0a, phk24; `units.verify` |
+| Dữ liệu do Qwen sinh (UQ: 1,336 câu – chương trình từ 907 hàm thầy, chạy được) có ~15 % sai kỳ khi Claude kiểm 30 mẫu → cần kiểm ngược bằng đường mô hình thứ hai trước khi dạy S | `training/data/out/s3/uq`, `handoff/07` §8 |
+
+### 9.3 Kết quả âm / hạn chế
+
+- **S′** (học đọc định nghĩa văn xuôi + cặp tương phản): không tăng public — dạy đọc văn xuôi không đủ, phải gắn với lời gọi thực thi được.
+- **WT** (LoRA viết hàm, chưng cất từ Qwen gốc + lọc thực thi): tốt hơn offline, kém hơn trên public → **loại**.
+- **F** (khối API tự sinh), **A** (phán xử ràng buộc định dạng), **B-lite** (phán xử xem lại câu đồng thuận), **WJR2D** (phán xử học tương phản): loại.
+- **Lỗi gộp container:** `merge_sub.read` bỏ mọi dòng abstain, nên khi bộ phán xử quyết định bỏ trả lời, file cuối lấy đáp án của S → mất
+  0.003 (H0a), 0.004 (H0a2), 0.007 (pwts), 0.013 (ps1b). Sửa đúng gốc: file phán xử là nguồn quyết định cho mọi câu nó phủ (kể cả abstain).
+- Số liệu chế độ H chỉ trên 1 public (1000 câu, nhiễu một lần chạy ±0.005–0.008); chọn cấu hình trên chính public → lạc quan nhẹ.
+
+### 9.4 Ý nghĩa
+
+- Với ngành chưa gặp, "hàm do mô hình viết" chỉ có ích khi **đúng nghĩa**; kiểm thực thi (chạy được, không suy biến, tự nhất quán) lọc lỗi cú
+  pháp / API nhưng không lọc lỗi nghĩa. Cần tín hiệu nghĩa độc lập (ví dụ hai đường mô hình khác nhau cùng ra một giá trị — cách đang thử
+  với uqchk) thay vì chỉ thêm mẫu.
+- Chưng cất từ thầy cùng cỡ (Qwen gốc) + lọc thực thi tăng độ chính xác trong phân phối nhưng học cả "đường tắt" của thầy; đánh giá phải
+  trên phân phối mục tiêu (rulebook DN mới), không chỉ dòng held-out cùng nguồn.
+
+### 9.5 Điều kiện kiểm chứng
+
+| Kết luận | Cách kiểm |
+|---|---|
+| Điểm mọi lần chạy v2 | `Process/scores_v2.csv`; tính lại `python3 Process/tools/score_sets.py <submission.jsonl>` (cần `data/raw/public_gt.jsonl`) |
+| Tỉ lệ đúng khi gọi hàm | `python3 Process/tools/v2/unit_use.py <dir có cards_unit.jsonl + solver_logs.jsonl>` (giải nén từ `Process/runs/v2/<run>/`) |
+| Lỗi gộp container | so `Process/runs/v2/h0a/h0a/flow_p5_final_h/submission.jsonl.gz` với `.../judge/ensemble/submission.jsonl.gz` (19 câu khác: phán xử bỏ, file cuối trả lời) |
+| Độ chính xác WT offline | `Process/runs/v2/ewuref`, `ewuwtb`, `ewuwts` (`tests/wt_accuracy.py`) |

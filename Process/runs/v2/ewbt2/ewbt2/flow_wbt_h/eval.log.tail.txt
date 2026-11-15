@@ -1,0 +1,35 @@
+eval split: 614 questions of ['pub_ind', 'pub_hoind'] (0 ids without text: [])
+units: rc=[0, 0, 0, 0], 2 verified units (1552s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_ewbt2/flow_wbt_h/model_WL1 in 87s
+W adapter WL1 merged into the solver's weights (90s)
+links: rc=[0, 0, 0, 0], 614 questions linked (486s)
+[dp] ingested 4 businesses in 5s
+--- shard0 rc=0
+[pipe] dev_014 chunk 9/10 done | 147 questions here, 1359217 tok in 3543s (384 tok/s)
+[pipe] dev_013 chunk 1/9 done | 148 questions here, 1362288 tok in 3548s (384 tok/s)
+[hybrid] stats {'linked_none': 118, 'linked_q': 30, 'gen': 1902, 'answered': 116, 'stop_early': 99, 'precheck_error': 489, 'exec_error': 435, 'stop_round2': 49, 'abstained': 32}
+[pipe] DONE 10 chunks, 148 questions here, 1362288 tok in 3548s
+DONE 614 questions in 3812s
+
+--- shard1 rc=0
+[pipe] dev_012 chunk 4/7 done | 148 questions here, 1321310 tok in 3433s (385 tok/s)
+[hybrid] stats {'linked_q': 40, 'linked_none': 111, 'gen': 1835, 'answered': 124, 'stop_early': 98, 'exec_error': 288, 'precheck_error': 473, 'stop_round2': 50, 'abstained': 24}
+[pipe] dev_013 chunk 7/9 done | 151 questions here, 1333598 tok in 3479s (383 tok/s)
+[pipe] DONE 11 chunks, 151 questions here, 1333598 tok in 3479s
+DONE 614 questions in 3743s
+
+--- shard2 rc=0
+[pipe] dev_012 chunk 3/7 done | 160 questions here, 974180 tok in 2438s (400 tok/s)
+[hybrid] stats {'linked_none': 114, 'linked_q': 46, 'gen': 1572, 'answered': 142, 'stop_early': 118, 'precheck_error': 255, 'exec_error': 302, 'stop_round2': 42, 'abstained': 18}
+[pipe] DONE 10 chunks, 160 questions here, 974180 tok in 2438s
+DONE 614 questions in 2702s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+--- shard3 rc=0
+[pipe] dev_012 chunk 1/7 done | 154 questions here, 1335620 tok in 3525s (379 tok/s)
+[pipe] dev_013 chunk 2/9 done | 155 questions here, 1338692 tok in 3537s (378 tok/s)
+[hybrid] stats {'linked_none': 122, 'linked_q': 33, 'gen': 1851, 'answered': 126, 'stop_early': 107, 'precheck_error': 379, 'exec_error': 465, 'stop_round2': 48, 'abstained': 29}
+[pipe] DONE 10 chunks, 155 questions here, 1338692 tok in 3537s
+DONE 614 questions in 3801s
+
+DP DONE 4 shards in 3828s

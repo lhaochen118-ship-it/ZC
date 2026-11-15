@@ -1,0 +1,13 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/anderson1202/zc-ad2/V3A/adapter"
+ },
+ "weights": [
+  0.7
+ ],
+ "merge_rc": 0,
+ "merge_s": 115,
+ "config": "configs/flow_wt0b_h.json",
+ "eval_rc": 0,
+ "eval_s": 4780
+}

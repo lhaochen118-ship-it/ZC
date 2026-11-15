@@ -1,0 +1,79 @@
+run,kernel_id,last_status,last_log_line
+a1,nguyenhoa99/zc-a1-1,COMPLETE,STATUS=DONE:complete
+bl1,anderson1202/zc-bl1-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+d1,quynhtran35/zc-d1-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+ej2,quynhle07/zc-ej2-1,COMPLETE,STATUS=DONE:complete
+es2s1h,loinguyentran/zc-es2s1h-1,RUNNING,00:17:31 kernel RUNNING (GPU granted)
+es2s1p,nguynduylm/zc-es2s1p-1,COMPLETE,STATUS=DONE:complete
+es2s2h,huyenco/zc-es2s2h-1,RUNNING,00:13:56 kernel RUNNING (GPU granted)
+es2s2p,nguynduylm/zc-es2s2p-1,COMPLETE,STATUS=DONE:complete
+ewbt,phuongnehe/zc-ewbt-1,RUNNING,17:43:01 kernel RUNNING (GPU granted)
+ewbt2,phuongnehe/zc-ewbt2-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+ewt0,anderson1202/zc-ewt0-1,COMPLETE,STATUS=DONE:complete
+ewtb,nhatlong1103/zc-ewtb-1,RUNNING,00:11:46 kernel RUNNING (GPU granted)
+ewts,phuongnehe/zc-ewts-1,RUNNING,17:39:27 kernel RUNNING (GPU granted)
+ewts2,phuongnehe/zc-ewts2-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+ewts_wt,,RUNNING,00:17:44 kernel RUNNING (GPU granted)
+ewuref,synchan5704/zc-ewuref-1,COMPLETE,STATUS=DONE:complete
+ewuwtb,synchan5704/zc-ewuwtb-1,COMPLETE,STATUS=DONE:complete
+ewuwts,synchan5704/zc-ewuwts-1,COMPLETE,STATUS=DONE:complete
+f1,yuan1103/zc-f1-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+f2,yuan1103/zc-f2-1,RUNNING,17:32:12 kernel RUNNING (GPU granted)
+f2b,yuan1103/zc-f2b-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+h0a,quynhle07/zc-h0a-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+h0a2,synchan5704/zc-h0a2-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+h0b,quynhle07/zc-h0b-1,RUNNING,17:18:14 kernel RUNNING (GPU granted)
+h0b2,quynhle07/zc-h0b2-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+h0c,quynhtran35/zc-h0c-1,COMPLETE,STATUS=DONE:complete
+h0c2,quynhtran35/zc-h0c2-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+jh,anderson1202/zc-jh-1,COMPLETE,STATUS=DONE:complete
+jh0b,nguyenhoa99/zc-jh0b-1,COMPLETE,STATUS=DONE:complete
+pbase,anderson1202/zc-pbase-1,RUNNING,02:16:11 kernel RUNNING (GPU granted)
+phk24,loinguyentran/zc-phk24-1,COMPLETE,STATUS=DONE:complete
+phnou,mucnokieu/zc-phnou-1,RUNNING,03:13:39 kernel RUNNING (GPU granted)
+phu16,caotienminh1/zc-phu16-1,RUNNING,03:13:38 kernel RUNNING (GPU granted)
+ps1b,thnliu/zc-ps1b-1,COMPLETE,STATUS=DONE:complete
+ps2b,thnliu/zc-ps2b-1,COMPLETE,STATUS=DONE:complete
+pwtb,synchan5704/zc-pwtb-1,COMPLETE,STATUS=DONE:complete
+pwtb8,nhatlong1103/zc-pwtb8-1,COMPLETE,STATUS=DONE:complete
+pwtbk24,nhatlong1103/zc-pwtbk24-1,COMPLETE,STATUS=DONE:complete
+pwtbma1,linhmai24/zc-pwtbma1-1,COMPLETE,STATUS=DONE:complete
+pwtbu24,linhmai24/zc-pwtbu24-1,COMPLETE,STATUS=DONE:complete
+pwtbv2,phuongnehe/zc-pwtbv2-1,RUNNING,02:37:58 kernel RUNNING (GPU granted)
+pwtbw1r,huyenco/zc-pwtbw1r-1,RUNNING,01:27:56 kernel RUNNING (GPU granted)
+pwts,synchan5704/zc-pwts-1,COMPLETE,STATUS=DONE:complete
+s2s1,nguynduylm/zc-s2s1-1,RUNNING,19:51:35 kernel RUNNING (GPU granted)
+s2s2,nguynduylm/zc-s2s2-1,RUNNING,19:53:35 kernel RUNNING (GPU granted)
+s3a,duylnng/zc-s3a-1,RUNNING,03:23:37 kernel RUNNING (GPU granted)
+tg0,nguyenhoa99/zc-tg0-1,COMPLETE,STATUS=DONE:complete
+tg1b0,phatle1578/zc-tg1b0-1,RUNNING,20:02:12 kernel RUNNING (GPU granted)
+tg1b1,mucnokieu/zc-tg1b1-1,RUNNING,20:02:14 kernel RUNNING (GPU granted)
+tg1b2,phatle1578/zc-tg1b2-1,RUNNING,20:04:14 kernel RUNNING (GPU granted)
+tg1b3,mucnokieu/zc-tg1b3-1,RUNNING,20:04:13 kernel RUNNING (GPU granted)
+tg1c0,phatle1578/zc-tg1c0-1,COMPLETE,STATUS=DONE:complete
+tg1c1,mucnokieu/zc-tg1c1-1,COMPLETE,STATUS=DONE:complete
+tg1c2,phatle1578/zc-tg1c2-1,COMPLETE,STATUS=DONE:complete
+tg1c3,mucnokieu/zc-tg1c3-1,COMPLETE,STATUS=DONE:complete
+tg1n0,huyenco/zc-tg1n0-1,COMPLETE,STATUS=DONE:complete
+tg1n0b,huyenco/zc-tg1n0b-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+tg1n1,huyenco/zc-tg1n1-1,COMPLETE,STATUS=DONE:complete
+tg1n1b,huyenco/zc-tg1n1b-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+tg1p0,phatle1578/zc-tg1p0-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+tg1p1,mucnokieu/zc-tg1p1-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+tg1p2,phatle1578/zc-tg1p2-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+tg1p3,mucnokieu/zc-tg1p3-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+tg2,loinguyentran/zc-tg2-1,COMPLETE,STATUS=DONE:complete
+tg2b,loinguyentran/zc-tg2b-1,COMPLETE,STATUS=DONE:complete
+tg2c,nguyenhoa99/zc-tg2c-1,RUNNING,You have been rate limited. Wait a little while before retrying.
+tg2d,nguyenhoa99/zc-tg2d-1,COMPLETE,STATUS=DONE:complete
+uq,lelynhan/zc-uq-1,COMPLETE,STATUS=DONE:complete
+uqchka,lelynhan/zc-uqchka-1,RUNNING,03:32:30 kernel RUNNING (GPU granted)
+uqchkb,lelynhan/zc-uqchkb-1,RUNNING,03:33:37 kernel RUNNING (GPU granted)
+wjr2d,quynhle07/zc-wjr2d-1,RUNNING,19:42:50 kernel RUNNING (GPU granted)
+wt0b,anderson1202/zc-wt0b-1,RUNNING,21:01:25 kernel RUNNING (GPU granted)
+wtb,nhatlong1103/zc-wtb-1,COMPLETE,STATUS=DONE:complete
+wtb2,nhatlong1103/zc-wtb2-1,COMPLETE,STATUS=DONE:complete
+wtbv2,phuongnehe/zc-wtbv2-1,COMPLETE,STATUS=DONE:complete
+wts,nhatlong1103/zc-wts-1,COMPLETE,STATUS=DONE:complete
+wts2,nhatlong1103/zc-wts2-1,RUNNING,22:34:53 kernel RUNNING (GPU granted)
+wts3,nhatlong1103/zc-wts3-1,COMPLETE,STATUS=DONE:complete

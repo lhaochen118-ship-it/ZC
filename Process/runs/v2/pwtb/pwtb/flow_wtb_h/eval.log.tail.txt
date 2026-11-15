@@ -1,0 +1,52 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T01:15:56Z
+hide_api: industry (exported to every phase)
+model /tmp/soup_pwtb/merged  dp 4  config configs/flow_wtb_h.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_pwtb/work_flow_wtb_h/model_WTB in 87s
+W adapter WTB merged into the solver's weights (90s)
+units: tool writer WTB on base
+units: rc=[0, 0, 0, 0], 20 verified units (748s)
+freed model_WTB
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_pwtb/work_flow_wtb_h/model_WL1 in 77s
+W adapter WL1 merged into the solver's weights (79s)
+links: rc=[0, 0, 0, 0], 1000 questions linked (516s)
+freed model_WL1
+[dp] ingested 14 businesses in 48s
+--- shard0 rc=0
+[pipe] dev_012 chunk 2/4 done | 255 questions here, 760059 tok in 1987s (382 tok/s)
+[pipe] DONE 17 chunks, 255 questions here, 760059 tok in 1987s
+DONE 1000 questions in 2253s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+--- shard1 rc=0
+<program>:1: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+[pipe] dev_014 chunk 3/4 done | 251 questions here, 764041 tok in 1941s (394 tok/s)
+[pipe] dev_012 chunk 3/4 done | 252 questions here, 767113 tok in 2027s (378 tok/s)
+[pipe] DONE 18 chunks, 252 questions here, 767113 tok in 2027s
+DONE 1000 questions in 2292s
+
+--- shard2 rc=0
+[pipe] dev_004 chunk 3/6 done | 223 questions here, 793565 tok in 1869s (425 tok/s)
+[pipe] dev_014 chunk 2/4 done | 229 questions here, 826199 tok in 1951s (424 tok/s)
+[pipe] dev_012 chunk 1/4 done | 234 questions here, 851390 tok in 2103s (405 tok/s)
+[pipe] DONE 16 chunks, 234 questions here, 851390 tok in 2103s
+DONE 1000 questions in 2369s
+
+--- shard3 rc=0
+[pipe] dev_013 chunk 3/4 done | 257 questions here, 941926 tok in 2436s (387 tok/s)
+[pipe] dev_013 chunk 2/4 done | 258 questions here, 951142 tok in 2440s (390 tok/s)
+[pipe] dev_011 chunk 2/3 done | 259 questions here, 954214 tok in 2500s (382 tok/s)
+[pipe] DONE 18 chunks, 259 questions here, 954214 tok in 2500s
+DONE 1000 questions in 2766s
+
+DP DONE 4 shards in 2825s
+after run 1: [946]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_pwtb/work_flow_wtb_h/model_WJR1 in 81s
+W adapter WJR1 merged into the solver's weights (84s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 862, 'judge_pick': 52, 'vote(judge_split)': 44, 'judge_none': 42}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1713s
+freed model_WJR1
+after the judge: [941, 20]
+end: 2026-11-15T02:54:12Z  (5896s)

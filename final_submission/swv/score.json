@@ -1,1 +1,0 @@
-{"system": "plan 5 S-W (configs/flow_p5_final.json as run on 14/11: v3a x 0.70 solver, W1 bind, W2 linker WL1, W3 judge WJB1 list)", "path": "container (predict_flow, f5a, 4xL4, 4494 s)", "pub_full": 0.943, "cwa": "971/28/1", "second_run_f5b": 0.941, "identical_answers_f5a_f5b": 984}

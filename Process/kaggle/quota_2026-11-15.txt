@@ -1,0 +1,20 @@
+# python3 automation/quota.py, 15/11/2026 ~03:15 UTC (used = completed sessions; running sessions not yet counted). Refresh 21/11 00:00 UTC.
+anderson1202     used 22.39 h  left  7.61 h
+caotienminh1     used  0.01 h  left 29.99 h   (phu16 running since 03:13)
+duylnng          used  0.00 h  left 30.00 h   (s3a training running since 03:23)
+huyenco          used 14.86 h  left 15.14 h
+lelynhan         used  0.50 h  left 29.50 h   (uqchk_a/b running since 03:32)
+linhmai24        used 14.82 h  left 15.18 h
+loinguyentran    used  6.79 h  left 23.21 h
+mucnokieu        used 19.12 h  left 10.88 h   (phnou running since 03:13)
+nguyenhoa99      used 22.14 h  left  7.86 h
+nguynduylm       used 24.14 h  left  5.86 h  LOW
+nhatlong1103     used 17.60 h  left 12.40 h
+phatle1578       used 17.88 h  left 12.12 h
+phuongnehe       used 13.33 h  left 16.67 h
+quynhle07        used 29.99 h  left  0.01 h  LOW
+quynhtran35      used 23.36 h  left  6.64 h
+synchan5704      used 27.52 h  left  2.48 h  LOW
+thnliu           used 11.10 h  left 18.90 h
+yeshenhi         used  0.00 h  left 30.00 h   (T4 only)
+yuan1103         used 22.46 h  left  7.54 h

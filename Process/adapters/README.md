@@ -5,9 +5,10 @@ Mỗi thư mục = một adapter (r 32, α 64) học chồng trên **Qwen3.5-9B 
 
 | Thư mục | Vai | Dùng ở |
 |---|---|---|
-| `WJR1/` | W3 phán xử (huấn luyện kèm dòng rulebook) — **cấu hình cuối** | `configs/flow_p5_final.json` `judge_lora` |
+| `WJR1/` | W3 phán xử (huấn luyện kèm dòng rulebook) — **cấu hình nộp** | `configs/flow_v2_final.json` `judge_lora` |
 | `WL1/` | W2 linker | `links_lora` |
-| `WJB1/` | W3 phán xử bản trước (dùng trong 2 lần chạy container F5) | dự phòng |
 
 Bản trên Kaggle: `nhatlong1103/zc-w-final` (`<NAME>/adapter/`). Chỉ số huấn luyện: `Process/runs/p5_train/<NAME>/`.
 Để `src/predict_flow.resolve_adapter` tìm thấy: `ZC_ADAPTER_ROOT=<repo>/Process/adapters` (thư mục `<NAME>/adapter_config.json`).
+
+WJB1 (phán xử bản trước) đã xoá khỏi repo 15/11 (thay bằng WJR1); còn trên Kaggle `nhatlong1103/zc-w-final`. Docker v2 tải W từ `nhatlong1103/zc-w-v2` (WL1, WJR1).

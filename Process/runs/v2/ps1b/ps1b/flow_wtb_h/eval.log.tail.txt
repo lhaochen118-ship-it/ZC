@@ -1,0 +1,52 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T01:42:38Z
+hide_api: industry (exported to every phase)
+model /tmp/soup_ps1b/merged  dp 4  config configs/flow_wtb_h.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_ps1b/work_flow_wtb_h/model_WTB in 533s
+W adapter WTB merged into the solver's weights (535s)
+units: tool writer WTB on base
+units: rc=[0, 0, 0, 0], 19 verified units (1203s)
+freed model_WTB
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_ps1b/work_flow_wtb_h/model_WL1 in 566s
+W adapter WL1 merged into the solver's weights (569s)
+links: rc=[0, 0, 0, 0], 1000 questions linked (1003s)
+freed model_WL1
+[dp] ingested 14 businesses in 48s
+--- shard0 rc=0
+[pipe] dev_014 chunk 3/4 done | 251 questions here, 559639 tok in 1417s (395 tok/s)
+[pipe] dev_006 chunk 7/7 done | 252 questions here, 561619 tok in 1467s (383 tok/s)
+[pipe] dev_001 chunk 6/6 done | 253 questions here, 567754 tok in 1495s (380 tok/s)
+[pipe] DONE 17 chunks, 253 questions here, 567754 tok in 1495s
+DONE 1000 questions in 1760s
+
+--- shard1 rc=0
+[pipe] dev_013 chunk 3/4 done | 245 questions here, 1044512 tok in 2646s (395 tok/s)
+[pipe] dev_013 chunk 2/4 done | 246 questions here, 1047584 tok in 2660s (394 tok/s)
+[pipe] DONE 17 chunks, 246 questions here, 1047584 tok in 2660s
+DONE 1000 questions in 2926s
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+--- shard2 rc=0
+[pipe] dev_012 chunk 1/4 done | 249 questions here, 1171572 tok in 2827s (414 tok/s)
+[pipe] dev_012 chunk 2/4 done | 250 questions here, 1174644 tok in 2837s (414 tok/s)
+[pipe] dev_012 chunk 3/4 done | 251 questions here, 1177716 tok in 2842s (414 tok/s)
+[pipe] DONE 17 chunks, 251 questions here, 1177716 tok in 2842s
+DONE 1000 questions in 3107s
+
+--- shard3 rc=0
+[pipe] dev_014 chunk 4/4 done | 249 questions here, 606524 tok in 1526s (397 tok/s)
+[pipe] dev_013 chunk 1/4 done | 250 questions here, 609596 tok in 1557s (391 tok/s)
+[pipe] DONE 18 chunks, 250 questions here, 609596 tok in 1557s
+DONE 1000 questions in 1822s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+DP DONE 4 shards in 3166s
+after run 1: [951]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_ps1b/work_flow_wtb_h/model_WJR1 in 547s
+W adapter WJR1 merged into the solver's weights (549s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 865, 'judge_pick': 52, 'judge_none': 39, 'vote(judge_split)': 44}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1565s
+freed model_WJR1
+after the judge: [947, 19]
+end: 2026-11-15T03:47:36Z  (7498s)

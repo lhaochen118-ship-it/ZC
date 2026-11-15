@@ -99,7 +99,7 @@ Hybrid (user 08/11): mô hình viết chương trình trả lời mọi câu; lu
 
 - Trước khi đóng: commit + push mọi thứ; lưu vào `Process/` những gì không nằm trong git (log nén của lần chạy then chốt, dữ liệu huấn
   luyện nén, plan khởi chạy, sổ kernel, quota, bản vá worktree; `Process/README.md`); cập nhật `handoff/STATUS.md`, ba PDF bàn giao,
-  `handoff/environment_summary.pdf`, `docs/RESEARCH_WORKFLOW.pdf`, `READING_GUIDE.md`; tắt routine tự chạy của phiên cũ.
+  `handoff/environment_summary.pdf`, `handoff/research_workflow.pdf` (từ `docs/03_WORKFLOW.md`), `READING_GUIDE.md`; tắt routine tự chạy của phiên cũ.
 - Khung mới: đọc `READING_GUIDE.md` → `CLAUDE.md` → `handoff/STATUS.md`; xin token; tạo routine mỗi giờ; tải output kernel đang chạy
   (`Process/kaggle/kernels.csv`).
 
@@ -129,3 +129,20 @@ Hybrid (user 08/11): mô hình viết chương trình trả lời mọi câu; lu
 6. **Cổng trước khi đẩy**: `tests/run_all.sh` + smoke CPU đúng lệnh (`soup_job ... --fake-responder --subset`) + kiểm độ dài bản ghi / tỉ lệ parse;
    mỗi acc một lần đẩy tới khi RUNNING (PDF 2 §9).
 
+
+## 10. Quy trình v2 (14–15/11, chế độ H) — dùng tiếp
+
+1. **Một mốc, đo cùng loại file**: mốc = cấu hình nộp chạy đường container (`soup_job --runner predict`) ≥ 2 lần; mọi biến thể so **ghép cặp từng câu**
+   với các lần chạy mốc, cùng loại file (container `<config>/submission.jsonl` hoặc phán xử `judge/ensemble/submission.jsonl`, không trộn).
+2. **Phân tích log trên CPU trước khi tốn GPU** (`Process/tools/v2/`): theo nhóm DN (ngành / không), theo vòng / biến thể mẫu, theo việc gọi hàm,
+   gộp log (trần của thêm mẫu). Một giả thuyết chỉ được đẩy GPU khi phân tích cho thấy đòn bẩy (ví dụ: chất lượng mẫu ngành ~0.2 → nhắm vào hàm /
+   dữ liệu, không nhắm vào số mẫu hay phán xử).
+3. **Thành phần mới phải được đo đầu-cuối trên phân phối đích** (public chế độ H) trước khi xây tiếp; số đo trên phân phối nguồn (dòng held-out DN train)
+   chỉ là sàng lọc (bài học WT-b).
+4. **Lưới có hệ thống** (`handoff/06`): yếu tố × biến thể, mỗi biến thể một phiên DP 4; giai đoạn đơn yếu tố → ghép yếu tố thắng → xác nhận × 2 →
+   Docker. Ghi mọi kết quả vào nhật ký ngay khi về (kể cả âm).
+5. **Dữ liệu do mô hình sinh** (data augmentation, `handoff/07`): sinh bằng Qwen không suy nghĩ + JSON schema; nhãn qua thực thi; **kiểm ngược bằng
+   đường mô hình thứ hai** (S giải lại câu sinh ra, giữ khi trùng); Claude chỉ viết few-shot và kiểm ngẫu nhiên 30 mẫu / nguồn.
+6. **Dùng lại hàm / link** của một lần chạy cho các biến thể S (`units_file`, `links_file`) để so sạch và nhanh; bản nộp luôn sinh lại.
+7. **Chuyển khung chat**: như §7 + `automation/archive_v2.py` (log v2 → `Process/runs/v2/`), `Process/scores_v2.csv`, `Process/kaggle/kernels_v2.csv`,
+   tắt routine.

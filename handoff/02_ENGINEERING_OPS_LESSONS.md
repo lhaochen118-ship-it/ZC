@@ -1,4 +1,4 @@
-# PDF 2 — Engineering & Operations Lessons (DataMate, đến 14/11/2026)
+# PDF 2 — Engineering & Operations Lessons (DataMate, đến 15/11/2026)
 
 *Phạm vi: kinh nghiệm lập trình, cấu hình môi trường, quản lý Kaggle, tổ chức thử nghiệm, lỗi đã gặp và cách sửa,
 bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạng thái và việc tiếp theo ở PDF 3; cấu hình máy ở
@@ -256,3 +256,47 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 - **Mỗi lần chạy container lưu `solver_logs.jsonl`, `links.jsonl`, `cards_unit.jsonl`, phiếu phán xử** (`soup_job --runner predict`).
 - **Dataset adapter riêng cho acc chạy container** (output kernel không mount chéo acc): `Process/tools/publish.sh <acc> <dir> <slug>`.
 - **Huấn luyện**: FSDP 4×L4 1.7–2.1k tok/s, đỉnh 16 GB / GPU với mb 4, max-len 4608–6144; 7–10M token ≈ 2–3 h.
+
+
+## 10. Kế hoạch v2 (14/11 17:00 → 15/11 04:00, chế độ H) — lỗi, cách sửa, kỹ thuật dùng lại
+
+### 10.1 Lỗi đã phạm và quy tắc tránh
+
+| # | Lỗi | Hậu quả | Quy tắc tránh |
+|---|---|---|---|
+| 1 | Chế độ H mới ẩn hàm trong prompt S; thẻ W1 public cũ, link, prompt phán xử vẫn nhắc tên hàm `industry.py` | 14 / 125 thẻ rò gợi ý hàm ngành | Một nguồn sự thật: `lrl.hidden_names()` đọc `ZC_HIDE_API`, `lrl.strip_hidden()` lọc ở **mọi** chỗ đưa văn bản vào prompt (thẻ, link, phán xử); `tests/test_mode_h.py` |
+| 2 | Đẩy held-out thiếu dataset `<acc>/zc-para` | chỉ 206 / 1,122 câu được chấm, không lỗi | `eval_flow` **dừng** khi > 10 % id của tập không có văn bản; mọi thành phần tùy chọn thiếu → dừng hẳn, không chạy tiếp lặng lẽ |
+| 3 | 17 watcher cùng poll Kaggle mỗi 30 s từ một IP | Kaggle API 429 hàng loạt, `run_kernel` hiểu nhầm trạng thái | `run_kernel.py` poll `ZC_POLL_S` (mặc định 150 s) + jitter, backoff 240–360 s khi 429; khi API hồi lại: `automation/reattach.py` |
+| 4 | Qwen gốc sinh dữ liệu ở chế độ suy nghĩ | lặp vòng quá 7–8k token, 7 / 243 dòng dùng được (TG1) | Việc sinh dữ liệu: **không suy nghĩ + JSON schema** (vLLM structured output), 8 mẫu, đồng thuận ≥ 3; khi cần suy nghĩ: **budget forcing** (`lrl_gen.force_json`: suy nghĩ tới trần → đóng `</think>` → giải mã JSON có ràng buộc) |
+| 5 | Hai engine vLLM trong một tiến trình (sinh + kiểm ngược) | engine thứ hai hết VRAM | Một engine dùng cho cả hai bước (`training/contrast_job.py`) |
+| 6 | JSON có ràng buộc trả chuỗi có thực thể HTML (`&quot;`) | chương trình sinh ra không chạy | `html.unescape` trên mọi trường văn bản / mã đọc từ JSON có ràng buộc |
+| 7 | Độ dài bản ghi ước theo ký tự | WT0B mất 305 / 543 bản ghi (max-len 4608 quá ngắn) | **Đo bằng tokenizer Qwen** (`apply_chat_template` của adapter có sẵn, `ad3/V3A/adapter`) trước khi chọn `--max-len` |
+| 8 | FSDP mb 6 / mb 4 × 5120 token | OOM (phân mảnh) | mb 2 × tích luỹ 8 + `--env PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`; đỉnh 15 GB / GPU, 1.73–1.86k tok/s (không chậm hơn mb 4 đáng kể) |
+| 9 | Lệnh nền bị container khởi động lại giết | mất watcher / resume | Sau mỗi lần khởi động lại: `watch_loop.sh` + `automation/resume.py`; kiểm `ps` |
+| 10 | So điểm giữa *file container* và *file phán xử* lẫn lộn | kết luận lệch 0.003–0.013 | Bảng điểm luôn ghi cả hai (`Process/scores_v2.csv` cột `config_or_dir`); `<config>/submission.jsonl` = container |
+| 11 | `merge_sub.read` bỏ dòng abstain → file container lấy đáp án S khi phán xử đã quyết định bỏ | container thấp hơn phán xử 0.003–0.013 ở mọi lần chạy | Gộp cuối phải coi file phán xử là quyết định cho mọi câu nó phủ (kể cả abstain) — **chưa sửa**, việc đầu tiên PDF 3 §5 |
+| 12 | `tests/run_all.sh` chạy với `timeout 900` | bị cắt ở `test_plausibility` (exit 143), tưởng lỗi | Bộ test CPU mất ~30–40 phút khi máy bận: `timeout 2700`, ghi ra file log, không pipe qua `tail` |
+| 13 | Tối ưu theo số đo trên phân phối nguồn (dòng held-out DN train) | WT-b +0.08 offline nhưng hại trên public | Mọi thành phần mới phải có ít nhất một phép đo **đầu-cuối trên phân phối đích** (public chế độ H) trước khi xây tiếp lên nó |
+
+### 10.2 Kỹ thuật hiệu quả (dùng lại)
+
+- **Dùng lại hàm / link của một lần chạy** (`units_file`, `links_file` trong config, tìm bằng `predict_flow.find_input`): so biến thể S trên
+  **cùng** bộ hàm (ghép cặp sạch) và bớt ~15–20 phút / lần chạy. Bản nộp vẫn sinh lại. Ví dụ `configs/flow_h_reuse.json` + `configs/reuse/`.
+- **Tập đánh giá tự mang câu** (`tests/splits/<set>.txt` + `<set>.questions.jsonl`, id có `~`): chạy S trên câu do mô hình sinh (kiểm ngược
+  dữ liệu UQ: `uqchk_a/b`) bằng đúng đường `eval_flow` — không cần code mới.
+- **Phân tích log trên CPU trước khi đẩy GPU**: tỉ lệ đúng theo biến thể / vòng (`var_acc2.py`), theo việc gọi hàm (`unit_use*.py`,
+  `unit_final.py`), gộp log (`pool.py`) — mỗi phân tích ~1 phút, đã loại 3 hướng (k lớn, gộp lần chạy, WT) trước khi tốn thêm GPU.
+- **Mỗi biến thể public = một phiên DP 4** (mỗi GPU một vLLM fp8, `gpu_util` 0.92, hàng đợi động theo DN): ~2.0–2.4 h tường, ~4.5–5.5 h quota;
+  huấn luyện = một phiên FSDP 4 GPU; hai biến thể huấn luyện song song trên 2 phiên của cùng acc.
+- **Đẩy nối tiếp có điều kiện** bằng script nền: `when_ready.sh` (chờ dataset ready rồi `launch_many`), `after_running.sh` (chờ kernel trước
+  RUNNING để không đẩy trùng acc) — `Process/tools/v2/`.
+- **Dataset adapter Docker có sha256**: `src/adapter_hashes_w.json` + `docker/fetch_assets.sh`; tải lại và kiểm khớp trước khi coi là xong.
+
+### 10.3 Thời gian / quota đo được (4×L4)
+
+| Việc | Giờ tường | Ghi chú |
+|---|---|---|
+| Đường container public 1000 câu, chế độ H, k16 | 1.8–2.2 h | units ~12–20 phút, link ~8, S ~47 (k24: ~82), phán xử ~28 |
+| Sinh UQ 907 hàm × 2 câu (4 shard, không suy nghĩ) | 19 phút + cài ~5 | |
+| Huấn luyện FSDP 13M token (mb 2, max-len 5120) | ~2.3 h | quota ~5.5 h |
+| Quota thực | 2.0–2.4 h quota / giờ tường | kế hoạch dùng hệ số 2.5 |

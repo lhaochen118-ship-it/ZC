@@ -1,0 +1,35 @@
+eval split: 614 questions of ['pub_ind', 'pub_hoind'] (0 ids without text: [])
+units: rc=[0, 0, 0, 0], 15 verified units (628s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_ewts2/flow_p5_final_h/model_WL1 in 81s
+W adapter WL1 merged into the solver's weights (83s)
+links: rc=[0, 0, 0, 0], 614 questions linked (489s)
+[dp] ingested 4 businesses in 5s
+--- shard0 rc=0
+[pipe] dev_014 chunk 4/10 done | 149 questions here, 1385317 tok in 3661s (378 tok/s)
+[pipe] dev_014 chunk 8/10 done | 150 questions here, 1394533 tok in 3671s (380 tok/s)
+[hybrid] stats {'linked_none': 117, 'linked_q': 33, 'gen': 1886, 'answered': 119, 'stop_early': 97, 'exec_error': 475, 'precheck_error': 375, 'stop_round2': 53, 'abstained': 31}
+[pipe] DONE 10 chunks, 150 questions here, 1394533 tok in 3671s
+DONE 614 questions in 3938s
+
+--- shard1 rc=0
+[pipe] dev_014 chunk 7/10 done | 156 questions here, 1176531 tok in 2952s (398 tok/s)
+[pipe] dev_012 chunk 3/7 done | 158 questions here, 1185742 tok in 3016s (393 tok/s)
+[hybrid] stats {'linked_none': 125, 'linked_q': 33, 'gen': 1730, 'answered': 134, 'stop_early': 110, 'precheck_error': 308, 'exec_error': 361, 'stop_round2': 48, 'abstained': 24}
+[pipe] DONE 10 chunks, 158 questions here, 1185742 tok in 3016s
+DONE 614 questions in 3283s
+
+--- shard2 rc=0
+[pipe] dev_013 chunk 2/9 done | 149 questions here, 813355 tok in 2120s (384 tok/s)
+[hybrid] stats {'linked_none': 115, 'linked_q': 36, 'gen': 1499, 'answered': 138, 'stop_early': 113, 'exec_error': 263, 'precheck_error': 292, 'stop_round2': 36, 'abstained': 11}
+[pipe] dev_014 chunk 6/10 done | 151 questions here, 819977 tok in 2242s (366 tok/s)
+[pipe] DONE 11 chunks, 151 questions here, 819977 tok in 2242s
+DONE 614 questions in 2509s
+
+--- shard3 rc=0
+[pipe] dev_014 chunk 9/10 done | 155 questions here, 733475 tok in 2010s (365 tok/s)
+[hybrid] stats {'linked_q': 37, 'linked_none': 118, 'gen': 1258, 'answered': 139, 'stop_early': 127, 'precheck_error': 201, 'exec_error': 182, 'stop_round2': 28, 'abstained': 16}
+[pipe] DONE 10 chunks, 155 questions here, 733475 tok in 2010s
+DONE 614 questions in 2277s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+DP DONE 4 shards in 3954s

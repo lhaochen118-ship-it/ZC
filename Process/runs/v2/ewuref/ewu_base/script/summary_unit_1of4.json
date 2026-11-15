@@ -1,0 +1,14 @@
+{
+ "mode": "unit",
+ "items": 387,
+ "cards": 42,
+ "with_hint": 0,
+ "with_check": 0,
+ "s": 1482,
+ "repair1": {
+  "rows": 19,
+  "parsed": 54,
+  "units_before": 37,
+  "units_after": 42
+ }
+}

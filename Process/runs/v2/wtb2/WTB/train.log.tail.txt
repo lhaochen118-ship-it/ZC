@@ -1,0 +1,120 @@
+Truncating train dataset (num_proc=1):  62%|██████▏   | 532/861 [00:02<00:01, 268.97 examples/s]
+Truncating train dataset (num_proc=1):  47%|████▋     | 406/861 [00:02<00:01, 256.55 examples/s]
+Truncating train dataset (num_proc=1):  57%|█████▋    | 492/861 [00:02<00:01, 263.72 examples/s]
+Truncating train dataset (num_proc=1):  50%|█████     | 433/861 [00:02<00:01, 259.00 examples/s]
+Truncating train dataset (num_proc=1):  61%|██████    | 521/861 [00:02<00:01, 266.22 examples/s]
+Truncating train dataset (num_proc=1):  67%|██████▋   | 573/861 [00:02<00:01, 266.77 examples/s]
+Truncating train dataset (num_proc=1):  54%|█████▎    | 461/861 [00:02<00:01, 262.04 examples/s]
+Truncating train dataset (num_proc=1):  64%|██████▎   | 548/861 [00:02<00:01, 264.45 examples/s]
+Truncating train dataset (num_proc=1):  70%|██████▉   | 601/861 [00:02<00:00, 266.13 examples/s]
+Truncating train dataset (num_proc=1):  57%|█████▋    | 490/861 [00:02<00:01, 266.26 examples/s]
+Truncating train dataset (num_proc=1):  67%|██████▋   | 576/861 [00:02<00:01, 264.12 examples/s]
+Truncating train dataset (num_proc=1):  73%|███████▎  | 629/861 [00:02<00:00, 267.86 examples/s]
+Truncating train dataset (num_proc=1):  60%|██████    | 519/861 [00:02<00:01, 269.34 examples/s]
+Truncating train dataset (num_proc=1):  70%|███████   | 604/861 [00:02<00:00, 263.95 examples/s]
+Truncating train dataset (num_proc=1):  76%|███████▋  | 657/861 [00:02<00:00, 268.69 examples/s]
+Truncating train dataset (num_proc=1):  73%|███████▎  | 632/861 [00:02<00:00, 264.67 examples/s]
+Truncating train dataset (num_proc=1):  79%|███████▉  | 684/861 [00:03<00:00, 265.76 examples/s]
+Truncating train dataset (num_proc=1):  65%|██████▌   | 560/861 [00:02<00:01, 267.10 examples/s]
+Truncating train dataset (num_proc=1):  77%|███████▋  | 660/861 [00:03<00:00, 264.19 examples/s]
+Truncating train dataset (num_proc=1):  83%|████████▎ | 712/861 [00:03<00:00, 268.05 examples/s]
+Truncating train dataset (num_proc=1):  68%|██████▊   | 588/861 [00:02<00:01, 266.40 examples/s]
+Truncating train dataset (num_proc=1):  80%|███████▉  | 687/861 [00:03<00:00, 262.75 examples/s]
+Truncating train dataset (num_proc=1):  86%|████████▌ | 740/861 [00:03<00:00, 268.06 examples/s]
+Truncating train dataset (num_proc=1):  72%|███████▏  | 616/861 [00:02<00:00, 267.18 examples/s]
+Truncating train dataset (num_proc=1):  83%|████████▎ | 715/861 [00:03<00:00, 265.07 examples/s]
+Truncating train dataset (num_proc=1):  75%|███████▍  | 644/861 [00:02<00:00, 269.29 examples/s]
+Truncating train dataset (num_proc=1):  90%|█████████ | 777/861 [00:03<00:00, 253.48 examples/s]
+Truncating train dataset (num_proc=1):  86%|████████▋ | 743/861 [00:03<00:00, 265.04 examples/s]
+Truncating train dataset (num_proc=1):  78%|███████▊  | 672/861 [00:03<00:00, 268.15 examples/s]
+Truncating train dataset (num_proc=1):  94%|█████████▎| 806/861 [00:03<00:00, 259.93 examples/s]
+Truncating train dataset (num_proc=1):  81%|████████  | 699/861 [00:03<00:00, 265.87 examples/s]
+Truncating train dataset (num_proc=1):  90%|█████████ | 778/861 [00:03<00:00, 249.75 examples/s]
+Truncating train dataset (num_proc=1):  98%|█████████▊| 847/861 [00:03<00:00, 260.69 examples/s]
+Truncating train dataset (num_proc=1):  85%|████████▍ | 729/861 [00:03<00:00, 269.53 examples/s]
+Truncating train dataset (num_proc=1):  94%|█████████▎| 806/861 [00:03<00:00, 256.26 examples/s]
+Truncating train dataset (num_proc=1):  97%|█████████▋| 832/861 [00:03<00:00, 254.86 examples/s]
+Truncating train dataset (num_proc=1):  89%|████████▉ | 765/861 [00:03<00:00, 252.93 examples/s]
+Truncating train dataset (num_proc=1): 100%|█████████▉| 859/861 [00:03<00:00, 258.31 examples/s]
+Truncating train dataset (num_proc=1):  92%|█████████▏| 795/861 [00:03<00:00, 263.02 examples/s]
+Truncating train dataset (num_proc=1):  95%|█████████▌| 822/861 [00:03<00:00, 261.00 examples/s]
+Truncating train dataset (num_proc=1):  99%|█████████▊| 849/861 [00:03<00:00, 262.46 examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 861/861 [00:05<00:00, 154.57 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/861 [00:00<?, ? examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 861/861 [00:05<00:00, 152.41 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/861 [00:00<?, ? examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 861/861 [00:05<00:00, 153.67 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/861 [00:00<?, ? examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 861/861 [00:03<00:00, 225.38 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 861/861 [00:03<00:00, 217.46 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 861/861 [00:03<00:00, 221.93 examples/s][transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 861/861 [00:04<00:00, 214.32 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 861/861 [00:03<00:00, 225.76 examples/s][transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 861/861 [00:03<00:00, 217.98 examples/s]
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+
+  0%|          | 0/28 [00:00<?, ?it/s]/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+
+  4%|▎         | 1/28 [04:38<2:05:07, 278.04s/it]
+  7%|▋         | 2/28 [07:14<1:29:26, 206.41s/it]
+ 11%|█         | 3/28 [09:51<1:16:32, 183.72s/it]
+ 14%|█▍        | 4/28 [12:26<1:08:58, 172.43s/it]
+ 18%|█▊        | 5/28 [15:02<1:03:51, 166.59s/it]
+ 21%|██▏       | 6/28 [17:38<59:42, 162.86s/it]  
+ 25%|██▌       | 7/28 [20:15<56:23, 161.13s/it]
+ 29%|██▊       | 8/28 [22:51<53:07, 159.36s/it]
+ 32%|███▏      | 9/28 [25:24<49:53, 157.53s/it]
+ 36%|███▌      | 10/28 [28:01<47:13, 157.40s/it][sft] step 10 {'loss': 0.2558304786682129, 'grad_norm': 0.28340622782707214, 'learning_rate': 0.00015971585917027862, 'entropy': 0.27275390625, 'mean_token_accuracy': 0.9306198909878731, 'num_tokens': 2795840.0, 'epoch': 0.7407407407407407}
+
+                                                
+{'loss': '0.2558', 'grad_norm': '0.2834', 'learning_rate': '0.0001597', 'entropy': '0.2728', 'mean_token_accuracy': '0.9306', 'num_tokens': '2.796e+06', 'epoch': '0.7407'}
+
+ 36%|███▌      | 10/28 [28:01<47:13, 157.40s/it]
+ 39%|███▉      | 11/28 [30:37<44:27, 156.90s/it]
+ 43%|████▎     | 12/28 [33:13<41:47, 156.72s/it]
+ 46%|████▋     | 13/28 [35:49<39:05, 156.33s/it]
+ 50%|█████     | 14/28 [37:07<30:57, 132.71s/it]
+ 54%|█████▎    | 15/28 [39:42<30:12, 139.46s/it]
+ 57%|█████▋    | 16/28 [42:18<28:52, 144.39s/it]
+ 61%|██████    | 17/28 [44:52<27:01, 147.43s/it]
+ 64%|██████▍   | 18/28 [47:29<25:01, 150.16s/it]
+ 68%|██████▊   | 19/28 [50:05<22:46, 151.83s/it]
+ 71%|███████▏  | 20/28 [52:41<20:26, 153.35s/it][sft] step 20 {'loss': 0.10136146545410156, 'grad_norm': 0.21660390496253967, 'learning_rate': 5.000000000000002e-05, 'entropy': 0.11964818050986842, 'mean_token_accuracy': 0.9692840819296084, 'num_tokens': 5420828.0, 'epoch': 1.4444444444444444}
+
+                                                
+{'loss': '0.1014', 'grad_norm': '0.2166', 'learning_rate': '5e-05', 'entropy': '0.1196', 'mean_token_accuracy': '0.9693', 'num_tokens': '5.421e+06', 'epoch': '1.444'}
+
+ 71%|███████▏  | 20/28 [52:41<20:26, 153.35s/it]
+ 75%|███████▌  | 21/28 [55:18<18:00, 154.30s/it]
+ 79%|███████▊  | 22/28 [57:55<15:30, 155.01s/it]
+ 82%|████████▏ | 23/28 [1:00:31<12:57, 155.47s/it]
+ 86%|████████▌ | 24/28 [1:03:07<10:22, 155.69s/it]
+ 89%|████████▉ | 25/28 [1:05:43<07:46, 155.62s/it]
+ 93%|█████████▎| 26/28 [1:08:20<05:12, 156.13s/it]
+ 96%|█████████▋| 27/28 [1:10:57<02:36, 156.36s/it]
+100%|██████████| 28/28 [1:12:15<00:00, 132.84s/it][sft] step 28 {'train_runtime': 4335.5351, 'train_samples_per_second': 0.397, 'train_steps_per_second': 0.006, 'total_flos': 3.8929667752303e+17, 'train_loss': 0.15482878684997559, 'entropy': 0.103436279296875, 'mean_token_accuracy': 0.9685825864473979, 'num_tokens': 7521267.0, 'epoch': 2.0}
+
+                                                  
+{'train_runtime': '4336', 'train_samples_per_second': '0.397', 'train_steps_per_second': '0.006', 'train_loss': '0.1548', 'entropy': '0.1034', 'mean_token_accuracy': '0.9686', 'num_tokens': '7.521e+06', 'epoch': '2'}
+
+100%|██████████| 28/28 [1:12:15<00:00, 132.84s/it]
+100%|██████████| 28/28 [1:12:15<00:00, 154.84s/it]
+[sft] METRICS {"ok": true, "world": 4, "mb": 2, "ga": 8, "max_len": 5120, "records": 861, "tokens": 3746338, "steps": 28, "train_s": 4391.9, "tok_per_s": 1855.9, "loss_first": 0.2558, "loss_last": 0.1014, "losses": [0.2558, 0.1014], "stopped_early": null, "resumed_from": null, "ref_loss_before": null, "ref_loss_after": null, "peak_mem_gb": 11.58, "lora_modules": 200, "lora_kinds": ["down_proj", "g

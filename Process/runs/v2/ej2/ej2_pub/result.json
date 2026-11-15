@@ -1,0 +1,24 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/quynhle07/zc-ad2/V3A/adapter",
+  "WJR1": "/kaggle/input/datasets/quynhle07/zc-ad2/WJR1/adapter",
+  "WJR2D": "/kaggle/input/notebooks/quynhle07/zc-wjr2d-1/results/WJR2D/adapter"
+ },
+ "weights": [
+  0.7,
+  1.0,
+  1.0
+ ],
+ "merge_rc": 0,
+ "merge_s": 251,
+ "judge_rc": [
+  0,
+  0,
+  0,
+  0
+ ],
+ "judge_s": 3713,
+ "judge_logs": "f5a.logs.jsonl,f5b.logs.jsonl,pva3k16.logs.jsonl,g1v3apf2.logs.jsonl",
+ "judge_variants": "list,point,point+think",
+ "judge_lora": ""
+}

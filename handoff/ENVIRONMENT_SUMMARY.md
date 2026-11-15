@@ -1,4 +1,4 @@
-# Environment Summary — DataMate (cập nhật 14/11/2026)
+# Environment Summary — DataMate (cập nhật 15/11/2026 04:30 UTC)
 
 *Cấu hình các môi trường dự án dùng. Bài học vận hành ở PDF 2; vận hành Kaggle chi tiết ở `docs/02_KAGGLE_OPS.md`.*
 
@@ -13,7 +13,7 @@
 | vLLM | không có — test CPU dùng mô hình giả (`--fake-responder`) |
 | Repo | `/home/user/ZC`, branch `claude/datamate-v3-0dny90` |
 | Scratch | thư mục scratchpad của phiên (`runs/`, `cache_train/`, `cache_pub/`, `canon/`, worktree) — **mất khi sang khung chat mới**; bản lưu cần thiết ở `Process/` |
-| Token Kaggle | `~/.kaggle/tok_<username>` (chmod 600); 14/11 dùng 11 acc (10 × 4×L4 + `yeshenhi` T4); xin lại user mỗi container; username từ token: `KAGGLE_API_TOKEN=... kaggle config view` |
+| Token Kaggle | `~/.kaggle/tok_<username>` (chmod 600); 15/11 có **19 acc** (18 × 4×L4 + `yeshenhi` T4, danh sách §6); xin lại user mỗi container; username từ token: `KAGGLE_API_TOKEN=... kaggle config view` |
 | Tác vụ nền | trần 2 giờ (watcher `--max 115` rồi bật lại); container có thể khởi động lại giữa phiên → `automation/resume.py` |
 
 Dựng lại sau khi mất container:
@@ -70,3 +70,17 @@ Acc dùng chung với dự án khác: chỉ thao tác kernel `zc-*`. `automation
 | vLLM 0.32 + fp8 + LoRA | `enable_lora` chạy với Qwen3.5 khi adapter đã qua `training/merge.py vllm`; adapter thô nạp được nhưng không tác dụng |
 | Thời gian đường container 1000 câu (4×L4) | W1 unit ~13 phút, gộp adapter ~1.5 phút / cái, W2 link ~8 phút, S ~40 phút, W3 ~8 phút → 56–75 phút |
 | Watcher | `Process/tools/plan5/watch_loop.sh` (vòng lặp `watch_done.py` → `watch2.out`) + Monitor `tail -F` |
+
+
+## 6. Bổ sung 15/11 (kế hoạch v2, chế độ H)
+
+| Mục | Giá trị |
+|---|---|
+| Acc có token (19) | nhatlong1103, quynhle07, quynhtran35, nguyenhoa99, yuan1103, synchan5704, anderson1202, loinguyentran, yeshenhi (T4), phatle1578, mucnokieu, huyenco, nguynduylm, phuongnehe, thnliu, linhmai24, lelynhan, duylnng, caotienminh1 — quota lúc bàn giao: `Process/kaggle/quota_2026-11-15.txt` (nhiều nhất: caotienminh1, duylnng, lelynhan ~30 h; hết: quynhle07, synchan5704, nguynduylm) |
+| Dataset adapter dùng chung | `<acc>/zc-ad3` (V3A, WL1, WJR1, WTB, WTS, S2S1, S2S2) trên anderson1202, caotienminh1, duylnng, huyenco, lelynhan, linhmai24, mucnokieu, phuongnehe, thnliu, phatle1578; `<acc>/zc-ad2` (V3A, WL1, WJR1) trên 11 acc khác |
+| Dataset Docker | `nhatlong1103/zc-final-adapter` (S: V3A × 0.70), **`nhatlong1103/zc-w-v2`** (WL1, WJR1 dạng `<NAME>/adapter/`, sha256 `src/adapter_hashes_w.json`) |
+| Thư viện huấn luyện | `yeshenhi/zc-train-wheels` (`--ks`), mô hình `danbth/qwen3-5-9b/transformers/default/1` (`--ms`) |
+| Tokenizer Qwen cục bộ (đo độ dài bản ghi) | không có mô hình cục bộ; dùng `tokenizer.json` trong một adapter đã tải (`kaggle datasets download <acc>/zc-ad3` → `V3A/adapter/`) |
+| Thời gian (4×L4) | đường container public chế độ H k16: 1.8–2.2 h; k24: +35 phút; huấn luyện FSDP 13M token: ~2.3 h (mb 2, max-len 5120, `expandable_segments`); bộ test CPU `tests/run_all.sh`: 30–40 phút |
+| Watcher | `Process/tools/v2/watch_loop.sh` (vòng `watch_done.py --max 110` → `watch.out`) + Monitor `tail -F watch.out`; `run_kernel.py` poll `ZC_POLL_S` (150–180 s) để tránh 429 |
+| Docker | `predict.sh` mặc định `configs/flow_v2_final.json` (chế độ H); image chép `training/merge.py`, `models/adapters/` (W) và đặt `ZC_ADAPTER_ROOT`; chưa build / chạy trên GPU thật |

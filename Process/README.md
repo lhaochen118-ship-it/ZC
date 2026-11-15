@@ -56,3 +56,17 @@ mkdir -p training/data/out/v3a && gunzip -c Process/train_data/p3/v3a_mix.jsonl.
 | Paraphrase đánh giá | `<acc>/zc-para` (`para_pub.jsonl`, `para_train.jsonl`) |
 | Log của lần chạy không có ở `runs/` | `kaggle kernels output` theo `kaggle/kernels.csv` (output kernel còn trên Kaggle) |
 | PDF tooling | `pip install markdown xhtml2pdf` |
+
+## Kế hoạch v2 (14/11 17:00 → 15/11, chế độ H) — đã lưu
+
+| Đường dẫn | Nội dung | Dùng khi |
+|---|---|---|
+| `scores_v2.csv` | pub_full / pub_ind / pub_noind / held-out của **mọi** lần chạy v2; cột `config_or_dir`: `flow_*` = file container, `ensemble` / `list` / `point*` = file phán xử | so mốc (container với container) |
+| `runs/v2/<run>/` | lưu bằng `automation/archive_v2.py`: `solver_logs.jsonl.gz` (mọi mẫu S), `submission.jsonl.gz`, `cards_unit.jsonl.gz` (hàm do mô hình viết), `links.jsonl.gz`, `judge/<variant>/verdicts.jsonl.gz`, `eval.log.tail.txt`; huấn luyện: `train_metrics.json`, `train.log.tail.txt`; sinh dữ liệu (tg*, uq): `cards_*`, `raw_*` | phân tích lỗi CPU (`tools/v2/`), phán xử lại offline, dùng lại hàm / link (`units_file` / `links_file`) |
+| `train_data/v2/` | `wt2/` (dữ liệu WT v2: 1,036 train + 265 đo), `s3/` (`units_all`, `units_train` 1,012 hàm thầy, `units_unitq` 907, `uq/` 1,336 câu UQ, `uq_index.json`), `s3a/s3a.jsonl` (S″-A: 3,436 bản ghi), `contrast/` (1,005 cặp tương phản), `tg0/` (thuật ngữ mới), `wtprog_bal/` | `gunzip` vào `training/data/out/<dir>/` rồi `--train-data <dir>` |
+| `kaggle/kernels_v2.csv` | lần chạy v2 → kernel id → trạng thái cuối | tải output: `kaggle kernels output <id> -p <dir>` (adapter WTB / WTS / S2S1 / S2S2 / S3A nằm trong output kernel huấn luyện) |
+| `kaggle/quota_2026-11-15.txt` | quota 19 acc lúc bàn giao | lập lịch |
+| `tools/v2/` | `score_run.sh` (chấm 1 lần chạy), `unit_use.py` / `unit_use2.py` / `unit_final.py` (mẫu gọi hàm cửa hàng: tỉ lệ đúng, theo hàm, đáp án cuối), `var_acc*.py` (theo biến thể / vòng), `pool.py` (gộp log), `score_judge.py`, `score_heldout_judge.py`, `watch_loop.sh`, `when_ready.sh`, `after_running.sh`, `fake_*.py` (mô hình giả cho smoke CPU) | sửa biến `S` (scratch) ở đầu file |
+
+Dựng lại dữ liệu không lưu: `training/data/out/s2` (S′) = `python3 training/data/s2_build.py …` (đầu vào `tg0`, `contrast`); `wj2`, `wj2d`, `wt`, `wt0`
+(nhánh đã loại) không cần.

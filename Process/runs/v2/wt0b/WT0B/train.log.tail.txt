@@ -1,0 +1,120 @@
+
+Building labels for train dataset (num_proc=1):   0%|          | 0/238 [00:00<?, ? examples/s]
+Building labels for train dataset (num_proc=1):   5%|▌         | 13/238 [00:00<00:04, 52.87 examples/s]
+Building labels for train dataset (num_proc=1):   5%|▌         | 12/238 [00:00<00:04, 46.88 examples/s]
+Building labels for train dataset (num_proc=1):   5%|▌         | 13/238 [00:00<00:04, 53.36 examples/s]
+Building labels for train dataset (num_proc=1):  16%|█▋        | 39/238 [00:00<00:01, 126.51 examples/s]
+Building labels for train dataset (num_proc=1):  16%|█▌        | 37/238 [00:00<00:01, 118.61 examples/s]
+Building labels for train dataset (num_proc=1):  16%|█▌        | 38/238 [00:00<00:01, 125.38 examples/s]
+Building labels for train dataset (num_proc=1):  27%|██▋       | 64/238 [00:00<00:01, 167.79 examples/s]
+Building labels for train dataset (num_proc=1):  26%|██▌       | 62/238 [00:00<00:01, 161.19 examples/s]
+Building labels for train dataset (num_proc=1):  26%|██▋       | 63/238 [00:00<00:01, 167.05 examples/s]
+Building labels for train dataset (num_proc=1):  38%|███▊      | 91/238 [00:00<00:00, 197.74 examples/s]
+Building labels for train dataset (num_proc=1):  37%|███▋      | 88/238 [00:00<00:00, 191.37 examples/s]
+Building labels for train dataset (num_proc=1):  38%|███▊      | 90/238 [00:00<00:00, 197.47 examples/s]
+Building labels for train dataset (num_proc=1):  50%|█████     | 119/238 [00:00<00:00, 219.58 examples/s]
+Building labels for train dataset (num_proc=1):  48%|████▊     | 115/238 [00:00<00:00, 213.59 examples/s]
+Building labels for train dataset (num_proc=1):  50%|████▉     | 118/238 [00:00<00:00, 220.62 examples/s]
+Building labels for train dataset (num_proc=1):  62%|██████▏   | 147/238 [00:00<00:00, 235.79 examples/s]
+Building labels for train dataset (num_proc=1):  60%|█████▉    | 142/238 [00:00<00:00, 228.46 examples/s]
+Building labels for train dataset (num_proc=1):  61%|██████▏   | 146/238 [00:00<00:00, 235.66 examples/s]
+Building labels for train dataset (num_proc=1):  73%|███████▎  | 174/238 [00:00<00:00, 241.69 examples/s]
+Building labels for train dataset (num_proc=1):  71%|███████   | 169/238 [00:00<00:00, 236.66 examples/s]
+Building labels for train dataset (num_proc=1):  73%|███████▎  | 173/238 [00:00<00:00, 242.48 examples/s]
+Building labels for train dataset (num_proc=1):  84%|████████▍ | 201/238 [00:00<00:00, 246.18 examples/s]
+Building labels for train dataset (num_proc=1):  82%|████████▏ | 196/238 [00:00<00:00, 240.61 examples/s]
+Building labels for train dataset (num_proc=1):  84%|████████▍ | 200/238 [00:00<00:00, 246.70 examples/s]
+Building labels for train dataset (num_proc=1):  95%|█████████▌| 227/238 [00:01<00:00, 247.17 examples/s]
+Building labels for train dataset (num_proc=1):  94%|█████████▎| 223/238 [00:01<00:00, 245.26 examples/s]
+Building labels for train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 247.18 examples/s]
+Building labels for train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 131.87 examples/s]
+
+Truncating train dataset (num_proc=1):   0%|          | 0/238 [00:00<?, ? examples/s]
+Building labels for train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 131.66 examples/s]
+
+Truncating train dataset (num_proc=1):   0%|          | 0/238 [00:00<?, ? examples/s]
+Building labels for train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 132.56 examples/s]
+
+Truncating train dataset (num_proc=1):   0%|          | 0/238 [00:00<?, ? examples/s]
+Truncating train dataset (num_proc=1):   6%|▋         | 15/238 [00:00<00:03, 56.67 examples/s]
+Truncating train dataset (num_proc=1):   6%|▋         | 15/238 [00:00<00:04, 51.14 examples/s]
+Truncating train dataset (num_proc=1):  18%|█▊        | 44/238 [00:00<00:01, 138.13 examples/s]
+Truncating train dataset (num_proc=1):   6%|▋         | 15/238 [00:00<00:04, 45.43 examples/s]
+Truncating train dataset (num_proc=1):  18%|█▊        | 44/238 [00:00<00:01, 128.34 examples/s]
+Truncating train dataset (num_proc=1):  32%|███▏      | 77/238 [00:00<00:00, 200.79 examples/s]
+Truncating train dataset (num_proc=1):  18%|█▊        | 44/238 [00:00<00:01, 118.53 examples/s]
+Truncating train dataset (num_proc=1):  32%|███▏      | 77/238 [00:00<00:00, 190.44 examples/s]
+Truncating train dataset (num_proc=1):  46%|████▌     | 110/238 [00:00<00:00, 239.83 examples/s]
+Truncating train dataset (num_proc=1):  32%|███▏      | 77/238 [00:00<00:00, 179.85 examples/s]
+Truncating train dataset (num_proc=1):  46%|████▌     | 110/238 [00:00<00:00, 230.85 examples/s]
+Truncating train dataset (num_proc=1):  60%|██████    | 143/238 [00:00<00:00, 267.52 examples/s]
+Truncating train dataset (num_proc=1):  46%|████▌     | 109/238 [00:00<00:00, 219.99 examples/s]
+Truncating train dataset (num_proc=1):  60%|██████    | 143/238 [00:00<00:00, 260.12 examples/s]
+Truncating train dataset (num_proc=1):  74%|███████▍  | 176/238 [00:00<00:00, 283.37 examples/s]
+Truncating train dataset (num_proc=1):  60%|██████    | 143/238 [00:00<00:00, 252.65 examples/s]
+Truncating train dataset (num_proc=1):  74%|███████▍  | 176/238 [00:00<00:00, 277.04 examples/s]
+Truncating train dataset (num_proc=1):  87%|████████▋ | 208/238 [00:00<00:00, 293.13 examples/s]
+Truncating train dataset (num_proc=1):  74%|███████▎  | 175/238 [00:00<00:00, 270.37 examples/s]
+Truncating train dataset (num_proc=1):  87%|████████▋ | 208/238 [00:00<00:00, 287.22 examples/s]
+Truncating train dataset (num_proc=1):  87%|████████▋ | 207/238 [00:00<00:00, 282.96 examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 287.94 examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 159.14 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/238 [00:00<?, ? examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 151.58 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/238 [00:00<?, ? examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 153.48 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/238 [00:00<?, ? examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 238/238 [00:00<00:00, 239.28 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 237.00 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 212.96 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 218.48 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 211.47 examples/s]
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 238/238 [00:01<00:00, 195.63 examples/s]
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+
+  0%|          | 0/8 [00:00<?, ?it/s]/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[rank0]:[W1114 21:11:08.470526272 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 0 while trying to allocate 2034237440 bytes (free: 1829830656, total: 23659151360).
+[rank3]:[W1114 21:11:11.954080876 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 3 while trying to allocate 446693376 bytes (free: 288423936, total: 23659151360).
+[rank2]:[W1114 21:11:42.526353349 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 2 while trying to allocate 2034237440 bytes (free: 2014380032, total: 23659151360).
+[rank1]:[W1114 21:11:45.962743281 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 1 while trying to allocate 450887680 bytes (free: 326172672, total: 23659151360).
+
+ 12%|█▎        | 1/8 [04:16<29:56, 256.69s/it][rank3]:[W1114 21:12:56.702882329 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 3 while trying to allocate 452984832 bytes (free: 321978368, total: 23659151360).
+[rank2]:[W1114 21:14:04.813832591 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 2 while trying to allocate 452984832 bytes (free: 210829312, total: 23659151360).
+[rank2]:[W1114 21:14:24.087115549 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 2 while trying to allocate 2034237440 bytes (free: 1404108800, total: 23659151360).
+
+ 25%|██▌       | 2/8 [06:33<18:37, 186.17s/it][rank3]:[W1114 21:14:39.485398029 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 3 while trying to allocate 452984832 bytes (free: 315686912, total: 23659151360).
+[rank3]:[W1114 21:14:59.842223971 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 3 while trying to allocate 2034237440 bytes (free: 2010185728, total: 23659151360).
+
+ 38%|███▊      | 3/8 [08:51<13:41, 164.31s/it]
+ 50%|█████     | 4/8 [10:34<09:20, 140.17s/it]
+ 62%|██████▎   | 5/8 [12:52<06:57, 139.27s/it]
+ 75%|███████▌  | 6/8 [15:09<04:37, 138.62s/it][rank1]:[W1114 21:24:58.067675513 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 1 while trying to allocate 452984832 bytes (free: 103874560, total: 23659151360).
+[rank1]:[W1114 21:25:19.471147176 CUDACachingAllocator.cpp:3933] memory allocation failed with OOM on device 1 while trying to allocate 2034237440 bytes (free: 1720778752, total: 23659151360).
+
+ 88%|████████▊ | 7/8 [17:27<02:18, 138.38s/it]
+100%|██████████| 8/8 [19:10<00:00, 126.96s/it][sft] step 8 {'train_runtime': 1150.3966, 'train_samples_per_second': 0.414, 'train_steps_per_second': 0.007, 'total_flos': 1.017650581906391e+17, 'train_loss': 0.23746013641357422, 'entropy': 0.18307291666666667, 'mean_token_accuracy': 0.9520121375719707, 'num_tokens': 1830732.0, 'epoch': 2.0}
+
+                                              
+{'train_runtime': '1150', 'train_samples_per_second': '0.414', 'train_steps_per_second': '0.007', 'train_loss': '0.2375', 'entropy': '0.1831', 'mean_token_accuracy': '0.952', 'num_tokens': '1.831e+06', 'epoch': '2'}
+
+100%|██████████| 8/8 [19:10<00:00, 126.96s/it]
+100%|██████████| 8/8 [19:10<00:00, 143.80s/it]
+[sft] METRICS {"ok": true, "world": 4, "mb": 4, "ga": 4, "max_len": 4608, "records": 238, "tokens": 908096, "steps": 8, "train_s": 1178.8, "tok_per_s": 1935.7, "loss_first": null, "loss_last": null, "losses": [], "stopped_early": null, "resumed_from": null, "ref_loss_before": null, "ref_loss_after": null, "peak_mem_gb": 16.53, "lora_modules": 200, "lora_kinds": ["down_proj", "gate_proj", "in_proj_

@@ -1,0 +1,35 @@
+eval split: 1031 questions of ['pub_ho400c', 'tr_ho400c', 'pub_hoind', 'tr_newterm'] (0 ids without text: [])
+units: rc=[0, 0, 0, 0], 45 verified units (1043s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_h0c2/flow_p5_final/model_WL1 in 552s
+W adapter WL1 merged into the solver's weights (555s)
+links: rc=[0, 0, 0, 0], 1031 questions linked (998s)
+[dp] ingested 4 businesses in 5s
+--- shard0 rc=0
+[pipe] dev_013 chunk 1/6 done | 266 questions here, 556299 tok in 1361s (409 tok/s)
+[pipe] dev_003 chunk 1/3 done | 267 questions here, 561382 tok in 1389s (404 tok/s)
+[pipe] dev_014 chunk 2/6 done | 268 questions here, 564454 tok in 1510s (374 tok/s)
+[pipe] DONE 17 chunks, 268 questions here, 564454 tok in 1510s
+DONE 1031 questions in 1774s
+
+--- shard1 rc=0
+[hybrid] stats {'linked_q': 118, 'linked_none': 141, 'gen': 1997, 'answered': 243, 'stop_early': 212, 'precheck_error': 199, 'exec_error': 297, 'stop_round2': 46, 'abstained': 15}
+[pipe] dev_006 chunk 1/3 done | 259 questions here, 908564 tok in 2397s (379 tok/s)
+[pipe] DONE 21 chunks, 259 questions here, 908564 tok in 2397s
+DONE 1031 questions in 2661s
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+
+--- shard2 rc=0
+[pipe] biz_130 chunk 3/6 done | 256 questions here, 626828 tok in 1639s (382 tok/s)
+[pipe] dev_013 chunk 4/6 done | 257 questions here, 629900 tok in 1677s (376 tok/s)
+[pipe] DONE 17 chunks, 257 questions here, 629900 tok in 1677s
+DONE 1031 questions in 1941s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+
+--- shard3 rc=0
+[pipe] dev_004 chunk 1/3 done | 245 questions here, 730343 tok in 1808s (404 tok/s)
+[pipe] dev_004 chunk 2/3 done | 246 questions here, 730962 tok in 1814s (403 tok/s)
+[pipe] dev_008 chunk 2/3 done | 247 questions here, 732905 tok in 1835s (399 tok/s)
+[pipe] DONE 19 chunks, 247 questions here, 732905 tok in 1835s
+DONE 1031 questions in 2099s
+
+DP DONE 4 shards in 2678s

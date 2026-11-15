@@ -1,0 +1,20 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/synchan5704/zc-ad2/V3A/adapter",
+  "WTS": "/kaggle/input/datasets/synchan5704/zc-wts-adapter/WTS/adapter"
+ },
+ "weights": [
+  0.7,
+  1.0
+ ],
+ "merge_rc": 0,
+ "merge_s": 562,
+ "script": "lrl_gen.py",
+ "script_rc": [
+  0,
+  0,
+  0,
+  0
+ ],
+ "script_s": 1046
+}

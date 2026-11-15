@@ -1,0 +1,18 @@
+{
+ "adapters": {
+  "WTB": "/kaggle/input/datasets/synchan5704/zc-wt-adapters/WTB/adapter"
+ },
+ "weights": [
+  1.0
+ ],
+ "merge_rc": 0,
+ "merge_s": 102,
+ "script": "lrl_gen.py",
+ "script_rc": [
+  0,
+  0,
+  0,
+  0
+ ],
+ "script_s": 981
+}

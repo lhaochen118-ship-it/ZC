@@ -1,0 +1,20 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/anderson1202/zc-ad2/V3A/adapter",
+  "WJR1": "/kaggle/input/datasets/anderson1202/zc-ad2/WJR1/adapter"
+ },
+ "weights": [
+  0.7,
+  1.0
+ ],
+ "merge_rc": 0,
+ "merge_s": 183,
+ "judge_rc": [
+  0,
+  0
+ ],
+ "judge_s": 3057,
+ "judge_logs": "h0a.logs.jsonl,h0a2.logs.jsonl",
+ "judge_variants": "list+c,point+c,point+think,list+think",
+ "judge_lora": ""
+}

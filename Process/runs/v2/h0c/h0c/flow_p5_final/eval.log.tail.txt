@@ -1,0 +1,35 @@
+eval split: 206 questions of ['pub_ho400c', 'tr_ho400c', 'pub_hoind', 'tr_newterm'] (825 ids without text: ['q_009187cd2960~p2', 'q_00c4e24fa228~p1', 'q_014cdcc1da6e~p2', 'q_01ba91ff94c6~p2', 'q_01d1099489a0~p2'])
+units: rc=[0, 0, 0, 0], 32 verified units (730s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_h0c/flow_p5_final/model_WL1 in 85s
+W adapter WL1 merged into the solver's weights (87s)
+links: rc=[0, 0, 0, 0], 206 questions linked (436s)
+[dp] ingested 0 businesses in 2s
+--- shard0 rc=0
+<unit chi_phi_nhap_trung_binh>:10: RuntimeWarning: invalid value encountered in scalar divide
+<unit chi_phi_nhap_trung_binh>:10: RuntimeWarning: invalid value encountered in scalar divide
+[pipe] biz_109 chunk 3/3 done | 54 questions here, 79449 tok in 308s (258 tok/s)
+[pipe] DONE 4 chunks, 54 questions here, 79449 tok in 308s
+DONE 206 questions in 574s
+
+--- shard1 rc=0
+[pipe] biz_130 chunk 2/3 done | 33 questions here, 38865 tok in 112s (348 tok/s)
+[pipe] biz_105 chunk 3/3 done | 34 questions here, 43824 tok in 139s (315 tok/s)
+[pipe] biz_127 chunk 3/3 done | 35 questions here, 44916 tok in 157s (286 tok/s)
+[pipe] DONE 4 chunks, 35 questions here, 44916 tok in 157s
+DONE 206 questions in 423s
+
+--- shard2 rc=0
+[pipe] biz_123 chunk 2/3 done | 73 questions here, 87921 tok in 218s (403 tok/s)
+[pipe] biz_109 chunk 1/3 done | 74 questions here, 89826 tok in 226s (398 tok/s)
+[pipe] biz_130 chunk 3/3 done | 76 questions here, 104047 tok in 357s (291 tok/s)
+[pipe] DONE 5 chunks, 76 questions here, 104047 tok in 357s
+DONE 206 questions in 624s
+
+--- shard3 rc=0
+[pipe] biz_105 chunk 1/3 done | 40 questions here, 44413 tok in 117s (380 tok/s)
+<unit chi_phi_nhap_trung_binh>:10: RuntimeWarning: invalid value encountered in scalar divide
+[pipe] biz_109 chunk 2/3 done | 41 questions here, 45295 tok in 147s (307 tok/s)
+[pipe] DONE 3 chunks, 41 questions here, 45295 tok in 147s
+DONE 206 questions in 414s
+
+DP DONE 4 shards in 637s

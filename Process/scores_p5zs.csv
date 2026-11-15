@@ -1,5 +1,6 @@
 run,config,PA_container,PA_ensemble,correct,wrong,abstain,PA_pub_ind,PA_pub_noind,dZS_vs_B00S,z,wall_min,gpu_util,peak_gb
 l02a100,flow_p5_final_h,0.827,0.827,894,67,39,0.4944,0.9494,0.073,5.9,74,39.3,20.9
+b00i,flow_p5_zs_ind,0.818,nan,881,63,56,0.829,0.814,0.064,6.32,99,44.3,21.9
 l02a050,flow_p5_final_h,0.804,0.804,875,71,54,0.5204,0.9083,0.05,4.14,82,37.6,21.2
 l02a025,flow_p5_final_h,0.798,0.798,861,63,76,0.5204,0.9001,0.044,3.98,87,39.1,20.9
 b00d,flow_p5_zs_abl,0.758,nan,834,76,90,0.5985,0.8167,0.004,0.52,93,57.6,21.9

@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/h01 --train --script training/probe_job.py --items p5probe/items.jsonl --model Qwen/Qwen3.5-9B

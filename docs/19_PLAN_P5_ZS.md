@@ -68,3 +68,10 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 10:35 **B00-D** (ablation, Qwen gốc + thẻ luật cũ của mô hình tuned, chế độ H): container **0.758** (834 / 76 / 90; pub_noind 0.817), 93 phút,
   util 58 %. Phán xử (Qwen gốc, list / point / point+think) **bị cắt ở trần 1800 s** → file = bỏ phiếu. Chỉ 7 hàm cửa hàng qua kiểm (tuned: ~28).
   Phát lại K: K1 0.630, K2 0.637, K4 0.674, thích nghi 4→8 0.727, 4→16 (chạy) 0.758 → với Qwen gốc, nhiều mẫu hơn giúp rõ (+0.08 từ K4 lên 4→16).
+- 10:40 **B00-S seed 0 = 0.753** (container = bỏ phiếu: phán xử Qwen gốc bị cắt ở trần 1800 s; 832 / 79 / 89; pub_ind 0.595, pub_noind 0.811;
+  110 phút). Pha W: W1 bind 891 s + aliases **1427 s chạy trên 1 GPU** (3 GPU rảnh: chỗ chưa tối ưu, ghi PDF 2), 11 hàm cửa hàng qua kiểm, link 431 s.
+  **A01 / A02** (phát lại offline log này): K1 0.632, **K2 0.648, K4 0.688** (cố định); thích nghi 2→8 0.713 (3.06 mẫu / câu), 4→8 0.730 (5.05),
+  4→16 đồng thuận 0.75 0.733 (5.75), **4→16 (cấu hình) 0.753** (7.16) → với Qwen gốc, nhiều mẫu hơn vẫn có lợi; K thích nghi theo bất đồng tốt hơn K cố định.
+- 10:42 đẩy S01 (9B tự kiểm, phán xử câu bất đồng — 261 / 1000 câu — **không trần thời gian**; hai1108), V02 (Qwen3.5-4B phán xử cùng 261 câu;
+  duckzuykobip), H01 / H02 (probe: 1,127 mục train + 1,637 mục public từ log B00-S s0; bichthuy93). V01 (4B phán xử cả 1000 câu, list + point)
+  đẩy khi M02 xong (cùng acc có Qwen3.5-4B).

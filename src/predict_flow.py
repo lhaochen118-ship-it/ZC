@@ -265,8 +265,8 @@ def prepare_lrl(cfg, split, work, model, log, fake=""):
     have = [os.path.join(refs, x) for x in names if os.path.isfile(os.path.join(refs, x))]
     rk = lrl.rb_key(open(os.path.join(split, "rulebook.md"), encoding="utf-8").read())
     keys = {(cd.get("trigger") or {}).get("rulebook") for f in have if "compile" in os.path.basename(f) for cd in map(json.loads, open(f, encoding="utf-8"))}
-    if rk in keys:
-        log(f"lrl: compiled cards of this rulebook are shipped ({len(have)} card files)"); return ",".join(have)
+    if rk in keys and not int(c.get("lrl_regen", 0) or 0):            # v2 public grid: lrl_regen 1 = W1 rewrites the cards even when
+        log(f"lrl: compiled cards of this rulebook are shipped ({len(have)} card files)"); return ",".join(have)   # shipped (as on private)
     out = os.path.join(work, "lrl"); os.makedirs(out, exist_ok=True)
     t = time.time()
     cm = c.get("lrl_compile_mode", "compile")                         # plan 5 W1: "bind" = executable, checked toolkit bindings

@@ -1,0 +1,67 @@
+# Public grid — thử có hệ thống các giải pháp trên public (chế độ H)
+
+*Lập 15/11/2026 01:30 UTC theo yêu cầu user 15/11 01:15: dừng held-out, thử nhiều giải pháp trên public, chọn điểm cao nhất; bản nộp vẫn
+chế độ H (không hàm ngành viết tay). Đóng băng container 16/11 04:00 UTC.*
+
+## 1. Căn cứ: lỗi của mốc chế độ H
+
+Mốc: `flow_p5_final_h`, `pub_full_H` **0.863** (H0a, H0a2). 93 câu chưa đúng ở H0a:
+
+| Nhóm | Câu | Giải pháp nhắm vào |
+|---|---|---|
+| Cửa hàng ngành, không mẫu nào đúng | 35 | **G1** hàm do mô hình viết (WT) |
+| Cửa hàng ngành, có mẫu đúng nhưng bỏ phiếu trắng / chọn sai | 23 + 6 | **G3** chọn (số mẫu, phán xử) |
+| Cửa hàng ngành, đồng thuận sai | 12 | **G1**, **G2** S đọc luật |
+| Không ngành, có mẫu đúng nhưng mất | 10 | **G3** |
+| Không ngành, khác | 7 | **G2** |
+
+## 2. Yếu tố và biến thể
+
+Mỗi biến thể là một cấu hình đường container đầy đủ (`soup_job --runner predict`). Chính sách phán xử chọn offline trên log của
+chính lần chạy, không tốn GPU.
+
+| Yếu tố | Biến thể | Giả thuyết | Căn cứ |
+|---|---|---|---|
+| **G1** bộ viết hàm (pha units) | W = S (mốc) / **WT-b** / WT-s / WT-b v2 (+204 hàm tổng hợp) / WT-b 8 mẫu + 2 vòng sửa | hàm đúng cho dòng rulebook ngành giảm nhóm "không mẫu nào đúng" | WT-b đúng 0.596 vs 0.517 trên dòng held-out (z 2.8) |
+| **G2** bộ giải S | V3A × 0.70 (mốc) / **S′ seed 1 / 2** | S′ học đọc `# RULES` và cặp tương phản | S′ huấn luyện xong, chưa đo |
+| **G3a** số mẫu S | k_max 16 (mốc) / 24 | thêm ứng viên đúng cho câu khó | 39 / 93 lỗi có mẫu đúng |
+| **G3b** phán xử | tổ hợp list + point + point_think ngưỡng 0.5 (mốc) / ngưỡng 0.6 / chỉ point_think / thêm list+c, point+c (đọc 100 %) | chọn đúng hơn ở câu nhiều ứng viên | offline trên log H: 0.855–0.869 |
+| **G4** thẻ W1 | thẻ public đã có (bị lọc gợi ý ngành) / **W1 sinh lại ở chế độ H** | giống điều kiện private (rulebook mới → W1 viết lại) | 14 / 125 thẻ mất gợi ý |
+
+## 3. Giai đoạn
+
+| Giai đoạn | Nội dung | Số lần chạy | Quy tắc chọn |
+|---|---|---|---|
+| **A** (đang chạy) | đơn yếu tố so mốc: WT-b, WT-s, WT-b8, k24, S′1, S′2; phán xử lại log H (jh) | 6 + 1 | so ghép cặp từng câu với H0a / H0a2 |
+| **B** | ghép yếu tố thắng: S tốt nhất × W tốt nhất × k ∈ {16, 24}; + W1 sinh lại; WT-b v2 | 4–6 | điểm cao nhất, xét cả ghép cặp |
+| **C** | xác nhận: 2 cấu hình đầu × 2 lần chạy (đường container) | 4 | TB 2 lần; chọn cấu hình nộp |
+| **D** | Docker: thử bố cục image trên Kaggle với cấu hình nộp | 1 | khớp ± 0.01 |
+
+## 4. Chia việc (16 acc; mỗi lần chạy ~2.0–2.4 h tường ≈ 4.4–5.3 h quota)
+
+- Mỗi biến thể chạy **một phiên riêng, DP 4**: mỗi GPU một bản vLLM fp8, `gpu_util` 0.92 (~20 GB / GPU, ~80 / 96 GB), hàng đợi động
+  theo cửa hàng. Đây là cách nhanh nhất về giờ tường khi đủ phiên.
+- Phán xử lại log: **mỗi GPU một biến thể** (4 biến thể / phiên).
+- Huấn luyện (WT v2): FSDP 4 GPU, mb 2 × tích luỹ 8, `expandable_segments`.
+- Acc đủ 2 phiên trước khi sang acc khác. Kiểm quota trước mỗi lần đẩy (`launch_many.py`, hệ số 2.5): acc dưới 6 h chỉ nhận job vừa đủ.
+- Adapter dùng chung: dataset `<acc>/zc-ad3` (V3A, WL1, WJR1, WTB, WTS, S2S1, S2S2) trên 9 acc, để acc nào cũng chạy được mọi tổ hợp.
+
+| Acc | Quota (01:30) | Giai đoạn A (đang chạy) | Giai đoạn B / C |
+|---|---|---|---|
+| synchan5704 | 9.8 h | pWTB, pWTS | — (hết) |
+| nhatlong1103 | 19.4 h | pWTB8 | B ×1, C ×2 |
+| loinguyentran | 27.1 h | pHK24 | B ×2, C ×2 |
+| nguynduylm | 9.5 h | S′1, S′2 | — |
+| anderson1202 | 11.2 h | jh (phán xử) | B ×1 |
+| phuongnehe | 20.5 h | huấn luyện WT-b v2 | B ×1 (WT-b v2), C ×1 |
+| thnliu | 25.9 h | — | B ×2, C ×1 |
+| linhmai24, lelynhan | (mới) | — | B ×2 mỗi acc, D |
+| huyenco | 18.4 h | — | B ×2 |
+| phatle1578 | 12.1 h | — | B ×1 |
+| mucnokieu | 10.9 h | — | B ×1 |
+| yuan1103, nguyenhoa99, quynhtran35 | 6.6–7.9 h | — | dự phòng (1 lần chạy mỗi acc) |
+| quynhle07 | 0 h | — | hết quota |
+
+## 5. Nhật ký
+
+*(ghi kết quả từng lần chạy: điểm `pub_full_H`, ghép cặp với mốc, chính sách phán xử tốt nhất)*

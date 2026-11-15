@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "thnliu",
+  "name": "ps2b",
+  "jobs": "automation/jobs/ps2b.jobs",
+  "est_h": 2.3,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "thnliu/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

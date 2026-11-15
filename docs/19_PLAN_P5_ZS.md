@@ -110,3 +110,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   định). Độ phủ graph N4-A: 11 / 14 DN public có cạnh → N4-A 2 seed chạy (loinguyentran). **N1-A** (hoán vị dòng, phát lại CPU 2,838 ứng viên
   B00-S s0 trong 144 s, trung thực 0.995): **0 ứng viên đổi đáp án** → không tác dụng; N1-B đóng theo cổng. N7-A / N3-A / N6-A: prompt dựng
   offline (`new7_build.py`), một lượt vLLM chung (`src/new7_gen.py`), chấm CPU (`new7_score.py`).
+- 16:05 **P02 seed 2 = 0.777** (Δ +0.023 vs B00-S, z 2.0) → **P02 xác nhận qua 2 seed**: TB 0.779 (Δ +0.025; z 2.3 / 2.0). Backbone zero-shot tốt nhất: MoE tỉa theo tác vụ 88 expert (13.96B).

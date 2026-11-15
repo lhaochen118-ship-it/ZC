@@ -81,3 +81,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 10:55 **B00-I = 0.818** (zero-shot, cùng giao thức với tuned 0.952, **có** `industry.py`; 881 / 63 / 56; pub_ind 0.829): so zero-shot ↔ tuned
   trên cùng luồng: **0.818 → 0.952 (+0.134)** khi có `industry.py`; **0.754 → 0.860 (+0.106)** ở chế độ H. Luật ngành viết tay đóng góp +0.064 cho
   zero-shot (ghép cặp vs B00-S, z 6.3) — chỉ để chẩn đoán, không dùng (vi phạm §1.2).
+- 11:05 **M02 (Qwen3.5-4B)**: xem bảng `Process/scores_p5zs.csv`.

@@ -116,3 +116,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | phmq / phmqx | I4 + I5 / I4 + I5 + I3 (2) | lelynhan |
 | phut | S viết hàm có suy nghĩ + budget forcing | caotienminh1 |
 | s3a → es3ar, s3f | S″-A / S″-A′ (UQ lọc: giữ 709 / 1,336 cặp S đồng ý) | duylnng |
+| (sự cố 05:50) | lỗi chuỗi `elif` trong `lrl_gen.main` → `--mode unit` thoát khi `units_qctx` = 0 | — | — | 7 kernel hỏng (phcode, phux2, phux1c, phmu, phuv, pwv2uv, pfix2) bị xoá, đẩy lại 06:00 tên `*b` (phux1c → phunb = I7 hợp hàm S + WT-b v2 + I6; phmu → phqcb) |

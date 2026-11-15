@@ -276,6 +276,7 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 | 10 | So điểm giữa *file container* và *file phán xử* lẫn lộn | kết luận lệch 0.003–0.013 | Bảng điểm luôn ghi cả hai (`Process/scores_v2.csv` cột `config_or_dir`); `<config>/submission.jsonl` = container |
 | 11 | `merge_sub.read` bỏ dòng abstain → file container lấy đáp án S khi phán xử đã quyết định bỏ | container thấp hơn phán xử 0.003–0.013 ở mọi lần chạy | Gộp cuối phải coi file phán xử là quyết định cho mọi câu nó phủ (kể cả abstain) — **chưa sửa**, việc đầu tiên PDF 3 §5 |
 | 12 | `tests/run_all.sh` chạy với `timeout 900` | bị cắt ở `test_plausibility` (exit 143), tưởng lỗi | Bộ test CPU mất ~30–40 phút khi máy bận: `timeout 2700`, ghi ra file log, không pipe qua `tail` |
+| 14 | Chèn câu `if` mới vào **giữa** chuỗi `if / elif / else` của `lrl_gen.main` (I4 / I5) | `--mode unit` rơi vào `else: sys.exit('unknown mode unit')` khi cờ mới = 0 → 7 kernel (04:43–05:15) chạy không có hàm cửa hàng; smoke có báo `unknown mode unit` nhưng bị đọc nhầm là lỗi mô hình giả | Thêm bước xử lý **sau** chuỗi phân nhánh; smoke phải chạy cả cấu hình mặc định (cờ mới = 0) và mọi dòng lỗi trong smoke phải truy tới gốc trước khi đẩy; huỷ kernel hỏng bằng `kaggle kernels delete -y` và đẩy lại tên mới |
 | 13 | Tối ưu theo số đo trên phân phối nguồn (dòng held-out DN train) | WT-b +0.08 offline nhưng hại trên public | Mọi thành phần mới phải có ít nhất một phép đo **đầu-cuối trên phân phối đích** (public chế độ H) trước khi xây tiếp lên nó |
 
 ### 10.2 Kỹ thuật hiệu quả (dùng lại)

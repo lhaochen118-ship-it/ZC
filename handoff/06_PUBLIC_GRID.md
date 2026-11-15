@@ -92,3 +92,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | phk24 | k_max 24 (W = S, 12 hàm) | 0.852 | — | 911 đúng / 59 sai / 30 bỏ: thêm mẫu → thêm trả lời sai; pha giải +35 phút (4,927 s vs 2,825 s) → **k24 loại** |
 | pwts | WT-s viết hàm (20 hàm) | 0.846 | — | 62 sai; cùng hướng WT-b → loại |
 | pwtbk24 | WT-b + k24 | 0.849 | — | loại (WT-b, k24 đều không giúp) |
+| pwtbma1 | WT-b, giữ hàm không cần đồng thuận (29 hàm) | 0.848 | — | thêm hàm → thêm sai (64) → loại |

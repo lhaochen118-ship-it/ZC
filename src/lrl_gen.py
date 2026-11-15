@@ -364,7 +364,9 @@ UNIT_MULTI_SCHEMA = {"type": "object", "properties": {                # v2 I4: 1
 UNIT_MULTI_TAIL = ("\n\nCÓ THỂ VIẾT 1–3 HÀM cho dòng này: một hàm cho mỗi đại lượng mà dòng định nghĩa (một dòng có thể định nghĩa vài đại lượng, "
                    "ví dụ một số đếm và một số trung bình); nếu dòng định nghĩa một cách nhóm / phân loại (ví dụ cách xác định nhóm của một "
                    "mặt hàng hay một khách), viết hàm trả BẢNG đại lượng chính (số lượng, doanh thu hoặc số đơn) theo nhóm đó trong kỳ p, sắp "
-                   "giảm dần. Mỗi hàm theo đúng các quy tắc trên. Trả lời JSON: {\"plan\": ..., \"functions\": [{name, signature, doc, triggers, "
+                   "giảm dần. Đại lượng tính TẠI MỘT NGÀY (số còn nợ, số kỳ quá hạn, tồn tới ngày X): dùng p.end làm ngày đó. Khi câu hỏi có thể lọc "
+                   "theo một khách / một nhân viên / một loại hàng / một nhóm, thêm tham số lọc có mặc định None (None = tất cả). "
+                   "Mỗi hàm theo đúng các quy tắc trên. Trả lời JSON: {\"plan\": ..., \"functions\": [{name, signature, doc, triggers, "
                    "code}, ...]} (functions rỗng khi dòng không phải đại lượng tính được).")
 
 

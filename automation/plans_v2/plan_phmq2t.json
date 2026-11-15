@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "quynhtran35",
+  "name": "phmq2t",
+  "jobs": "automation/jobs/phmq2t.jobs",
+  "est_h": 2.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "quynhtran35/zc-ad2",
+   "--no-preflight"
+  ]
+ }
+]

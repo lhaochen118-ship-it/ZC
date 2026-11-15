@@ -1,0 +1,95 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T16:51:39Z
+model /tmp/soup_c2l/merged  dp 4  config configs/flow_c2_t01k24.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units shard 0: (EngineCore pid=2754) INFO 11-15 17:01:47 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+units shard 0: (MainProcess pid=386) WARNING 11-15 17:01:52 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+units shard 0: (MainProcess pid=386) WARNING 11-15 17:01:52 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 2754
+units shard 1: (EngineCore pid=2740) INFO 11-15 17:04:18 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+units shard 1: (MainProcess pid=387) WARNING 11-15 17:04:23 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+units shard 1: (MainProcess pid=387) WARNING 11-15 17:04:23 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 2740
+units shard 2: (EngineCore pid=2761) INFO 11-15 17:02:37 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+units shard 2: (MainProcess pid=388) WARNING 11-15 17:02:42 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+units shard 2: (MainProcess pid=388) WARNING 11-15 17:02:42 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 2761
+units shard 3: (EngineCore pid=2747) INFO 11-15 17:01:12 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+units shard 3: (MainProcess pid=389) WARNING 11-15 17:01:17 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+units shard 3: (MainProcess pid=389) WARNING 11-15 17:01:17 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 2747
+units: rc=[0, 0, 0, 0], 15 verified units (766s)
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_c2l/work_flow_c2_t01k24/model_WL1 in 545s
+W adapter WL1 merged into the solver's weights (547s)
+links shard 0: (MainProcess pid=5498) WARNING 11-15 17:20:46 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 0: (MainProcess pid=5498) WARNING 11-15 17:20:46 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 6175
+links shard 1: (MainProcess pid=5499) WARNING 11-15 17:20:47 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 1: (MainProcess pid=5499) WARNING 11-15 17:20:47 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 6428
+links shard 2: (MainProcess pid=5500) INFO 11-15 17:20:40 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 2: (MainProcess pid=5500) INFO 11-15 17:20:40 [core_client.py:777] [shutdown] MPClient: complete
+links shard 3: (MainProcess pid=5501) WARNING 11-15 17:20:51 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 3: (MainProcess pid=5501) WARNING 11-15 17:20:51 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 7207
+links: rc=[0, 0, 0, 0], 1000 questions linked (988s)
+freed model_WL1
+[dp] ingested 14 businesses in 49s
+--- shard0 rc=0
+[pipe] dev_001 chunk 3/6 done | 247 questions here, 582838 tok in 1462s (399 tok/s)
+[pipe] DONE 18 chunks, 247 questions here, 582838 tok in 1462s
+DONE 1000 questions in 1728s
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+(MainProcess pid=9245) INFO 11-15 17:50:33 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=10432) INFO 11-15 17:50:33 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=10432) INFO 11-15 17:50:33 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=10432) INFO 11-15 17:50:33 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=10432) INFO 11-15 17:50:33 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=9245) WARNING 11-15 17:50:38 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+(MainProcess pid=9245) WARNING 11-15 17:50:38 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 10432
+
+--- shard1 rc=0
+[pipe] dev_011 chunk 1/3 done | 239 questions here, 634148 tok in 1483s (428 tok/s)
+[pipe] dev_012 chunk 2/4 done | 240 questions here, 637908 tok in 1509s (423 tok/s)
+[pipe] dev_012 chunk 1/4 done | 241 questions here, 643638 tok in 1641s (392 tok/s)
+[pipe] DONE 16 chunks, 241 questions here, 643638 tok in 1641s
+DONE 1000 questions in 1907s
+(MainProcess pid=9246) INFO 11-15 17:53:32 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=10418) INFO 11-15 17:53:32 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=10418) INFO 11-15 17:53:32 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=10418) INFO 11-15 17:53:32 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=10418) INFO 11-15 17:53:32 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=9246) WARNING 11-15 17:53:37 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+(MainProcess pid=9246) WARNING 11-15 17:53:37 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 10418
+
+--- shard2 rc=0
+/kaggle/working/code/canon.py:24: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  return orig(self, value, *args, **kw)
+[pipe] dev_006 chunk 7/7 done | 253 questions here, 583580 tok in 1445s (404 tok/s)
+[pipe] DONE 18 chunks, 253 questions here, 583580 tok in 1445s
+DONE 1000 questions in 1711s
+(MainProcess pid=9247) INFO 11-15 17:50:16 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=10439) INFO 11-15 17:50:16 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=10439) INFO 11-15 17:50:16 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=10439) INFO 11-15 17:50:16 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=10439) INFO 11-15 17:50:16 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=9247) WARNING 11-15 17:50:21 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+(MainProcess pid=9247) WARNING 11-15 17:50:21 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 10439
+
+--- shard3 rc=0
+[pipe] dev_006 chunk 6/7 done | 257 questions here, 702501 tok in 1626s (432 tok/s)
+[pipe] dev_014 chunk 2/4 done | 258 questions here, 704199 tok in 1631s (432 tok/s)
+[pipe] dev_008 chunk 3/7 done | 259 questions here, 706385 tok in 1652s (428 tok/s)
+[pipe] DONE 17 chunks, 259 questions here, 706385 tok in 1652s
+DONE 1000 questions in 1918s
+(MainProcess pid=9248) INFO 11-15 17:53:44 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=10430) INFO 11-15 17:53:44 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=10430) INFO 11-15 17:53:44 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=10430) INFO 11-15 17:53:44 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=10430) INFO 11-15 17:53:44 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=9248) WARNING 11-15 17:53:49 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+(MainProcess pid=9248) WARNING 11-15 17:53:49 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 10430
+
+DP DONE 4 shards in 1980s
+after run 1: [984]
+[merge] 200 tensors updated from 1 adapter(s) (weights [1.0]) -> /tmp/soup_c2l/work_flow_c2_t01k24/model_WJR1 in 581s
+W adapter WJR1 merged into the solver's weights (584s)
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 891, 'judge_pick': 70, 'vote(judge_split)': 36, 'judge_none': 3}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1153s
+freed model_WJR1
+after the judge: [1000, 0]
+end: 2026-11-15T18:23:01Z  (5482s)

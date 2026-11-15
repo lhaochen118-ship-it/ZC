@@ -136,3 +136,7 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   0.784. **Hai lỗi hạ tầng phát hiện** (đã sửa, commit FIX): (1) `lrl_gen` không khởi tạo được vLLM với MoE 15.5 GB (mặc định 256 seq / util 0.9)
   → **mọi lượt E88 không có thẻ W1 lẫn hàm cửa hàng** (P02, P02x, P03, C3, C4, E1, E3…); (2) mô hình W đọc thẳng từ mount. → Chạy lại
   P02xF, C3F (namhunhh), E3F, E4F (bichthuy93) với code đã sửa.
+- 19:35 **Suy nghĩ (think_kw default) là đòn bẩy lớn:** B00T (9B zero-shot strict) **0.805** vs 0.754 (+0.051); C3T (MoE zero-shot + industry + T01,
+  vẫn thiếu hàm do lỗi lrl_gen) **0.902** vs 0.870; C0L (framework 0.952, legacy) **0.942** ≈ D1 (khôi phục được); C1L (+T01) 0.943, C2L 0.935.
+  → mọi tổ hợp tiếp theo: sửa lỗi + suy nghĩ: P02xFT / C3FT (caotienminh1, sau khi cắt E88), E3FT / E4FT (bichthuy93). Quota là ràng buộc:
+  namhunhh 5.3 h (từ chối), caotienminh1 18.6 h, duckzuykobip 15.2 h; mxuanquy 30 h nhưng chưa accept rules (không có GPU).

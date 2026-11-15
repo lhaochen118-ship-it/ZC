@@ -1,0 +1,24 @@
+[
+ {
+  "acc": "caotienminh1",
+  "name": "p02xft",
+  "jobs": "automation/jobs/p5/p02xft.jobs",
+  "est_h": 3.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,caotienminh1/zc-stg88-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "caotienminh1",
+  "name": "c3ft",
+  "jobs": "automation/jobs/p5/c3ft.jobs",
+  "est_h": 3.3,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,caotienminh1/zc-stg88-1",
+   "--no-preflight"
+  ]
+ }
+]

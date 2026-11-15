@@ -73,3 +73,5 @@ chính lần chạy, không tốn GPU.
 | (offline) | ngưỡng bỏ phiếu θ 0.3 / 0.4 / 0.5 × ngưỡng phán xử 0.5 / 0.6 trên log H0a, H0a2, es2s2p | θ 0.5 tốt nhất ở cả 3 (0.863 / 0.863 / 0.856); m 0.6: +0.001 / +0.006 / −0.006 | — | chọn đáp án không phải đòn bẩy |
 | jh (phán xử lại log H0a / H0a2) | list+c, point+c, point+think, list+think (WJR1) | các tổ hợp 0.849–0.866 (tốt nhất list_c+point_think m0.6: 0.863 / 0.866) | point+c 0.845 / 0.854 | phán xử không phải đòn bẩy ở chế độ H |
 | es2s1p | S′ seed 1 | 0.861 | 0.860 | hai seed S′ đều < mốc (0.856 / 0.861) → S′ riêng loại; chờ S′ + WT-b |
+| pwtb | WT-b viết hàm (20 hàm, W = S: 14) | 0.855 | 0.850 | pub_ind 0.561 (mốc 0.606): hàm đúng hơn trên train held-out chưa thành điểm public — S gọi hàm ở 10 % mẫu |
+| pwtb8 | WT-b, 8 mẫu + 2 vòng sửa (21 hàm) | 0.846 | 0.837 | kém hơn |

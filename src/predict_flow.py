@@ -89,7 +89,8 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     base = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unit", "--quant", "fp8",
             "--samples", str(int(c.get("units_samples", 3) or 3)), "--think-units", str(int(c.get("units_think", 0) or 0)),
             "--unit-repairs", str(int(c.get("units_repairs", 1))), "--think-tokens", str(int(c.get("units_think_tokens", 4096))),
-            "--max-len", str(int(c.get("units_max_len", 16384 if int(c.get("units_think", 0) or 0) else 8192)))] + \
+            "--max-len", str(int(c.get("units_max_len", 16384 if int(c.get("units_think", 0) or 0) else 8192))),
+            "--min-agree", str(int(c.get("units_min_agree", 0) or 0))] + \
            (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
     devs = visible_gpus()
     ng = 1 if fake else max(1, len(devs))                              # one shard of the rows per (visible) GPU, in parallel
@@ -320,6 +321,8 @@ def main():
     try:                                                              # mode H (user 14/11): hidden toolkit names for every phase
         hz = json.load(open(cfg, encoding="utf-8")).get("hide_api") if cfg else ""
         if hz: os.environ["ZC_HIDE_API"] = hz; log(f"hide_api: {hz} (exported to every phase)")
+        um = json.load(open(cfg, encoding="utf-8")).get("units_max") if cfg else None
+        if um: os.environ["ZC_UNITS_MAX"] = str(int(um)); log(f"units_max: {um}")
         if cfg and int(json.load(open(cfg, encoding="utf-8")).get("api_extra", 0) or 0): os.environ["ZC_API_EXTRA"] = "1"; log("api_extra: on")
     except Exception as e: log(f"hide_api: config unreadable ({e})")
     merge_sub.merge(a.split, final, [], quiet=True)                  # a complete (abstain) file from the first second

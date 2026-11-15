@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "linhmai24",
+  "name": "pwtbu24",
+  "jobs": "automation/jobs/pwtbu24.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "linhmai24/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

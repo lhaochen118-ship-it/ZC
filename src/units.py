@@ -14,7 +14,7 @@ Unit (one JSON line of cards_unit*.jsonl):
   spec_entries(units) -> [dict]                 api_spec-like entries so that precheck knows the names and their parameters"""
 import ast, json, math, os, re, glob
 
-MAX_UNITS = 12
+MAX_UNITS = int(os.environ.get("ZC_UNITS_MAX", "12"))   # v2 grid: functions shown per shop (config units_max)
 SAFE_MODS = {"re", "math", "datetime", "collections", "itertools", "statistics", "functools", "decimal", "calendar", "pandas", "numpy"}
 
 

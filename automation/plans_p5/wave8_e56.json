@@ -1,0 +1,24 @@
+[
+ {
+  "acc": "duylnng",
+  "name": "e5",
+  "jobs": "automation/jobs/p5/e5.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,duylnng/zc-mgs7-1,duylnng/zc-mgl2-1,duylnng/zc-mgj2-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "duylnng",
+  "name": "e6",
+  "jobs": "automation/jobs/p5/e6.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,duylnng/zc-mgs7-1,duylnng/zc-mgl2-1,duylnng/zc-mgj2-1",
+   "--no-preflight"
+  ]
+ }
+]

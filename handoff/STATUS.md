@@ -23,15 +23,18 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | jh0b phán xử WJR1 trên log held-out H0b2 | nguyenhoa99/zc-jh0b-1 | xong | **mốc held-out H có phán xử: pub_ho400c 0.609, tr_ho400c 0.909, pub_hoind 0.470, tr_newterm 0.852** (bỏ phiếu cùng log: 0.563 / 0.901 / 0.426 / 0.852) |
 | TG1 thầy WT (suy nghĩ) | phatle1578, mucnokieu | **hỏng → huỷ** | p0 giữ 7 / 243 dòng: Qwen gốc suy nghĩ lặp vòng quá 7–8k token (304 / 447 mẫu) — lỗi G0b kế hoạch 4 |
 | TG1b thầy WT (không suy nghĩ, JSON ràng buộc, 8 mẫu, đồng thuận ≥ 3) | phatle1578, mucnokieu ×2 | xong | 2,654 dòng → giữ 782 hàm (train_rule 143, biến thể 145, mới 18, thuật ngữ mới 476) |
+| TG1c lượt thầy 2 (chỉ dòng tổng hợp, seed 777) | phatle1578, mucnokieu ×2 | xong | +204 hàm (168 biến thể, 36 mới) cho WT v2 |
 | Hàm từ chương trình đã kiểm (`wt_from_programs.py`, CPU) | CPU | xong | 1,249 / 1,446 thuật ngữ → hàm của `p`, kiểm lại bằng thực thi (cân bằng còn 917) |
 | Dữ liệu WT (`wt_build.py`) | CPU | xong | 864 bản ghi (3.5M token) + 265 dòng đo (6 DN held-out) |
-| WT-b / WT-s huấn luyện | nhatlong1103 ×2 | chạy lần 3 (wtb2, wts3) | lần 1–2 OOM (bản ghi dài 4.3–4.7k token) → mb 2 × ga 8 + expandable_segments |
+| WT-b / WT-s huấn luyện | nhatlong1103 ×2 (wtb2, wts3) | xong | 861 bản ghi × 2 epoch, loss 0.256→0.101 / 0.223→0.111, 1.85k tok/s, 11.6 GB (mb 2); lần 1–2 OOM |
+| S′ huấn luyện seed 1 / 2 | nguynduylm ×2 | xong | 7,077 bản ghi, 24.1M token, 4.0 h mỗi seed; loss 0.025→0.026 / 0.026→0.018 |
 | WT0B (238 / 543 bản ghi do max-len) → EWT0 (614 câu H) | anderson1202 | xong | **tích hợp chạy đúng** (WT0B gộp vào trọng số gốc, 14 hàm, có 'Dòng máy', 'hãng' cho dev_014); pub_ind 0.528, pub_hoind 0.438 (< mốc W = S 0.576 / 0.475; dữ liệu quá nhỏ) |
 | ewu_ref: độ chính xác hàm W = S, W = Qwen gốc (265 dòng held-out) | synchan5704 | xong | **W = S 0.517** (giữ 221, đúng 137; nhãn chương trình đã kiểm 67 / 157); Qwen gốc 0.423 (41 / 157) |
 | TG1n (thuật ngữ mới, suy nghĩ) | huyenco | huỷ | gộp vào TG1b |
 | TG2 cặp tương phản | nguyenhoa99/zc-tg2d-1 | xong (lần 4) | **1,005 cặp** (729 tương phản, kiểm ngược mù 97 %; 276 cách viết); lỗi trước: 2 engine vLLM, HTML-escape `&quot;` |
 | WJR2D (LoRA chồng V3A×0.70 + WJR1; 1,738 bản ghi tương phản + 1,000 WJR1) | quynhle07 (ej2) | xong — **G-J: loại** | public tổ hợp TB 0.9425 (0.934 / 0.946 / 0.950 / 0.940) vs WJR1 0.951; held-out pub_ho400c 0.595 (WJR1 0.609), tr_ho400c 0.912 (0.909), pub_hoind 0.464 (0.470) |
-| S′ seed 1 / 2 (replay + thuật ngữ mới trong # RULES + tương phản / cách viết; 23.1M token) | nguynduylm ×2 | chạy | |
+| Đo S′ (public H: es2s1p / es2s2p; held-out: es2s1h / es2s2h) | nguynduylm, huyenco, loinguyentran | chạy | |
+| Đo WT (614 câu H: ewtb, ewts_wt; độ chính xác hàm: ewuwtb, ewuwts) | nhatlong1103, synchan5704 | chạy | |
 
 ## 0. Kế hoạch 5 — kết quả (public, đáp án chuẩn)
 

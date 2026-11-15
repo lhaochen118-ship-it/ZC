@@ -64,3 +64,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   keep-list saliency của tác vụ.
 - 10:20 **L02 α = 0.5**: container **0.804** (875 / 71 / 54). Đường α: 0.5 → 0.804, 0.70 → 0.860, 1.0 → 0.827 (đỉnh gần 0.70).
 - 10:25 bộ test CPU: 30 test PASS trong `run_all.sh` (chạm trần 3000 s vì máy bận) + `test_flow_hybrid` chạy riêng PASS → **31 / 31 PASS** trên code đã đẩy.
+- 10:30 **L02 α = 0.25**: container **0.798** (861 / 63 / 76). Đường α đủ: 0.25 → 0.798, 0.5 → 0.804, 0.70 → 0.860, 1.0 → 0.827 (TUNED; đỉnh 0.70).

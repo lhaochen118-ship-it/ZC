@@ -1,0 +1,13 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/nguyenmanh0404/zc-ad3/V3A/adapter"
+ },
+ "weights": [
+  0.25
+ ],
+ "merge_rc": 0,
+ "merge_s": 117,
+ "config": "configs/flow_p5_final_h.json",
+ "eval_rc": 0,
+ "eval_s": 5101
+}

@@ -1,0 +1,28 @@
+[
+ {
+  "acc": "caohuyen74",
+  "name": "m01",
+  "jobs": "automation/jobs/p5/m01.jobs",
+  "est_h": 3.5,
+  "args": [
+   "--ms",
+   "qwen-lm/qwen-3/transformers/14b-fp8/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "huuhien95",
+  "name": "q01",
+  "jobs": "automation/jobs/p5/q01.jobs",
+  "est_h": 3.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight"
+  ]
+ }
+]

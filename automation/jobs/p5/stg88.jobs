@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT --script stage_hf.py --repo Qwen/Qwen3.6-35B-A3B-FP8 --name Qwen3.6-35B-A3B-E88-FP8 --keep configs/moe/keep_e88.json

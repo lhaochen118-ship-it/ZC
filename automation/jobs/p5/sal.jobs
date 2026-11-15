@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/sal --train --script training/moe_saliency.py --src qwen3-6-35b-a3b --prompts p5sal/prompts.jsonl --hashes configs/moe/hf_sha_qwen36_35b_a3b.json --max-prompts 340 --max-tokens 6144 --budgets 64,77,88,90,92

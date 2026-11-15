@@ -93,5 +93,6 @@ class ShopCtx:
         return self._ev
 
     def grammar(self, max_enum=5000):
-        if self._g is None: self._g = grammarmod.build_grammar(self.spec, self.entity_values, max_enum=max_enum, escapes=self.escapes)
+        if self._g is None:                                             # P5 I02: the shop's model-written functions (units) are callable too
+            self._g = grammarmod.build_grammar(getattr(self, "spec_u", None) or self.spec, self.entity_values, max_enum=max_enum, escapes=self.escapes)
         return self._g

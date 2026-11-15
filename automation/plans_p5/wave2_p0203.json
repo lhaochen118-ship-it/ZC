@@ -1,0 +1,24 @@
+[
+ {
+  "acc": "dinhthinh",
+  "name": "p02",
+  "jobs": "automation/jobs/p5/p02.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,dinhthinh/zc-stg88-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "dinhthinh",
+  "name": "p03",
+  "jobs": "automation/jobs/p5/p03.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,dinhthinh/zc-stg92-1",
+   "--no-preflight"
+  ]
+ }
+]

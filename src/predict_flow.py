@@ -80,6 +80,10 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     if not cfg: return None
     c = json.load(open(cfg, encoding="utf-8"))
     if not int(c.get("units_gen", 0) or 0): return None
+    if c.get("units_file"):                                             # v2 grid (experiments only): the units of an earlier run with
+        f = find_input(c["units_file"])                                 # the same writer -> solver variants compared on the SAME
+        if f: log(f"units: reused {f}"); return f                       # functions (and ~10-15 min saved); missing -> stop
+        raise SystemExit(f"units_file {c['units_file']} not found")
     out = os.path.join(work, "units"); os.makedirs(out, exist_ok=True); t = time.time()
     if c.get("units_model") == "base" or (c.get("units_lora") and c.get("units_lora_on", "base") == "base"):
         model = os.environ.get("ZC_BASE_MODEL") or model                # v2 G: the tool writer WT-b is a LoRA of the BASE weights
@@ -161,6 +165,16 @@ def w_model(adapter, model, work, log, mode="merge"):
     return out, ""
 
 
+def find_input(name):
+    """a file given by path or by name under the code folders or /kaggle/input (v2 grid: reused units / links)."""
+    if os.path.isfile(name): return name
+    import glob
+    for root in (os.path.dirname(HERE), HERE, "/kaggle/input"):
+        c = sorted(glob.glob(os.path.join(root, "**", os.path.basename(name)), recursive=True))
+        if c: return c[0]
+    return None
+
+
 def free_w_models(work, log):
     """v2: the merged copies of the W phases (work/model_<adapter>, ~19 GB each) are removed once their phase is over (units, links
     and the judge would otherwise hold ~57 GB of disk in the container); ZC_KEEP_W_MODELS=1 keeps them (Kaggle studies)."""
@@ -177,6 +191,10 @@ def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     if not cfg: return None
     c = json.load(open(cfg, encoding="utf-8"))
     if not int(c.get("links_gen", 0) or 0): return None
+    if c.get("links_file"):                                             # v2 grid: links of an earlier run (same linker WL1)
+        f = find_input(c["links_file"])
+        if f: log(f"links: reused {f}"); return f
+        raise SystemExit(f"links_file {c['links_file']} not found")
     out = os.path.join(work, "links"); os.makedirs(out, exist_ok=True); t = time.time()
     if not cards:                                                       # the compiled cards of the config (their toolkit hints)
         refs = os.path.join(HERE, "refs", "lrl")

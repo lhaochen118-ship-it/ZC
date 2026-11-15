@@ -63,3 +63,31 @@ Không làm: huấn luyện trên câu public (cấm); nhãn "Unanswerable" khi 
 
 Quota: mỗi phiên huấn luyện / đo tốn ~4–8 h quota; 5 acc mới (~150 h) đủ cho các bước 2–6. Acc cũ còn ~120 h dùng cho lưới public đang chạy và
 dự phòng.
+
+## 7. Phương án chạy đã tối ưu lại (03:30 UTC, sau khi user yêu cầu rà lại)
+
+**Huấn luyện (S″-A, S″-B).**
+- Một lần huấn luyện không thể trải qua nhiều phiên (không có NCCL giữa phiên Kaggle) → mỗi biến thể **một phiên, FSDP FULL_SHARD trên cả 4 L4**,
+  hai biến thể **song song** trên 2 phiên của cùng một acc (duylnng).
+- Vì sao FSDP chứ không DDP: 9B bf16 = 18 GB > phần trống của một L4 (22.5 GB) khi cộng kích hoạt → DDP chỉ chạy được với QLoRA 4-bit (chậm hơn
+  ~1.3–1.5× mỗi token và lệch số học với mô hình fp8 lúc suy luận). FSDP chia tham số 4.5 GB / GPU.
+- Độ dài đo bằng tokenizer Qwen (không ước theo ký tự): bản ghi S′ p50 3,453 / p99 4,414 / max 4,550 token; S″ thêm khối hàm (~+300) →
+  `--max-len 5120`; mb 4 (S′ ở 4,608 đỉnh 16.5 GB / GPU) + `expandable_segments` (tránh phân mảnh như lần OOM của WT); batch hiệu dụng 64.
+- **Giảm token** (đòn bẩy lớn nhất vì prompt dài, loss chỉ trên phần trả lời): S″-A ≈ 13M token (~2.1 h), S″-B = S″-A + 1,005 cặp tương phản /
+  cách viết ≈ 16.5M (~2.6 h); bỏ nhóm "thuật ngữ mới trong # RULES" (S′ cho thấy không giúp).
+- Checkpoint mỗi 20 bước + tại hạn chót; không cần nối acc vì < 3 h.
+
+**Đo (public H).**
+- Mỗi biến thể một phiên, DP 4 (mỗi GPU một vLLM fp8, `gpu_util` 0.92 ≈ 20 GB / GPU).
+- **Dùng lại hàm cửa hàng và link** của lần chạy WT-b (`units_file`, `links_file`; chỉ cho thí nghiệm, bản nộp vẫn sinh lại): bớt ~15–20 phút
+  mỗi lần, và so S″ với S **trên cùng một bộ hàm** (so ghép cặp sạch hơn).
+
+**Chia acc.**
+
+| Acc | Phiên 1 | Phiên 2 |
+|---|---|---|
+| lelynhan | sinh U1 (4 GPU = 4 shard) | — |
+| duylnng | huấn luyện S″-A | huấn luyện S″-B |
+| caotienminh1 | đo S″-A + WT-b | đo S″-B + WT-b |
+| phatle1578 | đo lại cấu hình tốt nhất (seed 2) | đường container |
+| mucnokieu | lượt thầy 3 → WT v3 (nếu WT v2 > v1) | dự phòng |

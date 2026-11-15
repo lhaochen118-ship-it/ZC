@@ -484,6 +484,8 @@ def main():
         if um: os.environ["ZC_UNITS_MAX"] = str(int(um)); log(f"units_max: {um}")
         if cfg and int(json.load(open(cfg, encoding="utf-8")).get("units_code", 0) or 0): os.environ["ZC_UNITS_CODE"] = "1"; log("units_code: on")
         if cfg and int(json.load(open(cfg, encoding="utf-8")).get("api_extra", 0) or 0): os.environ["ZC_API_EXTRA"] = "1"; log("api_extra: on")
+        tkw = json.load(open(cfg, encoding="utf-8")).get("think_kw") if cfg else ""   # legacy (path rule of the 0.952 runs) | explicit | default
+        if tkw: os.environ["ZC_THINK_KW"] = str(tkw); log(f"think_kw: {tkw} (every phase)")
         kvd = json.load(open(cfg, encoding="utf-8")).get("kv_dtype") if cfg else ""   # P5 plan: bigger backbones (14B) on one L4
         if kvd: os.environ["ZC_KV_DTYPE"] = str(kvd); log(f"kv_dtype: {kvd} (every phase)")
     except Exception as e: log(f"hide_api: config unreadable ({e})")

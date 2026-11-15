@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/p02t --script training/soup_job.py --model Qwen/Qwen3.6-35B-A3B-E88-FP8 --adapters NONE  --search /kaggle/input --runner predict --eval-configs configs/flow_p02t.json

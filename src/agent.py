@@ -713,7 +713,10 @@ class Engine:
         return None
 
     def render(self, msgs, think=None):
-        kw = {"enable_thinking": self.a.think if think is None else think} if getattr(self, "qwen3", "qwen3" in self.a.model.lower()) else {}
+        tk = os.environ.get("ZC_THINK_KW", "legacy")                    # P5 15/11: Qwen3.5's template THINKS when the switch is not passed;
+        use = {"legacy": "qwen3" in self.a.model.lower(),               # the 0.952 runs (merged dirs, no 'qwen3' in the path) never passed it,
+               "explicit": getattr(self, "qwen3", False), "default": False}.get(tk, "qwen3" in self.a.model.lower())   # so every sample reasoned first
+        kw = {"enable_thinking": self.a.think if think is None else think} if use else {}
         try: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, **kw)
         except TypeError: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
 

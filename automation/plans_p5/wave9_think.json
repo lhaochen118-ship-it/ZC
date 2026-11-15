@@ -1,0 +1,67 @@
+[
+ {
+  "acc": "lelynhan",
+  "name": "c0l",
+  "jobs": "automation/jobs/p5/c0l.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "lelynhan/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "lelynhan",
+  "name": "c1l",
+  "jobs": "automation/jobs/p5/c1l.jobs",
+  "est_h": 1.6,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "lelynhan/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "dinhthinh",
+  "name": "c3t",
+  "jobs": "automation/jobs/p5/c3t.jobs",
+  "est_h": 2.6,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,dinhthinh/zc-stg88-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "hieuho669",
+  "name": "p02t",
+  "jobs": "automation/jobs/p5/p02t.jobs",
+  "est_h": 2.6,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,hieuho669/zc-stg88-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "phuongnehe",
+  "name": "b00t",
+  "jobs": "automation/jobs/p5/b00t.jobs",
+  "est_h": 2.3,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight"
+  ]
+ }
+]

@@ -75,3 +75,6 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 10:42 đẩy S01 (9B tự kiểm, phán xử câu bất đồng — 261 / 1000 câu — **không trần thời gian**; hai1108), V02 (Qwen3.5-4B phán xử cùng 261 câu;
   duckzuykobip), H01 / H02 (probe: 1,127 mục train + 1,637 mục public từ log B00-S s0; bichthuy93). V01 (4B phán xử cả 1000 câu, list + point)
   đẩy khi M02 xong (cùng acc có Qwen3.5-4B).
+- 10:50 **B00-S seed 1 = 0.755** (831 / 76 / 93; 12 hàm; phán xử bị cắt ở trần) → **BASELINE_ZS_P5_D1 = 0.754** (TB 2 seed, container; ghép cặp s0–s1
+  +0.002, z 0.2: nhiễu nhỏ). B00-D − B00-S = +0.004 (z 0.5): thẻ luật của mô hình tuned gần như không giúp Qwen gốc.
+  Đẩy held-out B00-S (`pub_ho400c`, `tr_ho400c`, eval_flow, không thẻ luật) làm mốc cho cổng held-out của finalist (hieuho669).

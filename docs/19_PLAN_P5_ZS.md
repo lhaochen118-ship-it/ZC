@@ -65,3 +65,6 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 10:20 **L02 α = 0.5**: container **0.804** (875 / 71 / 54). Đường α: 0.5 → 0.804, 0.70 → 0.860, 1.0 → 0.827 (đỉnh gần 0.70).
 - 10:25 bộ test CPU: 30 test PASS trong `run_all.sh` (chạm trần 3000 s vì máy bận) + `test_flow_hybrid` chạy riêng PASS → **31 / 31 PASS** trên code đã đẩy.
 - 10:30 **L02 α = 0.25**: container **0.798** (861 / 63 / 76). Đường α đủ: 0.25 → 0.798, 0.5 → 0.804, 0.70 → 0.860, 1.0 → 0.827 (TUNED; đỉnh 0.70).
+- 10:35 **B00-D** (ablation, Qwen gốc + thẻ luật cũ của mô hình tuned, chế độ H): container **0.758** (834 / 76 / 90; pub_noind 0.817), 93 phút,
+  util 58 %. Phán xử (Qwen gốc, list / point / point+think) **bị cắt ở trần 1800 s** → file = bỏ phiếu. Chỉ 7 hàm cửa hàng qua kiểm (tuned: ~28).
+  Phát lại K: K1 0.630, K2 0.637, K4 0.674, thích nghi 4→8 0.727, 4→16 (chạy) 0.758 → với Qwen gốc, nhiều mẫu hơn giúp rõ (+0.08 từ K4 lên 4→16).

@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "lelynhan",
+  "name": "uqchka",
+  "jobs": "automation/jobs/uqchk_a.jobs",
+  "est_h": 1.2,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "lelynhan/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "lelynhan",
+  "name": "uqchkb",
+  "jobs": "automation/jobs/uqchk_b.jobs",
+  "est_h": 1.2,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "lelynhan/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

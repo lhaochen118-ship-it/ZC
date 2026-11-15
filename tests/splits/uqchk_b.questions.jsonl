@@ -1,0 +1,668 @@
+{"id": "uqchk~0001", "question": "ngày nào thu hoạch nhất tháng 8 này?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~0003", "question": "tuần này có bao nhiêu đơn hiệu lực chưa?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~0005", "question": "tháng 2 năm ngoái ngày vàng là ngày mấy", "business_id": "biz_117", "as_of_date": "2026-03-20"}
+{"id": "uqchk~0007", "question": "tháng 5 năm nay mình có bao nhiêu chuyến giao hàng chưa?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0009", "question": "Doanh thu thuần tháng 7 này tính đến giờ ra sao?", "business_id": "biz_117", "as_of_date": "2025-07-20"}
+{"id": "uqchk~0011", "question": "tháng 5 năm nay tiền về từ đơn đã giao chia cho số đơn thì sao?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0013", "question": "Tuần này shop giao bao nhiêu đơn hàng?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0015", "question": "Tuần vừa qua bán được bao nhiêu tiền đơn thuốc?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0017", "question": "bao nhieu tien tieu cho hoi giam dau trong tuan qua", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0019", "question": "hom qua shop co doanh thu bao nhieu", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0021", "question": "nhóm đồ uống đóng góp mấy % trong tuần qua?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0023", "question": "Tháng 5/2026 có đơn nào giá trị cao nhất không?", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0025", "question": "doanh thu thuan cua shop co biet la tu đầu năm nay đến hôm qua", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0027", "question": "tháng 5 năm nay shop có bao nhiêu đơn hiệu lực?", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0029", "question": "Tuần này ai là khách vip và bán được bao nhiêu tiền?", "business_id": "biz_102", "as_of_date": "2025-10-08"}
+{"id": "uqchk~0031", "question": "cái tỷ lệ hủy hôm qua có bao nhiêu?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0033", "question": "tuần này đơn trung bình bán được mấy đơn?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0035", "question": "năm 2026 shop kiếm được bao nhiêu tiền", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0037", "question": "tháng 5/2025 shop bị hủy bao nhiêu đơn?", "business_id": "biz_102", "as_of_date": "2025-05-14"}
+{"id": "uqchk~0039", "question": "tong tien dau goi clear 630g trong ngay mai", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0041", "question": "Doanh thu khách Trang tháng 9/2026 tính đến hôm nay ra sao?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0043", "question": "Tuần này bán được bao nhiêu tiền ống nước?", "business_id": "biz_118", "as_of_date": "2025-06-21"}
+{"id": "uqchk~0045", "question": "hôm qua có bao nhiêu đơn hiệu lực?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0047", "question": "thang 5/2025 doanh thu nhóm điện bao nhiêu", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0049", "question": "thang 8 doanh thu truoc bao nhieu", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0051", "question": "năm nay doanh thu thế nào", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0053", "question": "Chủ nhật tuần trước xe chạy mấy chuyến?", "business_id": "biz_118", "as_of_date": "2026-07-20"}
+{"id": "uqchk~0055", "question": "Tháng 9 này trung bình đơn hàng bao nhiêu tiền?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0057", "question": "Tháng 9 năm nay bán được bao nhiêu tiền mặt hàng kích cỡ lớn?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0059", "question": "Tổng chi mua hàng trong tháng 9/2026 là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0061", "question": "doanh thu tháng 9 năm nay là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0063", "question": "Tùng tháng 5/2025 doanh thu khách có mã là bao nhiêu?", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~0065", "question": "ngày 15/7 tuần trước có bao nhiêu đơn đang giao", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~0067", "question": "Tháng 4 nay doanh thu khách hàng bao nhiêu?", "business_id": "biz_122", "as_of_date": "2026-04-10"}
+{"id": "uqchk~0069", "question": "tỷ lệ khách trung thành tháng 7/2026", "business_id": "biz_110", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0071", "question": "Tháng 7/2026 tỷ lệ đơn khách lẻ là bao nhiêu %?", "business_id": "biz_110", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0073", "question": "doanh thu quý 2 năm nay là bao nhiêu", "business_id": "biz_110", "as_of_date": "2026-06-11"}
+{"id": "uqchk~0075", "question": "tháng 5 năm nay shop mình bị hủy bao nhiêu đơn?", "business_id": "biz_110", "as_of_date": "2026-05-05"}
+{"id": "uqchk~0077", "question": "Năm ngoái quý 3 thu bao nhiêu?", "business_id": "biz_126", "as_of_date": "2026-06-06"}
+{"id": "uqchk~0079", "question": "thang 8 nay bao nhieu % khach mua duoc 6 don", "business_id": "biz_103", "as_of_date": "2025-08-21"}
+{"id": "uqchk~0081", "question": "tuần này ai mua nhiều nhất?", "business_id": "biz_103", "as_of_date": "2026-04-18"}
+{"id": "uqchk~0083", "question": "Năm nay bán bao nhiêu đơn rồi?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0085", "question": "ngày nào bán chạy nhất trong tuần này", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0087", "question": "Tháng 7 này trung bình mỗi đơn bán được bao nhiêu tiền?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0089", "question": "tỷ lệ dị ứng tháng 6/2025 là bao nhiêu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0091", "question": "ngày nào doanh thu cao nhất trong tháng 7 năm nay?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0093", "question": "doanh thu don trung binh cua thang 5 nam 2025 la bao nhieu", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0095", "question": "Tháng 7/2026 doanh thu thành viên là bao nhiêu?", "business_id": "biz_107", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0097", "question": "Tổng doanh thu Bia trong tuần vừa qua là bao nhiêu?", "business_id": "biz_107", "as_of_date": "2025-12-28"}
+{"id": "uqchk~0099", "question": "Doanh thu thuần tháng 6/2025 là bao nhiêu?", "business_id": "biz_107", "as_of_date": "2025-06-27"}
+{"id": "uqchk~0101", "question": "Tổng doanh thu khách lẻ tháng 8 năm nay là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0103", "question": "Tổng doanh thu món matcha của tháng 8 này là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0105", "question": "Tháng này tăng bao nhiêu % so với tháng trước?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0107", "question": "Tháng 8 tăng trưởng doanh thu ra sao so với tháng 7?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0109", "question": "Liệt kê top 5 khách thượng hạng của shop trong quý 3/2025", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0111", "question": "Tháng 8 năm nay doanh thu Zalo OA bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0113", "question": "thang 5 nay co bao nhieu don giao nhi chuyen", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0115", "question": "Tổng doanh thu mặt hàng đồ điện tử trong tuần vừa rồi là bao nhiêu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0117", "question": "doanh thu thuan cua thang 4/2025 la bao nhieu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0119", "question": "Hôm nay xử lý được bao nhiêu đơn hàng hợp lệ?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0121", "question": "thang 8/2025 ban ban duoc bao nhieu lon topping tran chau den?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0123", "question": "tỷ lệ hủy tháng 6/2026 là bao nhiêu %?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0125", "question": "thang 6 nay doanh thu trung binh la bao nhieu tien", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0127", "question": "Tuần vừa rồi khách quét mã bao nhiêu lượt?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0129", "question": "Tuần này (tính từ thứ 2 đến chủ nhật) shop bán trung bình bao nhiêu tiền một ngày?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0131", "question": "chi phí mua hàng từ đầu năm đến hôm qua nhiều không?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0133", "question": "hôm qua shop bỏ ra bao nhiêu tiền nhập kho?", "business_id": "biz_120", "as_of_date": "2025-05-17"}
+{"id": "uqchk~0135", "question": "tuần qua hủy bao nhiêu % đơn?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0137", "question": "Tuần qua tiền nhóm thân thiết kiếm được là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0139", "question": "hôm qua bán được bao nhiêu tiền qua zalo?", "business_id": "biz_108", "as_of_date": "2026-02-28"}
+{"id": "uqchk~0141", "question": "tháng 5 năm nay bán được bao nhiêu tiền gạo", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0143", "question": "Tuần này doanh thu khách thân thiết bao nhiêu tiền?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0145", "question": "tuong khach hang thong tin doanh thu thuc pham cuoi tuan nay", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0147", "question": "thang 1/2025 don gia trung binh la bao nhieu", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0149", "question": "hôm qua có bao nhiêu % doanh thu từ khách thân thiết", "business_id": "biz_108", "as_of_date": "2025-05-22"}
+{"id": "uqchk~0151", "question": "co doanh thu trong tuan qua khong", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0153", "question": "năm nay ai là khách sộp nhất tính đến hôm nay?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0155", "question": "Tháng 5 này shop mình bán qua Zalo hiệu quả thế nào?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0157", "question": "năm ngoái quý 1 shop giảm giá bao nhiêu phần trăm doanh thu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0159", "question": "Tổng doanh thu của nhân viên NV001 từ đầu năm đến nay là bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0161", "question": "tuần qua ai cung cấp tốt nhất", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0163", "question": "Tháng 5 năm nay shop chi bao nhiêu tiền nhập kho?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0165", "question": "tháng 5 năm nay tỷ lệ hủy đơn cao quá không?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0167", "question": "Tháng 5/2025 dị ứng bán bao nhiêu %?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0169", "question": "Tổng doanh thu nhóm bánh ngọt của tháng 7 năm nay là bao nhiêu?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0171", "question": "tháng 4 nay doanh thu khách thân thiết bao nhiêu?", "business_id": "biz_128", "as_of_date": "2026-04-19"}
+{"id": "uqchk~0173", "question": "tong doanh thu mon com mi chao trong tuan nay la bao nhieu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0175", "question": "Tổng tiền khai vị trong tuần này (tính đến hôm nay) là bao nhiêu tiền?", "business_id": "biz_128", "as_of_date": "2025-07-11"}
+{"id": "uqchk~0177", "question": "Tháng 5/2025 shop bán trung bình bao nhiêu tiền một đơn?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0179", "question": "Hôm qua có bao nhiêu lượt đơn?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0181", "question": "Tháng 9 năm nay khách thượng hạng là ai?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0183", "question": "ngay doan thu cao nhat cua thang 1 nam nay la ngay nao", "business_id": "biz_128", "as_of_date": "2026-01-22"}
+{"id": "uqchk~0185", "question": "Quý 1 năm nay doanh thu là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2025-06-04"}
+{"id": "uqchk~0187", "question": "tháng 7/2025 bán được mấy gói keo chà ron?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0189", "question": "tỷ lệ hủy đơn hôm qua là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0191", "question": "cung toang cuoi cung la ban duoc bao nhieu don vi hang?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0193", "question": "Tối qua khách lẻ bán được bao nhiêu tiền?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~0195", "question": "Tổng doanh thu khách lẻ hôm qua là bao nhiêu?", "business_id": "biz_117", "as_of_date": "2025-07-20"}
+{"id": "uqchk~0197", "question": "thang 5 nay ty le don phi giao ra sao?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0199", "question": "Tháng này shop có bao nhiêu đơn lớn hơn 1 triệu đồng?", "business_id": "biz_125", "as_of_date": "2026-05-06"}
+{"id": "uqchk~0201", "question": "tuần này bao nhiêu % đơn trên 1 triệu?", "business_id": "biz_113", "as_of_date": "2025-12-29"}
+{"id": "uqchk~0203", "question": "Tổng tiền bán rau tháng 8/2026 là bao nhiêu?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0205", "question": "tính từ đầu năm đến giờ shop đón mấy khách mới?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0207", "question": "tuan nay co bao nhieu tien tren nhung hang biu kien", "business_id": "biz_102", "as_of_date": "2026-04-21"}
+{"id": "uqchk~0209", "question": "Tuần này 10 món bán chạy nhất ăn bao nhiêu tiền so với tổng?", "business_id": "biz_118", "as_of_date": "2026-05-04"}
+{"id": "uqchk~0211", "question": "tồn kho giá bán quý 1 năm nay ra sao?", "business_id": "biz_106", "as_of_date": "2025-12-26"}
+{"id": "uqchk~0213", "question": "Cái giá trung bình mỗi đơn hôm qua shop mình bán được bao nhiêu tiền?", "business_id": "biz_110", "as_of_date": "2026-01-10"}
+{"id": "uqchk~0215", "question": "hôm qua shop mình bao nhiêu đơn khách trả đúng hạn?", "business_id": "biz_110", "as_of_date": "2025-10-03"}
+{"id": "uqchk~0217", "question": "Tháng 10/2025 khách lẻ bán được bao nhiêu tiền?", "business_id": "biz_126", "as_of_date": "2025-11-02"}
+{"id": "uqchk~0219", "question": "Nợ quá hạn tuần trước (kể từ hôm qua) ra sao?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0221", "question": "hôm qua tỷ lệ nợ mới là bao nhiêu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0223", "question": "tong doanh thu theo gio cua tuan truoc", "business_id": "biz_107", "as_of_date": "2026-07-22"}
+{"id": "uqchk~0225", "question": "tuong lai doanh thu ban le thunh trong tung vao ngay mai la bao nhieu", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0227", "question": "Tổng tiền mặt thu được trong tháng 8/2026 này là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0229", "question": "thang 8 doanh thu zalo thap nhat la bao nhieu tien?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0231", "question": "Cho tôi biết doanh thu từ các đơn hàng đắt nhất trong tháng 5/2026 nhé?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0233", "question": "doanh thu trung binh don hang cua toi ngay 15/5/2026 la bao nhieu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0235", "question": "cho toi biet doanh thu san pham tieu hao nho cua quy 1 nam 2026", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0237", "question": "Tháng 6/2026 giờ bán chạy nhất là mấy giờ?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0239", "question": "doanh thu quầy tháng 5 này", "business_id": "biz_108", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0241", "question": "tuong lai thu khach le cuoi tuan qua la bao nhieu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0243", "question": "chào em, tháng 5 năm nay bao nhiêu đơn được giảm giá so với tổng đơn?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0245", "question": "Doanh thu trà tháng 4/2026?", "business_id": "biz_112", "as_of_date": "2026-04-22"}
+{"id": "uqchk~0247", "question": "Tổng doanh thu quý 2 năm 2026 là bao nhiêu?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0249", "question": "tháng 9/2026 doanh thu món nước uống ra sao", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0251", "question": "Tuần này món bán chạy nhất là gì?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0253", "question": "Tỷ lệ đơn trả hàng tháng 9/2025 là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0255", "question": "Hôm qua tỷ lệ khách quay lại là bao nhiêu phần trăm?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0257", "question": "tỷ lệ hủy đơn tháng 8/2026 là bao nhiêu?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~0259", "question": "thanh suat don tren 500k trong tuan nay la bao nhieu?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0261", "question": "Hôm qua có bao nhiêu lượt bán?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0263", "question": "Doanh thu nhóm A tháng này là bao nhiêu?", "business_id": "biz_122", "as_of_date": "2025-02-25"}
+{"id": "uqchk~0265", "question": "tháng 6 năm nay bán không kê đơn bao nhiêu tiền", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0267", "question": "doanh thu tuần này là bao nhiêu?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0269", "question": "doanh thu hom qua la bao nhieu", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0271", "question": "hom qua thu nhap bao nhieu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0273", "question": "tháng 5/2026 bán được bao nhiêu sp", "business_id": "biz_125", "as_of_date": "2026-05-06"}
+{"id": "uqchk~0275", "question": "tháng 12/2025 bán bao nhiêu cái?", "business_id": "biz_113", "as_of_date": "2025-12-29"}
+{"id": "uqchk~0277", "question": "tong ly duoc ban trong tuan nay la bao nhieu", "business_id": "biz_104", "as_of_date": "2025-11-23"}
+{"id": "uqchk~0279", "question": "tháng 6 năm nay bán được bao nhiêu hàng?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0281", "question": "tuần này bán được mấy kg?", "business_id": "biz_113", "as_of_date": "2026-08-09"}
+{"id": "uqchk~0283", "question": "tổng đơn bán mặt hàng nào nhiều nhất trong tháng 5 này?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0285", "question": "thang nay ai mua nhiều nhất?", "business_id": "biz_115", "as_of_date": "2026-02-01"}
+{"id": "uqchk~0287", "question": "nam 2025 co 3 hang nao tieu thu nhieu nhat?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0289", "question": "cho toi biet 3 loai hang da so luong cao nhat trong thang 8 nay", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0291", "question": "Tuần qua món gì chạy nhất?", "business_id": "biz_113", "as_of_date": "2026-03-05"}
+{"id": "uqchk~0293", "question": "cho mình xem top 3 mặt hàng bán nhiều nhất từ ngày 1/1/2025 đến nay", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0295", "question": "tỷ lệ hủy đơn tháng 8 này là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0297", "question": "hôm qua mặt hàng nào hết hàng?", "business_id": "biz_116", "as_of_date": "2025-10-28"}
+{"id": "uqchk~0299", "question": "tháng 7 năm nay trung bình đơn hàng bao nhiêu tiền", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0301", "question": "Tuần trước thu bao nhiêu tiền mỗi đơn?", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~0303", "question": "tháng 8/2026 đơn giá trung bình là bao nhiêu?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0305", "question": "tỷ lệ hủy đơn tháng 5 năm 2026 là bao nhiêu phần trăm?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0307", "question": "Tỷ lệ hủy đơn của tuần này là bao nhiêu?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0309", "question": "cuối tuần qua ngày nào bán được nhiều nhất?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0311", "question": "Tìm ngày có doanh thu cao nhất từ đầu năm đến hôm nay", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0313", "question": "xem ngày đỉnh doanh thu tháng 5 năm nay", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0315", "question": "năm ngoái tháng 8 ai mua nhiều nhất (ít nhất 12 đơn)?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0317", "question": "tuần nay shop co đơn nào giá dưới 55k không?", "business_id": "biz_106", "as_of_date": "2025-10-27"}
+{"id": "uqchk~0319", "question": "Ngày nào bán chạy nhất trong tuần này?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0321", "question": "chi phi nhap kho thang 9/2026", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0323", "question": "Tuần này shop lấy lại được bao nhiêu tiền?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0325", "question": "hôm qua ai nợ shop chưa trả", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0327", "question": "Tuần qua thu hồi công nợ bao nhiêu tiền?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0329", "question": "cuoi tuần qua doanh thu kê đơn ra sao?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0331", "question": "Quý 3 năm ngoái nhóm thực phẩm bán được bao nhiêu %?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0333", "question": "hom qua co bao nhieu tien tu don kê đơn không?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0335", "question": "Tuần vừa qua, nhóm đồ uống bán được bao nhiêu %?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0337", "question": "tuần vừa rồi giá nhập bình quân ra sao?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0339", "question": "Tháng 9/2026 shop bán đa dạng mấy món hàng?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0341", "question": "Hôm qua có mấy đơn hủy không?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~0343", "question": "tháng 5/2026 doanh thu theo trip mấy?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0345", "question": "ngày thu nhập đỉnh tháng 5/2025 là bao nhiêu", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0347", "question": "thang 4/2025 ai mua nhieu don nhat", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0349", "question": "Tuần trước bán được bao nhiêu tiền?", "business_id": "biz_117", "as_of_date": "2026-03-10"}
+{"id": "uqchk~0351", "question": "Tổng doanh thu thuần tháng 5 năm nay là bao nhiêu?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0353", "question": "Tháng 7 này bán được bao nhiêu cái?", "business_id": "biz_117", "as_of_date": "2025-07-06"}
+{"id": "uqchk~0355", "question": "Tháng 9 năm nay tỷ lệ đơn trả hàng là bao nhiêu phần trăm?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0357", "question": "Tháng 9 năm nay vitamin bán được bao nhiêu tiền?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0359", "question": "Tính doanh thu tích lũy từ đầu năm đến hôm nay là bao nhiêu?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0361", "question": "Doanh thu thuần tháng 4/2026 là bao nhiêu?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0363", "question": "Doanh thu thuần hôm qua là bao nhiêu?", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0365", "question": "5 ngày gần nhất shop ăn được bao nhiêu tiền?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0367", "question": "đoanh thu hôm qua là bao nhiêu", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0369", "question": "Tổng tiền nheo của shop tháng 5/2025 là bao nhiêu?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0371", "question": "tong doanh thu binh quan moi don hang trong tuan nay la bao nhieu?", "business_id": "biz_102", "as_of_date": "2025-05-04"}
+{"id": "uqchk~0373", "question": "Tháng 6 này top 5 khách hàng vàng là ai?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0375", "question": "Hôm qua shop chốt được bao nhiêu tiền?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0377", "question": "Tuần trước có bao nhiêu đơn?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0379", "question": "chủ ơi, tháng 8 năm nay bao nhiêu % khách mua lại?", "business_id": "biz_118", "as_of_date": "2026-08-30"}
+{"id": "uqchk~0381", "question": "Tổng tiền bán gạch ốp tường tháng 9 năm nay tính đến giờ là bao nhiêu?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0383", "question": "tháng 3 năm nay có bao nhiêu phần trăm đơn là khách vãng lai?", "business_id": "biz_118", "as_of_date": "2026-03-04"}
+{"id": "uqchk~0385", "question": "Tuần qua ngày nào bán nhiều nhất?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0387", "question": "Hôm qua có bao nhiêu khách hàng vàng?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0389", "question": "tuần này ai mua nhiều đơn nhất vậy?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0391", "question": "moi toi giao ban, doanh thu gio cao dinh thang 9 nam nay la bao nhieu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0393", "question": "Tuần trước shop có thu được mấy đô từ hàng nhập?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0395", "question": "Cho biết tổng nhập của tuần trước nha chủ", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0397", "question": "Tuần trước ai là khách quen?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0399", "question": "hom qua co bao nhieu tien chuyen khoan khong?", "business_id": "biz_106", "as_of_date": "2025-04-12"}
+{"id": "uqchk~0401", "question": "bình quân doanh thu mỗi bill của quý 2 năm nay là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2026-06-30"}
+{"id": "uqchk~0403", "question": "qua rồi bao nhiêu đơn bị trả?", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~0405", "question": "tháng 7 này shop có bao nhiêu đơn tồn đọng từ đầu tháng?", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~0407", "question": "Hôm qua shop kiếm được bao nhiêu tiền thuần?", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~0409", "question": "tuần này có mấy đơn?", "business_id": "biz_122", "as_of_date": "2026-03-31"}
+{"id": "uqchk~0411", "question": "Hôm qua shop mình bị đọng tiền vận hành bao nhiêu phần trăm doanh thu?", "business_id": "biz_110", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0413", "question": "cho biet doanh thu thuan cua tuan qua", "business_id": "biz_110", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0415", "question": "Tháng 5 năm nay có bao nhiêu lượt đơn?", "business_id": "biz_110", "as_of_date": "2026-05-28"}
+{"id": "uqchk~0417", "question": "Tuần này tính từ đầu tuần có doanh thu tức thời là bao nhiêu?", "business_id": "biz_110", "as_of_date": "2026-05-03"}
+{"id": "uqchk~0419", "question": "Quý 1 năm nay doanh thu ra sao?", "business_id": "biz_126", "as_of_date": "2026-06-06"}
+{"id": "uqchk~0421", "question": "tính từ đầu năm nay cho đến giờ có bao nhiêu đơn?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0423", "question": "tỷ lệ hủy đơn tháng 7/2026 là bao nhiêu?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0425", "question": "Hôm qua có bao nhiêu đơn hàng qua?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0427", "question": "Tổng doanh thu năm nay tính tới hôm nay là bao nhiêu?", "business_id": "biz_103", "as_of_date": "2025-12-07"}
+{"id": "uqchk~0429", "question": "Tổng doanh thu của quý 2 năm nay là bao nhiêu?", "business_id": "biz_103", "as_of_date": "2026-06-28"}
+{"id": "uqchk~0431", "question": "Tháng 5/2025 shop bán được bao nhiêu tiền thuần?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0433", "question": "Hôm nay có bao nhiêu đơn chiều?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0435", "question": "Tháng 7 nay ai mua nhiều nhất?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0437", "question": "hôm qua mặt hàng nào bán chạy nhất về doanh thu?", "business_id": "biz_103", "as_of_date": "2025-09-22"}
+{"id": "uqchk~0439", "question": "doanh thu của quý 3 năm 2025 là bao nhiêu", "business_id": "biz_107", "as_of_date": "2026-06-23"}
+{"id": "uqchk~0441", "question": "Doanh thu khách thân thiết tuần này là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0443", "question": "Tháng 8/2026 doanh thu khách sỉ là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0445", "question": "Tháng 8/2026 món tiramisu bán được bao nhiêu tiền?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0447", "question": "Lượt giao dịch hôm qua là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0449", "question": "Tỷ suất đóng góp nhóm 'May mặc' trong tuần này là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0451", "question": "doanh thu quy 1 nam 2025 la bao nhieu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0453", "question": "Tháng 5 này tổng doanh thu thuần hàng của áo thun là bao nhiêu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0455", "question": "doanh thu truoc moi don cua shop ngay 15/5/2026 la bao nhieu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0457", "question": "tỷ lệ hủy đơn tháng 5 năm nay là bao nhiêu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0459", "question": "Quý 3/2025 shop kiếm được bao nhiêu tiền?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0461", "question": "hôm qua có bao nhiêu đơn hủy?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0463", "question": "Hom qua co bao nhieu luot don?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0465", "question": "Tháng 5 năm 2025 shop bán được bao nhiêu ly Cold brew?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0467", "question": "tổng doanh thu kênh zalo tháng 6/2026 là bao nhiêu?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0469", "question": "Doanh thu nhóm vitamin tháng 6/2025 là bao nhiêu?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0471", "question": "Tổng doanh thu tại quầy tháng 5/2025 là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0473", "question": "Doanh thu đồ hộp tháng 5 năm nay là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0475", "question": "Tháng 1 năm nay shop kiếm được bao nhiêu tiền thuần?", "business_id": "biz_108", "as_of_date": "2025-01-21"}
+{"id": "uqchk~0477", "question": "tong chi phi nhap kho trong tuan nay la bao nhieu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0479", "question": "Tháng 5 này tổng doanh thu Zalo OA là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0481", "question": "doanh thu quầy hôm qua là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0483", "question": "thu nhat trung binh cua shop trong thang 4/2025 la bao nhieu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0485", "question": "tháng 6/2025 nhóm sữa chiếm bao nhiêu % doanh thu", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0487", "question": "tỷ lệ đơn ghi nợ chưa thu trong tuần này là bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0489", "question": "Tháng 5 năm nay tổng doanh thu nhóm tiêu hóa bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0491", "question": "tỷ lệ khách lẻ tháng 5/2025 ra sao?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0493", "question": "Tháng 4/2025 tiền nợ chia theo bao nhiêu ngày quá hạn?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0495", "question": "Lợi nhuận thuần tháng 6/2025 là bao nhiêu?", "business_id": "biz_124", "as_of_date": "2025-08-10"}
+{"id": "uqchk~0497", "question": "anh thu bao nhiêu tiền trong tuần này", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0499", "question": "Tỷ trọng đá xay trong tuần qua là bao nhiêu?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0501", "question": "thang 9 nay doanh thu khach le la bao nhieu", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0503", "question": "doanh thu mon goi tuan nay la bao nhieu", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0505", "question": "Hôm qua có bao nhiêu đơn?", "business_id": "biz_128", "as_of_date": "2026-03-27"}
+{"id": "uqchk~0507", "question": "tổng doanh thu thân thiết của tháng 9/2025 là bao nhiêu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0509", "question": "gìn 30/6 chi phí nhập trung bình là bao nhiêu?", "business_id": "biz_128", "as_of_date": "2025-06-22"}
+{"id": "uqchk~0511", "question": "doanh thu thuan cua shop trong thang 5/2025 la bao nhieu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0513", "question": "tổng doanh thu chiều hôm qua là bao nhiêu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0515", "question": "lượt bán hôm qua là bao nhiêu?", "business_id": "biz_128", "as_of_date": "2026-08-11"}
+{"id": "uqchk~0517", "question": "Tháng 9 năm nay 5 khách VIP là ai?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0519", "question": "khuong 4/2025 ngay thu hoach la ngay nao", "business_id": "biz_116", "as_of_date": "2026-04-21"}
+{"id": "uqchk~0521", "question": "Doanh thu tháng 4/2026 là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0523", "question": "doanh thu thuan cuoi tuan nay", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0525", "question": "tháng 9/2026 đơn giá trung bình là bao nhiêu", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0527", "question": "tỷ lệ đơn hủy tháng 8 này là bao nhiêu", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~0529", "question": "Doanh thu của các bà con tên Hồng, Lan hay Thảo trong tuần vừa qua là bao nhiêu?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0531", "question": "Tháng 3 năm nay doanh thu mặt hàng mới bao nhiêu tiền?", "business_id": "biz_117", "as_of_date": "2026-03-10"}
+{"id": "uqchk~0533", "question": "Hôm qua khách trả bao nhiêu tiền?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0535", "question": "tỷ lệ khách quay lại tuần này là bao nhiêu?", "business_id": "biz_125", "as_of_date": "2026-04-15"}
+{"id": "uqchk~0537", "question": "tuần trước shop bán bao nhiêu loại hàng khác nhau?", "business_id": "biz_113", "as_of_date": "2025-12-02"}
+{"id": "uqchk~0539", "question": "Tháng 8 năm nay, món gì bán ít nhất dưới 50 đơn?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0541", "question": "Trong tuần này đơn nào đắt nhất?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0543", "question": "tháng 6/2026 doanh thu giờ vắng thế nào", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0545", "question": "Tháng 9 năm nay có bao nhiêu đơn hàng trên 10 triệu không?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0547", "question": "tỷ lệ khách lẻ tháng 9 năm nay là bao nhiêu?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0549", "question": "Tổng tiền trả hàng tháng 9 năm nay là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0551", "question": "tháng 9/2026 doanh thu giảm giá là bao nhiêu", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0553", "question": "hôm qua bao nhiêu đơn giao hàng thành công", "business_id": "biz_110", "as_of_date": "2025-12-16"}
+{"id": "uqchk~0555", "question": "tỷ lệ đơn trả quá hạn tháng 10/2025 là bao nhiêu?", "business_id": "biz_110", "as_of_date": "2025-10-01"}
+{"id": "uqchk~0557", "question": "Tháng 9 này có bao nhiêu đơn hàng giá dưới 50k?", "business_id": "biz_126", "as_of_date": "2025-09-20"}
+{"id": "uqchk~0559", "question": "tháng 7/2026 doanh thu đơn giá cao nhất là bao nhiêu?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0561", "question": "Tháng 7 năm nay mặt hàng nào bán chạy nhất về doanh thu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0563", "question": "tháng 7 năm nay thu bao nhiêu tiền từ thuốc kê đơn?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0565", "question": "thang 7/2026 doanh thu theo khung giờ đặt hàng ra sao", "business_id": "biz_107", "as_of_date": "2026-07-22"}
+{"id": "uqchk~0567", "question": "Doanh thu bán sỉ thuần của tuần này là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0569", "question": "Tháng 5 nay tỷ lệ đơn trên 10 triệu ra sao?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0571", "question": "Tháng 11 năm nay có bao nhiêu đơn khách lẻ?", "business_id": "biz_104", "as_of_date": "2025-11-23"}
+{"id": "uqchk~0573", "question": "Tháng 6 năm nay tổng doanh thu các đơn trên 300k là bao nhiêu?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0575", "question": "co don nao dang giao trong thang 6 nam nay chua?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0577", "question": "Tuần này shop có bao nhiêu đơn thu tiền tận nơi?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0579", "question": "thang 5 nay co bao nhieu tien ban tren duong", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0581", "question": "Hôm qua shop kiếm được bao nhiêu tiền từ những khách có SĐT?", "business_id": "biz_108", "as_of_date": "2025-06-23"}
+{"id": "uqchk~0583", "question": "Tháng 5 năm nay shop còn bao nhiêu tiền hàng tồn?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0585", "question": "Quý 1 năm ngoái, khoản thu ít nhất của khách VIP là bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0587", "question": "Quý 1/2024 doanh thu ra sao?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0589", "question": "Doanh thu quý 3 năm 2025 (Q3) của shop?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0591", "question": "doanh thu bua toi cua hom qua la bao nhieu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0593", "question": "tỷ lệ khách trung thành tháng 9/2026 là bao nhiêu", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0595", "question": "Doanh thu khách lẻ tháng 9/2025 là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0597", "question": "tháng 9/2026 doanh thu mới nhất là bao nhiêu", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0599", "question": "Tháng 5 năm nay có bao nhiêu đơn hiệu lực?", "business_id": "biz_110", "as_of_date": "2026-05-03"}
+{"id": "uqchk~0601", "question": "Quý 3 năm nay có bao nhiêu đơn hàng?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0603", "question": "tuần này bán trà sữa được bao nhiêu?", "business_id": "biz_112", "as_of_date": "2026-03-06"}
+{"id": "uqchk~0605", "question": "cong ty luon nen van tach tuoc cetirizin thap nhat trong tuan nay", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0607", "question": "doanh thu tháng 8/2026 tính đến hôm nay là bao nhiêu?", "business_id": "biz_113", "as_of_date": "2026-08-09"}
+{"id": "uqchk~0609", "question": "Tổng tiền thu được tuần vừa rồi (tính đến hôm nay) là bao nhiêu?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0611", "question": "Tháng 5 này bán được bao nhiêu tiền vào buổi chiều?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0613", "question": "doanh so thu nhap trong thang 8 nam nay?", "business_id": "biz_128", "as_of_date": "2026-08-11"}
+{"id": "uqchk~0615", "question": "doanh thu cuoi thang 10/2025 la bao nhieu", "business_id": "biz_106", "as_of_date": "2025-10-27"}
+{"id": "uqchk~0617", "question": "tuần này bán đc mấy cây?", "business_id": "biz_113", "as_of_date": "2026-02-20"}
+{"id": "uqchk~0619", "question": "Tổng số lượng sản phẩm bán được trong tuần này là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0621", "question": "thang 8/2026 ta bán được bao nhiêu ly?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0623", "question": "thang 5 nay bao nhieu thung?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0625", "question": "thang 6 nay co bao nhieu dia", "business_id": "biz_126", "as_of_date": "2026-06-06"}
+{"id": "uqchk~0627", "question": "tuần này bán được hàng nào nhiều nhất?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0629", "question": "Tháng 5 năm nay top 5 sản phẩm bán chạy nhất là gì?", "business_id": "biz_120", "as_of_date": "2026-05-21"}
+{"id": "uqchk~0631", "question": "tuần này bán chạy nhất là món gì?", "business_id": "biz_113", "as_of_date": "2026-02-20"}
+{"id": "uqchk~0633", "question": "Hôm qua bán chạy nhất là gì?", "business_id": "biz_125", "as_of_date": "2025-10-22"}
+{"id": "uqchk~0635", "question": "năm ngoái tháng 7 hủy bao nhiêu phần trăm?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0637", "question": "tuần này có mặt hàng nào bị bỏ quên không?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0639", "question": "tỉ lệ hủy hàng tuần này thế nào?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0641", "question": "Tuần này shop hủy bao nhiêu phần trăm đơn?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0643", "question": "thu nhap trung binh trong thang 5/2025 la bao nhieu", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0645", "question": "Doanh thu bình quân mỗi đơn của tháng 8 này là bao nhiêu?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0647", "question": "tỷ lệ hủy đơn tháng 5/2025", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0649", "question": "Tháng 6/2025 tỷ lệ hủy bao nhiêu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0651", "question": "Tháng 5 năm nay ngày nào bán chạy nhất?", "business_id": "biz_110", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0653", "question": "ngày nào bán nhiều nhất trong tuần trước?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0655", "question": "cho mình biết ngày đỉnh doanh thu của quý 2/2025 nhé", "business_id": "biz_113", "as_of_date": "2026-08-09"}
+{"id": "uqchk~0657", "question": "tháng 9 năm nay ngày đỉnh doanh thu là khi nào?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0659", "question": "Năm 2025 ai là khách trung thành (>= 3 đơn)?", "business_id": "biz_118", "as_of_date": "2025-05-09"}
+{"id": "uqchk~0661", "question": "tuần này có đơn nào hiệu quả không shop", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0663", "question": "Hôm qua ai là khách thượng lưu?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0665", "question": "chu tui muốn biết khách thượng hạng của quý 2 năm nay?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0667", "question": "Quý 1 năm ngoái ai là khách vip?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0669", "question": "tong ly M trong tuan nay la bao nhieu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0671", "question": "Tuần trước shop nào đạt ngưỡng doanh thu mạnh?", "business_id": "biz_122", "as_of_date": "2025-08-12"}
+{"id": "uqchk~0673", "question": "tháng 8/2025 tiền thu hồi nợ bao nhiêu", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0675", "question": "Tổng tiền xóa nợ trong tuần vừa qua là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2025-12-06"}
+{"id": "uqchk~0677", "question": "Tổng tiền thu hồi nợ tháng 9/2026 là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0679", "question": "Tỉ trọng nhóm Đồ uống tháng 8/2025 là bao nhiêu?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0681", "question": "tháng 6/2026 nhóm đồ uống chiếm mấy % doanh thu chung", "business_id": "biz_128", "as_of_date": "2026-06-18"}
+{"id": "uqchk~0683", "question": "tuần trước nhóm snack đóng góp mấy % cho doanh thu shop?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0685", "question": "Tuần qua doanh thu thuốc kê đơn thế nào?", "business_id": "biz_121", "as_of_date": "2025-09-17"}
+{"id": "uqchk~0687", "question": "giá vốn mỗi hộp tháng 5 năm nay là bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0689", "question": "hôm qua món nào bán chạy nhất là", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0691", "question": "Tuần rồi tỷ suất chiều sáng thế nào?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0693", "question": "tỷ lệ khách vip tháng 8/2026", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~0695", "question": "tháng 5/2025 trung bình mỗi đơn bán được bao nhiêu tiền", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0697", "question": "Tháng 5 này shop thu được bao nhiêu tiền thuần?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0699", "question": "Tuần trước bán được bao nhiêu tiền?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0701", "question": "tổng nhập hôm qua", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0703", "question": "Tỷ lệ huỷ đơn tháng 5/2026 cao không?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0705", "question": "ngày nào doanh thu cao nhất trong tuần vừa qua?", "business_id": "biz_117", "as_of_date": "2026-02-21"}
+{"id": "uqchk~0707", "question": "tháng 9/2025 doanh thu nhóm khách D là bao nhiêu", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0709", "question": "Ngày nào tháng 10/2025 shop bán chạy nhất?", "business_id": "biz_121", "as_of_date": "2025-10-16"}
+{"id": "uqchk~0711", "question": "thang 9 nam nay trung binh don tren 200k?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0713", "question": "chiếm bao nhiêu % doanh thu nhóm đồ uống trong quý 3 năm nay?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0715", "question": "Tuần trước trà sữa bán ra được bao nhiêu?", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0717", "question": "hôm qua món nào có doanh thu cao nhất", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0719", "question": "doanh thu thuôn cuoi thang 5/2025 la bao nhieu?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0721", "question": "Nói xem 5 ông lớn nhất trong quý 2 vừa rồi là những ai?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0723", "question": "ngày nào tháng 5/2025 thu hoạch nhiều nhất?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~0725", "question": "Tháng 10 năm nay tháng này có bao nhiêu đơn hiệu lực?", "business_id": "biz_102", "as_of_date": "2025-10-30"}
+{"id": "uqchk~0727", "question": "thang nay top 5 đơn sale xịn nhất shop", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0729", "question": "tuần này shop có đơn nào bóng LED không", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0731", "question": "Tháng 8 này giao được bao nhiêu chuyến?", "business_id": "biz_118", "as_of_date": "2026-08-26"}
+{"id": "uqchk~0733", "question": "tính từ đầu năm tới nay shop bán được bao nhiêu tiền?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0735", "question": "Hôm qua có bao nhiêu chuyến xe giao hàng không?", "business_id": "biz_118", "as_of_date": "2025-04-05"}
+{"id": "uqchk~0737", "question": "tháng 9/2026 so tang truoc bao nhieu phan tram?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0739", "question": "tháng 9/2026 doanh thu trà sữa bao nhiêu", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0741", "question": "Tháng 4 năm nay có bao nhiêu đơn khách gọi điện?", "business_id": "biz_106", "as_of_date": "2025-04-11"}
+{"id": "uqchk~0743", "question": "thang nay hang nao bay nhat", "business_id": "biz_106", "as_of_date": "2026-06-19"}
+{"id": "uqchk~0745", "question": "thang 9/2025 doanh thu ca sáng la bao nhieu", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0747", "question": "tong doanh thu nhóm tiêu hoa trong tuần này là bao nhiêu", "business_id": "biz_122", "as_of_date": "2025-07-31"}
+{"id": "uqchk~0749", "question": "Tháng 7 năm nay có bao nhiêu đơn huỷ?", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~0751", "question": "tổng doanh thu tháng 7/2026", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~0753", "question": "tỷ lệ đơn trả hàng tháng 7/2026 là bao nhiêu phần trăm?", "business_id": "biz_110", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0755", "question": "doanh thu thuan cua shop trong tuan nay la bao nhieu?", "business_id": "biz_110", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0757", "question": "thu nhập bữa qua là bao nhiêu?", "business_id": "biz_126", "as_of_date": "2026-06-06"}
+{"id": "uqchk~0759", "question": "Tháng 7 năm nay khách VIP bán được bao nhiêu tiền?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0761", "question": "doanh thu nam nay toi gio la bao nhieu", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0763", "question": "cuoi tuần rồi ngày nào đỉnh doanh thu?", "business_id": "biz_103", "as_of_date": "2025-12-02"}
+{"id": "uqchk~0765", "question": "hom qua co bao nhieu giao dich song", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0767", "question": "tính từ đầu năm 2025 đến giờ, tỷ lệ đơn hàng nhỏ là bao nhiêu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0769", "question": "Tháng 7/2026 shop huỷ hết mấy đơn?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0771", "question": "Tổng tiền bán sạch hôm qua (chưa bao gồm ship và VAT) là bao nhiêu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0773", "question": "Chủ nhật qua có đơn trả hàng không?", "business_id": "biz_107", "as_of_date": "2026-07-22"}
+{"id": "uqchk~0775", "question": "Cả tuần vừa rồi shop bán được bao nhiêu tiền?", "business_id": "biz_107", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0777", "question": "tháng 10 năm nay ngày nào bán chạy nhất?", "business_id": "biz_107", "as_of_date": "2025-10-25"}
+{"id": "uqchk~0779", "question": "Doanh thu hôm qua là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-03-05"}
+{"id": "uqchk~0781", "question": "Hôm qua bán được bao nhiêu tiền các món có chữ đá?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0783", "question": "Tháng 8 năm nay trung bình doanh thu mỗi đơn là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0785", "question": "tỉ lệ bán qua zalo tuần vừa rồi", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0787", "question": "hôm qua ai là khách nợ top 3?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0789", "question": "tháng này shop có bao nhiêu lượt đơn rồi?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0791", "question": "nam 2025 shop ban duoc bao nhieu don vi hang", "business_id": "biz_115", "as_of_date": "2026-01-24"}
+{"id": "uqchk~0793", "question": "hom qua co bao nhieu tien trung binh moi don", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0795", "question": "tháng 5/2025 thu bao nhiêu từ khách quen?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0797", "question": "hôm qua bao nhiêu đơn hiệu lực?", "business_id": "biz_104", "as_of_date": "2026-03-16"}
+{"id": "uqchk~0799", "question": "doanh thu thuan cua shop thu nay", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0801", "question": "thu nhập hôm qua là bao nhiêu?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0803", "question": "Tổng tiền bán qua điện thoại trong tuần vừa qua là bao nhiêu?", "business_id": "biz_120", "as_of_date": "2025-05-29"}
+{"id": "uqchk~0805", "question": "tong doanh thu nhom khang sinh cuoi thang 5/2025", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0807", "question": "chiều nay bán được bao nhiêu?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0809", "question": "tong doanh thu truoc khi gia hanh trong tuan nay la bao nhieu?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0811", "question": "tồn kho đến cuối tháng 5/2026 là bao nhiêu?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0813", "question": "doanh thu cuoi cung cua thang 9 nam 2025 la bao nhieu", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0815", "question": "Tối qua thứ 6 và chủ nhật bán được bao nhiêu tiền?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0817", "question": "tỷ lệ đơn thành công của tuần này là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0819", "question": "anh xem tổng doanh thu của nhân viên A trong tuần vừa qua là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0821", "question": "Sáng thứ năm tuần này cửa hàng bán được bao nhiêu tiền?", "business_id": "biz_108", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0823", "question": "chi bao nhieu tien mua hang cho nam 2025", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0825", "question": "hôm qua shop có tỷ lệ hủy đơn cao không?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0827", "question": "doanh thu ca sang nay la bao nhieu", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0829", "question": "Tháng 5 năm nay doanh thu mỗi đơn là bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0831", "question": "Trung bình tiền hàng tháng 5/2025 là bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0833", "question": "Tháng 5 nay top 3 khách vàng là ai?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0835", "question": "năm ngoái tháng 5 ai mua nhiều nhất?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0837", "question": "Tháng 7 năm nay doanh thu ra sao?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0839", "question": "doanh thu khách sỉ tháng 9 nay la bao nhieu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0841", "question": "mon nay mon nao ban chay nhat theo so luong?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0843", "question": "tháng 9/2026 tăng trưởng doanh thu tháng so với tháng trước là bao nhiêu phần trăm?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0845", "question": "tỷ suất đĩa tuần vừa qua cao không anh?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0847", "question": "Hom qua co bao nhieu don?", "business_id": "biz_128", "as_of_date": "2025-06-20"}
+{"id": "uqchk~0849", "question": "Hôm qua shop chốt được bao nhiêu tiền?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0851", "question": "doanh thu thuan cua thang 8/2025 la bao nhieu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0853", "question": "tỷ lệ đơn có mặt hàng điện tháng 9 năm nay là bao nhiêu", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0855", "question": "tong so don huong luc cua shop trong ngay 3/9/2026", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0857", "question": "Trung bình doanh thu mỗi đơn tháng 9/2025 là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0859", "question": "top 3 khách hàng vàng tháng 3 năm nay", "business_id": "biz_116", "as_of_date": "2026-03-29"}
+{"id": "uqchk~0861", "question": "Doanh thu bình quân mỗi đơn của tháng 9 năm nay là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0863", "question": "Doanh thu bán hàng không kê đơn hôm qua là bao nhiêu?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~0865", "question": "tỷ lệ khách quay lại trong tuần vừa qua là bao nhiêu?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0867", "question": "Tính doanh thu khách nợ trong tháng 5/2025 nhé?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0869", "question": "Quý 2 năm nay doanh thu giao hàng được bao nhiêu tiền?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~0871", "question": "Tháng 4 năm nay bán được bao nhiêu tiền cơm phở bún?", "business_id": "biz_125", "as_of_date": "2026-04-14"}
+{"id": "uqchk~0873", "question": "Tháng 12 năm nay món ăn kèm nào bán chạy nhất?", "business_id": "biz_129", "as_of_date": "2025-12-25"}
+{"id": "uqchk~0875", "question": "tổng tiền giảm giá tháng 9 này là bao nhiêu?", "business_id": "biz_102", "as_of_date": "2025-09-12"}
+{"id": "uqchk~0877", "question": "tỷ lệ khách quay lại tháng 9/2025?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0879", "question": "tỷ lệ đơn giá trị cao hôm qua là bao nhiêu?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0881", "question": "thang 9 nay co bao nhieu don dang giao chua thu", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~0883", "question": "Lãi suất ghi nợ trung bình tháng 9 năm 2025 là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2025-09-20"}
+{"id": "uqchk~0885", "question": "Hôm qua có bao nhiêu đơn COD thành công?", "business_id": "biz_106", "as_of_date": "2026-08-31"}
+{"id": "uqchk~0887", "question": "Tháng 12 năm nay đơn hàng đắt nhất là bao nhiêu tiền?", "business_id": "biz_110", "as_of_date": "2025-12-11"}
+{"id": "uqchk~0889", "question": "tuần này bao nhiêu đơn có hàng giảm giá", "business_id": "biz_126", "as_of_date": "2026-01-26"}
+{"id": "uqchk~0891", "question": "Hôm qua có bao nhiêu đơn COD?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0893", "question": "Tháng 7 năm nay tỷ lệ đơn giảm giá là bao nhiêu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0895", "question": "Tỷ trọng doanh thu sáng trong tuần này là bao nhiêu %?", "business_id": "biz_107", "as_of_date": "2026-07-22"}
+{"id": "uqchk~0897", "question": "Tháng 8 này tỷ lệ đơn ghi nợ chưa thu là bao nhiêu %?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0899", "question": "Doanh thu ví điện tử hôm qua là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0901", "question": "doanh thu quầy tháng 7/2026 la bao nhieu", "business_id": "biz_111", "as_of_date": "2026-07-03"}
+{"id": "uqchk~0903", "question": "T3 doanh thu khách lẻ", "business_id": "biz_115", "as_of_date": "2025-03-11"}
+{"id": "uqchk~0905", "question": "Tháng 5 năm nay tỷ lệ đơn dưới 1 triệu là bao nhiêu %?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0907", "question": "ngày 1/6 shop có đơn nào đắt nhất chưa?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0909", "question": "Tong doanh thu cac don duoi 50k o ngay hoi mai la bao nhieu?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0911", "question": "Tổng doanh thu khách sỉ tháng 5 năm nay là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2025-05-22"}
+{"id": "uqchk~0913", "question": "tổng doanh thu từ khách thân thiết trong tuần vừa rồi là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0915", "question": "tháng 5 năm nay doanh thu giảm giá thế nào?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~0917", "question": "thang 10/2025 co bao nhieu don ghi no chua thanh toan", "business_id": "biz_124", "as_of_date": "2025-10-21"}
+{"id": "uqchk~0919", "question": "Tháng 5 năm nay ai bán nhiều tiền nhất?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0921", "question": "tuần này (tính từ thứ 2) đợt giao hàng vừa rồi có khách lẻ nào bán giá thấp nhất là bao nhiêu không?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~0923", "question": "Doanh thu quý 3/2026 là bao nhiêu?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0925", "question": "Tong doanh thu gio cao dau trong tuan qua la bao nhieu?", "business_id": "biz_128", "as_of_date": "2026-06-09"}
+{"id": "uqchk~0927", "question": "Doanh thu buổi sáng hôm qua là bao nhiêu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0929", "question": "Doanh thu khách VIP trong tháng 10 này là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2025-10-28"}
+{"id": "uqchk~0931", "question": "Tháng này shop mình có bao nhiêu đơn hiệu lực?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0933", "question": "tuan cuoi cung co bao nhieu don thanh cong", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0935", "question": "Tuần này (từ thứ 2) có bao nhiêu đơn?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0937", "question": "Tháng 8 năm nay shop có bao nhiêu lượt khách mua?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0939", "question": "Doanh thu đá xay hôm qua bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0941", "question": "qua bao nhieu tien doan thu tuoc loratadin hom qua", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0943", "question": "tuần qua shop bán được bao nhiêu tiền mặt hàng Gas Petrolimex 12kg", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0945", "question": "Tổng doanh thu bán không kê đơn hôm qua là bao nhiêu?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~0947", "question": "doanh thu cuoi nam nay la bao nhieu", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0949", "question": "tong doanh thu thang 8 nam nay", "business_id": "biz_113", "as_of_date": "2026-08-09"}
+{"id": "uqchk~0951", "question": "tuần này bán được bao nhiêu đĩa?", "business_id": "biz_128", "as_of_date": "2026-07-10"}
+{"id": "uqchk~0953", "question": "tong kg san pham bat thanh cong trong tuan nay la bao nhieu", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0955", "question": "Tháng 5 nay bán được bao nhiêu đĩa cà phê sữa đá?", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~0957", "question": "tháng 7 này bán chạy nhất là món gì?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0959", "question": "Tháng 7 này bán sản phẩm nào nhiều nhất?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0961", "question": "Tháng 8 năm nay bán chạy nhất là mấy món?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0963", "question": "thang 6 nay ban chay giong gi", "business_id": "biz_126", "as_of_date": "2026-06-06"}
+{"id": "uqchk~0965", "question": "Mặt hàng nào hết hàng vào cuối tháng 9 năm nay?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~0967", "question": "tuần này có tỷ lệ hủy cao không?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~0969", "question": "tu nam 2024 den nay co hang chi co trong kho khong", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~0971", "question": "tuần trước shop bị hủy bao nhiêu phần trăm đơn?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~0973", "question": "trong tháng 7 năm nay, trung bình mỗi đơn bán được bao nhiêu tiền?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0975", "question": "tính từ đầu năm 2025 đến nay doanh thu đơn ra sao", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0977", "question": "Tao muốn biết doanh thu bình quân trên 1 đơn của quý 1 năm nay là bao nhiêu?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~0979", "question": "tuần vừa rồi hủy bao nhiêu phần trăm đơn?", "business_id": "biz_116", "as_of_date": "2025-10-08"}
+{"id": "uqchk~0981", "question": "năm ngoái hủy bao nhiêu % đơn?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~0983", "question": "tìm ngày bán chạy nhất tháng 5/2025", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0985", "question": "Hôm qua có ngày nào doanh thu cao nhất trong tuần không?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~0987", "question": "tháng 6 năm nay ngày nào bán được nhiều tiền nhất?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~0989", "question": "tuần này đến giờ có mấy khách trung thành (4 đơn trở lên)", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~0991", "question": "tháng 4/2025 có đơn nào trị tiền tối thiểu không", "business_id": "biz_121", "as_of_date": "2025-04-10"}
+{"id": "uqchk~0993", "question": "Tháng 6 năm nay ai là khách vàng?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0995", "question": "Tuần này ai chi nhiều nhất?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~0997", "question": "Tuần trước shop có tỷ lệ size L là mấy?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~0999", "question": "ngày nào doanh thu mạnh nhất trong tuần này", "business_id": "biz_118", "as_of_date": "2026-07-14"}
+{"id": "uqchk~1001", "question": "Tổng tiền nhập hàng tháng 7/2025 là bao nhiêu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~1003", "question": "tháng 5/2026 thu hồi được bao nhiêu tiền nợ?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1005", "question": "Tháng 7 năm nay nhóm đồ uống đóng góp bao nhiêu phần trăm?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~1007", "question": "năm ngoái quý 1 nhóm giảm đau hạ sốt bán được bao nhiêu phần trăm tổng doanh thu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1009", "question": "tính từ đầu năm tới giờ giá nhập lốc trung bình là gì?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~1011", "question": "tong qua nam 2025 may hang no do ban nhieu hang nhut", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~1013", "question": "cuoi tuan nay co mat hang nao bo duoc nhieu nhat", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~1015", "question": "cô tính xem tuần trước có bao nhiêu đơn quy 4 không?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~1017", "question": "tháng 8 năm nay có bao nhiêu chuyến giao hàng chưa?", "business_id": "biz_117", "as_of_date": "2025-08-05"}
+{"id": "uqchk~1019", "question": "tháng 5 năm nay shop chạy bao nhiêu chuyến?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~1021", "question": "Quý 1 năm ngoái, shop có khách nào mua nhiều nhất không?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~1023", "question": "kham sinh tong doanh thu tuan qua la bao nhieu", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~1025", "question": "Tổng doanh thu nhóm đồ uống tháng 9/2026 là bao nhiêu?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~1027", "question": "thang 5 nay shop co doanh thu bao nhieu?", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~1029", "question": "tính tổng tiền bán quý 4 năm ngoái xem sao", "business_id": "biz_125", "as_of_date": "2026-05-11"}
+{"id": "uqchk~1031", "question": "Hôm qua có doanh thu đơn đang giao là bao nhiêu?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~1033", "question": "trong tuan nay doanh thu ra sao?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~1035", "question": "hom qua shop co bao nhieu don?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~1037", "question": "doanh thu thuan trong thang 5/2025 la bao nhieu?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~1039", "question": "tỷ lệ huỷ đơn tháng 6/2025 là bao nhiêu?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~1041", "question": "tong doanh thu don vao dem 16/6 nay", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~1043", "question": "Tháng 9 năm nay Xi măng Hà Tiên bán được bao nhiêu tiền?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~1045", "question": "Hôm qua bán được bao nhiêu tiền Cát xây tô?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~1047", "question": "thứ 7 qua giao bao nhiêu dot?", "business_id": "biz_118", "as_of_date": "2026-08-09"}
+{"id": "uqchk~1049", "question": "tuan tru v tuan nay doanh thu don truoc binh la bao nhieu", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~1051", "question": "Tỷ lệ hủy đơn tháng 1/2026 là bao nhiêu?", "business_id": "biz_118", "as_of_date": "2026-02-07"}
+{"id": "uqchk~1053", "question": "Tổng nợ tồn đến hết hôm qua là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~1055", "question": "doanh thu thuan cua thang 2 nam 2026 la bao nhieu", "business_id": "biz_106", "as_of_date": "2025-12-06"}
+{"id": "uqchk~1057", "question": "doanh thu nhóm ho cam cum thang 4/2026 la bao nhieu", "business_id": "biz_122", "as_of_date": "2026-04-21"}
+{"id": "uqchk~1059", "question": "tháng 6/2025 có bao nhiêu đơn trả hàng không", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~1061", "question": "tỷ lệ hủy đơn tháng 5/2025 là bao nhiêu?", "business_id": "biz_122", "as_of_date": "2025-07-18"}
+{"id": "uqchk~1063", "question": "Doanh thu khách lẻ hôm qua là bao nhiêu?", "business_id": "biz_110", "as_of_date": "2026-07-03"}
+{"id": "uqchk~1065", "question": "ngày nào doanh thu cao nhất trong tháng 6 này?", "business_id": "biz_110", "as_of_date": "2026-06-27"}
+{"id": "uqchk~1067", "question": "lượt giao dịch tháng 5 năm nay bao nhiêu?", "business_id": "biz_110", "as_of_date": "2026-05-19"}
+{"id": "uqchk~1069", "question": "doanh thu thuan cua toi trong tuan nay la bao nhieu", "business_id": "biz_126", "as_of_date": "2026-06-06"}
+{"id": "uqchk~1071", "question": "doanh thu thang 5/2025 la bao nhieu", "business_id": "biz_126", "as_of_date": "2026-06-06"}
+{"id": "uqchk~1073", "question": "Tháng 6 này doanh thu khách trung thành bao nhiêu tiền?", "business_id": "biz_103", "as_of_date": "2026-06-18"}
+{"id": "uqchk~1075", "question": "Tổng đơn hôm qua là bao nhiêu?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~1077", "question": "tháng 7/2025 doanh thu trung bình mỗi đơn là bao nhiêu tiền", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~1079", "question": "tích lũy doanh thu từ đầu năm tới nay là bao nhiêu?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~1081", "question": "Tháng 8 năm nay shop mình có bao nhiêu ngày doanh thu trên 20 triệu?", "business_id": "biz_103", "as_of_date": "2025-09-07"}
+{"id": "uqchk~1083", "question": "kỳ này (tính đến giờ) ngày nào shop bán nhiều tiền nhất?", "business_id": "biz_103", "as_of_date": "2026-04-18"}
+{"id": "uqchk~1085", "question": "Tổng doanh thu chiều hôm qua là bao nhiêu?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~1087", "question": "Top 3 khách vàng của shop tháng 6/2025 là ai?", "business_id": "biz_119", "as_of_date": "2025-07-30"}
+{"id": "uqchk~1089", "question": "hôm qua doanh thu chốt bao nhiêu?", "business_id": "biz_107", "as_of_date": "2026-04-18"}
+{"id": "uqchk~1091", "question": "Ngày thu hoạch tháng 7/2025 là ngày nào?", "business_id": "biz_107", "as_of_date": "2025-07-21"}
+{"id": "uqchk~1093", "question": "Danh sách các loại thanh toán điện tử và doanh thu của quý 1 năm nay?", "business_id": "biz_107", "as_of_date": "2026-07-22"}
+{"id": "uqchk~1095", "question": "Tổng tiền cafe tháng 8/2026 là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1097", "question": "tuần này doanh thu món L ra sao?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1099", "question": "Tháng này shop bán được bao nhiêu đơn?", "business_id": "biz_111", "as_of_date": "2026-01-20"}
+{"id": "uqchk~1101", "question": "Tối qua shop bán được bao nhiêu tiền cho khách thân?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1103", "question": "tong doanh thu cua toan nam 2025?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1105", "question": "Doanh thu quý 1/2026 ra sao?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~1107", "question": "Doanh thu tuần trước có cao không?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~1109", "question": "tuần trước nhóm điện bán được bao nhiêu % so với tổng shop", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~1111", "question": "Tuần qua thu từ mặt hàng Y là bao nhiêu?", "business_id": "biz_115", "as_of_date": "2026-01-13"}
+{"id": "uqchk~1113", "question": "tuần vừa qua ngày đỉnh doanh thu là bao nhiêu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~1115", "question": "Doanh thu bình quân mỗi đơn của tháng 6 năm nay là bao nhiêu?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~1117", "question": "tháng 6 năm nay shop làm được bao nhiêu đơn", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~1119", "question": "Tuần vừa rồi, shop thu được bao nhiêu tiền cho mỗi sản phẩm?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~1121", "question": "thang 6 nay bao nhieu tien ban o tai qua?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~1123", "question": "Tháng này shop nhập được bao nhiêu tiền hàng?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~1125", "question": "Tháng 5 năm nay shop kiếm được bao nhiêu tiền?", "business_id": "biz_120", "as_of_date": "2025-05-20"}
+{"id": "uqchk~1127", "question": "hôm qua ai là 3 khách sộp nhất?", "business_id": "biz_120", "as_of_date": "2026-06-12"}
+{"id": "uqchk~1129", "question": "tuần vừa rồi có mấy đơn bán cho khách lẻ so với tổng đơn?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1131", "question": "tính tiền sáng hôm nay (từ 6h đến 1h) nha chủ", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1133", "question": "Tuần trước doanh thu nhóm thực phẩm là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1135", "question": "Tuần trước có bao nhiêu tiền từ khách gọi điện?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1137", "question": "Năm ngoái quý 2 thu nhập bình quân mỗi đơn ra sao?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1139", "question": "tuong lai doanh thu don hang cua hang trong nam 2025", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1141", "question": "khi nào shop thu tiền được nhiều nhất trong quý 2 vừa rồi?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1143", "question": "Bao nhiêu tiền nhập kho trong tuần vừa qua?", "business_id": "biz_108", "as_of_date": "2025-06-23"}
+{"id": "uqchk~1145", "question": "tuong lai tuan nay doanh thu khoi dien thoai", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1147", "question": "tuần này tỷ lệ khách thân thiết có cao không?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1149", "question": "Tổng doanh thu thuần của tháng 5 năm nay là bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1151", "question": "thang 6/2025 doanh thu thân thiết bao nhiêu", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1153", "question": "tổng doanh thu khách lẻ trong tuần này", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~1155", "question": "tháng 2 năm nay trung bình mỗi đơn bán được bao nhiêu tiền?", "business_id": "biz_112", "as_of_date": "2026-03-21"}
+{"id": "uqchk~1157", "question": "doanh thu mon rau trong tuan nay la bao nhieu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1159", "question": "tháng 9 năm nay có bao nhiêu đơn trên 2 triệu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1161", "question": "Doanh thu sáng hôm qua là bao nhiêu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1163", "question": "tuần này có bao nhiêu đơn hiệu lực?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1165", "question": "quý 3 năm ngoái nhóm thực phẩm đóng góp mấy %?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1167", "question": "tỷ trọng khai vị tháng 1 năm nay là bao nhiêu", "business_id": "biz_128", "as_of_date": "2026-01-25"}
+{"id": "uqchk~1169", "question": "ngày thu trong tuần này là mấy?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1171", "question": "ngày nào shop thu nhiều tiền nhất trong tuần này", "business_id": "biz_128", "as_of_date": "2025-06-07"}
+{"id": "uqchk~1173", "question": "tuần này có nhiều khách mua trùng nhau không tính tỷ lệ?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~1175", "question": "ngày nào bán chạy nhất tháng 9 năm nay?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~1177", "question": "Hôm qua giao bao nhiêu đơn?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~1179", "question": "ngày nào thu nhập cao nhất trong quý 1 năm nay?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~1181", "question": "Tháng 9/2026 tỷ lệ huỷ đơn bao nhiêu?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~1183", "question": "Tháng 8 năm nay tỷ lệ đơn đang giao là bao nhiêu %?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~1185", "question": "Doanh thu giao hàng tháng 5/2026 là bao nhiêu?", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~1187", "question": "tỷ lệ đơn phí giao nhỏ tháng 5/2025", "business_id": "biz_117", "as_of_date": "2026-05-20"}
+{"id": "uqchk~1189", "question": "Tháng 1 năm nay đơn nào bán đắt nhất?", "business_id": "biz_125", "as_of_date": "2026-01-18"}
+{"id": "uqchk~1191", "question": "tính từ đầu tháng 5/2025 đến hết tháng 6/2025 top 5 hàng bán chạy nhất thu về bao nhiêu tiền?", "business_id": "biz_102", "as_of_date": "2026-06-16"}
+{"id": "uqchk~1193", "question": "tần suất giao hàng nhân viên tháng 10/2025", "business_id": "biz_118", "as_of_date": "2025-10-08"}
+{"id": "uqchk~1195", "question": "tỷ lệ khách mới tháng 9/2026 ra sao?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~1197", "question": "Tháng 9 nay tỷ lệ khách ghi nợ thành công bao nhiêu %?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~1199", "question": "Tổng doanh thu khách có SĐT tháng 9 năm nay là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~1201", "question": "Tuần này có bao nhiêu % khách mua trên 2 đơn?", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~1203", "question": "Tuần trước có bao nhiêu đơn khách đóng tiền trước?", "business_id": "biz_110", "as_of_date": "2025-11-20"}
+{"id": "uqchk~1205", "question": "xem tỷ lệ đơn lớn trên tháng 1 năm nay đi", "business_id": "biz_126", "as_of_date": "2026-01-12"}
+{"id": "uqchk~1207", "question": "tuần trước tổng tiền trả hàng của từng khách ra sao?", "business_id": "biz_103", "as_of_date": "2026-06-21"}
+{"id": "uqchk~1209", "question": "tuần này doanh thu mặt hàng nhập từ NCC002 ra sao", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~1211", "question": "tỷ lệ khách quay lại tháng 8/2025 là bao nhiêu", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1213", "question": "Doanh thu chuyển khoản tuần qua là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1215", "question": "Tổng tiền bán qua điện thoại tháng 8 năm nay là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1217", "question": "Tổng doanh thu khách sỉ thuần của tuần này là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1219", "question": "tháng 5/2026 doanh thu sản phẩm tiêu hao lớn là bao nhiêu?", "business_id": "biz_115", "as_of_date": "2026-05-11"}
+{"id": "uqchk~1221", "question": "Tháng 5 năm nay doanh thu vật liệu xây dựng là bao nhiêu?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~1223", "question": "doanh thu mon nao co dau trong tuan nay la bao nhieu", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~1225", "question": "Tổng doanh thu kênh Zalo tháng 5 năm nay là bao nhiêu?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1227", "question": "tong doanh thu cao dien thang 5/2025 la bao nhieu", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1229", "question": "Tháng 5 nay, khách thân thiết nào kiếm được nhiều tiền nhất?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1231", "question": "Doanh thu món nào cao nhất trong tuần qua?", "business_id": "biz_112", "as_of_date": "2025-08-23"}
+{"id": "uqchk~1233", "question": "tháng 8 năm 2025 shop kiếm được bao nhiêu tiền?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~1235", "question": "doanh thu quy 1 nam 2026 la bao nhieu?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~1237", "question": "Tỷ lệ khách thân thiết tháng 9 năm nay là bao nhiêu?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1239", "question": "tỷ lệ đơn giảm giá trong tuần này như thế nào?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1241", "question": "Tháng 9/2026 món kho thịt bán được bao nhiêu tiền?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1243", "question": "Tuần trước có bao nhiêu đơn hiệu lực?", "business_id": "biz_112", "as_of_date": "2025-07-29"}
+{"id": "uqchk~1245", "question": "tháng 5/2025 chiều có bán được mấy đơn không?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1247", "question": "Tuần này (thứ 2 đến chủ nhật) có mấy đơn?", "business_id": "biz_110", "as_of_date": "2025-11-20"}
+{"id": "uqchk~1249", "question": "Tổng tiền bán hàng hôm qua không tính hủy?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~1251", "question": "hom qua thuoc povidon iod ban duoc bao nhieu tien", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~1253", "question": "Cho biết doanh thu của tuần vừa qua nha boss", "business_id": "biz_122", "as_of_date": "2026-07-17"}
+{"id": "uqchk~1255", "question": "tổng doanh thu trà sữa từ đầu năm đến hôm nay là bao nhiêu?", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~1257", "question": "tổng doanh thu tháng 6 năm nay đến giờ", "business_id": "biz_116", "as_of_date": "2026-06-09"}
+{"id": "uqchk~1259", "question": "doanh thu tuần này tính từ thứ 2 đến hôm nay?", "business_id": "biz_112", "as_of_date": "2026-07-31"}
+{"id": "uqchk~1261", "question": "thuốc loratadin hôm qua bán được bao nhiêu tiền?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1263", "question": "Tháng 5 năm nay tồn kho thực tế tính ra được bao nhiêu lạng?", "business_id": "biz_104", "as_of_date": "2026-05-20"}
+{"id": "uqchk~1265", "question": "Tuần trước bán được bao nhiêu?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~1267", "question": "Tuần qua bán được mấy đơn?", "business_id": "biz_113", "as_of_date": "2025-10-25"}
+{"id": "uqchk~1269", "question": "tuần vừa qua bán được mấy món?", "business_id": "biz_122", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1271", "question": "tháng 8 năm nay bán bao nhiêu kg?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~1273", "question": "Tuần qua shop xịn được mấy lạng hàng?", "business_id": "biz_115", "as_of_date": "2026-03-01"}
+{"id": "uqchk~1275", "question": "hôm qua bán ra mấy đĩa cafe", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1277", "question": "Tuần vừa qua bán chạy nhất là sản phẩm nào?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~1279", "question": "tuần qua món gì bán chạy nhất?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~1281", "question": "tỷ lệ hủy hôm qua cao không?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~1283", "question": "hôm qua có bao nhiêu đơn bị huỷ so với tổng?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1285", "question": "tỷ lệ huỷ tuần này thế nào?", "business_id": "biz_128", "as_of_date": "2026-09-07"}
+{"id": "uqchk~1287", "question": "tu ngay 1 den ngay 10 thang 5 nam nay co hang nao bi tu chet", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~1289", "question": "còn lại bao nhiêu tiền bình quân mỗi ngày cho tuần này?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~1291", "question": "tuần này tỷ lệ hủy ra sao?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~1293", "question": "hôm qua shop hủy bao nhiêu đơn so với tổng đơn hợp lệ?", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~1295", "question": "Gỡ xem tỷ lệ hủy tháng 6 năm nay có bao nhiêu %?", "business_id": "biz_119", "as_of_date": "2026-07-13"}
+{"id": "uqchk~1297", "question": "Tháng 8 này thu được nhiều nhất vào ngày gì?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~1299", "question": "trong tháng 8 năm nay ngày nào shop bán được nhiều nhất?", "business_id": "biz_101", "as_of_date": "2026-08-24"}
+{"id": "uqchk~1301", "question": "Ngày đỉnh doanh thu của tháng 8 năm nay là ngày mấy?", "business_id": "biz_113", "as_of_date": "2026-08-09"}
+{"id": "uqchk~1303", "question": "trong tuần này ngày nào bán chạy nhất?", "business_id": "biz_121", "as_of_date": "2026-09-20"}
+{"id": "uqchk~1305", "question": "Quý 3 năm nay khách vip là ai", "business_id": "biz_118", "as_of_date": "2026-08-09"}
+{"id": "uqchk~1307", "question": "Quý 1 năm nay ai vip?", "business_id": "biz_103", "as_of_date": "2026-07-09"}
+{"id": "uqchk~1309", "question": "Quý 4 năm ngoái khách VIP nào mua nhiều tiền nhất?", "business_id": "biz_121", "as_of_date": "2026-03-03"}
+{"id": "uqchk~1311", "question": "Tháng 5 năm nay tỷ lệ đơn có size M là bao nhiêu?", "business_id": "biz_111", "as_of_date": "2026-08-19"}
+{"id": "uqchk~1313", "question": "Tổng ly size M bán được trong tuần vừa rồi là bao nhiêu?", "business_id": "biz_104", "as_of_date": "2026-06-02"}
+{"id": "uqchk~1315", "question": "tổng nhập hàng tháng 8/2025 là bao nhiêu tiền", "business_id": "biz_106", "as_of_date": "2026-09-14"}
+{"id": "uqchk~1317", "question": "Tháng 5 nay thu hồi nợ bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1319", "question": "tháng 5/2026 tiền thu hồi nợ bao nhiêu?", "business_id": "biz_124", "as_of_date": "2026-05-25"}
+{"id": "uqchk~1321", "question": "Tổng doanh thu kê đơn của tuần này là bao nhiêu?", "business_id": "biz_121", "as_of_date": "2025-11-26"}
+{"id": "uqchk~1323", "question": "nhóm thực phẩm chiếm bao nhiêu % doanh thu tuần này", "business_id": "biz_115", "as_of_date": "2026-05-16"}
+{"id": "uqchk~1325", "question": "Tháng 5 năm nay, hải sản bán được bao nhiêu % tổng doanh thu?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~1327", "question": "Tháng 9/2026 nhóm điện bán được bao nhiêu % doanh thu?", "business_id": "biz_118", "as_of_date": "2026-09-10"}
+{"id": "uqchk~1329", "question": "tỷ trọng nhóm nước uống tháng 8/2025 là bao nhiêu phần trăm?", "business_id": "biz_129", "as_of_date": "2026-08-14"}
+{"id": "uqchk~1331", "question": "tỉ trọng nhóm thực phẩm tháng 9 năm nay là bao nhiêu?", "business_id": "biz_116", "as_of_date": "2026-09-03"}
+{"id": "uqchk~1333", "question": "quy 1 nam 2025 gia nhap trung binh theo thung ra sao?", "business_id": "biz_108", "as_of_date": "2026-05-29"}
+{"id": "uqchk~1335", "question": "ty 2026 co nhieu san pham da dang nhu the nao", "business_id": "biz_112", "as_of_date": "2026-07-31"}

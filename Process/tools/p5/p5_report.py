@@ -32,7 +32,7 @@ def main():
     D = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "Process/runs/p5")
     rows = []
     for f in sorted(glob.glob(f"{D}/*/*_out/results/*/*/submission.jsonl")):
-        if "/judge/" in f: continue
+        if "/judge/" in f or "probe_tr" in f: continue
         cfgd = os.path.dirname(f); run = f.split("/results/")[1].split("/")[0]; cfg = os.path.basename(cfgd)
         c = sc(f); e = os.path.join(cfgd, "judge", "ensemble", "submission.jsonl"); ens = sc(e) if os.path.isfile(e) else None
         res = json.load(open(os.path.join(cfgd, "result.json"))) if os.path.isfile(os.path.join(cfgd, "result.json")) else {}

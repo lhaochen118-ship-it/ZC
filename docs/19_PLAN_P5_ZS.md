@@ -55,3 +55,8 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 09:31 **H01 dữ liệu xong** (bichthuy93, 31 phút; 1000 câu train trong 800 s trên 4×L4): B00-S trên `tr_dev1k` PA **0.955** (971 / 16 / 13; DN train
   có hàm toolkit riêng nên dễ hơn public chế độ H). Phát lại K: K1 0.917, K2 0.922, K4 0.923, K thích nghi (chạy) 0.955. 1,127 mục probe
   (12 % sai). Lưu `Process/runs/p5_results/h01tr/`.
+- 10:00 **L02 α = 1.0** (V3A × 1.0 + WL1 + WJR1, chế độ H): container **0.827** (894 / 67 / 39), pub_noind 0.949; 74 phút, util 39 %.
+  So α 0.70: 0.860 container / 0.863 ensemble → α 1.0 kém hơn (lặp lại kết quả WiSE-FT trước: 0.70 tốt hơn trọng số đầy đủ).
+- 10:15 saliency P02/P03 xong (namhunhh, 2015 s; 1.14M token, REAP đủ (tính lại đầu ra expert), util GPU ~10 % vì device_map tuần tự);
+  keep-list trùng REAP-64 cộng đồng 0.66 (E64) → 0.80 (E92). Cắt E92: 15.96 GB, 14.459B. E88 lần 1 lỗi STALE CODE (2 lần đẩy song song cùng
+  acc ghi đè phiên bản code dataset) → đẩy lại.

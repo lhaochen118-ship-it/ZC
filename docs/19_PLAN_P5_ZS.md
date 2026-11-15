@@ -116,3 +116,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   N7-A (bỏ nhóm có chứng chỉ đơn vị sai) 0.738 / 0.739 (z −2.5 / −2.8; Qwen gốc đặt tên đơn vị không nhất quán: 60 % chứng chỉ bị cờ);
   N3-A (phản ví dụ mẫu con + Qwen chọn) 0.722 / 0.726 (z −3.0 / −2.7); N6-A vote (thêm đáp án DuckDB của Qwen) 0.751 / 0.752 (z −0.4 / −0.7),
   N6-A agree 0.745 / 0.729. → **cả 3 loại** trên cả 2 seed; các nhánh sâu N7-B / N3-B / N6-B đóng theo cổng.
+- 16:30 **C4** (MoE zero-shot + industry, phán xử 5400 s, không T01): xem bảng; so C3 (có T01).

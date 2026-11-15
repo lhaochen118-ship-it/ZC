@@ -1,17 +1,19 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-15 04:30 UTC. **TẠM DỪNG theo user (15/11 04:00)**: các kernel đang chạy được để chạy xong, **không khởi tạo tiến trình mới**
-cho tới khi khung chat mới nhận việc. Routine mỗi giờ đã tắt. Đóng băng container **16/11 04:00 UTC**. Đọc `READING_GUIDE.md` → PDF 3
-(`handoff/03_HANDOFF.pdf`) cho việc tiếp theo; kết quả: PDF 1 §9; lỗi + cách tránh: PDF 2 §10.*
+*Cập nhật 2026-11-15 05:20 UTC. **User 15/11 04:20: đổi ý — không đổi khung chat, chạy tiếp tất cả, không tiếc GPU / token, nhiều ý tưởng +
+nhiều biến thể song song, đẩy score sát 1.** Routine mỗi giờ bật lại. Đóng băng 16/11 04:00 UTC. +2 acc (nguyenmanh0404, hai1108; 21 acc).*
 
-**Cấu hình nộp hiện tại:** `configs/flow_v2_final.json` (= `flow_p5_final_h`, chế độ H) — public **0.863 ensemble / 0.860 container**
-(H0a; H0a2 0.863 / 0.859). 14 biến thể v2 đã đo đều ≤ mốc (`Process/scores_v2.csv`, `handoff/06_PUBLIC_GRID.md` §5).
+**Mốc:** `configs/flow_v2_final.json` (= `flow_p5_final_h`, chế độ H) public 0.863 ensemble / 0.860 container (H0a). **Đã sửa lỗi gộp container**
+(`merge_sub first_decides`): từ các lần chạy 05:00 trở đi container = ensemble. Kết quả lưới: `handoff/06_PUBLIC_GRID.md` §5–§7.
 
-**Việc số 1 cho khung mới:** sửa lỗi gộp container (`merge_sub.read` bỏ abstain của phán xử → container thấp hơn phán xử 0.003–0.013; PDF 3 §5).
+**Ý tưởng mới (15/11 04:30–05:15, đều là năng lực mô hình, không luật viết tay):**
+I2 `units_code` (S thấy mã hàm) · I3 `unit_examples` (ví dụ tự sinh của chính cửa hàng) · I4 `units_multi` (1–3 hàm / dòng rulebook; I4b thêm
+hướng dẫn đại lượng tại một ngày, tham số lọc) · I5 `units_qctx` (bộ viết hàm thấy câu hỏi thật dùng thuật ngữ) · I6 `unit_verify` (S tự giải câu
+tự sinh không có hàm; hàm bị S phủ định thì bỏ) · budget forcing cho bộ viết hàm có suy nghĩ · S″-A / S″-A′ (data augmentation).
 
-**Đang chạy lúc bàn giao** (kernel id: `Process/kaggle/kernels_v2.csv`): phu16 (`caotienminh1`), phnou (`mucnokieu`), s3a huấn luyện S″-A
-(`duylnng`), uqchka/b (`lelynhan`), pwtbw1r (`huyenco`), pbase (`anderson1202`), pwtbv2 (`phuongnehe`). Đã chuẩn bị chưa đẩy: `plan_phut`,
-`plan_s3f` (sau `uq_filter`), `plan_es3ar` (sau s3a). Docker: `nhatlong1103/zc-w-v2` (WL1, WJR1) đã đăng + kiểm sha256.
+**Đang chạy (27 kernel):** pfix, pfix2 (mốc đã sửa gộp), phcode, phux, phux2, phux2n, phux1c, phmu, phqc, phmq, phmqx, phuv, phuvx, phmquv,
+phqcuv, pwv2uv, pwv2x, phquvx, phmqc, phall, phmq2, phmq2uv, phmq2x, phmq2t, phut, s3a, s3f; tự đẩy es3ar / es3fr khi s3a / s3f xong
+(`after_done.sh`). Kernel id: `$S/runs/<run>/zc-<run>-1.log` → `Process/kaggle/kernels_v2.csv` khi lưu.
 
 ## Tiến độ v2 (lịch sử, 14/11 17:05 → 15/11 03:40)
 | Bước | Acc / kernel | Trạng thái | Kết quả |

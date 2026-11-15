@@ -129,3 +129,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   k > 16 cho bản tuned. Phân tích offline: gộp 2 seed (≈ k ×2) chỉ +0.005 (P02: 0.786; B00: 0.759) dù oracle 942–946 / 1000 → nút thắt là
   **chọn ứng viên**, đúng PDF 1 §8 → ưu tiên phán xử có huấn luyện (MJ1 / MJ2) cho backbone MoE.
 - 17:00 Chạy lại các lượt bị lỗi template (đường dẫn không có 'qwen3', code sau 09:05): C0 → C0L, C1 → C1L (đã đẩy), **C2 → C2L** (nguyenmanh0404), **E1 / E2 → E1L / E2L** (think mặc định như code cũ; caohuyen74, tự đẩy khi E1 / E2 xong). Không bị ảnh hưởng: B00, P02, C3 / C4, E3–E6 (đường dẫn có 'qwen3'), S01, V01 / V02, Q01, L02 (đẩy trước khi sửa).
+- 17:25 **E1** (MoE E88 + LoRA MS1 4M token, framework 0.952 có industry, mẫu direct không suy nghĩ) = **0.857** ≈ C4 (zero-shot, 0.861) → MS1 chưa giúp ở chế độ không suy nghĩ; chờ E1L (suy nghĩ như code cũ) và E3 (đủ 3 LoRA).

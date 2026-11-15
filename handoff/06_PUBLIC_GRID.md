@@ -65,3 +65,8 @@ chính lần chạy, không tốn GPU.
 ## 5. Nhật ký
 
 *(ghi kết quả từng lần chạy: điểm `pub_full_H`, ghép cặp với mốc, chính sách phán xử tốt nhất)*
+| Lần chạy | Cấu hình | pub_full_H (ensemble) | point_think riêng | Ghi chú |
+|---|---|---|---|---|
+| H0a / H0a2 | mốc `flow_p5_final_h` | **0.863 / 0.863** | 0.868 / 0.858 | |
+| F1 | + API extra | 0.847 | — | loại |
+| es2s2p | S′ seed 2 (W = S′) | 0.856 | 0.848 | −0.007 so mốc |

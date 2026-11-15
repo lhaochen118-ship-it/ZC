@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "nguynduylm",
+  "name": "es2s2p",
+  "jobs": "automation/jobs/es2s2p.jobs",
+  "est_h": 2.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets,nguynduylm/zc-s2s2-1",
+   "--ds",
+   "nguynduylm/zc-ad2,nguynduylm/zc-para",
+   "--no-preflight"
+  ]
+ }
+]

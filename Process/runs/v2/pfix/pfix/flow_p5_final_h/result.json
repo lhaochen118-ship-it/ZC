@@ -1,0 +1,13 @@
+{
+ "adapters": {
+  "V3A": "/kaggle/input/datasets/loinguyentran/zc-ad2/V3A/adapter"
+ },
+ "weights": [
+  0.7
+ ],
+ "merge_rc": 0,
+ "merge_s": 84,
+ "config": "configs/flow_p5_final_h.json",
+ "eval_rc": 0,
+ "eval_s": 5406
+}

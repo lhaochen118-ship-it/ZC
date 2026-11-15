@@ -1,0 +1,120 @@
+Truncating train dataset (num_proc=1):  89%|████████▉ | 2497/2809 [00:11<00:01, 301.48 examples/s]
+Truncating train dataset (num_proc=1):  90%|█████████ | 2529/2809 [00:11<00:00, 304.11 examples/s]
+Truncating train dataset (num_proc=1):  92%|█████████▏| 2575/2809 [00:11<00:00, 303.00 examples/s]
+Truncating train dataset (num_proc=1):  93%|█████████▎| 2607/2809 [00:11<00:00, 305.49 examples/s]
+Truncating train dataset (num_proc=1):  94%|█████████▍| 2640/2809 [00:11<00:00, 308.47 examples/s]
+Truncating train dataset (num_proc=1):  95%|█████████▌| 2674/2809 [00:11<00:00, 313.95 examples/s]
+Truncating train dataset (num_proc=1):  97%|█████████▋| 2721/2809 [00:11<00:00, 311.59 examples/s]
+Truncating train dataset (num_proc=1):  98%|█████████▊| 2754/2809 [00:11<00:00, 313.56 examples/s]
+Truncating train dataset (num_proc=1):  99%|█████████▉| 2788/2809 [00:11<00:00, 316.56 examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:15<00:00, 181.48 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/2809 [00:00<?, ? examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:15<00:00, 180.21 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/2809 [00:00<?, ? examples/s]
+Truncating train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:15<00:00, 180.21 examples/s]
+
+Dropping fully masked examples from train dataset (num_proc=1):   0%|          | 0/2809 [00:00<?, ? examples/s]
+Dropping fully masked examples from train dataset (num_proc=1):  36%|███▌      | 1000/2809 [00:04<00:08, 218.44 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1):  36%|███▌      | 1000/2809 [00:04<00:08, 216.71 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1):  36%|███▌      | 1000/2809 [00:04<00:08, 218.14 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1):  71%|███████   | 2000/2809 [00:07<00:03, 265.66 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1):  71%|███████   | 2000/2809 [00:07<00:03, 264.61 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1):  71%|███████   | 2000/2809 [00:07<00:03, 263.50 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:10<00:00, 283.31 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:10<00:00, 267.23 examples/s]
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:10<00:00, 280.40 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:10<00:00, 264.75 examples/s]
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:10<00:00, 278.81 examples/s]
+Dropping fully masked examples from train dataset (num_proc=1): 100%|██████████| 2809/2809 [00:10<00:00, 264.00 examples/s]
+[transformers] The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'eos_token_id': 248046}.
+
+  0%|          | 0/44 [00:00<?, ?it/s]/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+/usr/local/lib/python3.13/dist-packages/torch/distributed/c10d_logger.py:83: FutureWarning: `torch.distributed.all_gather_into_tensor` is deprecated. Please use `torch.distributed.all_gather_single` instead.
+  return func(*args, **kwargs)
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+
+  2%|▏         | 1/44 [03:54<2:47:58, 234.38s/it]
+  5%|▍         | 2/44 [06:12<2:04:23, 177.71s/it]
+  7%|▋         | 3/44 [08:36<1:51:02, 162.50s/it]
+  9%|▉         | 4/44 [11:00<1:43:17, 154.94s/it]
+ 11%|█▏        | 5/44 [13:13<1:35:35, 147.07s/it]
+ 14%|█▎        | 6/44 [15:36<1:32:23, 145.89s/it]
+ 16%|█▌        | 7/44 [18:18<1:33:07, 151.02s/it]
+ 18%|█▊        | 8/44 [20:42<1:29:11, 148.64s/it]
+ 20%|██        | 9/44 [23:06<1:26:01, 147.47s/it]
+ 23%|██▎       | 10/44 [25:23<1:21:42, 144.19s/it][sft] step 10 {'loss': 0.028224319219589233, 'grad_norm': 0.1127689853310585, 'learning_rate': 9.16998908944939e-05, 'entropy': 0.0293975830078125, 'mean_token_accuracy': 0.992078822106123, 'num_tokens': 2411699.0, 'epoch': 0.22727272727272727}
+
+                                                  
+{'loss': '0.02822', 'grad_norm': '0.1128', 'learning_rate': '9.17e-05', 'entropy': '0.0294', 'mean_token_accuracy': '0.9921', 'num_tokens': '2.412e+06', 'epoch': '0.2273'}
+
+ 23%|██▎       | 10/44 [25:23<1:21:42, 144.19s/it]
+ 25%|██▌       | 11/44 [27:36<1:17:22, 140.68s/it]
+ 27%|██▋       | 12/44 [29:55<1:14:42, 140.09s/it]
+ 30%|██▉       | 13/44 [32:19<1:13:06, 141.50s/it]
+ 32%|███▏      | 14/44 [34:38<1:10:18, 140.61s/it]
+ 34%|███▍      | 15/44 [37:02<1:08:27, 141.63s/it]
+ 36%|███▋      | 16/44 [39:23<1:06:02, 141.52s/it]
+ 39%|███▊      | 17/44 [41:35<1:02:20, 138.55s/it]
+ 41%|████      | 18/44 [43:54<1:00:03, 138.59s/it]
+ 43%|████▎     | 19/44 [46:13<57:51, 138.86s/it]  
+ 45%|████▌     | 20/44 [48:38<56:15, 140.63s/it][sft] step 20 {'loss': 0.025878655910491943, 'grad_norm': 0.06886564195156097, 'learning_rate': 6.264666911958404e-05, 'entropy': 0.026196670532226563, 'mean_token_accuracy': 0.9920754991471767, 'num_tokens': 4806571.0, 'epoch': 0.45454545454545453}
+
+                                                
+{'loss': '0.02588', 'grad_norm': '0.06887', 'learning_rate': '6.265e-05', 'entropy': '0.0262', 'mean_token_accuracy': '0.9921', 'num_tokens': '4.807e+06', 'epoch': '0.4545'}
+
+ 45%|████▌     | 20/44 [48:38<56:15, 140.63s/it]
+ 48%|████▊     | 21/44 [50:58<53:51, 140.48s/it]
+ 50%|█████     | 22/44 [53:22<51:55, 141.60s/it]
+ 52%|█████▏    | 23/44 [55:44<49:32, 141.53s/it]
+ 55%|█████▍    | 24/44 [58:04<47:05, 141.25s/it]
+ 57%|█████▋    | 25/44 [1:00:22<44:22, 140.14s/it]
+ 59%|█████▉    | 26/44 [1:02:45<42:21, 141.20s/it]
+ 61%|██████▏   | 27/44 [1:05:07<40:00, 141.18s/it]
+ 64%|██████▎   | 28/44 [1:07:31<37:55, 142.22s/it]
+ 66%|██████▌   | 29/44 [1:09:49<35:15, 141.05s/it]
+ 68%|██████▊   | 30/44 [1:12:13<33:07, 141.93s/it][sft] step 30 {'loss': 0.02196357250213623, 'grad_norm': 0.05544520169496536, 'learning_rate': 2.7137883834768073e-05, 'entropy': 0.02412261962890625, 'mean_token_accuracy': 0.9930715903639793, 'num_tokens': 7237105.0, 'epoch': 0.6818181818181818}
+
+                                                  
+{'loss': '0.02196', 'grad_norm': '0.05545', 'learning_rate': '2.714e-05', 'entropy': '0.02412', 'mean_token_accuracy': '0.9931', 'num_tokens': '7.237e+06', 'epoch': '0.6818'}
+
+ 68%|██████▊   | 30/44 [1:12:13<33:07, 141.93s/it]
+ 70%|███████   | 31/44 [1:14:35<30:42, 141.73s/it]
+ 73%|███████▎  | 32/44 [1:16:51<28:02, 140.22s/it]
+ 75%|███████▌  | 33/44 [1:19:14<25:50, 140.98s/it]
+ 77%|███████▋  | 34/44 [1:21:37<23:36, 141.67s/it]
+ 80%|███████▉  | 35/44 [1:23:55<21:04, 140.45s/it]
+ 82%|████████▏ | 36/44 [1:26:17<18:47, 140.90s/it]
+ 84%|████████▍ | 37/44 [1:28:37<16:24, 140.71s/it]
+ 86%|████████▋ | 38/44 [1:31:00<14:07, 141.21s/it]
+ 89%|████████▊ | 39/44 [1:33:13<11:34, 138.91s/it]
+ 91%|█████████ | 40/44 [1:35:33<09:16, 139.19s/it][sft] step 40 {'loss': 0.019429028034210205, 'grad_norm': 0.06888148933649063, 'learning_rate': 3.299194563372604e-06, 'entropy': 0.02239570617675781, 'mean_token_accuracy': 0.9939957790076732, 'num_tokens': 9643306.0, 'epoch': 0.9090909090909091}
+
+                                                  
+{'loss': '0.01943', 'grad_norm': '0.06888', 'learning_rate': '3.299e-06', 'entropy': '0.0224', 'mean_token_accuracy': '0.994', 'num_tokens': '9.643e+06', 'epoch': '0.9091'}
+
+ 91%|█████████ | 40/44 [1:35:33<09:16, 139.19s/it]
+ 93%|█████████▎| 41/44 [1:37:57<07:01, 140.56s/it]
+ 95%|█████████▌| 42/44 [1:40:18<04:41, 140.83s/it]
+ 98%|█████████▊| 43/44 [1:42:42<02:21, 141.62s/it]
+100%|██████████| 44/44 [1:45:03<00:00, 141.66s/it][sft] step 44 {'train_runtime': 6303.9826, 'train_samples_per_second': 0.446, 'train_steps_per_second': 0.007, 'total_flos': 5.4904031528615936e+17, 'train_loss': 0.023731181567365475, 'entropy': 0.023525238037109375, 'mean_token_accuracy': 0.9929993394762278, 'num_tokens': 10429174.0, 'epoch': 1.0}
+
+                                                  
+{'train_runtime': '6304', 'train_samples_per_second': '0.446', 'train_steps_per_second': '0.007', 'train_loss': '0.02373', 'entropy': '0.02353', 'mean_token_accuracy': '0.993', 'num_tokens': '1.043e+07', 'epoch': '1'}
+
+100%|██████████| 44/44 [1:45:03<00:00, 141.66s/it]
+100%|██████████| 44/44 [1:45:03<00:00, 143.27s/it]
+[sft] METRICS {"ok": true, "world": 4, "mb": 2, "ga": 8, "max_len": 5120, "records": 2809, "tokens": 10585983, "steps": 44, "train_s": 6422.4, "tok_per_s": 1707.8, "loss_first": 0.0282, "loss_last": 0.0194, "losses": [0.0282, 0.0259, 0.022, 0.0194], "stopped_early": null, "resumed_from": null, "ref_loss_before": null, "ref_loss_after": null, "peak_mem_gb": 11.42, "lora_modules": 200, "lora_kinds":

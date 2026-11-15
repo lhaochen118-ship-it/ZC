@@ -1,0 +1,40 @@
+{
+ "ok": true,
+ "world": 4,
+ "mb": 2,
+ "ga": 8,
+ "max_len": 5120,
+ "records": 2809,
+ "tokens": 10585983,
+ "steps": 44,
+ "train_s": 6422.4,
+ "tok_per_s": 1707.8,
+ "loss_first": 0.0282,
+ "loss_last": 0.0194,
+ "losses": [
+  0.0282,
+  0.0259,
+  0.022,
+  0.0194
+ ],
+ "stopped_early": null,
+ "resumed_from": null,
+ "ref_loss_before": null,
+ "ref_loss_after": null,
+ "peak_mem_gb": 11.42,
+ "lora_modules": 200,
+ "lora_kinds": [
+  "down_proj",
+  "gate_proj",
+  "in_proj_qkv",
+  "in_proj_z",
+  "k_proj",
+  "o_proj",
+  "out_proj",
+  "q_proj",
+  "up_proj",
+  "v_proj"
+ ],
+ "trainable_m": 80.2,
+ "vision_or_mtp_targeted": false
+}

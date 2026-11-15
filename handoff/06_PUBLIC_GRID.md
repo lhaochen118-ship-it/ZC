@@ -129,3 +129,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | phut | 0.839 container / 0.845 ensemble (904 / 65 / 31; kernel đẩy trước khi sửa gộp) | S viết hàm có suy nghĩ + budget forcing: 18 hàm, sai tăng 46 → 65, ghép cặp −0.024 (z −2.3) → **đóng hướng** |
 | phmq2t | ngắt 06:53 | cùng bộ viết hàm có suy nghĩ (I4 + I5 + think) → ngắt theo kết quả phut |
 | phmq | 0.859 (905 / 46 / 49) | I4 (1–3 hàm / dòng) + I5 (câu thật của cửa hàng): 28 hàm (mốc 14–16), pub_ind 0.617 (mốc 0.595–0.606) nhưng tổng = mốc (z −0.5) |
+| phmqx | 0.840 (890 / 50 / 60) | I4 + I5 + I3 (2): **nhiễu bởi sự cố** — 1 / 4 shard viết hàm thoát rc 1 (log chỉ giữ đuôi, không thấy traceback) → 15 hàm (phmq cùng cấu hình bộ viết: 28), mất toàn bộ hàm dev_011, dev_012 còn 5 / 11; ghép cặp −0.023 (z −2.5) không quy được cho I3; 17 ví dụ / 4 cửa hàng |

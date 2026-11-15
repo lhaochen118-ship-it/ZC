@@ -31,3 +31,6 @@ training/data/out/*/
 !Process/
 !Process/runs/
 !Process/runs/**
+
+# P5 zero-shot plan: live Kaggle working dirs (kernel dirs, runner logs, raw outputs); scored results are archived to Process/runs/p5_results/
+Process/runs/p5/

@@ -89,3 +89,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | phu16 | S viết hàm, 16 mẫu, giữ khi ≥ 3 mẫu cùng kết quả | caotienminh1 | thêm mẫu → nhiều dòng đạt đồng thuận hơn, hàm chọn theo đa số đáng tin hơn |
 | phut | S viết hàm có suy nghĩ (7,168 token) + **budget forcing** (đóng `</think>` ở trần rồi giải mã JSON có ràng buộc) | caotienminh1 | đọc kỹ định nghĩa nhiều điều kiện (vd. tỉ lệ bảo hành = lượt / số máy bán, bỏ đơn huỷ / trả) |
 | phnou | không hàm (đối chứng) | mucnokieu | đo phần đóng góp của hàm do S viết |
+| phk24 | k_max 24 (W = S, 12 hàm) | 0.852 | — | 911 đúng / 59 sai / 30 bỏ: thêm mẫu → thêm trả lời sai; pha giải +35 phút (4,927 s vs 2,825 s) → **k24 loại** |

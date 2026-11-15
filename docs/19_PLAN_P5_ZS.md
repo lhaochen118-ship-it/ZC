@@ -60,3 +60,5 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 10:15 saliency P02/P03 xong (namhunhh, 2015 s; 1.14M token, REAP đủ (tính lại đầu ra expert), util GPU ~10 % vì device_map tuần tự);
   keep-list trùng REAP-64 cộng đồng 0.66 (E64) → 0.80 (E92). Cắt E92: 15.96 GB, 14.459B. E88 lần 1 lỗi STALE CODE (2 lần đẩy song song cùng
   acc ghi đè phiên bản code dataset) → đẩy lại.
+- 10:13 **P02 / P03 chạy** (dinhthinh ×2): E88 15.46 GB / 13.955B, E92 15.96 GB / 14.459B tham số (gồm vision; < 15B), cắt từ FP8 chính thức theo
+  keep-list saliency của tác vụ.

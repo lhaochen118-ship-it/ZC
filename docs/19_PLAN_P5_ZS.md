@@ -117,3 +117,9 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   N3-A (phản ví dụ mẫu con + Qwen chọn) 0.722 / 0.726 (z −3.0 / −2.7); N6-A vote (thêm đáp án DuckDB của Qwen) 0.751 / 0.752 (z −0.4 / −0.7),
   N6-A agree 0.745 / 0.729. → **cả 3 loại** trên cả 2 seed; các nhánh sâu N7-B / N3-B / N6-B đóng theo cổng.
 - 16:30 **C4** (MoE zero-shot + industry, phán xử 5400 s, không T01): xem bảng; so C3 (có T01).
+- 16:45 **C0 (flow_p5_final trên code hiện tại) = 0.921, không phải 0.952** → tìm ra: template Qwen3.5 **mặc định suy nghĩ** khi không truyền
+  `enable_thinking`; các lượt 0.952 chạy trên thư mục mô hình gộp (đường dẫn không có "qwen3") nên **mọi mẫu, kể cả 'direct', được suy nghĩ**;
+  sửa nhận diện Qwen3 theo `model_type` (15/11 sáng, cho M01) đã tắt việc đó (bỏ phiếu D1 0.943 → C0 0.904). Thêm cờ `think_kw`
+  (`legacy` = hành vi cũ, mặc định; `explicit`; `default` = để template suy nghĩ cho mọi mô hình). Hệ quả: C1 / C2 (−0.047 / −0.039 so 0.952) bị
+  lẫn với lỗi này (so C0 cùng code: −0.016 / −0.008); mọi lượt zero-shot / MoE trước giờ dùng mẫu direct **không suy nghĩ** → có thể bị đánh
+  giá thấp. Đẩy: C0L, C1L (lelynhan; xác nhận sửa), C3T (dinhthinh), P02T (hieuho669), B00T (phuongnehe) với `think_kw default`.

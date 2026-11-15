@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/fts --train --script training/moe_ft_job.py --name MS1 --files v3a_mix.jsonl --r 32 --alpha 64 --lr 2e-4 --epochs 1 --mb 2 --eff-batch 64 --max-len 4608 --max-tokens 4000000 --seed 61

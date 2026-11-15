@@ -1,0 +1,47 @@
+[
+ {
+  "acc": "caohuyen74",
+  "name": "fts",
+  "jobs": "automation/jobs/p5/fts.jobs",
+  "est_h": 4.0,
+  "args": [
+   "--ms",
+   "guohaoli4/qwen3-6-35b-a3b/transformers/bf16/1",
+   "--ks",
+   "yeshenhi/zc-train-wheels,nhatlong1103/zc-assets",
+   "--train-data",
+   "p5ft",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "caohuyen74",
+  "name": "ftj",
+  "jobs": "automation/jobs/p5/ftj.jobs",
+  "est_h": 3.0,
+  "args": [
+   "--ms",
+   "guohaoli4/qwen3-6-35b-a3b/transformers/bf16/1",
+   "--ks",
+   "yeshenhi/zc-train-wheels,nhatlong1103/zc-assets",
+   "--train-data",
+   "p5ft",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "bichthuy93",
+  "name": "ftl",
+  "jobs": "automation/jobs/p5/ftl.jobs",
+  "est_h": 3.0,
+  "args": [
+   "--ms",
+   "guohaoli4/qwen3-6-35b-a3b/transformers/bf16/1",
+   "--ks",
+   "yeshenhi/zc-train-wheels,nhatlong1103/zc-assets",
+   "--train-data",
+   "p5ft",
+   "--no-preflight"
+  ]
+ }
+]

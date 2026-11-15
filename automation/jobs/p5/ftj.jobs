@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/ftj --train --script training/moe_ft_job.py --name MJ1 --files wj_list_r.jsonl --r 32 --alpha 64 --lr 2e-4 --epochs 2 --mb 2 --eff-batch 32 --max-len 5632 --max-tokens 3000000 --seed 505

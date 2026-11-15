@@ -306,6 +306,16 @@ def free_w_models(work, log):
         if os.path.isdir(d): shutil.rmtree(d, ignore_errors=True); log(f"freed {os.path.basename(d)}")
 
 
+def resolve_model(name):
+    """P5: a W-phase model given by name in the config (a merged checkpoint mounted from a kernel output: <mount>/**/models/<name>/)."""
+    if not name or os.path.isdir(name): return name
+    import glob
+    for pat in (f"/tmp/models/{name}/config.json", f"/kaggle/input/**/models/{name}/config.json"):
+        c = glob.glob(pat, recursive=True)
+        if c: return os.path.dirname(c[0])
+    raise SystemExit(f"model {name} not found (no silent fallback)")
+
+
 def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     """plan 5 W2 (docs/18): with "links_gen": 1 in the config, the model links every question of the split to the rulebook rows it
     uses (src/link.py; inputs only), one shard of the shops per GPU. Returns the --links path, or None (config without it). The
@@ -321,6 +331,7 @@ def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
     if not cards:                                                       # the compiled cards of the config (their toolkit hints)
         refs = os.path.join(HERE, "refs", "lrl")
         cards = ",".join(os.path.join(refs, x) for x in str(c.get("lrl") or "").split(",") if x and "compile" in x and os.path.isfile(os.path.join(refs, x)))
+    if c.get("links_model") and not fake: model = resolve_model(c["links_model"]); log(f"links: model {model}")
     lora = resolve_adapter(c.get("links_lora") or os.environ.get("LINK_LORA") or "")
     if lora and not fake: model, lora = w_model(lora, model, work, log, c.get("w_mode", "merge"))
     base = [sys.executable, os.path.join(HERE, "link.py"), split, out, "--model", model, "--quant", "fp8", "--k", str(int(c.get("links_k", 3) or 3)), "--max-df", str(c.get("links_max_df", 0.0) or 0.0)] + \
@@ -367,7 +378,7 @@ def judge_phase(cfg, a, dirs, units, log, t0, links=None):
     left = a.budget - (time.time() - t0); lim = min(float(c.get("judge_max_s", 1800) or 1800), left - 300)
     if lim < 300: log(f"judge: skipped ({left:.0f}s left)"); return None
     out = os.path.join(a.work, "judge"); os.makedirs(out, exist_ok=True)
-    wm = c.get("judge_model") or os.environ.get("W_MODEL") or a.model
+    wm = (resolve_model(c["judge_model"]) if c.get("judge_model") and not a.fake_responder else None) or os.environ.get("W_MODEL") or a.model
     lora = resolve_adapter(c.get("judge_lora") or os.environ.get("W_LORA") or "")
     if lora and not a.fake_responder: wm, lora = w_model(lora, wm, a.work, log, c.get("w_mode", "merge"))
     mode = c.get("judge_mode", "list")

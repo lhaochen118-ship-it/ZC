@@ -141,3 +141,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   → mọi tổ hợp tiếp theo: sửa lỗi + suy nghĩ: P02xFT / C3FT (caotienminh1, sau khi cắt E88), E3FT / E4FT (bichthuy93). Quota là ràng buộc:
   namhunhh 5.3 h (từ chối), caotienminh1 18.6 h, duckzuykobip 15.2 h; mxuanquy 30 h nhưng chưa accept rules (không có GPU).
 - 21:00 **P02T** (P02 chế độ H + T01 + phán xử 5400 s + suy nghĩ; vẫn thiếu hàm do lỗi lrl_gen): xem bảng.
+- 21:40 **E3FT** (MoE + MS1 / ML1 / MJ1 + industry + suy nghĩ + sửa lỗi: 15 hàm, bind OK) = **0.871** < E1L (MoE + MS1, suy nghĩ, chưa sửa) 0.891 < C3T (zero-shot + T01 + suy nghĩ) 0.902 → LoRA W (ML1 / MJ1 học trên E88 gốc) chưa giúp; chờ C3FT để tách tác dụng của hàm / thẻ.

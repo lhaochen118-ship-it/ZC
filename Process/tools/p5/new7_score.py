@@ -69,7 +69,7 @@ def main():
             if not t: continue
             cert = jparse(t[0]); st["n7a_cert"] += 1
             if not isinstance(cert, dict): st["n7a_unparsed"] += 1; continue
-            ok = nd.validate_certificate(cert).ok if all(k in cert for k in ("variables", "expression", "result_unit")) else False
+            ok = nd.validate_certificate(cert).valid if all(k in cert for k in ("variables", "expression", "result_unit")) else False
             try: same = nd.parse_dimension(str(cert.get("question_unit", ""))) == nd.parse_dimension(str(cert.get("result_unit", "")))
             except Exception: same = False
             if not ok or not same: bad.add(c); st["n7a_flag"] += 1

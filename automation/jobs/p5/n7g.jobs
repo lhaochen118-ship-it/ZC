@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/n7g --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters NONE --runner script --script new7_gen.py --script-args=--items,p5n7g/all_b00.jsonl --script-shards 4

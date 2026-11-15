@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "huyenco",
+  "name": "phmquv",
+  "jobs": "automation/jobs/phmquv.jobs",
+  "est_h": 2.7,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huyenco/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "huyenco",
+  "name": "phqcuv",
+  "jobs": "automation/jobs/phqcuv.jobs",
+  "est_h": 2.7,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huyenco/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

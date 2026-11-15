@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "nhatlong1103",
+  "name": "phuv",
+  "jobs": "automation/jobs/phuv.jobs",
+  "est_h": 2.7,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "nhatlong1103/zc-ad2",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "nhatlong1103",
+  "name": "phuvx",
+  "jobs": "automation/jobs/phuvx.jobs",
+  "est_h": 2.7,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "nhatlong1103/zc-ad2",
+   "--no-preflight"
+  ]
+ }
+]

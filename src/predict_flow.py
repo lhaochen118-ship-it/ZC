@@ -134,7 +134,7 @@ def prepare_unit_examples(cfg, split, work, model, log, units_path, fake="", cac
     if not cfg or not units_path: return None
     c = json.load(open(cfg, encoding="utf-8"))
     n = int(c.get("unit_examples", 0) or 0)
-    if n <= 0: return None
+    if n <= 0 and not int(c.get("unit_verify", 0) or 0): return None   # (I6 needs the questions even without I3)
     out = os.path.join(work, "unitq"); os.makedirs(out, exist_ok=True); t = time.time()
     base = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unitq", "--quant", "fp8", "--rows", units_path,
             "--samples", str(int(c.get("unit_examples_per_unit", 3) or 3)), "--seed", "4242"] + (["--cache", cache] if cache else []) + \
@@ -157,14 +157,64 @@ def prepare_unit_examples(cfg, split, work, model, log, units_path, fake="", cac
             if l.strip():
                 q = json.loads(l)
                 rows.append({"id": f"ux_{len(rows)}", "business_id": q["bid"], "question": q["question"], "as_of_date": q["as_of_date"],
-                             "code": q["program"], "unit": q.get("unit_name")})
+                             "code": q["program"], "unit": q.get("unit_name"), "answer": q.get("answer")})
     if not rows: log(f"unit examples: none ({time.time() - t:.0f}s)"); return None
     f = os.path.join(out, "shop_examples.jsonl")
     with open(f, "w", encoding="utf-8") as w:
         for r in rows: w.write(json.dumps(r, ensure_ascii=False) + "\n")
-    os.environ["ZC_SHOP_EXAMPLES"] = f; os.environ["ZC_SHOP_EXAMPLES_K"] = str(n)
+    if n > 0: os.environ["ZC_SHOP_EXAMPLES"] = f; os.environ["ZC_SHOP_EXAMPLES_K"] = str(n)
     log(f"unit examples: {len(rows)} for {len({r['business_id'] for r in rows})} shops ({time.time() - t:.0f}s)")
     return f
+
+
+def verify_units_by_solver(cfg, a, units_path, ux_path, dp, cache, extra, log):
+    """v2 I6 (15/11): semantic check of the model-written shop functions by a second model path. The solver answers the model-written
+    questions of each function (I3 file, with the function's own answer from execution) WITHOUT the shop functions (k 4, vote, no
+    judge); a function is dropped when the solver answered at least 2 of its questions and agreed with none (wrong functions made every
+    sample agree on a wrong value: e.g. 0 / 32 calls right for one counting function). Returns the kept units file (or the input)."""
+    import glob, score as scoremod
+    rows = [json.loads(l) for l in open(ux_path, encoding="utf-8") if l.strip()]
+    if not rows: return units_path
+    vs = os.path.join(a.work, "uverify"); sp = os.path.join(vs, "split"); os.makedirs(os.path.join(sp, "data"), exist_ok=True); t = time.time()
+    with open(os.path.join(sp, "questions.jsonl"), "w", encoding="utf-8") as w:
+        for r in rows: w.write(json.dumps({"id": r["id"], "question": r["question"], "business_id": r["business_id"], "as_of_date": r["as_of_date"]}, ensure_ascii=False) + "\n")
+    for b in {r["business_id"] for r in rows}:
+        d = os.path.join(sp, "data", b)
+        if not os.path.exists(d): os.symlink(os.path.abspath(os.path.join(a.split, "data", b)), d)
+    for f in ("calendar.csv", "rulebook.md"):
+        if os.path.isfile(os.path.join(a.split, f)): shutil.copy(os.path.join(a.split, f), sp)
+    if os.path.isdir(os.path.join(a.split, "rulebooks")): shutil.copytree(os.path.join(a.split, "rulebooks"), os.path.join(sp, "rulebooks"), dirs_exist_ok=True)
+    out = os.path.join(vs, "out"); os.makedirs(out, exist_ok=True); os.makedirs(os.path.join(vs, "logs"), exist_ok=True)
+    c = json.load(open(cfg, encoding="utf-8"))
+    cmd = [sys.executable, os.path.join(HERE, "agent.py"), sp, out, "--model", a.model, "--dp", str(dp), "--budget", str(int(c.get("unit_verify_max_s", 1200))),
+           "--cache", os.path.join(vs, "cache"), "--log-dir", os.path.join(vs, "logs")] + defaults_for(cfg) + ["--config", cfg] + extra + ["--k-max", "4", "--k-fast", "4"]
+    rc = run(cmd, lambda *m: None)
+    sub = {}
+    f = os.path.join(out, "submission.jsonl")
+    if os.path.isfile(f):
+        for l in open(f, encoding="utf-8"):
+            if l.strip(): x = json.loads(l); sub[x["id"]] = x
+    from collections import Counter
+    agree, answered = Counter(), Counter()
+    for r in rows:
+        x = sub.get(r["id"]); key = (r["business_id"], r.get("unit"))
+        if not x or x.get("type") == "abstain" or not r.get("answer"): continue
+        answered[key] += 1
+        try: agree[key] += scoremod.judge(x, r["answer"]) == "correct"
+        except Exception: pass
+    us = [json.loads(l) for l in open(units_path, encoding="utf-8") if l.strip()]
+    keep, drop = [], []
+    for u in us:
+        k = (u["bid"], u["name"])
+        (drop if answered[k] >= 2 and agree[k] == 0 else keep).append(u)
+    dl = [(u["bid"], u["name"], f"{agree[(u['bid'], u['name'])]}/{answered[(u['bid'], u['name'])]}") for u in drop]
+    log(f"unit verify (rc {rc}, {time.time() - t:.0f}s): {len(rows)} questions, kept {len(keep)} / {len(us)} functions; dropped {dl}")
+    if not keep: return None
+    fo = os.path.join(vs, "cards_unit_verified.jsonl")
+    with open(fo, "w", encoding="utf-8") as w:
+        for u in keep: w.write(json.dumps(u, ensure_ascii=False) + "\n")
+    shutil.copy(fo, os.path.join(a.result, "logs", "cards_unit_verified.jsonl")) if os.path.isdir(os.path.join(a.result, "logs")) else None
+    return fo
 
 
 def resolve_adapter(name):
@@ -400,7 +450,11 @@ def main():
     uv = prepare_units(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder)
     free_w_models(a.work, log)
     if uv is not None: extra = extra + ["--units", uv]
-    prepare_unit_examples(cfg, a.split, a.work, a.model, log, uv, a.lrl_fake or a.fake_responder)   # v2 I3 (env for hybrid)
+    ux = prepare_unit_examples(cfg, a.split, a.work, a.model, log, uv, a.lrl_fake or a.fake_responder)   # v2 I3 (env for hybrid)
+    if uv and ux and cfg and int(json.load(open(cfg, encoding="utf-8")).get("unit_verify", 0) or 0):    # v2 I6: drop functions the
+        base_extra = [x for i, x in enumerate(extra) if x != "--units" and (i == 0 or extra[i - 1] != "--units")]   # solver contradicts
+        uv2 = verify_units_by_solver(cfg, a, uv, ux, dp, cache, base_extra, log)
+        extra = base_extra + (["--units", uv2] if uv2 else []); uv = uv2
     kv = prepare_link(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder, cards=",".join(x for x in (lv or "").split(",") if "compile" in os.path.basename(x)))
     free_w_models(a.work, log)
     if kv is not None: extra = extra + ["--links", kv]

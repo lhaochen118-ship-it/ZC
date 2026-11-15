@@ -1,0 +1,60 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T09:16:03Z
+hide_api: industry (exported to every phase)
+model /tmp/models/Qwen3.5-9B  dp 4  config configs/flow_p5_zs_q01.json  runs up to 1
+lrl: bind for this split rc=[0, 0, 0, 0] (859s)
+lrl: aliases for this split rc=0 (1402s)
+units shard 0: (MainProcess pid=6098) INFO 11-15 09:47:15 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 0: (MainProcess pid=6098) INFO 11-15 09:47:15 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 0: (MainProcess pid=6098) INFO 11-15 09:47:15 [core_client.py:777] [shutdown] MPClient: complete
+units shard 1: (MainProcess pid=6099) INFO 11-15 09:47:38 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 1: (MainProcess pid=6099) INFO 11-15 09:47:38 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 1: (MainProcess pid=6099) INFO 11-15 09:47:38 [core_client.py:777] [shutdown] MPClient: complete
+units shard 2: (MainProcess pid=6100) INFO 11-15 09:48:12 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 2: (MainProcess pid=6100) INFO 11-15 09:48:12 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 2: (MainProcess pid=6100) INFO 11-15 09:48:12 [core_client.py:777] [shutdown] MPClient: complete
+units shard 3: (MainProcess pid=6101) INFO 11-15 09:46:01 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 3: (MainProcess pid=6101) INFO 11-15 09:46:01 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 3: (MainProcess pid=6101) INFO 11-15 09:46:01 [core_client.py:777] [shutdown] MPClient: complete
+units: rc=[0, 0, 0, 0], 11 verified units (530s)
+links shard 0: (MainProcess pid=9140) WARNING 11-15 09:55:24 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 0: (MainProcess pid=9140) WARNING 11-15 09:55:24 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 9817
+links shard 1: (MainProcess pid=9141) WARNING 11-15 09:55:21 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 1: (MainProcess pid=9141) WARNING 11-15 09:55:21 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 10070
+links shard 2: (MainProcess pid=9142) INFO 11-15 09:55:10 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 2: (MainProcess pid=9142) INFO 11-15 09:55:10 [core_client.py:777] [shutdown] MPClient: complete
+links shard 3: (MainProcess pid=9143) WARNING 11-15 09:55:24 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 3: (MainProcess pid=9143) WARNING 11-15 09:55:24 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 10847
+links: rc=[0, 0, 0, 0], 1000 questions linked (432s)
+[dp] ingested 14 businesses in 48s
+--- shard0 rc=0
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+(MainProcess pid=12856) INFO 11-15 12:49:09 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=13451) INFO 11-15 12:49:09 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=13451) INFO 11-15 12:49:09 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=13451) INFO 11-15 12:49:09 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=13451) INFO 11-15 12:49:09 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(EngineCore pid=13451) INFO 11-15 12:49:09 [multiproc_executor.py:479] [shutdown] Executor: waiting for worker exit count=2
+(Worker_TP0 pid=13841) INFO 11-15 12:49:09 [multiproc_executor.py:843] Parent process exited, terminating worker queues
+(EngineCore pid=13451) INFO 11-15 12:49:14 [multiproc_executor.py:486] [shutdown] Executor: all workers exited gracefully
+(MainProcess pid=12856) WARNING 11-15 12:49:14 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+(MainProcess pid=12856) WARNING 11-15 12:49:14 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 13451
+
+--- shard1 rc=1
+        handshake_socket,
+        ^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        launch,
+        ^^^^^^^
+    )
+    ^
+  File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/utils.py", line 1431, in wait_for_engine_startup
+    raise RuntimeError(
+    ...<8 lines>...
+    )
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+
+DP DONE 2 shards in 10432s
+after run 1: [908]
+judge: killed at the 1800s cap; the vote's answers stand
+end: 2026-11-15T13:19:20Z  (14597s)

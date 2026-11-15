@@ -1,0 +1,24 @@
+[
+ {
+  "acc": "namhunhh",
+  "name": "c3",
+  "jobs": "automation/jobs/p5/c3.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,namhunhh/zc-stg88-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "hieuho669",
+  "name": "c4",
+  "jobs": "automation/jobs/p5/c4.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,hieuho669/zc-stg88-1",
+   "--no-preflight"
+  ]
+ }
+]

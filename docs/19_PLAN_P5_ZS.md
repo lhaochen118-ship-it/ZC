@@ -94,3 +94,9 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   DN mới chế độ H → **dừng**.
 - 13:20 worker khởi động lại (mọi watcher / runner chết) → `resume.py` gắn lại 4 kernel. **User 13:20: chỉ tối ưu trên public, không chia tập khác.**
   Đẩy: P02 seed 2 + P02 phán xử không trần (dinhthinh), P02 + T01 + trần phán xử 5400 s (namhunhh) và thêm k_max 24 (hieuho669) sau khi cắt lại E88.
+- 13:40 **Q01 (bộ giải BF16, DP2×TP2) = 0.764** (Δ +0.010, z 1.3; 243 phút so với ~110 của FP8) → FP8 đủ, BF16 không đáng thời gian.
+  **S01 seed 2** (9B tự phán xử trên log B00-S s1): ensemble 0.762 (Δ +0.007, z 0.8); gộp 2 seed Δ +0.015 (89 tốt / 54 kém, z ≈ 2.5).
+- 13:40 user: ghép các giải pháp tốt vào framework 0.952, thử mọi tổ hợp (vd. thay 9B tuned bằng MoE E88 + fine-tune 2–3 LoRA). Ràng buộc: LoRA
+  V3A / WL1 / WJR1 chỉ áp được cho Qwen3.5-9B; E88 + 9B > 15B (không hợp lệ). Đẩy: C1 = 0.952 + T01, C2 = C1 + k24 (9B tuned, có
+  `industry.py`), C3 = E88 zero-shot + `industry.py` + T01 + trần phán xử 5400 s, C4 = E88 + `industry.py`; chuẩn bị fine-tune LoRA S trên E88 bf16
+  (cắt từ bf16 chính thức trong kernel, FSDP 4×L4, LoRA attention + linear-attention + shared expert; ghép LoRA vào FP8 để phục vụ).

@@ -1,0 +1,1000 @@
+{"id": "q_de76013dcb99", "final": {"type": "number", "answer": 1246188000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e0ac213834f6", "final": {"type": "number", "answer": 4353551}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e2ad9e83d06a", "final": {"type": "number", "answer": 825818668}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f30748b72898", "final": {"type": "number", "answer": 3840405}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f37ffc2cfd0c", "final": {"type": "list", "answer": [30052000, 29811500, 785559168]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ff9f21f3aa6c", "final": {"type": "number", "answer": 115}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3992410a9fd6", "final": {"type": "number", "answer": 1155251700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_48964017991a", "final": {"type": "number", "answer": 1320514}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_52dfb164f8ad", "final": {"type": "date", "answer": "2026-05-04"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_41922e7c51ec", "final": {"type": "percent", "answer": -51.33}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4cb8711073bd", "final": {"type": "percent", "answer": -87.07}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5da7465fcd06", "final": {"type": "number", "answer": 1637142000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5d6f195dd3e7", "final": {"type": "number", "answer": 1256267}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6019a30cd4fe", "final": {"type": "number", "answer": 7707}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5c681795e6a0", "final": {"type": "number", "answer": 105}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_618001244985", "final": {"type": "number", "answer": 16}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_621a456cc773", "final": {"type": "percent", "answer": 78.14}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_59f27903845e", "final": {"type": "number", "answer": 37}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_62ec9b7dc79b", "final": {"type": "list", "answer": ["Xi măng Hà Tiên PCB40 bao 50kg", "Xi măng INSEE Power-S bao 50kg", "Cát xây tô", "Gạch ống 8x8x18 Tuynel", "Ống PVC Bình Minh D32 cây 4m"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_914529f4d2e2", "final": {"type": "number", "answer": 33}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a33f5513b520", "final": {"type": "number", "answer": 455768}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_908ce2873a57", "final": {"type": "string", "answer": "Trịnh Quang Nhung"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_acb6a360a60d", "final": {"type": "number", "answer": 18425500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_aacb2ba3f300", "final": {"type": "number", "answer": 41060916}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9e6f314a5bd8", "final": {"type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Lý Cường Hạnh", 1723000], ["Từ Phong Ngân", 1658000], ["Lưu Anh Trung", 1328000], ["Dương Giang Hà", 1242000], ["Triệu Bảo Đức", 964668]]}}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ad5492b5897c", "final": {"type": "percent", "answer": 2.95}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b61b5951799d", "final": {"type": "percent", "answer": 5.37}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ba875ec0872f", "final": {"type": "number", "answer": 702007000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b36cb72072f1", "final": {"type": "number", "answer": 50}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d1c95d7db2ae", "final": {"type": "number", "answer": 38}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_bc879c2a6de5", "final": {"type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Bùi Quang Quang", 1605000], ["Chung Châu Ngọc", 1601000], ["Trần Hoa Hoàng", 1284500]]}}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cb0b3be99b62", "final": {"type": "percent", "answer": 9.1}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d2c646bb39ec", "final": {"type": "number", "answer": 20715673}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d4ef0c5d0bb2", "final": {"type": "list", "answer": ["Khăn ướt Bobby không mùi 100 tờ", "Sữa pha sẵn GrowPLUS+ đỏ 110ml lốc 4", "Sữa tắm gội Johnson's Baby 500ml", "Tã dán Bobby size M 76 miếng", "Tã quần Huggies Dry size L 68 miếng"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c4da058cd902", "final": {"type": "string", "answer": "iPhone 16 128GB Đen"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6c18fd06a115", "final": {"type": "number", "answer": 63}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_69b7d08012e5", "final": {"type": "number", "answer": 966068}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6f0c8057ccdb", "final": {"type": "number", "answer": 195058700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6cb40ee1f329", "final": {"type": "number", "answer": 33}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6dc8a5070da6", "final": {"type": "number", "answer": 167}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_78737a198776", "final": {"type": "percent", "answer": 56.01}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_86198c3c128b", "final": {"type": "list", "answer": ["Prednisolon 5mg Boston chai 500 viên", "Băng cá nhân Urgo Transparent hộp 100 miếng", "Panadol 500mg hộp 10 vỉ x 12 viên", "Panadol Extra hộp 15 vỉ x 12 viên", "Smecta hộp 30 gói"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7bc2b2afb992", "final": {"type": "percent", "answer": 5.46}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7b45716b3dda", "final": {"type": "number", "answer": 98829176}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8865baf2a84d", "final": {"type": "percent", "answer": 36.68}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_908d0d681cd8", "final": {"type": "number", "answer": 8}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_94acd8f437f4", "final": {"type": "string", "answer": "Costar Omega 3 1000mg lọ 100 viên"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8c88fcb609eb", "final": {"type": "percent", "answer": -41.61}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_928423a8bbc6", "final": {"type": "percent", "answer": 8.54}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_976e38598dde", "final": {"type": "number", "answer": 52113400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9ed7874d83b8", "final": {"type": "number", "answer": 719572600}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a0046e6fede0", "final": {"type": "number", "answer": 15418400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a91c8a25a22f", "final": {"type": "number", "answer": 6952700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ae44d3539448", "final": {"type": "list", "answer": [0, 0]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9ab76e4d9f5e", "final": {"type": "list", "answer": ["Lưu Bảo Long", "Triệu Thảo Hùng", "Lý Hà Trung"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b189b9465fe7", "final": {"type": "date", "answer": "2026-02-02"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b01bee67cde2", "final": {"type": "number", "answer": 1}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b6f52d2a9ace", "final": {"type": "number", "answer": 8152000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_bb4017bc0666", "final": {"type": "percent", "answer": 1.04}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_bd0fbda87c14", "final": {"type": "number", "answer": 2036700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_01d1fc600b26", "final": {"type": "number", "answer": 3142000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_08f075b54698", "final": {"type": "number", "answer": 14783}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_05ab1c71dcaa", "final": {"type": "string", "answer": "La Minh Dương"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0f59f61affd1", "final": {"type": "number", "answer": 4947}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_11c915f78c7e", "final": {"type": "number", "answer": 312}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1618b7c50ae7", "final": {"type": "percent", "answer": 69.31}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_23f483dd4193", "final": {"type": "number", "answer": 279}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1e3b66ee62f2", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_262952036572", "final": {"type": "list", "answer": ["Mì Hảo Hảo tôm chua cay", "Sữa tươi Vinamilk 180ml", "Snack Oishi tôm cay 40g"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_18b0cb2e9c4c", "final": {"type": "number", "answer": 428}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_278b0742d740", "final": {"type": "number", "answer": 27}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_279180641d59", "final": {"type": "number", "answer": 29}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_29e1057e3fbd", "final": {"type": "percent", "answer": -24.18}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_53b6abf6f47b", "final": {"type": "number", "answer": 534377}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_49a2ce6052b9", "final": {"type": "number", "answer": 96}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_48958d7402b0", "final": {"type": "percent", "answer": -11.54}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5599ff7c9e28", "final": {"type": "number", "answer": 2740224000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6d9ad1c46242", "final": {"type": "number", "answer": 122462500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6c89c24d2349", "final": {"type": "number", "answer": 207}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_05cde771f4c3", "final": {"type": "number", "answer": 221054}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_06b7f437fcc4", "final": {"type": "number", "answer": 25180500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1205eaa6091a", "final": {"type": "percent", "answer": 16.03}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2e00e336cad2", "final": {"type": "number", "answer": 457}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fd38dda74f47", "final": {"type": "number", "answer": 1823098500}, "conf": 0.611111111111111, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_31cad30c7e96", "final": {"type": "number", "answer": 103895500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2536e243a16c", "final": {"type": "number", "answer": 284964500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_35b891c4eebe", "final": {"type": "string", "answer": "A.An"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_32235635199c", "final": {"type": "number", "answer": 308369100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_34e7f4ed662a", "final": {"type": "percent", "answer": 1.02}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_38b56b8238b5", "final": {"type": "number", "answer": 547}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_382bb57c049d", "final": {"type": "string", "answer": "Đoàn Bình Huy"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3ed8a306be83", "final": {"type": "number", "answer": 120115}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_409bb74c67b4", "final": {"type": "percent", "answer": 26.52}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3af7b33f08a6", "final": {"type": "list", "answer": [276978800, 280423600, 301403900]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_44ae4ba9010d", "final": {"type": "number", "answer": 24}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4633acb03075", "final": {"type": "percent", "answer": 15.6}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4812f4775924", "final": {"type": "percent", "answer": 26.93}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4eb97c2cc49a", "final": {"type": "number", "answer": 105907}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5529c849e209", "final": {"type": "percent", "answer": 33.84}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_01ac0fc9f2a2", "final": {"type": "number", "answer": 71724}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_06dfe652d857", "final": {"type": "number", "answer": -38326476}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_09542f67d04a", "final": {"type": "number", "answer": 71465}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_08b923f3c5c5", "final": {"type": "string", "answer": "Cty Mai Hải"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_12d78074f059", "final": {"type": "number", "answer": 73226}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_10a0c4fec3d2", "final": {"type": "boolean", "answer": false}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_16fc554b8db0", "final": {"type": "number", "answer": 2130}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_188436bf8db3", "final": {"type": "number", "answer": 9586}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1a5c000274ee", "final": {"type": "number", "answer": 806}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1c0ec38b3d82", "final": {"type": "number", "answer": 84059600}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_27b5996a5f4c", "final": {"type": "number", "answer": 804}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_00bf8df3ea0b", "final": {"type": "number", "answer": 4533000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d27e2e7a44a6", "final": {"type": "number", "answer": 1380000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_03bbdfa6e0d5", "final": {"type": "number", "answer": 68}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_040d437fdf09", "final": {"type": "number", "answer": 70324}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_04e55a8f8c0c", "final": {"type": "number", "answer": 69630}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0c62d2078959", "final": {"type": "number", "answer": 76}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1f1a1f45b377", "final": {"type": "number", "answer": 6601500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0ef28ee17f12", "final": {"type": "number", "answer": 151}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_363b113bf3bd", "final": {"type": "number", "answer": 72304}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2ac539902fe6", "final": {"type": "percent", "answer": -19.98}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4847f9b75280", "final": {"type": "date", "answer": "2025-11-02"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_45cb42f4dc7b", "final": {"type": "percent", "answer": 4.48}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4ef479fd4803", "final": {"type": "percent", "answer": 4.67}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_715e9ea420ef", "final": {"type": "number", "answer": 13}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_585664a97754", "final": {"type": "number", "answer": 135}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_54bbf080f0cd", "final": {"type": "list", "answer": ["Cà phê sữa (M)", "Trà đào cam sả (M)", "Cà phê đen (M)"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_61cfc26159fa", "final": {"type": "number", "answer": 8999000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3b30972705b7", "final": {"type": "number", "answer": 3227234200}, "conf": 0.5777777777777777, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_663c209f7209", "final": {"type": "number", "answer": 73}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7616f1a1f0ee", "final": {"type": "number", "answer": 222284500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_735ea0888aab", "final": {"type": "string", "answer": "Giang Phương Hùng"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9b5377726889", "final": {"type": "number", "answer": 9935}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c120861e5dd1", "final": {"type": "number", "answer": 5851000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c64c6d29f583", "final": {"type": "number", "answer": 2583}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cfcb5f8a241f", "final": {"type": "number", "answer": 1350}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0ed1ebc4fe4d", "final": {"type": "number", "answer": 153}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e6c703f05070", "final": {"type": "percent", "answer": 1.87}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d857fdab9c0a", "final": {"type": "percent", "answer": -5.94}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_dec759a2f085", "final": {"type": "number", "answer": 121}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e76cb855b50c", "final": {"type": "number", "answer": 1}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f4e0630ebcb1", "final": {"type": "number", "answer": 9485500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f118a00dc479", "final": {"type": "date", "answer": "2025-07-27"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ede70b7f6c13", "final": {"type": "list", "answer": ["Châu Quang Khánh", "Đặng Trung Huy", "Vũ Bích Phong"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_28f2fdb96198", "final": {"type": "number", "answer": 52972800}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_30934dcc3831", "final": {"type": "number", "answer": 382563500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2c8d4481ca57", "final": {"type": "percent", "answer": -43.65}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_30f08ce67f3e", "final": {"type": "string", "answer": "C"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_31ee2863c718", "final": {"type": "number", "answer": 9245}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_32201ceda2ad", "final": {"type": "number", "answer": 235759000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2fba3cf485d7", "final": {"type": "percent", "answer": 20.38}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_36f612a6b301", "final": {"type": "number", "answer": 97280000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_383e2d2f282a", "final": {"type": "string", "answer": "Trà đào cam sả (M)"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_373a4857ee55", "final": {"type": "number", "answer": 15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_39b7dafd15a3", "final": {"type": "number", "answer": 1801}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3f0d7d1b1eb1", "final": {"type": "list", "answer": [36000, 12000]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5fcac0749f24", "final": {"type": "number", "answer": 4}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3e30ac2f9cc9", "final": {"type": "number", "answer": 38}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b6abccb6b3cb", "final": {"type": "number", "answer": 86}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_3d231754f550", "final": {"type": "percent", "answer": -6.29}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_78f694893432", "final": {"type": "number", "answer": 166}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_33cb3a334a80", "final": {"type": "number", "answer": 88}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_51b767a7dd05", "final": {"type": "percent", "answer": -19.23}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_77264ae59960", "final": {"type": "number", "answer": 1944503}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7584b6b0ebbb", "final": {"type": "boolean", "answer": true}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_77ce65543f25", "final": {"type": "number", "answer": 71760}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_780126890512", "final": {"type": "number", "answer": 65}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_78360acadac0", "final": {"type": "number", "answer": 13}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_78a7454fde5d", "final": {"type": "percent", "answer": -0.9}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7d4d7cb3aa73", "final": {"type": "number", "answer": 617}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7d7ea7cccf26", "final": {"type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Đoàn Hùng Minh", 181834], ["Từ Giang Khoa", 147834], ["Lý Khánh Thảo", 129000]]}}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_84201f553dff", "final": {"type": "number", "answer": 51}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_900c545f4ed7", "final": {"type": "number", "answer": 71731}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8ee6eb9187d0", "final": {"type": "number", "answer": 1718}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8df7e247960b", "final": {"type": "percent", "answer": 20.46}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_47d9c87fa49d", "final": {"type": "string", "answer": "Betadine Gargle súc họng chai 125ml"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4dff582efe40", "final": {"type": "list", "answer": ["Smecta hộp 30 gói", "Khẩu trang y tế 4 lớp Khánh An hộp 50 cái", "Panadol Extra hộp 15 vỉ x 12 viên", "Salonpas cao dán hộp 24 gói x 10 miếng", "Cetirizin 10mg Domesco hộp 10 vỉ x 10 viên"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_378a68e7ff82", "final": {"type": "percent", "answer": -5.4}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d5d84e9e6570", "final": {"type": "number", "answer": 48971000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_de25e5a7e1c6", "final": {"type": "number", "answer": 44290000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e47610290a38", "final": {"type": "list", "answer": ["Trà đào cam sả (M)", "Cà phê sữa (M)", "Trà sữa trân châu (M)", "Cà phê đen (M)", "Nước ép cam (M)"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e0e7974d6923", "final": {"type": "percent", "answer": -9.54}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_effb17cba303", "final": {"type": "number", "answer": 1740}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f539cf51f360", "final": {"type": "number", "answer": 37387100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f04b126554e3", "final": {"type": "number", "answer": 62}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f98cecea1595", "final": {"type": "percent", "answer": 17.23}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f86ac4d1df98", "final": {"type": "date", "answer": "2026-07-26"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f9fee7c180b4", "final": {"type": "number", "answer": 115463658}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fbb0ba502475", "final": {"type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Đào Châu Tâm", 234000], ["Chung Khoa Thảo", 86000], ["Đoàn Hiếu Khánh", 86000], ["Lưu Sơn Hằng", 82000], ["Đàm Hà Phúc", 76667]]}}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_008fdebb6ec9", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7e5199bfe720", "final": {"type": "number", "answer": 392811100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_856d8521b9ea", "final": {"type": "number", "answer": 9641}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_73aa64c2c7cf", "final": {"type": "number", "answer": 15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_78b932b4a560", "final": {"type": "number", "answer": 172773009}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8db445924873", "final": {"type": "number", "answer": 69}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8d52a75f3314", "final": {"type": "string", "answer": "Bùi Hải Linh"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9b5bf8a560a1", "final": {"type": "number", "answer": 1036508100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8a85aa9be5ef", "final": {"type": "list", "answer": [1429334, 1961667, 1158168]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9aa0981148ef", "final": {"type": "number", "answer": 18278000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_86dd535ae674", "final": {"type": "percent", "answer": 57.7}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a904adc2606a", "final": {"type": "percent", "answer": 36.36}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9649687d5e8b", "final": {"type": "list", "answer": [1072511600, 1034685300, 1078858000]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d3ef941d6105", "final": {"type": "percent", "answer": -1.24}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_dd874c3e9e03", "final": {"type": "number", "answer": 505281}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_db00aee1a23d", "final": {"type": "number", "answer": 15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_de54a69c7dce", "final": {"type": "number", "answer": 55}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e096ce51b13d", "final": {"type": "percent", "answer": -4.97}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ec17ef854d8a", "final": {"type": "number", "answer": 233500200}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e18836a94216", "final": {"type": "number", "answer": 12}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f16bd70756d1", "final": {"type": "number", "answer": 8345409300}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f15ae79ed4ba", "final": {"type": "percent", "answer": 2.26}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f53d89a0743e", "final": {"type": "number", "answer": 1072429200}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_101e84f9b702", "final": {"type": "number", "answer": 186355417}, "conf": 0.9047619047619047, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5896bf2cce00", "final": {"type": "percent", "answer": 1.99}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_a77ff9dcc3e7", "final": {"type": "list", "answer": ["Cà phê sữa (M)", "Cà phê đen (M)", "Bạc xỉu (M)"]}, "conf": 0.7685185185185185, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_fa29edc5f8ab", "final": {"type": "date", "answer": "2025-10-05"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ae10c252dc7a", "final": {"type": "unanswerable", "answer": null}, "conf": 0.9375, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_38c42c83e2ff", "final": {"type": "percent", "answer": 4.2}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2ed4740ec705", "final": {"type": "percent", "answer": -8.88}, "conf": 0.75, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_dd2362109dd4", "final": {"type": "percent", "answer": -9.24}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0537f6e4f5ab", "final": {"type": "date", "answer": "2025-05"}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_a6e86ecce3f6", "final": {"type": "number", "answer": 265178000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_36edc7d2e347", "final": {"type": "string", "answer": "A.An"}, "conf": 0.5499999999999999, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b0bffe2031c5", "final": {"type": "string", "answer": "Cao Hồng Sơn"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_09e3efc66c68", "final": {"type": "number", "answer": 169866}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ef01edd61255", "final": {"type": "number", "answer": 88}, "conf": 0.6111111111111112, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_95a45f58351b", "final": {"type": "number", "answer": 55}, "conf": 0.6166666666666667, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c2ba3823e50f", "final": {"type": "percent", "answer": 1.98}, "conf": 0.6375000000000001, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_f9c2f8a2a73e", "final": {"type": "number", "answer": 31486000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a79c3c340077", "final": {"type": "percent", "answer": -9.67}, "conf": 0.5198717948717948, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_f971c5fb2353", "final": {"type": "percent", "answer": 6.43}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_617cccfd98d1", "final": {"type": "number", "answer": 19}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_fe5788dae82e", "final": {"type": "number", "answer": 224943500}, "conf": 0.7, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_2362d5a2c101", "final": {"type": "percent", "answer": 10.71}, "conf": 0.7647058823529411, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_0ac818a0f5f2", "final": {"type": "percent", "answer": 1.85}, "conf": 0.611111111111111, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_0cb6a1a6f1ef", "final": {"type": "string", "answer": "Lưu Thắng Anh"}, "conf": 0.9333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_78569aa4cbd0", "final": {"type": "percent", "answer": 3.02}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_29f0281751c0", "final": {"type": "percent", "answer": 6.08}, "conf": 0.5982905982905983, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_dbb084b9361d", "final": {"type": "abstain"}, "conf": 0.4375, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_ea97617772d0", "final": {"type": "percent", "answer": -6.83}, "conf": 0.8125, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_f56bee880344", "final": {"type": "number", "answer": 2811400}, "conf": 0.5185185185185185, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_6830bf77b8c5", "final": {"type": "string", "answer": "Cty Tăng Thu"}, "conf": 0.7685185185185185, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_84edb29b003b", "final": {"type": "percent", "answer": 30.45}, "conf": 0.75, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_e768afaaf811", "final": {"type": "date", "answer": "2026-01"}, "conf": 0.5555555555555556, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_459109bda652", "final": {"type": "percent", "answer": 16.07}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_77c3255f0d26", "final": {"type": "number", "answer": 2900000}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_cf5c5dac1b20", "final": {"type": "number", "answer": 1295000}, "conf": 0.7222222222222222, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7e7b3dc1de86", "final": {"type": "abstain"}, "conf": 0.2857142857142857, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_b2bbe9c1e9fc", "final": {"type": "number", "answer": 272}, "conf": 0.75, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b9aab5c81568", "final": {"type": "list", "answer": [1991699500, 1551523500, 1628303500]}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b24515210e17", "final": {"type": "abstain"}, "conf": 0.2727272727272727, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_82bbd52c42dc", "final": {"type": "number", "answer": 43875000}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_34a5b4766a27", "final": {"type": "number", "answer": 214232}, "conf": 0.75, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_07ceefc30333", "final": {"type": "string", "answer": "Cà phê sữa (M)"}, "conf": 0.5714285714285714, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5cd8a3c09d08", "final": {"type": "number", "answer": 5880000}, "conf": 0.6746031746031746, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_3dd4582ecb10", "final": {"type": "abstain"}, "conf": 0.4444444444444444, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_848a1bcdb5f9", "final": {"type": "number", "answer": 938}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1602cfcc7d42", "final": {"type": "number", "answer": 4233}, "conf": 0.6597222222222222, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_027f5441831d", "final": {"type": "number", "answer": 8421700}, "conf": 0.7388888888888889, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_f9a0fa4ed236", "final": {"type": "number", "answer": 2771668}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_6c4f54f5fb85", "final": {"type": "list", "answer": ["Nhiệt kế điện tử Microlife MT500", "Tiffy Dey hộp 25 vỉ x 4 viên", "Cao Sao Vàng TW3 hộp 3g", "Nước muối sinh lý Natri clorid 0,9% Vĩnh Phúc chai 500ml", "Siro ăn ngon Ích Nhi Plus chai 100ml", "Prednisolon 5mg Boston chai 500 viên", "Panadol Extra hộp 15 vỉ x 12 viên", "Fugacar 500mg hộp 1 viên", "Băng cá nhân Urgo Transparent hộp 100 miếng", "Kudos Vitamin C 1000mg viên sủi tuýp 20 viên", "Hagifen 400mg DHG hộp 10 vỉ x 10 viên", "Zyrtec 10mg hộp 1 vỉ x 10 viên", "Calcium Corbière Extra 10ml hộp 30 ống", "Oresol 245 DHG hộp 20 gói", "V.Rohto Vitamin nhỏ mắt lọ 13ml", "Metformin Stella 500mg hộp 6 vỉ x 10 viên", "Enervon hộp 10 vỉ x 10 viên"]}, "conf": 0.7222222222222222, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_4497ce0830d8", "final": {"type": "abstain"}, "conf": 0.3333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_e4fc0d18d409", "final": {"type": "number", "answer": 85}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_e4f0a9bdf74b", "final": {"type": "string", "answer": "Cà phê sữa (M)"}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7ab1e13137e3", "final": {"type": "list", "answer": [325500, 295834, 277502]}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5355ac6722f8", "final": {"type": "number", "answer": 4350000}, "conf": 0.5726495726495726, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_20b7bbf203c7", "final": {"type": "abstain"}, "conf": 0.25, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_07e2508ad671", "final": {"type": "abstain"}, "conf": 0.2, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_94a2e7ebecc0", "final": {"type": "percent", "answer": 16.11}, "conf": 0.6190476190476191, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1c0046277ff9", "final": {"type": "table", "answer": {"columns": ["staff", "commission_pct", "revenue", "commission"], "rows": [["Đàm Lan An", 32, 9296595, 2974910], ["Hà Loan Đạt", 25, 7548960, 1887240], ["Đoàn Bảo Phúc", 28, 5910100, 1654828], ["Lương Chi Đức", 33, 5737000, 1893210]]}}, "conf": 0.7708333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_d08785ea5577", "final": {"type": "number", "answer": 11025908}, "conf": 0.6888888888888889, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1341cdede99a", "final": {"type": "number", "answer": 12}, "conf": 0.9206349206349205, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_32733a8ce625", "final": {"type": "string", "answer": "Lead"}, "conf": 0.5353535353535354, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_95aa9007198f", "final": {"type": "string", "answer": "Tăng Quang Hoàng"}, "conf": 0.6, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_e734e6e62c7c", "final": {"type": "abstain"}, "conf": 0.3333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_b2eb16844a32", "final": {"type": "number", "answer": 8}, "conf": 0.5, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_9d8949165b5e", "final": {"type": "string", "answer": "KH0060"}, "conf": 0.5666666666666668, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7d236c308111", "final": {"type": "percent", "answer": 46.09}, "conf": 0.5486111111111112, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_3da612131082", "final": {"type": "string", "answer": "Đàm Lan An"}, "conf": 0.6908136482939633, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_bbfddbd1d363", "final": {"type": "number", "answer": 587068}, "conf": 0.7948717948717948, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b33016c0dd71", "final": {"type": "abstain"}, "conf": 0.45454545454545453, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_0d23cc65cc7a", "final": {"type": "percent", "answer": -12.82}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_16852a1ac5f7", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2f8852d2a6bc", "final": {"type": "number", "answer": 4959714000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_220b5f8bc174", "final": {"type": "percent", "answer": -3.37}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3751b6361499", "final": {"type": "number", "answer": 224}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9bcd14f14b1f", "final": {"type": "percent", "answer": 60.66}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a05a32f136e4", "final": {"type": "number", "answer": 3545}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a119f396d2af", "final": {"type": "percent", "answer": 2.07}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ad782d8acb44", "final": {"type": "percent", "answer": -8.31}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ae7e44a0dc30", "final": {"type": "number", "answer": 249}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_afc5f7f5f476", "final": {"type": "number", "answer": 50275700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ab1417ed8c1b", "final": {"type": "number", "answer": 208}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b47894fc33f6", "final": {"type": "list", "answer": [1373960500, 1060372900, 1252698200]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_dcb25c39e1cc", "final": {"type": "number", "answer": 169}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b82c713cb7b5", "final": {"type": "number", "answer": 430}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ba477e8e6161", "final": {"type": "percent", "answer": -4.27}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_de45f4311dbe", "final": {"type": "number", "answer": 85}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e93bd9fb7c9a", "final": {"type": "number", "answer": 15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f156d23d04fe", "final": {"type": "number", "answer": 139}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_edb6d4859798", "final": {"type": "string", "answer": "Tô Dũng Quang"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ef77106ccec0", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f274c9241995", "final": {"type": "percent", "answer": 1.52}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ed4d0362d039", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f75e58af3bcb", "final": {"type": "number", "answer": 48}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ffbacc923206", "final": {"type": "number", "answer": 1391098}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fcc5aeef7f8d", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_56f2859cb47d", "final": {"type": "number", "answer": 470469}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4d7022ecbc52", "final": {"type": "percent", "answer": 7.82}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_57942b4c8feb", "final": {"type": "number", "answer": 43}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5c5d114695ca", "final": {"type": "percent", "answer": 2.46}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ec61b4f5b9ab", "final": {"type": "percent", "answer": -53.1}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6cb10c20f215", "final": {"type": "number", "answer": 36557993}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6b3e51830db0", "final": {"type": "number", "answer": 52}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7e293cd1013a", "final": {"type": "number", "answer": 14923000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_81bd98f792f6", "final": {"type": "number", "answer": 138500500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_84ccc0e4f51d", "final": {"type": "percent", "answer": 21.15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_033e37dde4d5", "final": {"type": "number", "answer": 959}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0389b0c41da6", "final": {"type": "percent", "answer": -16.02}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0b78b53675c1", "final": {"type": "string", "answer": "Berberin 100mg Mekophar chai 100 viên"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0641a621b596", "final": {"type": "list", "answer": [233818700, 248568700, 237185200]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_113d86c3eb6a", "final": {"type": "percent", "answer": -2.27}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_169bfdcce0ae", "final": {"type": "percent", "answer": 28.25}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2d5eb3a196b7", "final": {"type": "number", "answer": 2294053}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_35c586d5d831", "final": {"type": "number", "answer": 237009}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ee2df6a3e957", "final": {"type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Tống Thu Hương", 759000], ["Tô Bình Đức", 728400], ["La Hiếu Long", 375000]]}}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f823bf8a8442", "final": {"type": "number", "answer": 270167800}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f20f4f3ec923", "final": {"type": "number", "answer": 949}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f9f2c930f630", "final": {"type": "number", "answer": 497}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f1c0ff1d2330", "final": {"type": "number", "answer": 102100783}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fbe115817066", "final": {"type": "number", "answer": 19}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ff354156a3c4", "final": {"type": "percent", "answer": 13.72}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2710e38fa0d6", "final": {"type": "number", "answer": 10440000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fc8cdf9ab156", "final": {"type": "number", "answer": 239}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7196b4e35b1b", "final": {"type": "number", "answer": 173361}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e634d19ed4f2", "final": {"type": "percent", "answer": 5.43}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8426163ea7bd", "final": {"type": "number", "answer": 67776600}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7dff48b107f0", "final": {"type": "number", "answer": 9763000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_72e220b80878", "final": {"type": "string", "answer": "Đoàn Bảo Thu"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8fef6f1e6ff0", "final": {"type": "number", "answer": 128}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8728cb609428", "final": {"type": "percent", "answer": 45.88}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_92c6660df209", "final": {"type": "number", "answer": 48}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9e28638a40cb", "final": {"type": "number", "answer": 1123614700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9d4a0d4b4bcd", "final": {"type": "list", "answer": [300865900, 277772000, 285872900]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9e82414141dd", "final": {"type": "string", "answer": "Tô Giang Hồng"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_eced47bf8f4b", "final": {"type": "number", "answer": 166285}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a6cf2d550014", "final": {"type": "string", "answer": "Gạo ST25"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a8da9136963f", "final": {"type": "number", "answer": 359}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f09bd63b0751", "final": {"type": "boolean", "answer": true}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fa92cbe8434c", "final": {"type": "number", "answer": 161771}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fa3b2b76f9b3", "final": {"type": "number", "answer": 27}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b362a46fa102", "final": {"type": "number", "answer": 182}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b6d81403be69", "final": {"type": "number", "answer": 33985000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ba2c318fc2be", "final": {"type": "percent", "answer": 58.72}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b5034a203b3b", "final": {"type": "percent", "answer": 4.39}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c4f79f600dc0", "final": {"type": "number", "answer": 448338500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d0fb06a1ebb2", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c9c0246005b6", "final": {"type": "number", "answer": 13}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d4d9ce010db3", "final": {"type": "number", "answer": 390}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f9c80cc2d330", "final": {"type": "number", "answer": 91808000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e36c0b269181", "final": {"type": "number", "answer": 15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0a3308eb76bb", "final": {"type": "number", "answer": 10}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ab952d97e345", "final": {"type": "number", "answer": 5}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_30afaf6d51ca", "final": {"type": "date", "answer": "2025-11-12"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_358aa8d56087", "final": {"type": "number", "answer": 771}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3ef55d803554", "final": {"type": "number", "answer": 5}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3176702f9d3e", "final": {"type": "string", "answer": "Kính cường lực 9D"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4e7e3bde5a15", "final": {"type": "number", "answer": 3195242500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_69a3f480bb53", "final": {"type": "number", "answer": 6542000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_622165f81458", "final": {"type": "number", "answer": 8}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ba1f08439ec8", "final": {"type": "date", "answer": "2026-03"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8960949c2614", "final": {"type": "number", "answer": 7}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8a1878ffe6e6", "final": {"type": "number", "answer": 6}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b290d99f9130", "final": {"type": "percent", "answer": -6.15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_bae86e8e80f2", "final": {"type": "number", "answer": 1061632500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a85371a13fe2", "final": {"type": "string", "answer": "Cáp Type-C 1m"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c90bed5d2614", "final": {"type": "date", "answer": "2026-04-02"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c9afaa1f4f9e", "final": {"type": "number", "answer": 11}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d622b78573c8", "final": {"type": "number", "answer": 7}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_605c59254c52", "final": {"type": "list", "answer": [62390000, 7123000]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_807c3cdae34f", "final": {"type": "percent", "answer": 8.04}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_85b3a96e689b", "final": {"type": "number", "answer": 63664000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_76bdadbeb802", "final": {"type": "string", "answer": "Võ Ngọc Hằng"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e2a2674f8f4d", "final": {"type": "number", "answer": 85964500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e53ff8441ef1", "final": {"type": "number", "answer": 897850000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e9bb51886662", "final": {"type": "number", "answer": 1024950500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ee860111a8df", "final": {"type": "number", "answer": 7000000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ed841139ac0a", "final": {"type": "number", "answer": 6619432500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f0c8b2fbb77f", "final": {"type": "number", "answer": 42609000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1c2ff6b4820f", "final": {"type": "string", "answer": "Costar Omega 3 1000mg lọ 100 viên"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0329c9711c55", "final": {"type": "number", "answer": 108}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0b0081426a17", "final": {"type": "number", "answer": 12823000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0bac8c88238d", "final": {"type": "number", "answer": 15535000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_128fd07d838e", "final": {"type": "number", "answer": 44}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_318e4b474262", "final": {"type": "number", "answer": 15753000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5ac3fc3e264c", "final": {"type": "percent", "answer": 39.36}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_37a4aca072a6", "final": {"type": "number", "answer": 1544358000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_48469d4fc5d1", "final": {"type": "date", "answer": "2025-08-30"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_599dbed4790f", "final": {"type": "number", "answer": 39}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_545c34b86eb0", "final": {"type": "number", "answer": 4080}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f82dc784b8c9", "final": {"type": "abstain"}, "conf": 0.4, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_5cb9576befc6", "final": {"type": "number", "answer": 500782000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_66ee0467ce9e", "final": {"type": "number", "answer": 55}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7dbd343490cd", "final": {"type": "number", "answer": 4205}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_88aeb2f7b1a7", "final": {"type": "number", "answer": 17912000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8620011d3670", "final": {"type": "number", "answer": 611276000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_acfd51bb9870", "final": {"type": "number", "answer": 10706000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_31dad3219917", "final": {"type": "number", "answer": 3116557000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a13017cca903", "final": {"type": "number", "answer": 2007153000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a5c0d50944b4", "final": {"type": "number", "answer": 229}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8694ac4443ef", "final": {"type": "number", "answer": 265}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c04e8d3d46b0", "final": {"type": "number", "answer": 558558500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_95427850405e", "final": {"type": "number", "answer": 5322}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c4b294bc0479", "final": {"type": "number", "answer": 1480662000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d29c19d6d13e", "final": {"type": "number", "answer": 1815020000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_eb7f3881e7e9", "final": {"type": "date", "answer": "2025-06-28"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6022f2c64913", "final": {"type": "number", "answer": 35550243}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5f2d481dc5d4", "final": {"type": "percent", "answer": -7.46}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5d05956fc827", "final": {"type": "percent", "answer": -22.31}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_656e9a89ca5d", "final": {"type": "number", "answer": 52}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_665fbfdbfb70", "final": {"type": "number", "answer": 176417900}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6779a7bd2b29", "final": {"type": "percent", "answer": 24.09}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_049f0a34efdc", "final": {"type": "number", "answer": 197}, "conf": 0.7936507936507936, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_6eb11974483f", "final": {"type": "number", "answer": 817879400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7470c487f115", "final": {"type": "list", "answer": [14000, 31000]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_715e82ce7602", "final": {"type": "number", "answer": 1196905}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b53e7cf12ac2", "final": {"type": "list", "answer": ["Cà phê sữa (M)", "Trà đào cam sả (M)", "Cà phê đen (M)", "Trà sữa trân châu (M)", "Bạc xỉu (M)"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b7bc96270d9f", "final": {"type": "number", "answer": 31}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ba2fc11fac40", "final": {"type": "number", "answer": 39571500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_bfbe25641230", "final": {"type": "number", "answer": 3100314}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c4eef10ab4ae", "final": {"type": "string", "answer": "Cà phê sữa (M)"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cda272637d58", "final": {"type": "number", "answer": 67001700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_51621c1657c5", "final": {"type": "number", "answer": 1074473000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e9eeeaa6cb03", "final": {"type": "number", "answer": 171}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_f56deeb4120b", "final": {"type": "date", "answer": "2025-12"}, "conf": 0.5634920634920635, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_83e204622a9f", "final": {"type": "number", "answer": 6825000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9f4af1e4fecd", "final": {"type": "number", "answer": 168700000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_df258c67efec", "final": {"type": "number", "answer": 19}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a29355405c06", "final": {"type": "number", "answer": 82}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f963e5fc774c", "final": {"type": "percent", "answer": 127.59}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fbf739189e42", "final": {"type": "number", "answer": 4549169}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fb4bf09137a7", "final": {"type": "boolean", "answer": true}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ffc8757f6b7d", "final": {"type": "number", "answer": 229}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f9182884552a", "final": {"type": "number", "answer": 42484200}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f1772e835811", "final": {"type": "number", "answer": 65110500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_052834325528", "final": {"type": "abstain"}, "conf": 0.3333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_dbb9f4aff4c3", "final": {"type": "number", "answer": 2220000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3766bf6cf1c6", "final": {"type": "number", "answer": 842}, "conf": 0.6615384615384616, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_edce3c50d4f7", "final": {"type": "number", "answer": 7024406500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6a752a1d37b5", "final": {"type": "string", "answer": "Bánh tiramisu"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f5fae09ccd1e", "final": {"type": "number", "answer": 7}, "conf": 0.9047619047619047, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_dfe6c970b819", "final": {"type": "date", "answer": "2025-02-02"}, "conf": 0.5206349206349206, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b4ad3b8d023f", "final": {"type": "number", "answer": 114}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0a9819711554", "final": {"type": "list", "answer": [8000, 4000]}, "conf": 0.5574912891986062, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ce8675d1ef06", "final": {"type": "number", "answer": -34}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_97a88c5a5568", "final": {"type": "number", "answer": 26}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c810dcd56aa3", "final": {"type": "percent", "answer": 8.6}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8cb214a6bdcd", "final": {"type": "number", "answer": 94}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5bfa542cd172", "final": {"type": "number", "answer": 871448000}, "conf": 0.5444444444444445, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_650a53225054", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6396e1b202a6", "final": {"type": "list", "answer": [231948500, 239084500, 243796000]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f3a93a869037", "final": {"type": "number", "answer": 23590500}, "conf": 0.5625, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_29efb04a938b", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ca1e5f9e682b", "final": {"type": "date", "answer": "2025-03"}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_32b653051a42", "final": {"type": "number", "answer": 530}, "conf": 0.5138888888888888, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ffd749264313", "final": {"type": "percent", "answer": 1.25}, "conf": 0.711111111111111, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_0878814b6a76", "final": {"type": "string", "answer": "Cty Trương Hoa"}, "conf": 0.6282051282051282, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ce16270f4c20", "final": {"type": "number", "answer": 5868}, "conf": 0.6904761904761905, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_64045044c253", "final": {"type": "abstain"}, "conf": 0.3125, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_cbf274008dc9", "final": {"type": "date", "answer": "2026-03"}, "conf": 0.5333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_0ca19cd317cb", "final": {"type": "list", "answer": ["Nhiệt kế điện tử Microlife MT500", "Tiffy Dey hộp 25 vỉ x 4 viên", "Cao Sao Vàng TW3 hộp 3g", "Nước muối sinh lý Natri clorid 0,9% Vĩnh Phúc chai 500ml", "Siro ăn ngon Ích Nhi Plus chai 100ml", "Prednisolon 5mg Boston chai 500 viên", "Panadol Extra hộp 15 vỉ x 12 viên", "Fugacar 500mg hộp 1 viên", "Băng cá nhân Urgo Transparent hộp 100 miếng", "Kudos Vitamin C 1000mg viên sủi tuýp 20 viên"]}, "conf": 0.857142857142857, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_aea7033d3c8c", "final": {"type": "string", "answer": "Zalo"}, "conf": 0.6428571428571429, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_f66f667088cb", "final": {"type": "list", "answer": ["Mì Hảo Hảo tôm chua cay", "Nước suối Aquafina 500ml", "Trứng gà so"]}, "conf": 0.7424242424242424, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7f7b0eab2ab3", "final": {"type": "number", "answer": 20023000}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c28a03d7a959", "final": {"type": "abstain"}, "conf": 0.4375, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_9f57a164d2b7", "final": {"type": "list", "answer": [431915500, 513220500, 442066500]}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_fbaf2023cfb6", "final": {"type": "number", "answer": 1409}, "conf": 0.6875, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_210d0cfc81e5", "final": {"type": "date", "answer": "2028-01-16"}, "conf": 0.5545454545454546, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1019063a351e", "final": {"type": "number", "answer": 54100000}, "conf": 0.9444444444444444, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_3ac94b30991c", "final": {"type": "abstain"}, "conf": 0.375, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_f9912ee059c9", "final": {"type": "number", "answer": 90158700}, "conf": 0.5814814814814815, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_a652f5fcb0fe", "final": {"type": "number", "answer": 34}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b5e65648c9dc", "final": {"type": "percent", "answer": 2.25}, "conf": 0.5333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_d99e832f3190", "final": {"type": "number", "answer": 82}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_fb409424a396", "final": {"type": "abstain"}, "conf": 0.42857142857142855, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_9ee4a6de0ca1", "final": {"type": "number", "answer": 0}, "conf": 0.5388888888888889, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b621b30b4b22", "final": {"type": "number", "answer": 177348}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_9eddae22a244", "final": {"type": "number", "answer": 164}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b88ec465ade3", "final": {"type": "number", "answer": 12}, "conf": 0.8027210884353742, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_f264ab49a2c8", "final": {"type": "number", "answer": 64}, "conf": 0.5357686453576864, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_af96aaf1f4e2", "final": {"type": "number", "answer": 35}, "conf": 0.5632850241545894, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_0b854610073b", "final": {"type": "number", "answer": 36300000}, "conf": 0.6041666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_dae1955698d3", "final": {"type": "number", "answer": 2125000}, "conf": 0.5625, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_65b2eba9c91c", "final": {"type": "number", "answer": 161231084}, "conf": 0.6388888888888888, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_547fb41358ed", "final": {"type": "unanswerable", "answer": null}, "conf": 0.5, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_6e929cf36203", "final": {"type": "abstain"}, "conf": 0.35714285714285715, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_62010007db00", "final": {"type": "abstain"}, "conf": 0.25, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_fa1084dc1d3f", "final": {"type": "unanswerable", "answer": null}, "conf": 0.5454545454545454, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_701bf339bd9e", "final": {"type": "number", "answer": 49300000}, "conf": 0.7666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1040545087b6", "final": {"type": "number", "answer": 55500000}, "conf": 0.8181818181818181, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_dcd34fbf05f0", "final": {"type": "abstain"}, "conf": 0.4, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_ab0d1507c71c", "final": {"type": "percent", "answer": 5.15}, "conf": 0.6666666666666666, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_8db0ee0aa5d1", "final": {"type": "number", "answer": 14835572000}, "conf": 0.9047619047619047, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_3a9665052018", "final": {"type": "percent", "answer": 4.6}, "conf": 0.5641025641025641, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_95f39e8f5fd0", "final": {"type": "percent", "answer": 15.87}, "conf": 0.5111111111111111, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_63cf15f33b1c", "final": {"type": "string", "answer": "Sinh tố xoài (M)"}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_6ed01172bd03", "final": {"type": "unanswerable", "answer": null}, "conf": 0.5833333333333334, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_12712b3cc328", "final": {"type": "number", "answer": 6}, "conf": 0.7272727272727273, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_25af2ef67065", "final": {"type": "percent", "answer": 4.63}, "conf": 0.6153846153846154, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_a18fefbb07ad", "final": {"type": "abstain"}, "conf": 0.2727272727272727, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_0594583b3d46", "final": {"type": "abstain"}, "conf": 0.4166666666666667, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_101a2b744e56", "final": {"type": "number", "answer": 1}, "conf": 0.7666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_338d0179f66d", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_408c2137f088", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4e1c4ca89508", "final": {"type": "string", "answer": "Kính cường lực 9D"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5176249df658", "final": {"type": "number", "answer": 3624621}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_473593cb045c", "final": {"type": "list", "answer": ["Kính cường lực 9D", "Ốp lưng silicon iPhone", "Ốp lưng trong suốt"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6a138cfe1257", "final": {"type": "percent", "answer": 36.18}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_69dbf1d3cdc5", "final": {"type": "string", "answer": "Mai Hoa Anh"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6f1b365ba206", "final": {"type": "string", "answer": "Ống PVC Bình Minh D90 cây 4m"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_71ead7c337f8", "final": {"type": "number", "answer": 3631}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7c851b82747f", "final": {"type": "number", "answer": 11376591900}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6bd9c92d0d7e", "final": {"type": "percent", "answer": -31.89}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8f668570af59", "final": {"type": "number", "answer": 1631631}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7be6937cf882", "final": {"type": "number", "answer": 96}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_90375e5beeab", "final": {"type": "number", "answer": 75}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_837cd5892764", "final": {"type": "percent", "answer": 0.49}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8046cdbac1d4", "final": {"type": "number", "answer": 7}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d69464555c58", "final": {"type": "number", "answer": 35}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_91a333e16eae", "final": {"type": "boolean", "answer": false}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d8da698d3e5d", "final": {"type": "number", "answer": 4267}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e2bedb87cc3d", "final": {"type": "number", "answer": 2509876000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_edf890b68dfd", "final": {"type": "number", "answer": 46}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ef0073de2935", "final": {"type": "number", "answer": 674966000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f7fcc8fad30b", "final": {"type": "number", "answer": 37}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_936c6ef612b2", "final": {"type": "number", "answer": 106}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fbc812dde384", "final": {"type": "string", "answer": "Sữa pha sẵn GrowPLUS+ đỏ 110ml lốc 4"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fb290d8944ec", "final": {"type": "date", "answer": "2025-07-14"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fc4223c66403", "final": {"type": "percent", "answer": 8.26}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_57028085023b", "final": {"type": "number", "answer": 64003275}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_57632dfbe478", "final": {"type": "number", "answer": 275770400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5598af728eea", "final": {"type": "list", "answer": ["Băng cá nhân Urgo Transparent hộp 100 miếng", "Tiffy Dey hộp 25 vỉ x 4 viên", "Panadol 500mg hộp 10 vỉ x 12 viên"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_51f4751e4eb3", "final": {"type": "list", "answer": [12361000, 30121300]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_624351bf768f", "final": {"type": "number", "answer": 80104100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_64e62d4bea7d", "final": {"type": "number", "answer": 102978}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_60022421ae73", "final": {"type": "number", "answer": 20}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_49b8346acb90", "final": {"type": "number", "answer": 288326400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_611bf24dd2f9", "final": {"type": "string", "answer": "Cty Trịnh Giang"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_55e2e56d2787", "final": {"type": "date", "answer": "2026-05-30"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_55929bed8ced", "final": {"type": "number", "answer": 501}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5415c46d8a2e", "final": {"type": "number", "answer": 13}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5860bae9659f", "final": {"type": "percent", "answer": -2.72}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_625ec1abde64", "final": {"type": "number", "answer": 1955535700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6dd1a1921d60", "final": {"type": "number", "answer": 157125}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6c9f50b55906", "final": {"type": "percent", "answer": 25.26}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c3652d93727e", "final": {"type": "number", "answer": 282622500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c4fc35ebf2ee", "final": {"type": "string", "answer": "Dầu ăn Tường An 1L"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d4b2f0aaf69a", "final": {"type": "number", "answer": 2516000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_dad922a3924a", "final": {"type": "number", "answer": 52408300}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d95266d008e5", "final": {"type": "number", "answer": 6565000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d52c9b04ca54", "final": {"type": "boolean", "answer": false}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c8f95328ca75", "final": {"type": "percent", "answer": 17.5}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_dce7cb2e38a8", "final": {"type": "number", "answer": 85}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e2bfd7f28a9a", "final": {"type": "percent", "answer": -3.27}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d9f743469198", "final": {"type": "percent", "answer": 175.44}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e966e0e6802e", "final": {"type": "date", "answer": "2026-03"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e4641e459f38", "final": {"type": "list", "answer": ["Đàm Dũng Khánh", "Đinh Thảo Thanh", "Lương Anh Thảo", "Lê Đức Lan", "Tăng Hạnh Long"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ee58dba4a73e", "final": {"type": "number", "answer": 557246}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ec9ca5f0dec1", "final": {"type": "number", "answer": 448559000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e3f5a85b72b4", "final": {"type": "list", "answer": [313077600, 300911000, 305639200]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f83c96ab5362", "final": {"type": "percent", "answer": 17.67}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ffaf8aecc5ea", "final": {"type": "number", "answer": 544455}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_99f979b5d0b4", "final": {"type": "percent", "answer": 3.07}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fe2a9de157ee", "final": {"type": "number", "answer": 7}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b127103da0d2", "final": {"type": "number", "answer": 20339500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b342fe1e1211", "final": {"type": "string", "answer": "Hà Loan Đạt"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e4fd11ebbadf", "final": {"type": "number", "answer": 106139500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d3b768308def", "final": {"type": "percent", "answer": -6.69}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ec8d9cfa0f6b", "final": {"type": "number", "answer": 227956}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_037178b58fcc", "final": {"type": "number", "answer": 6134}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_03bee605bf7f", "final": {"type": "number", "answer": 281304400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_01d1099489a0", "final": {"type": "percent", "answer": -2.94}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0dff1966b7c3", "final": {"type": "number", "answer": 106712}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_05421814d0e3", "final": {"type": "number", "answer": 2826100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0da15db21978", "final": {"type": "percent", "answer": 3.28}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_105bc863feea", "final": {"type": "number", "answer": 267653200}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_107e86e608dc", "final": {"type": "number", "answer": 264831100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1473ee8c46fd", "final": {"type": "percent", "answer": -14.34}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0ea6fdb19b86", "final": {"type": "percent", "answer": -27.94}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_576830198619", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5aad27b686f6", "final": {"type": "number", "answer": 125072}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_21c1f1a2bf98", "final": {"type": "percent", "answer": -7.53}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_18d3b12b578f", "final": {"type": "percent", "answer": -33.51}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5b50ea8b0bae", "final": {"type": "number", "answer": 741400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_60f97553a06e", "final": {"type": "number", "answer": 1117431900}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6066d5e1f466", "final": {"type": "number", "answer": 92}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6cd986ac9717", "final": {"type": "number", "answer": 20}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7672cf2a7ca9", "final": {"type": "number", "answer": 877769700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_69cc1e2a87ca", "final": {"type": "number", "answer": 10}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7f8c9bee1754", "final": {"type": "number", "answer": 272091800}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_81ad9f46a16d", "final": {"type": "list", "answer": ["Kiều Hà Minh", "Quách Hồng Thanh", "Đặng Hoa Trang", "Diệp Đức Lan", "Đoàn Quang Dương"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7f61dbb4d934", "final": {"type": "number", "answer": 1210}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_766d53528ee4", "final": {"type": "boolean", "answer": false}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7d043dbd4908", "final": {"type": "list", "answer": [288932500, 294011600, 267298900]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_89d88aa1eae8", "final": {"type": "string", "answer": "Tạ Nhung Loan"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_827cb0083082", "final": {"type": "number", "answer": 14}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8eacb946fa1a", "final": {"type": "number", "answer": 76743200}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8fafcdce942f", "final": {"type": "number", "answer": 2454954900}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9498d6b37278", "final": {"type": "percent", "answer": 2.65}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9a905959d8ff", "final": {"type": "number", "answer": 14263}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9692709e7d81", "final": {"type": "number", "answer": 7504200}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_978b7f61250e", "final": {"type": "percent", "answer": 24.91}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a0b76dd10f70", "final": {"type": "number", "answer": 99192}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a1195f9fe04c", "final": {"type": "percent", "answer": 2.43}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a010ef0a217f", "final": {"type": "number", "answer": 9}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3fb7bbc8ec8a", "final": {"type": "number", "answer": 1892566000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a1deeb0f213d", "final": {"type": "number", "answer": 631}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4cffc6443c2c", "final": {"type": "number", "answer": 283530300}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a418a876f69f", "final": {"type": "date", "answer": "2025-09-02"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4f77d67fdf9c", "final": {"type": "number", "answer": 13}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b9c6ed02f53d", "final": {"type": "number", "answer": 291328400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c011cf38470d", "final": {"type": "number", "answer": 117613}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3b20bc6d6427", "final": {"type": "percent", "answer": 32.35}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c0d31d97c743", "final": {"type": "percent", "answer": 8.99}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6fe399991adb", "final": {"type": "number", "answer": 52}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c65b4afeafd1", "final": {"type": "percent", "answer": 16.18}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cd3203f2d813", "final": {"type": "number", "answer": 120}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d5157cc4acfe", "final": {"type": "number", "answer": 19008100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e39bf5fd32c6", "final": {"type": "string", "answer": "Phùng Thắng Bảo"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e6ffb654ce0b", "final": {"type": "percent", "answer": 0.8}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f8715dcf6ad0", "final": {"type": "number", "answer": 22448}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_da623a004480", "final": {"type": "number", "answer": 55000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_f4a5eee7f524", "final": {"type": "boolean", "answer": false}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fc4f06f3006b", "final": {"type": "percent", "answer": -6.43}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fda16d2c768c", "final": {"type": "number", "answer": 1461800}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4217e6c4305e", "final": {"type": "number", "answer": 84}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_403bdc83bc9c", "final": {"type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Mai Loan Đạt", 157000], ["Chung Loan Hiếu", 138000], ["Tống Giang Ngọc", 135000], ["Trương Hoa Hùng", 123000], ["Lâm Hiếu Nam", 119000]]}}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_44f5bc574708", "final": {"type": "number", "answer": 1134302}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_481f40acc2f3", "final": {"type": "number", "answer": 164406262}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_33dcfa1e37c9", "final": {"type": "percent", "answer": 3.33}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_45d6cbc135b3", "final": {"type": "percent", "answer": -3.6}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4b260819febf", "final": {"type": "number", "answer": 70872}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_50152c2cebd6", "final": {"type": "number", "answer": 14097}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4c849b6df27d", "final": {"type": "number", "answer": 133}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_51ba2dc4fd49", "final": {"type": "number", "answer": 71510}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_49f27251c376", "final": {"type": "number", "answer": 266992100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_596f5cfa121c", "final": {"type": "number", "answer": 6288000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_59b28582f30e", "final": {"type": "list", "answer": [382834, 387167, 357338]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b3059f66db30", "final": {"type": "string", "answer": "A.Phúc"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1bd68f25b288", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_15dd37187b0d", "final": {"type": "percent", "answer": 62.8}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9142ba5ec94a", "final": {"type": "percent", "answer": -4.82}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_92353891a456", "final": {"type": "number", "answer": 129276000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_929a9dcb0a38", "final": {"type": "number", "answer": 1101}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_935d887c9cd9", "final": {"type": "number", "answer": 19}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_93ff6d28c50b", "final": {"type": "number", "answer": 704836}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_99045ceea1f1", "final": {"type": "boolean", "answer": true}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a420c0b8ca8a", "final": {"type": "number", "answer": 342232500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9ff971a2b435", "final": {"type": "number", "answer": 325}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a57177cbc6da", "final": {"type": "number", "answer": 237244800}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b0ce2336c79b", "final": {"type": "number", "answer": 1978320900}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b40a1380b99c", "final": {"type": "percent", "answer": 27.73}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b4171cc74531", "final": {"type": "number", "answer": 23}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_aa47ce3a127a", "final": {"type": "list", "answer": [449900, 448500, 437072]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_632bc2910cb3", "final": {"type": "number", "answer": 7255000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_fe36c469e9f8", "final": {"type": "list", "answer": [45854500, 95689000]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5816b4178500", "final": {"type": "percent", "answer": 38.52}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_58215441e762", "final": {"type": "percent", "answer": 19.18}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5ab41aca6861", "final": {"type": "percent", "answer": 29.05}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5b4680c1ccf2", "final": {"type": "string", "answer": "Bia Sài Gòn Special lon"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6ad74d9cb245", "final": {"type": "number", "answer": 517704}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_693e2a329c10", "final": {"type": "list", "answer": ["Nguyễn Trang Loan", "Thái Khoa Phúc", "Tăng Hùng Hà", "Diệp Khoa Châu", "Tăng An Khánh"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_67412073e116", "final": {"type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Tăng Đạt Phương", 853000], ["Lý Tâm Khánh", 725000], ["Hứa Châu Hùng", 456500], ["Bùi Tâm Mai", 449500], ["Vương Nhung Trung", 443000]]}}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6bf3c6b59786", "final": {"type": "percent", "answer": 89.94}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8ef1f824e97e", "final": {"type": "number", "answer": 414}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_527c4e439966", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_583a942f4d85", "final": {"type": "number", "answer": 102408}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3cac54cdb967", "final": {"type": "number", "answer": 93247100}, "conf": 0.5555555555555556, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_68d46c34c960", "final": {"type": "list", "answer": [278868200, 264574100, 279109500]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_83107c3303b5", "final": {"type": "number", "answer": 57891900}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c8c553b90c18", "final": {"type": "number", "answer": 1246}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d62189fd9ee2", "final": {"type": "date", "answer": "2025-05"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cc893126c047", "final": {"type": "string", "answer": "Dầu gội Clear 630g"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b3c75e9f2c97", "final": {"type": "number", "answer": 520}, "conf": 0.9047619047619047, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_caba1ee84f03", "final": {"type": "list", "answer": [319121500, 273997500, 253600200]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5e570feb5c4c", "final": {"type": "percent", "answer": 6.51}, "conf": 0.75, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ca85266e5cfa", "final": {"type": "number", "answer": 100}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5aef26f2ebb6", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1fafcc702c72", "final": {"type": "string", "answer": "Pharmaton Essential hộp 30 viên"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4809f845893d", "final": {"type": "number", "answer": 0}, "conf": 0.5, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e848f74be11e", "final": {"type": "number", "answer": 685147500}, "conf": 0.7916666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_cc69cb411f24", "final": {"type": "number", "answer": 27}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5f750197dcc0", "final": {"type": "percent", "answer": 18.57}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5f4f4f35f9fb", "final": {"type": "number", "answer": 538187}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5971d8343cc7", "final": {"type": "number", "answer": 22}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_42f82d1abde5", "final": {"type": "percent", "answer": -21.02}, "conf": 0.6, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_4e3c77d294d3", "final": {"type": "percent", "answer": 89.26}, "conf": 0.5793650793650793, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_501cc0b20b1b", "final": {"type": "percent", "answer": -50}, "conf": 0.5333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5df03c21af61", "final": {"type": "percent", "answer": 46.28}, "conf": 0.7666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_bff16856342f", "final": {"type": "number", "answer": 48274000}, "conf": 0.6515151515151515, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_6fbb662472fc", "final": {"type": "unanswerable", "answer": null}, "conf": 0.6, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_65162e8741f6", "final": {"type": "percent", "answer": -51.52}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_62cb89435b45", "final": {"type": "number", "answer": 7260700}, "conf": 0.8055555555555556, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_d778fbbd804e", "final": {"type": "percent", "answer": 6.39}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_6bf3b5bc42fc", "final": {"type": "number", "answer": 62}, "conf": 0.7000000000000001, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7260611e1637", "final": {"type": "number", "answer": 192663000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_690a98214478", "final": {"type": "percent", "answer": 7.29}, "conf": 0.738095238095238, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_37d9de7f49d9", "final": {"type": "percent", "answer": -1.5}, "conf": 0.5666666666666667, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5e7b3b2822b9", "final": {"type": "percent", "answer": -41.08}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ad512cd0cb75", "final": {"type": "string", "answer": "Đàm Lan An"}, "conf": 0.5333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_9f2824253517", "final": {"type": "number", "answer": 116}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5a5a452f87d4", "final": {"type": "percent", "answer": 48.09}, "conf": 0.5857142857142857, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_647711394825", "final": {"type": "number", "answer": 92899900}, "conf": 0.6980392156862745, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_49286a4905a7", "final": {"type": "abstain"}, "conf": 0.3333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_2199b91fe707", "final": {"type": "date", "answer": "2025-03-14"}, "conf": 0.7333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_9956cc60cbb1", "final": {"type": "percent", "answer": -3.67}, "conf": 0.6190476190476191, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_a225dc12182c", "final": {"type": "string", "answer": "Hà Loan Đạt"}, "conf": 0.6952380952380952, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c33e026f59e7", "final": {"type": "string", "answer": "Dầu ăn Simply 2L"}, "conf": 0.7857142857142857, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_4162fa76a222", "final": {"type": "abstain"}, "conf": 0.2727272727272727, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_8c680cbcf6b0", "final": {"type": "date", "answer": "2025-05"}, "conf": 0.6190476190476191, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_f18a6235b749", "final": {"type": "abstain"}, "conf": 0.23076923076923078, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_8caa49a3fc7d", "final": {"type": "number", "answer": 3029500}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5dce492e5f1a", "final": {"type": "percent", "answer": -89.46}, "conf": 0.5074074074074074, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_54e2a0754e8b", "final": {"type": "number", "answer": 2507}, "conf": 0.8666666666666667, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ef32b18b17d5", "final": {"type": "list", "answer": [444818000, 450559500, 466935000]}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_682e548226be", "final": {"type": "list", "answer": [242091500, 234440500, 258096500]}, "conf": 0.5857142857142856, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7305db18bf51", "final": {"type": "number", "answer": 19}, "conf": 0.5714285714285714, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c6bfd1c2506f", "final": {"type": "number", "answer": 1282}, "conf": 0.5333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b6d750b9ba50", "final": {"type": "abstain"}, "conf": 0.45454545454545453, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_94cca7f32768", "final": {"type": "number", "answer": 10}, "conf": 0.5980392156862745, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c69505022fd3", "final": {"type": "table", "answer": {"columns": ["Thợ", "Tiền hoa hồng"], "rows": [["Hà Loan Đạt", 7194720], ["Đoàn Bảo Phúc", 7183120], ["Lương Chi Đức", 6234625], ["Đàm Lan An", 6181560]]}}, "conf": 0.7647058823529411, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_a897b21c864d", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_f0bb331484b7", "final": {"type": "number", "answer": 575}, "conf": 0.5563725490196079, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c803650fe803", "final": {"type": "number", "answer": 39}, "conf": 0.9047619047619047, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_603c21ebef86", "final": {"type": "percent", "answer": 20.22}, "conf": 0.5384615384615384, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_facbc1f20a16", "final": {"type": "list", "answer": [427810500, 486590500, 456510000]}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ed68b2a7cb63", "final": {"type": "abstain"}, "conf": 0.3333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_76edb5c73d98", "final": {"type": "number", "answer": 23}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5a9e0b8dce13", "final": {"type": "number", "answer": 47}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c38425d8aec8", "final": {"type": "number", "answer": 29}, "conf": 0.625, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_4b82c6814a0d", "final": {"type": "percent", "answer": 78.49}, "conf": 0.5277777777777777, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_be70a1626009", "final": {"type": "abstain"}, "conf": 0.3, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_c3158f13ca1c", "final": {"type": "number", "answer": 200}, "conf": 0.8181818181818181, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_eb606434a18e", "final": {"type": "number", "answer": 15}, "conf": 0.875, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_51b4d4e4e063", "final": {"type": "abstain"}, "conf": 0.3333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_6d42e3d7b79b", "final": {"type": "number", "answer": 798272000}, "conf": 0.5, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_5c0acaa8786b", "final": {"type": "number", "answer": 24000000}, "conf": 0.5, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_4c24acd737a8", "final": {"type": "number", "answer": 1706335000}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_435a38fb843b", "final": {"type": "abstain"}, "conf": 0.2222222222222222, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_78b9ca050ca1", "final": {"type": "number", "answer": 1628303500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_7cba4252429f", "final": {"type": "number", "answer": 5228708}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_733500e5c7a7", "final": {"type": "percent", "answer": -26.32}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_9c2c85d9330d", "final": {"type": "percent", "answer": 46.33}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_013b4ff35811", "final": {"type": "number", "answer": 230034300}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_009187cd2960", "final": {"type": "number", "answer": 37}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_03622bae312b", "final": {"type": "percent", "answer": 25.71}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_02feb595d6b7", "final": {"type": "number", "answer": 63}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_10831a6f3a2b", "final": {"type": "number", "answer": 152}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_169a123623e6", "final": {"type": "percent", "answer": 49.71}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_203767dd52af", "final": {"type": "number", "answer": 8}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_22a7258b62bf", "final": {"type": "percent", "answer": -5.38}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2927db159ea7", "final": {"type": "number", "answer": 832}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_30b4b858e958", "final": {"type": "list", "answer": ["Kẽm buộc 1mm", "Thép hộp 40x80 dày 1.4mm cây 6m", "Xi măng INSEE Power-S bao 50kg", "Đinh 5 phân", "Xi măng Hà Tiên PCB40 bao 50kg"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1a312c2f71ac", "final": {"type": "percent", "answer": 33.33}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_bfe72da5b2f7", "final": {"type": "number", "answer": 1356573}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c03e79a805ac", "final": {"type": "number", "answer": 1117983600}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_36182821dc30", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_32ee3f6d23b0", "final": {"type": "list", "answer": [1082991000, 1220545900, 1066528100]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c1976ad22afb", "final": {"type": "number", "answer": 7}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c34ede239480", "final": {"type": "number", "answer": 54}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c8fde55544b6", "final": {"type": "number", "answer": 671}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cdf9857d8c64", "final": {"type": "string", "answer": "Cty Nguyễn Hương"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ce3bd6c20b25", "final": {"type": "number", "answer": 6}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d3390eedd851", "final": {"type": "number", "answer": 946996800}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d790faf2293a", "final": {"type": "number", "answer": 8794578200}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d6ff23824813", "final": {"type": "string", "answer": "Thân Khánh Hoàng"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_08c521dda3d9", "final": {"type": "number", "answer": 1974947000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0ae9b7cf7003", "final": {"type": "number", "answer": 41959500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d965d0bc2205", "final": {"type": "percent", "answer": 24.59}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_17743de8e260", "final": {"type": "number", "answer": 36}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2edd77d63f85", "final": {"type": "percent", "answer": 2.86}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_219f01962c05", "final": {"type": "list", "answer": [648052000, 31254500]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_32e315da86e6", "final": {"type": "date", "answer": "2025-09-03"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3d543c5b23c8", "final": {"type": "percent", "answer": 22.74}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3f61cde37841", "final": {"type": "date", "answer": "2025-08-02"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4647d2db74e4", "final": {"type": "number", "answer": 4206}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4b0def80878e", "final": {"type": "number", "answer": 19910500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_39abf982c56e", "final": {"type": "string", "answer": "Costar Omega 3 1000mg lọ 100 viên"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_41e962bb640f", "final": {"type": "number", "answer": 51408400}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_468d8ef6f198", "final": {"type": "number", "answer": 9794300}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3c935a94dc79", "final": {"type": "list", "answer": [2506050, 250200, 1954218]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4b2f4e1688fa", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4b3bc2d8b207", "final": {"type": "number", "answer": 20}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4c8fda6cf0df", "final": {"type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Tô Bình Đức", 728400], ["Tống Thu Hương", 510334], ["Tăng Hà Hà", 200800]]}}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_beeab8ab97fc", "final": {"type": "number", "answer": 101589}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_481401f5b908", "final": {"type": "date", "answer": "2027-01-17"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c0f375f0d480", "final": {"type": "percent", "answer": 0.98}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ca9e9c233325", "final": {"type": "number", "answer": 3140750}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c1a3be0d7376", "final": {"type": "number", "answer": 2}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cfa36137a14a", "final": {"type": "percent", "answer": 16.57}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d1e7b2bde646", "final": {"type": "number", "answer": 7409700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d3ed369d528c", "final": {"type": "number", "answer": 16}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d721d81da2d5", "final": {"type": "number", "answer": 2078600}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e5fc1ce4c0a1", "final": {"type": "number", "answer": 6494800}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d76d6563e547", "final": {"type": "number", "answer": 60878528}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e97f2c304dc0", "final": {"type": "percent", "answer": 9.44}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ab595fc253e0", "final": {"type": "number", "answer": 141073}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_aa7c51569962", "final": {"type": "percent", "answer": -9.01}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_af1b6f2ebf9b", "final": {"type": "number", "answer": 3084538200}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b3c49510b3b7", "final": {"type": "percent", "answer": 16.59}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b723bbe29e20", "final": {"type": "number", "answer": 181}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b963dcade0d3", "final": {"type": "number", "answer": 56}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_bf314c953c1e", "final": {"type": "number", "answer": 18794000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_be8b3469756d", "final": {"type": "boolean", "answer": false}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c0a590d269df", "final": {"type": "number", "answer": 699}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_00c4e24fa228", "final": {"type": "number", "answer": 16226000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c2eaa7985cf2", "final": {"type": "percent", "answer": 6.91}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_099a18d1ed60", "final": {"type": "number", "answer": 466616500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_07b7be37628b", "final": {"type": "percent", "answer": -8.16}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_162c076a350d", "final": {"type": "number", "answer": 1529866500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2767f0fad8f7", "final": {"type": "number", "answer": 432382000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3e36677e62a9", "final": {"type": "percent", "answer": 44.07}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_344459d9755f", "final": {"type": "percent", "answer": -0.32}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4263ec258265", "final": {"type": "number", "answer": 553626}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2dc771b39303", "final": {"type": "number", "answer": 12}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3e6a7564332d", "final": {"type": "date", "answer": "2025-10-04"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_40a6843b2c37", "final": {"type": "number", "answer": 4038000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4067c5f50ef7", "final": {"type": "number", "answer": 470}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8e50e264d157", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4d15340145ad", "final": {"type": "date", "answer": "2026-08-30"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4375c623b7c7", "final": {"type": "date", "answer": "2026-01-31"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_508b7320c153", "final": {"type": "number", "answer": 261978500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_78126a171991", "final": {"type": "number", "answer": 3294000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_334da0ba920d", "final": {"type": "number", "answer": 6}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_014cdcc1da6e", "final": {"type": "number", "answer": 9341000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0f7d15097a8c", "final": {"type": "number", "answer": 4917}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_bf178ff24ac3", "final": {"type": "list", "answer": [1063063100, 1082991000, 1220545900]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_14565ad8b459", "final": {"type": "number", "answer": 26744500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_244e072341dc", "final": {"type": "number", "answer": 209655700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_20fc83f06434", "final": {"type": "number", "answer": 2568866500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_27e230ca0ed6", "final": {"type": "percent", "answer": 6.64}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2e131da8a651", "final": {"type": "percent", "answer": 2.15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_39f9f14db2a0", "final": {"type": "number", "answer": 25}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3d519482d665", "final": {"type": "number", "answer": 61}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3cd196c4dc4d", "final": {"type": "number", "answer": 29}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3b67b4302890", "final": {"type": "percent", "answer": 8.21}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3f807c338eb9", "final": {"type": "number", "answer": 80336000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4ad0311ba5f9", "final": {"type": "number", "answer": 25753000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4bb10819b3a3", "final": {"type": "percent", "answer": 1.83}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2f1be262f623", "final": {"type": "number", "answer": 3101000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4fe561cc6493", "final": {"type": "percent", "answer": 1.91}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5336ec08027b", "final": {"type": "number", "answer": 31809500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_520e8c3f5c02", "final": {"type": "number", "answer": 11245500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4e331ce1a042", "final": {"type": "number", "answer": 72476500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_599716cf226a", "final": {"type": "number", "answer": 440946500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5e195033ee9d", "final": {"type": "number", "answer": 8624000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_699d8e8772a3", "final": {"type": "number", "answer": 136837500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6a52cddced60", "final": {"type": "number", "answer": 21805000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6b9c81934530", "final": {"type": "number", "answer": 861691500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_6172ede181a5", "final": {"type": "list", "answer": [41119000, 41361000]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_75f74a3060c8", "final": {"type": "number", "answer": 533470}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_48b77f4a1b30", "final": {"type": "list", "answer": [700, 233]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_411cb8ae0f94", "final": {"type": "date", "answer": "2026-12-02"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_791de98789d5", "final": {"type": "string", "answer": "NV005"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8103cddd9040", "final": {"type": "list", "answer": ["Bia Tiger lon", "Bia Sài Gòn Special lon", "Bia Heineken lon"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_77085d36e011", "final": {"type": "number", "answer": 146562947}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_db10e5d30a18", "final": {"type": "number", "answer": 1164278}, "conf": 0.55, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_6b6025944b9d", "final": {"type": "number", "answer": 9180000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8ef70e6d70f8", "final": {"type": "list", "answer": ["Bia Tiger lon", "Bia Sài Gòn Special lon", "Bia Tiger Bạc lon"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_91368b04415b", "final": {"type": "percent", "answer": -1.58}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_980cef2c769c", "final": {"type": "percent", "answer": -12.16}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_99fba89f30fa", "final": {"type": "number", "answer": 172224000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a2ed59a92ab8", "final": {"type": "number", "answer": 38584000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_859861209455", "final": {"type": "number", "answer": 133534829}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a7dd46bc4b38", "final": {"type": "string", "answer": "Rau muống xào tỏi"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4838293f61b5", "final": {"type": "number", "answer": 109232}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_ab14596b6b93", "final": {"type": "percent", "answer": -1.22}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c788ebe0ce0b", "final": {"type": "number", "answer": 26}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_a9f96bee3fa4", "final": {"type": "number", "answer": 129843000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b3a65abd54c2", "final": {"type": "number", "answer": 2306809000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b70a59e2e970", "final": {"type": "percent", "answer": 2.25}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d0c41c37777e", "final": {"type": "number", "answer": 1849}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d75952be2f51", "final": {"type": "number", "answer": 912757000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e2f1ef732951", "final": {"type": "number", "answer": 523525}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_16e72d67a5f4", "final": {"type": "number", "answer": 32859087}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_102720daf6a9", "final": {"type": "number", "answer": 685034500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e322d691b4be", "final": {"type": "percent", "answer": -22.58}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_01ba91ff94c6", "final": {"type": "list", "answer": ["Lẩu Thái tôm cá (nhỏ)", "Canh chua cá lóc", "Bia Tiger Bạc lon", "Bia Sài Gòn Special lon", "Cánh gà chiên nước mắm"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0e1eff36bbc5", "final": {"type": "percent", "answer": 61.54}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_0bee4ad8f965", "final": {"type": "number", "answer": 496767}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0c0a1a780164", "final": {"type": "number", "answer": 101066500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_06de4545fe25", "final": {"type": "number", "answer": 14}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0e72ff8aa98e", "final": {"type": "number", "answer": 216}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_0ef1608808dd", "final": {"type": "number", "answer": 530899800}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_129b29f14e89", "final": {"type": "number", "answer": 414492100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_16ec75d6c8a4", "final": {"type": "number", "answer": 10864}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_180163673aaa", "final": {"type": "string", "answer": "NV005"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2302c71da33e", "final": {"type": "percent", "answer": 10.87}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d8706faef72f", "final": {"type": "number", "answer": 11584500}, "conf": 0.5555555555555556, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_26212108a6e6", "final": {"type": "number", "answer": 561385}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_37305e6af527", "final": {"type": "number", "answer": 259604500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3de82903c4c6", "final": {"type": "number", "answer": 1562769700}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_3e9418af3a85", "final": {"type": "number", "answer": 236728100}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_2db4f43d56bd", "final": {"type": "percent", "answer": 23.76}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_416be8994e14", "final": {"type": "number", "answer": 55}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4df5a9b089cd", "final": {"type": "number", "answer": 7146}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_429155557e11", "final": {"type": "percent", "answer": -4.82}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4cdc20a8b400", "final": {"type": "percent", "answer": 2.78}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_48cbee311a9e", "final": {"type": "percent", "answer": -33.15}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_5217c0d650c8", "final": {"type": "date", "answer": "2025-04-12"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4df64734eb4d", "final": {"type": "number", "answer": 846}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_522627a83f38", "final": {"type": "list", "answer": [1180433100, 1188573200, 728039400]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b3c5bd56d757", "final": {"type": "number", "answer": 52}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b9de131bae7d", "final": {"type": "list", "answer": ["Lâm Mai Hiếu"]}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_82711851c76a", "final": {"type": "number", "answer": 115}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1af400957d96", "final": {"type": "number", "answer": 211}, "conf": 0.9047619047619047, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_a883b37bc197", "final": {"type": "number", "answer": 31}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b696d918fcc6", "final": {"type": "number", "answer": 212292500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_b38db1ef2bcc", "final": {"type": "string", "answer": "Tăng Hùng Hà"}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_be4ad5df428d", "final": {"type": "number", "answer": 3103952000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_beed6d8924db", "final": {"type": "number", "answer": 217711900}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c76ae61c6092", "final": {"type": "number", "answer": 2002}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c6940f281136", "final": {"type": "boolean", "answer": true}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cb02efab0f93", "final": {"type": "number", "answer": 520182}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cd0cfcf59c38", "final": {"type": "number", "answer": 520092}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d2f89e3c815d", "final": {"type": "percent", "answer": 4.14}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cdd8eec83c7a", "final": {"type": "percent", "answer": 61.07}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4d20e306e0bc", "final": {"type": "list", "answer": ["Calcium Corbière Extra 10ml hộp 30 ống"]}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_37ee6372a9be", "final": {"type": "number", "answer": 41792250}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_8ab2403c8c80", "final": {"type": "number", "answer": 837243500}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_cf2c969d8471", "final": {"type": "number", "answer": 39}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_38f7a53691b3", "final": {"type": "percent", "answer": 6.65}, "conf": 0.5851851851851853, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1c7bef344864", "final": {"type": "number", "answer": 5500000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_55cfcde4c03f", "final": {"type": "number", "answer": 61427500}, "conf": 0.6722222222222223, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1fc8004b6900", "final": {"type": "number", "answer": 44}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_c0287211ca77", "final": {"type": "percent", "answer": 66.67}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_5160c511711f", "final": {"type": "number", "answer": 15859000}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d547526c4d5d", "final": {"type": "string", "answer": "NV002"}, "conf": 0.7666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_56ffb6b638d7", "final": {"type": "percent", "answer": 9.21}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_e2e4e0639619", "final": {"type": "string", "answer": "Lẩu Thái tôm cá (nhỏ)"}, "conf": 0.675, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_d62edb3b5bc6", "final": {"type": "date", "answer": "2025-07"}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_2bd15109007c", "final": {"type": "number", "answer": 2096}, "conf": 0.875, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_121c6959016d", "final": {"type": "number", "answer": 15}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1d7f8fb3a5df", "final": {"type": "unanswerable", "answer": null}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_d41b61e31b85", "final": {"type": "date", "answer": "2025-07"}, "conf": 0.5615384615384615, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1f7113a48e4b", "final": {"type": "number", "answer": 20}, "conf": 0.7023809523809523, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_20221903b95b", "final": {"type": "unanswerable", "answer": null}, "conf": 0.75, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_be3f968523bf", "final": {"type": "percent", "answer": 48.92}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_21b93db251ef", "final": {"type": "number", "answer": 1586}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_1adddf599009", "final": {"type": "number", "answer": 145}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_94f634ace6b1", "final": {"type": "number", "answer": 4617903}, "conf": 0.5, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_41a1d3818421", "final": {"type": "percent", "answer": 25.08}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b1ee04ab9d3f", "final": {"type": "date", "answer": "2026-02"}, "conf": 0.5210526315789473, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c78fdf218577", "final": {"type": "number", "answer": 792}, "conf": 0.5773809523809523, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_0acdf488056e", "final": {"type": "percent", "answer": -6.28}, "conf": 0.611111111111111, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_427b79554ed7", "final": {"type": "number", "answer": 12692000}, "conf": 0.6666666666666667, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_af0446a26a67", "final": {"type": "number", "answer": 524596}, "conf": 0.5625, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_575157e63e1c", "final": {"type": "list", "answer": ["Doãn Khoa Cường", "Lê Long Khoa", "Ngô Hồng Duy", "Cao Huy Hương", "Phạm Bình Sơn"]}, "conf": 0.5375, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_393267cfdee1", "final": {"type": "number", "answer": 21370900}, "conf": 0.5, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_b7ad6a55cf62", "final": {"type": "number", "answer": 263}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_bfecad2e9a15", "final": {"type": "number", "answer": 0}, "conf": 0.5, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_4807f35b3b8c", "final": {"type": "number", "answer": 777}, "conf": 1.0, "how": "vote", "variants": ["list", "point", "point+think"]}
+{"id": "q_15a8893ff6f9", "final": {"type": "number", "answer": 1708}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_a6a66b57f28c", "final": {"type": "number", "answer": 32002}, "conf": 0.8333333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_569dcd86abb4", "final": {"type": "abstain"}, "conf": 0.46153846153846156, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_3b70619cf8cc", "final": {"type": "number", "answer": 77101300}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7826ef06d11c", "final": {"type": "abstain"}, "conf": 0.5, "how": "judge_none", "variants": ["list", "point", "point+think"]}
+{"id": "q_79a79df3f048", "final": {"type": "percent", "answer": -3.44}, "conf": 0.7, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1a35be96a5bd", "final": {"type": "number", "answer": 1581}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7c6452fd1c4b", "final": {"type": "unanswerable", "answer": null}, "conf": 0.9333333333333333, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_e6ccb4744594", "final": {"type": "abstain"}, "conf": 0.4375, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_8ce765944937", "final": {"type": "number", "answer": 14}, "conf": 0.644927536231884, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_3a7a64626d2d", "final": {"type": "percent", "answer": 15.25}, "conf": 0.9047619047619047, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_c16ed84d6481", "final": {"type": "percent", "answer": 58.1}, "conf": 0.5687285223367697, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_8818447349a6", "final": {"type": "abstain"}, "conf": 0.23076923076923078, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_79b2abb21862", "final": {"type": "number", "answer": 5602000}, "conf": 0.6666666666666666, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_24a84f354ed0", "final": {"type": "number", "answer": 75}, "conf": 0.7676767676767676, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_588a7c489b8e", "final": {"type": "percent", "answer": -6.26}, "conf": 0.6515151515151515, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_ca2c1d05618a", "final": {"type": "percent", "answer": 2.66}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_7f91e434b0fc", "final": {"type": "number", "answer": 44}, "conf": 0.5873015873015872, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_86a32a09633a", "final": {"type": "number", "answer": 117000000}, "conf": 0.7592592592592593, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_763243ad81fd", "final": {"type": "number", "answer": 1560818000}, "conf": 0.5102564102564102, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_caf3b2f243d4", "final": {"type": "string", "answer": "2026-05"}, "conf": 0.6190476190476191, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_bdbe8ca608ce", "final": {"type": "date", "answer": "2026-03"}, "conf": 0.5634920634920635, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_15711c61bb0d", "final": {"type": "string", "answer": "NV001"}, "conf": 0.5583333333333333, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_1e1b499d3c87", "final": {"type": "abstain"}, "conf": 0.4166666666666667, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_6b5bd6d88cc7", "final": {"type": "percent", "answer": 2.91}, "conf": 0.8421052631578947, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_792e1070baaf", "final": {"type": "percent", "answer": 27.82}, "conf": 0.7647058823529411, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_393d0d4ee0e2", "final": {"type": "number", "answer": 81}, "conf": 0.509090909090909, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_baa735ba5e5f", "final": {"type": "string", "answer": "bằng nhau"}, "conf": 0.5714285714285714, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_c3439f11c9b0", "final": {"type": "abstain"}, "conf": 0.36363636363636365, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_7c8c12f20aa2", "final": {"type": "number", "answer": 5}, "conf": 0.8518518518518519, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_99e67ed05dd8", "final": {"type": "date", "answer": "2026-07-05"}, "conf": 0.6, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_14a10f251fd0", "final": {"type": "string", "answer": "Sữa Dielac Alpha Gold số 2 800g"}, "conf": 0.6, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_5ec7806c7f29", "final": {"type": "number", "answer": 21}, "conf": 0.8333333333333334, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_d770b2c75598", "final": {"type": "number", "answer": 41}, "conf": 0.5625, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_7de8d58e315c", "final": {"type": "abstain"}, "conf": 0.5833333333333333, "how": "judge_none", "variants": ["list", "point", "point+think"]}
+{"id": "q_4e280a1755de", "final": {"type": "number", "answer": 6}, "conf": 1.0, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_917d6af4418e", "final": {"type": "string", "answer": "Xiaomi Redmi Note 14"}, "conf": 0.5, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}
+{"id": "q_8e44f654589f", "final": {"type": "number", "answer": 1}, "conf": 0.7481481481481482, "how": "judge_pick", "variants": ["list", "point", "point+think"]}
+{"id": "q_a8d7ce013c6d", "final": {"type": "abstain"}, "conf": 0.375, "how": "vote(judge_split)", "variants": ["list", "point", "point+think"]}

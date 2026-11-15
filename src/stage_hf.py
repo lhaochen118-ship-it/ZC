@@ -56,6 +56,7 @@ def write_st(path, tensors, meta=None):
 
 EXP = re.compile(r"^(model\.language_model\.layers\.(\d+)\.mlp\.experts\.)(\d+)(\..*)$")
 GATE = re.compile(r"^model\.language_model\.layers\.(\d+)\.mlp\.gate\.weight$")
+FUSED = re.compile(r"^model\.language_model\.layers\.(\d+)\.mlp\.experts\.(gate_up_proj|down_proj)$")   # bf16 checkpoint: [E, ...]
 
 
 def prune_file(src, dst, keep):
@@ -71,6 +72,11 @@ def prune_file(src, dst, keep):
                 L, j = e.group(2), int(e.group(3))
                 if L not in keep or j not in keep[L]: continue
                 out.append((f"{e.group(1)}{keep[L].index(j)}{e.group(4)}", m["dtype"], m["shape"], raw(m))); continue
+            fu = FUSED.match(name)
+            if fu and fu.group(1) in keep:                              # fused 3-D experts: one contiguous block per expert
+                E0 = m["shape"][0]; b = raw(m); eb = len(b) // E0
+                sl = b"".join(b[j * eb:(j + 1) * eb] for j in keep[fu.group(1)])
+                out.append((name, m["dtype"], [len(keep[fu.group(1)])] + m["shape"][1:], sl)); continue
             g = GATE.match(name)
             if g and g.group(1) in keep:
                 rows, cols = m["shape"]; b = raw(m); rb = len(b) // rows
@@ -93,10 +99,19 @@ def main():
     ap.add_argument("--repo", required=True); ap.add_argument("--name", required=True)
     ap.add_argument("--keep", default="", help="JSON {keep: {layer: [expert ids]}} (path relative to the code root or absolute)")
     ap.add_argument("--files", default="", help="comma-separated subset of repo files (default: all)")
+    ap.add_argument("--src-dir", default="", help="local checkpoint (e.g. a mounted Kaggle Model) instead of downloading --repo; "
+                    "a name is searched under /kaggle/input (P5 MoE fine-tuning: bf16 slice in the training kernel)")
     a = ap.parse_args()
     t0 = time.time(); dst = os.path.join(a.out, "models", a.name); os.makedirs(dst, exist_ok=True)
     tmp = "/tmp/stage_dl"; os.makedirs(tmp, exist_ok=True)
-    files, sha = files_of(a.repo)
+    src = None
+    if a.src_dir:
+        import glob as _g
+        src = a.src_dir if os.path.isdir(a.src_dir) else next((os.path.dirname(c) for c in sorted(_g.glob("/kaggle/input/**/config.json", recursive=True))
+                                                              if a.src_dir.lower() in c.lower() and _g.glob(os.path.join(os.path.dirname(c), "*.safetensors"))), None)
+        if not src: raise SystemExit(f"--src-dir {a.src_dir} not found")
+        files = sorted(os.path.relpath(os.path.join(d, f), src) for d, _, fs in os.walk(src) for f in fs if not f.endswith(SKIP_EXT)); sha = "local:" + src
+    else: files, sha = files_of(a.repo)
     if a.files: files = [f for f in files if f in a.files.split(",")]
     keep = None
     if a.keep:
@@ -107,9 +122,13 @@ def main():
         print(f"pruning to {E} experts / layer over {len(keep)} layers", flush=True)
     wmap, total, man = {}, 0, {"repo": a.repo, "revision": sha, "keep": a.keep, "files": {}}
     for f in files:
-        p = os.path.join(tmp, f.replace("/", "_")); get(HF.format(repo=a.repo, f=f), p)
+        p = os.path.join(tmp, f.replace("/", "_"))
+        if src: shutil.copyfile(os.path.join(src, f), p) if not f.endswith(".safetensors") else None
+        else: get(HF.format(repo=a.repo, f=f), p)
+        if src and f.endswith(".safetensors"): p = os.path.join(src, f)              # read in place (no copy of 72 GB)
         if keep is not None and f.endswith(".safetensors"):
-            names = prune_file(p, os.path.join(dst, f), keep); os.remove(p)
+            names = prune_file(p, os.path.join(dst, f), keep)
+            if not src: os.remove(p)
             for n, s in names: wmap[n] = f; total += nparams(s)
         elif keep is not None and f == "config.json":
             c = json.load(open(p)); tc = c.get("text_config", c); tc["num_experts"] = E

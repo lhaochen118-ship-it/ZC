@@ -15,7 +15,7 @@ Usage: [accelerate launch --config_file training/fsdp2.yaml] training/sft.py --m
 Writes the adapter to --out (PEFT format) and metrics (peak memory per GPU, tokens/s, losses) to --metrics."""
 import os, sys, json, time, math, argparse, random
 
-LM_TARGET = r"^(?!.*(?:visual|mtp|lm_head)).*\blayers\.\d+\.(?:self_attn\.(?:q_proj|k_proj|v_proj|o_proj)|linear_attn\.(?:in_proj_qkv|in_proj_z|in_proj_qkvz|out_proj)|mlp\.(?:gate_proj|up_proj|down_proj))$"
+LM_TARGET = r"^(?!.*(?:visual|mtp|lm_head)).*\blayers\.\d+\.(?:self_attn\.(?:q_proj|k_proj|v_proj|o_proj)|linear_attn\.(?:in_proj_qkv|in_proj_z|in_proj_qkvz|out_proj)|mlp\.(?:shared_expert\.)?(?:gate_proj|up_proj|down_proj))$"
 # (linear-attention in_proj_a / in_proj_b project to the 32 heads: smaller than the LoRA rank, left frozen)
 
 

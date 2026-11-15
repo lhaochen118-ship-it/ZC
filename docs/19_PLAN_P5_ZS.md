@@ -123,3 +123,8 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   (`legacy` = hành vi cũ, mặc định; `explicit`; `default` = để template suy nghĩ cho mọi mô hình). Hệ quả: C1 / C2 (−0.047 / −0.039 so 0.952) bị
   lẫn với lỗi này (so C0 cùng code: −0.016 / −0.008); mọi lượt zero-shot / MoE trước giờ dùng mẫu direct **không suy nghĩ** → có thể bị đánh
   giá thấp. Đẩy: C0L, C1L (lelynhan; xác nhận sửa), C3T (dinhthinh), P02T (hieuho669), B00T (phuongnehe) với `think_kw default`.
+- 16:55 Đọc lại PDF 1 / PDF 2 (user): **dùng** — phán xử chỉ câu bất đồng; dòng rulebook trong prompt phán xử (công thức WJR1 → MJ1 / MJ2);
+  nhiều mẫu (k16); dữ liệu paraphrase > kỹ thuật huấn luyện phức tạp (MS2 dùng toàn bộ dữ liệu V3A đã có paraphrase); so ghép cặp, ≥ 2 log;
+  đẩy tuần tự từng acc (lỗi STALE CODE). **Tránh** — dòng rulebook trong prompt S; phán xử mọi câu; bộ chọn học được V; súp / DPO / RFT;
+  k > 16 cho bản tuned. Phân tích offline: gộp 2 seed (≈ k ×2) chỉ +0.005 (P02: 0.786; B00: 0.759) dù oracle 942–946 / 1000 → nút thắt là
+  **chọn ứng viên**, đúng PDF 1 §8 → ưu tiên phán xử có huấn luyện (MJ1 / MJ2) cho backbone MoE.

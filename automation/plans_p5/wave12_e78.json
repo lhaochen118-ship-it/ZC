@@ -1,0 +1,24 @@
+[
+ {
+  "acc": "duckzuykobip",
+  "name": "e7",
+  "jobs": "automation/jobs/p5/e7.jobs",
+  "est_h": 3.0,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,duckzuykobip/zc-mgs8-1,duckzuykobip/zc-mgl8-1,duckzuykobip/zc-mgj8-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "duckzuykobip",
+  "name": "e8",
+  "jobs": "automation/jobs/p5/e8.jobs",
+  "est_h": 3.0,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,duckzuykobip/zc-mgs8-1,duckzuykobip/zc-mgl8-1,duckzuykobip/zc-mgj8-1",
+   "--no-preflight"
+  ]
+ }
+]

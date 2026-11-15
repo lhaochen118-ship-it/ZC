@@ -70,3 +70,4 @@ chính lần chạy, không tốn GPU.
 | H0a / H0a2 | mốc `flow_p5_final_h` | **0.863 / 0.863** | 0.868 / 0.858 | |
 | F1 | + API extra | 0.847 | — | loại |
 | es2s2p | S′ seed 2 (W = S′) | 0.856 | 0.848 | −0.007 so mốc |
+| (offline) | ngưỡng bỏ phiếu θ 0.3 / 0.4 / 0.5 × ngưỡng phán xử 0.5 / 0.6 trên log H0a, H0a2, es2s2p | θ 0.5 tốt nhất ở cả 3 (0.863 / 0.863 / 0.856); m 0.6: +0.001 / +0.006 / −0.006 | — | chọn đáp án không phải đòn bẩy |

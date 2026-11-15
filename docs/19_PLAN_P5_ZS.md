@@ -140,3 +140,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   vẫn thiếu hàm do lỗi lrl_gen) **0.902** vs 0.870; C0L (framework 0.952, legacy) **0.942** ≈ D1 (khôi phục được); C1L (+T01) 0.943, C2L 0.935.
   → mọi tổ hợp tiếp theo: sửa lỗi + suy nghĩ: P02xFT / C3FT (caotienminh1, sau khi cắt E88), E3FT / E4FT (bichthuy93). Quota là ràng buộc:
   namhunhh 5.3 h (từ chối), caotienminh1 18.6 h, duckzuykobip 15.2 h; mxuanquy 30 h nhưng chưa accept rules (không có GPU).
+- 21:00 **P02T** (P02 chế độ H + T01 + phán xử 5400 s + suy nghĩ; vẫn thiếu hàm do lỗi lrl_gen): xem bảng.

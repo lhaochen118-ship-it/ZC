@@ -112,3 +112,7 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   offline (`new7_build.py`), một lượt vLLM chung (`src/new7_gen.py`), chấm CPU (`new7_score.py`).
 - 16:05 **P02 seed 2 = 0.777** (Δ +0.023 vs B00-S, z 2.0) → **P02 xác nhận qua 2 seed**: TB 0.779 (Δ +0.025; z 2.3 / 2.0). Backbone zero-shot tốt nhất: MoE tỉa theo tác vụ 88 expert (13.96B).
 - 16:05 **C3** (MoE E88 zero-shot + `industry.py` + T01 + phán xử 5400 s, framework 0.952 không LoRA) = **0.870** (928 / 58 / 14) vs B00-I (9B zero-shot + industry) 0.818. E4 lỗi (failover sang caotienminh1 trước khi chặn → STALE CODE) → chạy lại E4 + E3 seed 2 trên acc mới mxuanquy (30 h) sau khi ghép 3 LoRA tại đó.
+- 16:25 **New7 lượt GPU (n7g, 4,240 item, ~25 phút trên 4×L4) — chấm ghép cặp trên cùng ứng viên của B00-S s0 / s1:**
+  N7-A (bỏ nhóm có chứng chỉ đơn vị sai) 0.738 / 0.739 (z −2.5 / −2.8; Qwen gốc đặt tên đơn vị không nhất quán: 60 % chứng chỉ bị cờ);
+  N3-A (phản ví dụ mẫu con + Qwen chọn) 0.722 / 0.726 (z −3.0 / −2.7); N6-A vote (thêm đáp án DuckDB của Qwen) 0.751 / 0.752 (z −0.4 / −0.7),
+  N6-A agree 0.745 / 0.729. → **cả 3 loại** trên cả 2 seed; các nhánh sâu N7-B / N3-B / N6-B đóng theo cổng.

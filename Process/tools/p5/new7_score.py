@@ -102,7 +102,8 @@ def main():
                 if not j or not j.get("sql"): continue
                 try:
                     ans = sqlesc.make_sql_answer(C[b])(str(j["sql"]))
-                    if isinstance(ans, dict) and ans.get("type") not in (None, "abstain"): sql_answers.append(ans); st["n6a_ok"] += 1
+                    if isinstance(ans, dict) and ans.get("type") not in (None, "abstain") and ans.get("answer") is not None:
+                        agent.canon_of(ans); sql_answers.append(ans); st["n6a_ok"] += 1
                 except Exception: st["n6a_err"] += 1
         pol["n6a_vote"][qid] = vote(smp, extra=sql_answers) if sql_answers else pol["base"][qid]
         agree = [c for c in groups if any(agent.canon_of(x) == c for x in sql_answers)]

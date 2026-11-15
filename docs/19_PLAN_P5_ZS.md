@@ -86,3 +86,11 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 11:55 **V02 với point+think** (4B suy nghĩ, chấm từng ứng viên, chỉ câu bất đồng): **0.769** (Δ +0.016 so với bỏ phiếu 0.753); ensemble 0.750, list 0.701, point 0.692.
 - 12:00 **B00-S held-out** (eval_flow, không thẻ luật): pub_ho400c **0.529** (240/56/52 trên 348), tr_ho400c **0.851** (344/25/6). Tham chiếu tuned chế độ H (H0b, bỏ phiếu): 0.581 / 0.901.
 - 12:05 **S01** (9B gốc tự phán xử 261 câu bất đồng, list / point / point+think, **không trần thời gian**): ensemble **0.776** (Δ +0.023 vs bỏ phiếu, **z 2.75**, 46 tốt / 24 kém); point+think 0.771 (z 1.8); list 0.727, point 0.729 (z −2.4). → phán xử của chính framework có lợi khi được chạy hết; trong B00 nó bị trần 1800 s cắt. Ứng viên mạnh nhất tới giờ (cần seed 2).
+- 12:10–13:20 **P01 (REAP-64 cộng đồng) = 0.429** (sụp: 321 bỏ; pub_ind 0.18) — **P02 (REAP tác vụ, 88 expert, 13.96B) = 0.781** (Δ +0.027, **z 2.26**),
+  **P03 (92 expert, 14.46B) = 0.773** (Δ +0.019, z 1.6); cả hai phán xử bị cắt ở trần → file = bỏ phiếu. Hiệu chỉnh tỉa trên prompt của chính
+  framework (tiếng Việt + toolkit, DN train) quyết định: cùng kiến trúc, keep-list cộng đồng (code tiếng Anh) mất 0.33.
+- **H01 / H02** (probe): AUC theo DN (GroupKFold) logistic **0.775**, MLP 0.763 (cổng AUC ≥ 0.70 qua), train PA 0.955 → 0.965 (logistic);
+  nhưng **public không tăng** (bỏ phiếu 0.757 → 0.754 logistic, 0.723 MLP): probe học trên DN train (có hàm toolkit riêng) không chuyển sang
+  DN mới chế độ H → **dừng**.
+- 13:20 worker khởi động lại (mọi watcher / runner chết) → `resume.py` gắn lại 4 kernel. **User 13:20: chỉ tối ưu trên public, không chia tập khác.**
+  Đẩy: P02 seed 2 + P02 phán xử không trần (dinhthinh), P02 + T01 + trần phán xử 5400 s (namhunhh) và thêm k_max 24 (hieuho669) sau khi cắt lại E88.

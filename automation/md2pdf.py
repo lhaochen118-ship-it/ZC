@@ -47,6 +47,27 @@ import re as _re, os as _os
 html_body = _re.sub(r'<img([^>]*?)src="([^"]+)"', lambda m: f'<img{m.group(1)}width="500" src="{m.group(2)}"', html_body)
 
 
+def _col_widths(table_html):
+    """xhtml2pdf splits table columns evenly, so long cells overflow into their neighbours: give each header cell a width (%)
+    proportional to the square root of the column's longest word + average text length (min 6 %)."""
+    rows = _re.findall(r"<tr>(.*?)</tr>", table_html, flags=_re.S)
+    cells = [[_re.sub(r"<[^>]+>", "", c) for c in _re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", r, flags=_re.S)] for r in rows]
+    n = max((len(r) for r in cells), default=0)
+    if n < 3: return table_html
+    score = []
+    for j in range(n):
+        col = [r[j] for r in cells if j < len(r)]
+        avg = sum(len(c) for c in col) / max(1, len(col)); word = max((len(w) for c in col for w in c.split()), default=1)
+        score.append(max(0.8 * avg, 2.0 * word) ** 0.7)
+    tot = sum(score); w = [max(6.0, 100.0 * s / tot) for s in score]; k = 100.0 / sum(w); w = [x * k for x in w]
+    it = iter(w)
+    head = _re.sub(r"<th(?=[ >])", lambda m: f'<th width="{next(it, 0):.0f}%"', table_html.split("</tr>", 1)[0], count=n)
+    return head + "</tr>" + table_html.split("</tr>", 1)[1] if "</tr>" in table_html else table_html
+
+
+html_body = _re.sub(r"<table>.*?</table>", lambda m: _col_widths(m.group(0)), html_body, flags=_re.S)
+
+
 def _link_callback(uri, rel):
     if uri.startswith("/usr/share/fonts/"): return uri
     return uri if _os.path.isfile(uri) else _os.path.join(_os.path.dirname(_os.path.abspath(src)), uri)

@@ -1,5 +1,5 @@
 import json
-exec(open('/tmp/claude-0/-home-user-ZC/53d4fe9e-6712-52f3-bd72-e042dbdf5ede/scratchpad/fake/fake_solver.py').read(), globals())
+exec(open('/home/user/ZC/Process/tools/v2/fake_solver.py').read(), globals())
 _solver = responder
 def responder(conv):
     u = conv[-1]["content"]

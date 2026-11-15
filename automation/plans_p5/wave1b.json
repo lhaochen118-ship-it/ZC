@@ -1,0 +1,24 @@
+[
+ {
+  "acc": "duckzuykobip",
+  "name": "m02",
+  "jobs": "automation/jobs/p5/m02.jobs",
+  "est_h": 2.3,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,duckzuykobip/zc-stg4b-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "namhunhh",
+  "name": "p01",
+  "jobs": "automation/jobs/p5/p01.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,namhunhh/zc-stgr-1",
+   "--no-preflight"
+  ]
+ }
+]

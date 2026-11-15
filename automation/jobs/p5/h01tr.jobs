@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/h01tr --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters NONE --sets tr_dev1k --eval-configs configs/flow_p5_zs_probe_tr.json

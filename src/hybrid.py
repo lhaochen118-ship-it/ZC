@@ -128,7 +128,10 @@ class HybridPipeline(pipeline.Pipeline):
         h = {} if pure else ctx.hints(q["question"], q["as_of_date"])   # (prompt, retrieval, prechecks, flags, review)
         st["hints"] = h
         excl = set(self.excl) | {b}                                     # never the shop's own checked examples (honest on train shops)
-        exs = self.bank.retrieve(q["question"], h, k=int(a.shots), exclude_bids=excl, exclude_ids={q["id"]})
+        ws = float(getattr(a, "shot_schema", 0) or 0)                      # P5 plan T01: schema-matched examples
+        if ws and getattr(ctx, "schema_sig", None) is None: ctx.schema_sig = retrieval.schema_sig(ctx.C)
+        exs = self.bank.retrieve(q["question"], h, k=int(a.shots), exclude_bids=excl, exclude_ids={q["id"]},
+                                 schema=getattr(ctx, "schema_sig", None) if ws else None, w_schema=ws)
         if self.shop_ex.get(b):                                             # v2 I3: the shop's own function examples replace the last
             ow = self.shop_ex[b].retrieve(q["question"], h, k=self.own_k, per_family=1)   # (least similar) training examples
             if ow: exs = exs[:max(0, len(exs) - len(ow))] + ow

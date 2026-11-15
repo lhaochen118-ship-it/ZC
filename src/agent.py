@@ -671,12 +671,15 @@ class Engine:
         half = torch.cuda.get_device_capability()[0] < 8
         kw = {"enable_lora": True, "max_lora_rank": 64} if a.lora else {}
         cfg = os.path.join(a.model, "config.json")
+        mt = str(json.load(open(cfg)).get("model_type", "")) if os.path.isfile(cfg) else ""
+        self.qwen3 = "qwen3" in a.model.lower() or mt.startswith("qwen3")      # enable_thinking switch of the Qwen3 / 3.5 / 3.6 templates
         if os.path.isfile(cfg) and "vision_config" in json.load(open(cfg)):     # vision-language checkpoint (Qwen3.5): text only
             kw["limit_mm_per_prompt"] = {"image": 0, "video": 0}
         if a.quant: kw["quantization"] = a.quant
         if getattr(a, "max_num_seqs", 0): kw["max_num_seqs"] = a.max_num_seqs
         if getattr(a, "max_batched_tokens", 0): kw["max_num_batched_tokens"] = a.max_batched_tokens
-        if getattr(a, "kv_dtype", ""): kw["kv_cache_dtype"] = a.kv_dtype     # 'fp8': twice the KV tokens (L4: 201k -> ~400k)
+        kvd = getattr(a, "kv_dtype", "") or os.environ.get("ZC_KV_DTYPE", "")   # W phases (lrl_gen / link / judge) get it from the env
+        if kvd: kw["kv_cache_dtype"] = kvd     # 'fp8': twice the KV tokens (L4: 201k -> ~400k)
         t0 = time.time(); base = dict(model=a.model, tensor_parallel_size=tp, dtype="half" if half else "auto", max_model_len=a.max_len,
                                       gpu_memory_utilization=a.gpu_util, enable_prefix_caching=True, seed=0, enforce_eager=a.eager)
         spec = {"speculative_config": {"method": "mtp", "num_speculative_tokens": a.spec_mtp}} if getattr(a, "spec_mtp", 0) else {}
@@ -710,7 +713,7 @@ class Engine:
         return None
 
     def render(self, msgs, think=None):
-        kw = {"enable_thinking": self.a.think if think is None else think} if "qwen3" in self.a.model.lower() else {}
+        kw = {"enable_thinking": self.a.think if think is None else think} if getattr(self, "qwen3", "qwen3" in self.a.model.lower()) else {}
         try: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, **kw)
         except TypeError: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
 
@@ -839,6 +842,8 @@ def build_parser():
     ap.add_argument("--repairs", type=int, default=2); ap.add_argument("--subset", type=int, default=0)
     ap.add_argument("--tau", type=float, default=0.5); ap.add_argument("--cache", default="")
     ap.add_argument("--tp", type=int, default=0); ap.add_argument("--max-len", type=int, default=24576)
+    ap.add_argument("--shot-schema", type=float, default=0.0, help="P5 T01: weight of the shop-schema Jaccard when ranking the examples (0 = off)")
+    ap.add_argument("--dp-tp", type=int, default=1, help="GPUs per data-parallel process (tensor parallel inside it): 4 L4 = DP2 x TP2")
     ap.add_argument("--think", action="store_true"); ap.add_argument("--workers", type=int, default=0)
     ap.add_argument("--max-tokens", type=int, default=2048); ap.add_argument("--compile-tokens", type=int, default=6144)
     ap.add_argument("--timeout", type=int, default=60); ap.add_argument("--temp", type=float, default=0.7)
@@ -1323,9 +1328,9 @@ def run_dp(a):
     """One agent process per GPU (CUDA_VISIBLE_DEVICES=i), then merge submissions / logs and score."""
     import subprocess
     t0 = time.time()
-    if a.fake_responder: n = a.dp                                      # tests: CPU processes play the GPUs
+    if a.fake_responder: n = max(1, a.dp // max(1, a.dp_tp))           # tests: CPU processes play the GPUs
     else:
-        import torch; n = min(a.dp, max(1, torch.cuda.device_count()))
+        import torch; n = min(a.dp, max(1, torch.cuda.device_count() // max(1, a.dp_tp)))
     argv = list(sys.argv[1:]); i = argv.index("--dp"); del argv[i:i + 2]
     cache = a.cache or os.path.join(a.out, "cache"); os.makedirs(a.out, exist_ok=True)
     nw = str(max(1, (a.workers or os.cpu_count() or 4) // n))
@@ -1345,9 +1350,10 @@ def run_dp(a):
     devs = vis if vis else [str(g) for g in range(n)]                  # the parent's GPUs (CUDA_VISIBLE_DEVICES ids are physical:
     for g in range(n):                                                 # a shard set to '0' under a parent on GPU 1 ran on GPU 0)
         args = [sys.executable, os.path.abspath(__file__), a.split, os.path.join(a.out, f"shard{g}")] + argv[2:] + \
-               (["--claim-dir", claims, "--claim-procs", str(n)] if pipe else ["--shard", f"{g}/{n}"]) + ["--cache", cache, "--tp", "1", "--workers", nw] + \
+               (["--claim-dir", claims, "--claim-procs", str(n)] if pipe else ["--shard", f"{g}/{n}"]) + ["--cache", cache, "--tp", str(max(1, a.dp_tp)), "--workers", nw] + \
                (["--deadline", f"{t0 + a.budget:.0f}"] if a.budget else [])
-        procs.append(subprocess.Popen(args, env=dict(os.environ, CUDA_VISIBLE_DEVICES=devs[g % len(devs)]),
+        tpn = max(1, a.dp_tp); grp = ",".join(devs[(g * tpn + k) % len(devs)] for k in range(tpn))
+        procs.append(subprocess.Popen(args, env=dict(os.environ, CUDA_VISIBLE_DEVICES=grp),
                                       stdout=open(os.path.join(a.out, f"shard{g}.log"), "w"), stderr=subprocess.STDOUT))
     def merge(files=("submission.jsonl",)):                           # atomic merge of the shards' (partial) outputs
         for f in files:

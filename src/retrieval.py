@@ -24,6 +24,27 @@ def family(code):
     return next((f for f in fns if g.get(f) not in ("period", "number") and f not in ("len", "int", "round", "sum", "list", "key")), fns[0] if fns else "")
 
 
+SIG_PATH = os.path.join(HERE, "refs", "bank", "schema_sig.json")   # P5 plan T01: canonical schema of every training shop
+
+
+def schema_sig(C):
+    """P5 plan T01: the shop's canonical schema as a set of 'table.column' with at least one value (+ 'table' when it has rows):
+    a neutral description of WHAT data the shop has (no business semantics), compared with Jaccard between shops."""
+    out = set()
+    for t, df in (C or {}).items():
+        try:
+            if df is None or not len(df): continue
+            out.add(str(t))
+            for c in df.columns:
+                if df[c].notna().any(): out.add(f"{t}.{c}")
+        except Exception: continue
+    return out
+
+
+def jaccard(a, b):
+    return len(a & b) / len(a | b) if a and b else 0.0
+
+
 def skeleton(question, hints=None):
     """accent-free question with entity mentions -> <kind>, digits -> 0 (and the period words kept: they carry the method)."""
     t = " ".join(dm.key((hints or {}).get("clean") or question).split())
@@ -40,6 +61,10 @@ class Bank:
         for e in self.ex: e.setdefault("family", family(e.get("code")))
         self.index = fewshot.Index([e.get("skeleton") or skeleton(e["question"], e.get("hints")) for e in ex]) if ex else None
         self.emb, self.vec = embedder, vectors                          # mode "embed": src/embedder.py + bank vectors (row i = ex[i])
+        self.sig = {}                                                   # T01: training shop -> canonical schema signature
+        if os.path.isfile(SIG_PATH):
+            try: self.sig = {b: set(v) for b, v in json.load(open(SIG_PATH, encoding="utf-8")).items()}
+            except Exception: self.sig = {}
 
     def ranked(self, question, hints, n=80):
         """(score, index) of the n bank examples most similar to the question's skeleton."""
@@ -67,13 +92,19 @@ class Bank:
             vec = V[keep]; emb = embedder.Embedder(embed_model)
         return cls(ex, mode, emb, vec)
 
-    def retrieve(self, question, hints=None, k=4, exclude_bids=(), exclude_ids=(), per_family=1):
+    def retrieve(self, question, hints=None, k=4, exclude_bids=(), exclude_ids=(), per_family=1, schema=None, w_schema=0.0):
         """k examples, most similar first, at most per_family per function family; never one of exclude_bids / exclude_ids
-        (an id excludes its paraphrases '<id>~p<k>' too)."""
+        (an id excludes its paraphrases '<id>~p<k>' too). T01 (w_schema > 0, schema = the asking shop's schema_sig): the 200 most
+        similar questions are re-ranked by similarity + w_schema x Jaccard(schema of the example's shop, schema of the asking shop),
+        so that the examples come from shops whose data looks like this one's (same tables / columns)."""
         if not self.index or k <= 0: return []
         base_ids = {str(i).split("~")[0] for i in exclude_ids}
         out, used = [], Counter()
-        for s, i in self.ranked(question, hints, 80):
+        cand = self.ranked(question, hints, 200 if (w_schema and schema) else 80)
+        if w_schema and schema and self.sig:
+            cand = sorted(((s + w_schema * jaccard(self.sig.get(self.ex[i].get("business_id"), set()), schema), i) for s, i in cand),
+                          key=lambda x: -x[0])
+        for s, i in cand:
             e = self.ex[i]
             if e.get("business_id") in exclude_bids or str(e.get("id", "")).split("~")[0] in base_ids: continue
             if used[e["family"]] >= per_family: continue

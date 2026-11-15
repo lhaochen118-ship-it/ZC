@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/q01 --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters NONE --search /kaggle/input --runner predict --eval-configs configs/flow_p5_zs_q01.json

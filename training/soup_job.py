@@ -37,6 +37,8 @@ def main():
     ap.add_argument("--judge-units", default=""); ap.add_argument("--judge-variants", default="list")
     ap.add_argument("--judge-k", type=int, default=5); ap.add_argument("--judge-only-split", type=int, default=1)
     ap.add_argument("--judge-links", default="", help="judge: links.jsonl per --judge-logs entry (comma-separated, '-' = none)")
+    ap.add_argument("--judge-args", default="", help="judge: extra judge.py flags, ',' for spaces (P5 plan: the container's policy, e.g. "
+                    "'--tau,0.5,--denom,valid,--u-answers,1,--ensemble,0.5')")
     ap.add_argument("--script", default="", help="runner script: a src/ script run as <script> <split> <out>/script --model <merged> "
                     "<--script-args> (e.g. lrl_gen.py --mode bind: the rule writer with the solver's merged weights)")
     ap.add_argument("--script-args", default="", help="runner script: extra arguments, space-separated (use ',' for spaces inside none)")
@@ -126,6 +128,7 @@ def judge(a, model, res, t0):
         if lora: cmd += ["--lora", lora]
         lk = [x for x in a.judge_links.split(",")] if a.judge_links else []
         if n < len(lk) and lk[n] not in ("", "-"): cmd += ["--links", lk[n]]
+        if a.judge_args: cmd += [x for x in a.judge_args.split(",") if x]
         if a.fake_responder: cmd += ["--fake-responder", a.fake_responder]
         if a.subset: cmd += ["--subset", str(a.subset)]
         rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, f"judge{n}.log"), "w"), stderr=subprocess.STDOUT).returncode
@@ -184,6 +187,8 @@ def evaluate(a, model, res, t0, out_dir, eval_config, tag="eval", gpus=None, wor
         for src, dst in ((os.path.join(wk, "llm_0", "logs.jsonl"), "solver_logs.jsonl"), (os.path.join(wk, "links", "links.jsonl"), "links.jsonl"),
                          (os.path.join(wk, "units", "cards_unit.jsonl"), "cards_unit.jsonl")):
             if os.path.isfile(src): shutil.copy(src, os.path.join(out_dir, dst))
+        if os.path.isdir(os.path.join(wk, "lrl")):                     # P5 plan: the W1 cards written at inference (provenance audit)
+            shutil.copytree(os.path.join(wk, "lrl"), os.path.join(out_dir, "lrl"), dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.log"))
         if os.path.isdir(os.path.join(wk, "judge")): shutil.copytree(os.path.join(wk, "judge"), os.path.join(out_dir, "judge"), dirs_exist_ok=True,
                                                                      ignore=shutil.ignore_patterns("ctx.json"))
     if a.runner == "predict" and os.path.isdir(os.path.join(ev, "logs")):

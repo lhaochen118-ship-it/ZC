@@ -465,6 +465,8 @@ def main():
         if um: os.environ["ZC_UNITS_MAX"] = str(int(um)); log(f"units_max: {um}")
         if cfg and int(json.load(open(cfg, encoding="utf-8")).get("units_code", 0) or 0): os.environ["ZC_UNITS_CODE"] = "1"; log("units_code: on")
         if cfg and int(json.load(open(cfg, encoding="utf-8")).get("api_extra", 0) or 0): os.environ["ZC_API_EXTRA"] = "1"; log("api_extra: on")
+        kvd = json.load(open(cfg, encoding="utf-8")).get("kv_dtype") if cfg else ""   # P5 plan: bigger backbones (14B) on one L4
+        if kvd: os.environ["ZC_KV_DTYPE"] = str(kvd); log(f"kv_dtype: {kvd} (every phase)")
     except Exception as e: log(f"hide_api: config unreadable ({e})")
     merge_sub.merge(a.split, final, [], quiet=True)                  # a complete (abstain) file from the first second
     ng = n_gpus(); dp = a.dp or ng
@@ -489,10 +491,13 @@ def main():
     if kv is not None: extra = extra + ["--links", kv]
     vote_sub = os.path.join(a.work, "llm_vote.jsonl")
 
+    seed_off = int((json.load(open(cfg, encoding="utf-8")).get("seed_base", 0) if cfg else 0) or 0) * 1000   # P5 plan: seed 2 = "seed_base": 1
+    if seed_off: log(f"seed_base offset {seed_off}")
+
     def agent(i, budget, logdir):
         out = os.path.join(a.work, f"llm_{i}"); os.makedirs(out, exist_ok=True)
         cmd = [sys.executable, os.path.join(HERE, "agent.py"), a.split, out, "--model", a.model, "--dp", str(dp), "--budget", str(int(budget)),
-               "--cache", cache, "--seed-base", str(i), "--log-dir", logdir] + defaults_for(cfg) + (["--config", cfg] if cfg else []) + extra
+               "--cache", cache, "--seed-base", str(i + seed_off), "--log-dir", logdir] + defaults_for(cfg) + (["--config", cfg] if cfg else []) + extra
         return out, run(cmd, log)
 
     stop = threading.Event()

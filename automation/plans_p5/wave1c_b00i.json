@@ -1,0 +1,15 @@
+[
+ {
+  "acc": "caotienminh1",
+  "name": "b00i",
+  "jobs": "automation/jobs/p5/b00i.jobs",
+  "est_h": 2.5,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--no-preflight"
+  ]
+ }
+]

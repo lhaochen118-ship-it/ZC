@@ -24,6 +24,7 @@ POLL_S = int(os.environ.get("ZC_POLL_S", "150"))                    # seconds be
 SILENT_MAX = int(sys.argv[6]) if len(sys.argv) > 6 and sys.argv[6].isdigit() else 0
 ATTACH = "--attach" in sys.argv
 LOGS_ONLY = "--logs-only" in sys.argv
+OUT_PATTERN = os.environ.get("ZC_OUT_PATTERN", "")                     # P5: staged weights stay on Kaggle (disk quota here)
 kid = json.load(open(os.path.join(kdir, "kernel-metadata.json")))["id"]
 _tok = os.path.expanduser(f"~/.kaggle/tok_{kid.split('/')[0]}")       # per-account token file (see ENVIRONMENT_SUMMARY)
 if os.path.isfile(_tok): os.environ["KAGGLE_API_TOKEN"] = open(_tok).read().strip()
@@ -105,7 +106,7 @@ while True:
 
 os.makedirs(outdir, exist_ok=True)
 print(f"=== PULL ({state}) -> {outdir} ===", flush=True)
-print(kg("kernels", "output", kid, "-p", outdir, "-o", *(["--file-pattern", r".*\.log$"] if LOGS_ONLY else []))[-400:], flush=True)
+print(kg("kernels", "output", kid, "-p", outdir, "-o", *(["--file-pattern", r".*\.log$"] if LOGS_ONLY else (["--file-pattern", OUT_PATTERN] if OUT_PATTERN else [])))[-400:], flush=True)
 for f in sorted(glob.glob(outdir + "/*.log")):
     try:
         recs = json.load(open(f, errors="ignore"))

@@ -105,6 +105,9 @@ while procs:
                 if ok: fit.append(a)
             cand = fit
         ds_own = {d.split("/")[0] for d in (DSARG[DSARG.index("--ds") + 1].split(",") if "--ds" in DSARG else []) if "/" in d}
+        PUBLIC_KS = {"nhatlong1103/zc-assets", "yeshenhi/zc-train-wheels"}            # P5 15/11: kernel outputs mounted with --ks are
+        ds_own |= {d.split("/")[0] for d in (DSARG[DSARG.index("--ks") + 1].split(",") if "--ks" in DSARG else [])   # private too (E1/E2
+                   if "/" in d and d not in PUBLIC_KS}                                 # moved to bichthuy93 could not read caohuyen74's model)
         if ds_own:                                                      # the kernel mounts an account's own private copies
             cand = [a for a in cand if a in ds_own]                     # (adapters, paraphrases): another account cannot read
             if "STATUS=PUSH_FAILED" in log and not cand:                # them (09/11: p2r2d moved to anderson1202, no adapters)

@@ -1,0 +1,15 @@
+[
+ {
+  "acc": "duckzuykobip",
+  "name": "c5",
+  "jobs": "automation/jobs/p5/c5.jobs",
+  "est_h": 1.2,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,duckzuykobip/zc-stg4b-1",
+   "--train-data",
+   "p5j",
+   "--no-preflight"
+  ]
+ }
+]

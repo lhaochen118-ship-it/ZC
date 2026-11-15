@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/c5 --script training/soup_job.py --model Qwen/Qwen3.5-4B --adapters NONE --runner judge --judge-logs d1.logs.jsonl --judge-units d1.cards_unit.jsonl --judge-links d1.links.jsonl --judge-variants list,point,point+think --judge-k 5 --judge-only-split 1 --judge-args=--tau,0.5,--denom,valid,--u-answers,1,--ensemble,0.5

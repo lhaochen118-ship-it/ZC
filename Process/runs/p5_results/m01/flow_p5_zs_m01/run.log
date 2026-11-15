@@ -1,0 +1,64 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-15T09:16:25Z
+hide_api: industry (exported to every phase)
+kv_dtype: fp8 (every phase)
+model /tmp/models/14b-fp8  dp 4  config configs/flow_p5_zs_m01.json  runs up to 1
+lrl: bind for this split rc=[0, 0, 0, 0] (971s)
+lrl: aliases for this split rc=0 (1689s)
+units shard 0: (MainProcess pid=7435) INFO 11-15 09:56:21 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 0: (MainProcess pid=7435) INFO 11-15 09:56:21 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 0: (MainProcess pid=7435) INFO 11-15 09:56:21 [core_client.py:777] [shutdown] MPClient: complete
+units shard 1: (MainProcess pid=7436) INFO 11-15 09:54:12 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 1: (MainProcess pid=7436) INFO 11-15 09:54:12 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 1: (MainProcess pid=7436) INFO 11-15 09:54:12 [core_client.py:777] [shutdown] MPClient: complete
+units shard 2: (MainProcess pid=7437) INFO 11-15 09:54:38 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 2: (MainProcess pid=7437) INFO 11-15 09:54:38 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 2: (MainProcess pid=7437) INFO 11-15 09:54:38 [core_client.py:777] [shutdown] MPClient: complete
+units shard 3: (MainProcess pid=7438) INFO 11-15 09:57:54 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 3: (MainProcess pid=7438) INFO 11-15 09:57:54 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 3: (MainProcess pid=7438) INFO 11-15 09:57:54 [core_client.py:777] [shutdown] MPClient: complete
+units: rc=[0, 0, 0, 0], 13 verified units (803s)
+links shard 0: (MainProcess pid=11968) INFO 11-15 10:04:46 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 0: (MainProcess pid=11968) INFO 11-15 10:04:46 [core_client.py:777] [shutdown] MPClient: complete
+links shard 1: (MainProcess pid=11969) INFO 11-15 10:04:53 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 1: (MainProcess pid=11969) INFO 11-15 10:04:53 [core_client.py:777] [shutdown] MPClient: complete
+links shard 2: (MainProcess pid=11970) INFO 11-15 10:04:35 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 2: (MainProcess pid=11970) INFO 11-15 10:04:35 [core_client.py:777] [shutdown] MPClient: complete
+links shard 3: (MainProcess pid=11971) INFO 11-15 10:04:44 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 3: (MainProcess pid=11971) INFO 11-15 10:04:44 [core_client.py:777] [shutdown] MPClient: complete
+links: rc=[0, 0, 0, 0], 1000 questions linked (419s)
+[dp] ingested 14 businesses in 48s
+--- shard0 rc=1
+        handshake_socket,
+        ^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        launch,
+        ^^^^^^^
+    )
+    ^
+  File "/usr/local/lib/python3.13/dist-packages/vllm/v1/engine/utils.py", line 1431, in wait_for_engine_startup
+    raise RuntimeError(
+    ...<8 lines>...
+    )
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+
+--- shard1 rc=0
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+(MainProcess pid=16912) INFO 11-15 11:26:25 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=19818) INFO 11-15 11:26:25 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=19818) INFO 11-15 11:26:25 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=19818) INFO 11-15 11:26:25 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=19818) INFO 11-15 11:26:25 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(EngineCore pid=19818) INFO 11-15 11:26:25 [multiproc_executor.py:479] [shutdown] Executor: waiting for worker exit count=2
+(Worker_TP0 pid=20215) INFO 11-15 11:26:25 [multiproc_executor.py:843] Parent process exited, terminating worker queues
+(EngineCore pid=19818) INFO 11-15 11:26:30 [multiproc_executor.py:486] [shutdown] Executor: all workers exited gracefully
+(MainProcess pid=16912) WARNING 11-15 11:26:30 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+(MainProcess pid=16912) WARNING 11-15 11:26:30 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 19818
+
+DP DONE 2 shards in 4897s
+after run 1: [943]
+judge: RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+judge: 
+judge: [judge] done {'point+think': 1, 'list': 1, 'point': 1} in 188s
+judge: rc 1, no submission; the vote's answers stand
+end: 2026-11-15T11:29:43Z  (7998s)

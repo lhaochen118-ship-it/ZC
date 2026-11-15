@@ -1,0 +1,13 @@
+[
+ {
+  "acc": "namhunhh",
+  "name": "c3s1",
+  "jobs": "automation/jobs/p5/c3s1.jobs",
+  "est_h": 2.3,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,namhunhh/zc-stg88-1",
+   "--no-preflight"
+  ]
+ }
+]

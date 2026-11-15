@@ -253,3 +253,8 @@ Ngưỡng an toàn đo được: ~20.5k token / micro-batch / GPU (mb 4 × 5,120
 (prompt viết hàm ~4.3–4.7k token), khác các lần huấn luyện trước (bản ghi ngắn hơn trung bình). WT0B (max-len 4,608) chỉ dùng 238 / 543 bản
 ghi: ước token bằng 0.33 token / ký tự sai với prompt tiếng Việt + mã (thực tế ~0.35–0.36). Sửa: mb 2 × tích luỹ 8 (batch 64 giữ nguyên) +
 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`; đẩy `wtb2`, `wts3`. Bài học: đo độ dài bằng tokenizer trước khi chọn `--max-len` / mb.
+
+**00:05 15/11 – G-J: WJR2D loại.** Phán xử V3A×0.70 + WJR1 + WJR2D (học thêm 1,738 bản ghi từ cặp tương phản hệ thống + 1,000 bản ghi WJR1):
+4 log public tổ hợp 0.934 / 0.946 / 0.950 / 0.940 (TB 0.9425) so với WJR1 0.944 / 0.956 / 0.958 / 0.947 (TB 0.951); held-out H có phán xử:
+pub_ho400c 0.595 (WJR1 0.609), tr_ho400c 0.912 (0.909), pub_hoind 0.464 (0.470), tr_newterm 0.852 (0.852). Cặp tương phản 2 ứng viên dễ hơn
+và khác phân phối với nhóm ứng viên thật của S (nhiều mẫu, sai khác lớn); học thêm làm bộ phán xử kém nhẹ. Giữ WJR1.

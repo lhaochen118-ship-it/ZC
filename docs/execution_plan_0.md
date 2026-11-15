@@ -4,10 +4,21 @@
 trong tài liệu này được chạy; mọi số là **[Đo]** (đã đo trong repo), **[TL]** (lấy từ tài liệu / model card) hoặc **[ƯL]** (ước lượng,
 phải hiệu chỉnh bằng bước đo ngắn).*
 
-**Nguồn hướng thí nghiệm.** Prompt nhắc `proposed_method_merged.pdf / .md`, nhưng file này **không có** trong repo hay container.
-Tài liệu đề xuất có trong repo là `docs/proposed_method_1_b.md`; các hướng prompt liệt kê (MoE pruning, generator + verifier, recursive /
-depth up-scaling, multi-LoRA, hidden-state probing, GRPO, test-time adaptation, IR / DSL, compression khác) trùng với tài liệu này.
-Nếu bản hợp nhất có thêm hướng, bổ sung theo đúng khuôn §3.
+**Nguồn hướng thí nghiệm.** `docs/proposed_method_merged.pdf` (18 trang, 15/11; hợp nhất `proposed_method_1.pdf` + `docs/proposed_method_1_b.md`).
+Ánh xạ tên hướng của tài liệu hợp nhất → mục trong kế hoạch này:
+
+| Tài liệu hợp nhất | Kế hoạch này | Ghi chú |
+|---|---|---|
+| A1 Expert pruning Qwen3.6-35B-A3B (A1a prune trước / A1b SFT trên 35B rồi prune) | §3.A (EXP-010..014; FT-109 = A1b) | đếm expert theo nội suy có vision encoder (64 / 77 / 88 / 90 / 92; tránh 96) |
+| C3 Hidden-state verifier probe | §3.E (EXP-050 / 051) | framework 0.952 chọn bằng bỏ phiếu + phán xử WJR1, không phải M6 → so với cơ chế đó |
+| C2 GRPO / DAPO thưởng thực thi | §3.F (FT-104 / 105) | chỉ có dạng huấn luyện |
+| C1 Depth up-scaling 9B → 11–13B | §3.C (EXP-040 / 041; FT-103) | zero-shot chỉ để kiểm cài đặt / thăm dò |
+| Shared-backbone role-LoRA / 9B + 4B verifier | §3.D (EXP-030; FT-106) / §3.B (EXP-020) | 9B + 4B ≈ 13.95B (9.41 + 4.54, tính cả vision) |
+| WiSE-FT alpha interpolation | §3.J mới (EXP-080 / 081) | không huấn luyện mới; nhóm riêng, không gọi là zero-shot |
+| C4 TTA theo DN / schema | §3.G (EXP-060; FT-107) | mặc định in-context, không cập nhật trọng số |
+| C5 Typed IR / DSL | §3.H (EXP-070; FT-108) | chỉ mở khi phủ IR đủ |
+| §12 tạm dừng: Gemma-4-26B-A4B pruning, dense 27B → 14B, recursive, distillation, soup / DPO, quantize 27B / 35B | §3.C, §3.I | không chạy trong đợt này |
+| E00–E12, cổng G0–G6 | cột "E-ID" ở §5.1; §6.4 | giữ cùng mã để đối chiếu |
 
 ---
 
@@ -19,29 +30,29 @@ Nếu bản hợp nhất có thêm hướng, bổ sung theo đúng khuôn §3.
 | Framework chuẩn | `configs/flow_p5_final.json` (kế hoạch 5): S = Qwen3.5-9B + LoRA **V3A × 0.70** (gộp); W1 viết hàm cửa hàng + gắn rulebook (`units_model: solver`); W2 linker = LoRA **WL1**; W3 phán xử = LoRA **WJR1** (chỉ câu có mẫu bất đồng, ensemble list / point / point+think, margin 0.5); toolkit `dm` + `industry.py`; FP8 online, pipeline, k 4 → 16 |
 | `BEST_FINETUNED_BASELINE` | **0.952** [Đo]: tb phán xử lại offline 4 log bộ giải (0.949–0.958); lần chạy container D1 (`quynhtran35/zc-d1-1`) 0.952 (973 / 21 / 6) |
 | `ZERO_SHOT_BASELINE` | **chưa từng đo** → EXP-001 / 002 (Qwen3.5-9B gốc, cả 3 LoRA tắt, mọi module khác giữ nguyên) |
-| Số hướng | **9** (A–I); 2 hướng con bị loại có lý do (Recursive Transformer, nén dense / lượng tử hoá) |
-| Biến thể giai đoạn zero-shot | **19 thí nghiệm** (15 cho điểm public; 3 tham chiếu vượt 15B chỉ để đo trần: A0, A4, B2) + tối đa **8 lần chạy cổng** (held-out, seed 2, chế độ H) |
-| Biến thể cần huấn luyện (P3) | **8 gói**, chỉ chạy sau cổng quyết định |
-| GPU-hours giai đoạn zero-shot | **≈ 139 GPU-h L4** [ƯL] = ≈ 35 giờ-phiên 4×L4 ≈ **76–87 h quota** Kaggle (hệ số đo 2.2, lập kế hoạch 2.5) |
-| Thời gian hoàn thành (wall) | **≈ 7.5–8.5 h** từ T0 (có token + quota) cho toàn bộ zero-shot + cổng, với ≤ 10 phiên GPU đồng thời [ƯL] |
-| Số acc cần | **11 acc L4** (22 phiên, đỉnh 10 phiên cùng lúc) + 2 acc chỉ cho phiên CPU (tải mô hình); acc T4 không dùng cho đánh giá chính |
+| Số hướng | **10** (A–J; J = WiSE-FT của tài liệu hợp nhất); các hướng tạm dừng theo §12 tài liệu hợp nhất có lý do (Recursive Transformer, tỉa dense 27B, lượng tử hoá, Gemma-26B-A4B pruning, distillation, soup / DPO) |
+| Biến thể giai đoạn zero-shot | **19 thí nghiệm** (15 cho điểm public; 3 tham chiếu vượt 15B chỉ để đo trần: A0, A4, B2) + 2 lần quét α không huấn luyện mới (hướng J) + tối đa **8 lần chạy cổng** (held-out, seed 2, chế độ H) |
+| Biến thể cần huấn luyện (P3) | **9 gói** (gồm A1b), chỉ chạy sau cổng quyết định |
+| GPU-hours giai đoạn zero-shot | **≈ 152 GPU-h L4** [ƯL] = ≈ 38 giờ-phiên 4×L4 ≈ **84–95 h quota** Kaggle (hệ số đo 2.2, lập kế hoạch 2.5) |
+| Thời gian hoàn thành (wall) | **≈ 7.5–8.5 h** từ T0 (có token + quota) cho toàn bộ zero-shot + cổng, với ≤ 12 phiên GPU đồng thời [ƯL] |
+| Số acc cần | **12 acc L4** (24 phiên, đỉnh ≈ 12 phiên cùng lúc) + slot CPU của 2 acc để tải mô hình; acc T4 không dùng cho đánh giá chính. Tài liệu hợp nhất giả định 5 acc × 4 L4; thực tế có 18 acc L4 nên song song rộng hơn |
 | Kết luận định hướng | Chạy ngay: ZS baseline, MoE đã tỉa (có sẵn + tự tỉa theo dữ liệu bài toán), verifier 4B, phân rã LoRA. Song song nếu còn quota: probe ẩn, mở rộng chiều sâu (thăm dò), TTA in-context. Hoãn đến sau cổng: mọi gói huấn luyện (GRPO, LoRA phục hồi, block expansion có huấn luyện, IR / DSL) |
 
 **Câu trả lời nhanh cho các câu hỏi của user (chi tiết ở các phần sau):**
 
 | Câu hỏi | Trả lời |
 |---|---|
-| Có bao nhiêu hướng? | 9 hướng (A MoE pruning / scaling, B generator–verifier, C chiều sâu / recursive, D multi-LoRA, E probe trạng thái ẩn, F GRPO, G test-time adaptation, H IR / DSL, I mô hình thay thế / nén khác) |
-| Mỗi hướng bao nhiêu biến thể? | A 3 + bước chuẩn bị tỉa (+2 tham chiếu A0, A4), B 3 (gồm 1 tham chiếu), C 2 (+1 huấn luyện), D 1 (+1 huấn luyện), E 2, F 0 zero-shot (+2 huấn luyện), G 1 (+1), H 1 phân tích CPU (+1), I 1 (+2 bị loại) |
+| Có bao nhiêu hướng? | 10 hướng (A MoE pruning / scaling, B generator–verifier, C chiều sâu / recursive, D multi-LoRA, E probe trạng thái ẩn, F GRPO, G test-time adaptation, H IR / DSL, I mô hình thay thế / nén khác, J WiSE-FT α) |
+| Mỗi hướng bao nhiêu biến thể? | A 3 + bước chuẩn bị tỉa (+2 tham chiếu A0, A4; +A1b huấn luyện), B 3 (gồm 1 tham chiếu), C 2 (+1 huấn luyện), D 1 (+1 huấn luyện), E 2, F 0 zero-shot (+2 huấn luyện), G 1 (+1), H 1 phân tích CPU (+1), I 1 (+tạm dừng), J 2 (không huấn luyện mới) |
 | Chạy zero-shot ngay được? | EXP-001/002/003, A1 (REAP-64), A0 / A4 (tham chiếu), B1 / B2 / B3, D1, I1 (Gemma, có điều kiện) |
 | Cần chuẩn bị thêm? | A2 / A3 (tính độ quan trọng expert + cắt), C2 (ghép lớp), E1 / E2 (trích trạng thái ẩn + probe), G1 (code tự sinh ví dụ), H0 (bộ biên dịch IR) |
 | Cần huấn luyện? | C3, D2, F1 / F2, G2, H1, LoRA phục hồi cho backbone thắng (FT-101 / 102) |
-| Bao nhiêu thí nghiệm cùng lúc? | đỉnh 10 phiên GPU (5 acc × 2) trong đợt 2–3; tối đa 4 bộ phán xử độc lập / phiên ở EXP-020 |
+| Bao nhiêu thí nghiệm cùng lúc? | đỉnh ≈ 12 phiên GPU (6 acc × 2) trong đợt 2–3; tối đa 4 bộ phán xử độc lập / phiên ở EXP-020 |
 | Tận dụng 4 L4 / phiên? | mô hình vừa 1 GPU → DP4 (mỗi GPU một bản, claim DN động); mô hình 28–36 GB FP8 → TP2 × DP2; việc nhỏ trên log cố định → 4 worker độc lập |
 | Tận dụng 2 phiên / acc? | luôn ghép 2 thí nghiệm độc lập cùng thời lượng lên một acc (bảng §5.3) |
 | Thiếu GPU / quota? | ưu tiên P0 → P1; cắt P2; chạy chuỗi checkpoint; chuyển việc CPU sang phiên CPU; không khởi chạy việc không đủ quota (§4.6) |
 | Bao lâu cho toàn bộ? | ≈ 7.5–8.5 h wall cho zero-shot + cổng; giai đoạn fine-tune P3 ≈ 12–24 h wall tùy hướng thắng (§5.5) |
-| Tiêu chuẩn chọn? | Δ public ≥ +1.0 điểm so với ZS (2 seed, ghép cặp z ≥ 2) và held-out không giảm, hoặc ngang điểm nhưng nhanh hơn ≥ 1.3 lần; hợp lệ ≤ 15B kể cả adapter; ước tính chạy container ≤ 6 h trên 2×RTX 5090 (§6) |
+| Tiêu chuẩn chọn? | Δ public ≥ +1.0 điểm (thang 0–100) so với ZS (2 seed, ghép cặp z ≥ 2) và held-out không giảm, hoặc ngang điểm nhưng nhanh hơn ≥ 1.3 lần; qua cổng G0–G6; hợp lệ < 15B kể cả adapter / probe / vision; ước tính chạy container ≤ 6 h trên 2×RTX 5090 (§6) |
 
 ---
 
@@ -57,6 +68,12 @@ Nếu bản hợp nhất có thêm hướng, bổ sung theo đúng khuôn §3.
 | M0 (kế hoạch 1–2) | súp WF1–4 × 0.35 trên framework cũ: 0.934 | **Không** |
 
 → **Phải chạy mới** EXP-001 / 002. Kết quả cũ chỉ dùng để đặt kỳ vọng (Qwen gốc yếu hơn nhiều khi làm bộ giải: 0.753 trong framework v2).
+
+**Đối chiếu với §2 tài liệu hợp nhất (cổng G1).** Tài liệu hợp nhất mô tả baseline là cấu hình O (`configs/flow_final.json`, WG1 × 0.35,
+public 0.9855, held-out 0.778) và ghi B0 = 0.952 "cần gắn commit". Tra repo cho thấy hai số thuộc **hai framework khác nhau**: cấu hình O
+là kế hoạch 2 (11/11, còn luật viết tay); **0.952 = `configs/flow_p5_final.json`** (kế hoạch 5, 14/11; V3A × 0.70 + WL1 + WJR1, không luật
+viết tay lúc suy luận, vẫn có `industry.py`), đo ở D1. Kế hoạch này dùng `flow_p5_final` làm B0 theo yêu cầu user; EXP-003 gắn B0 với
+commit hiện tại. Không so số giữa hai protocol.
 
 ### 2.2 Cấu hình ZS (thay đổi tối thiểu)
 
@@ -100,26 +117,34 @@ trên câu train: Qwen3.6-27B 73.6 %, Qwen3.5-35B-A3B 64.4 %, bộ sinh 9B 51.8 
 code tiếng Anh. **Rủi ro:** pass@1 giảm làm phiếu yếu; đầu ra lặp / bị cắt khi tỉa nặng; MoE FP8 trên L4 chưa từng chạy trong repo;
 kiến trúc có thể khác 9B ở template / think.
 
-**Kích thước** (từ model card REAP-64 [TL]: 35.95B → 10.93B khi bỏ 192 / 256 expert × 40 lớp): ≈ 3.26M tham số / expert / lớp
-→ ≈ 0.130B cho mỗi expert giữ thêm ở cả 40 lớp; phần không phải expert ≈ 2.59B. Giữ N expert: tổng ≈ 2.59 + 0.130·N (B).
-N ≈ 73 → ≈ 12.1B; N ≈ 92 → ≈ 14.6B. **Bắt buộc đếm lại** bằng `tools/param_count.py` (đọc header safetensors) và bỏ vision encoder
-nếu có (không dùng ảnh; giải phóng thêm ngân sách). Trần cho cả hệ: **≤ 14.8B kể cả adapter** (dư cho LoRA phục hồi).
+**Kích thước** — nội suy của tài liệu hợp nhất từ hai điểm model card (64 expert = 10.93B, 128 = 18.99B, **tính cả vision encoder
+≈ 0.45B**): N(E) = 10.93 + (E − 64) × 0.126 (B).
+
+| Expert / lớp | 64 | 77 | 88 | 90 | 92 | 96 |
+|---|---|---|---|---|---|---|
+| Tổng (B, ước lượng) | 10.93 | ≈ 12.57 | ≈ 13.95 | ≈ 14.20 | ≈ 14.46 | ≈ 14.96 (bẫy: gần như không còn chỗ cho adapter) |
+
+**Bắt buộc đếm lại** bằng `tools/param_count.py` (tổng numel tensor duy nhất trong artifact cuối, gồm adapter / probe / vision; so với
+`model.num_parameters()` khi nạp). Có thể xoá hẳn vision encoder (không dùng ảnh) để dư ≈ 0.45B. Trần cho cả hệ: **< 15B kể cả adapter, mục
+tiêu ≤ 14.8B**.
 
 | ID | Biến thể | Checkpoint | Tham số | Lượng tử | Tích hợp (4×L4) | Huấn luyện? | Zero-shot thật? |
 |---|---|---|---|---|---|---|---|
 | EXP-010 | **A0 tham chiếu** Qwen3.6-35B-A3B đầy đủ | HF `Qwen/Qwen3.6-35B-A3B` | 35.95B ✗ (không hợp lệ) | FP8 online | TP2 × DP2 (tiền lệ thầy D3 TP2) | không | có — chỉ đo trần năng lực |
 | EXP-011 | **A1** REAP-64 có sẵn | `IAmTheRealGumbo/Qwen3.6-35B-A3B-REAP-64-experts` | 10.93B ✓ | FP8 online (≈ 11 GB) | DP4 | không | có |
 | EXP-012 | ACAL: tính độ quan trọng expert (chuẩn bị A2 / A3) | từ A0 | — | bf16 (device_map 4 GPU, 72 GB / 90 GB) | 1 phiên | không (chỉ forward) | — |
-| EXP-013 | **A2** tự tỉa ≈ 12B (N ≈ 73) | A0 + keep-list | ≈ 12.1B ✓ | FP8 online | DP4 | không | có |
-| EXP-014 | **A3** tự tỉa ≈ 14.6B (N ≈ 92) | A0 + keep-list | ≈ 14.6B ✓ | FP8 online (≈ 15 GB, KV hẹp) | DP4, `--gpu-util 0.92` | không | có |
+| EXP-013 | **A2** tự tỉa ≈ 12.6B (E = 77) | A0 + keep-list | ≈ 12.57B ✓ | FP8 online | DP4 | không | có |
+| EXP-014 | **A3** tự tỉa ≈ 14.2B (E = 90) | A0 + keep-list | ≈ 14.20B ✓ (dư ≈ 0.8B) | FP8 online (≈ 14.5 GB, KV hẹp) | DP4, `--gpu-util 0.92` | không | có |
 
 - **Thay đổi:** đường dẫn mô hình S và W (W dùng chung trọng số S như hiện nay), tắt mọi LoRA (cùng điều kiện với ZS baseline).
   Giữ nguyên toàn bộ phần còn lại. Nếu template chat / `<think>` khác 9B: chỉ sửa lớp tương thích trong `agent.py` (không đổi prompt).
 - **ACAL (EXP-012):** độ quan trọng kiểu REAP S_j = trung bình trên token được route tới j của g_j(x)·‖f_j(x)‖ (hook trên khối MoE,
   tính f_j cho token được chọn); dự phòng: tần suất × trọng số cổng (chỉ cần router logits). Dữ liệu hiệu chỉnh: ≈ 1,024 prompt S +
   ≈ 512 prompt W1 / W2 / W3 **dựng bằng chính code framework trên DN train** (chạy CPU với `--fake-responder` để ghi prompt), ≤ 2k token
-  — không dùng public / private. Đầu ra: `keep_N73.json`, `keep_N92.json` (vài KB) → mọi kernel sau cắt checkpoint tại chỗ
+  — không dùng public / private. Đầu ra: keep-list cho E = 77, 88, 90, 92 (vài KB; 88 / 92 để quét sau — E06) → mọi kernel sau cắt checkpoint tại chỗ
   (`training/moe_prune.py`, ≈ 10 phút) thay vì lưu checkpoint 25–30 GB (vượt giới hạn output kernel).
+- **So sánh cặp (theo tài liệu hợp nhất):** 9B gốc vs MoE tỉa gốc (backbone-only, giai đoạn này); 9B + LoRA vs MoE tỉa + LoRA phục hồi
+  (tuned-to-tuned, P3 FT-101). Không so MoE zero-shot với baseline đã fine-tune để kết luận.
 - **Kết quả kỳ vọng (giả thuyết, chưa đo):** A0 > ZS rõ; A3 ≥ A2 > A1. Nếu A0 ≤ ZS + 1.0 thì hướng A bị hạ ưu tiên (mô hình tỉa hiếm
   khi vượt bản đầy đủ).
 - **Dừng sớm:** tốc độ đo trong 10 phút đầu cho thấy wall > 2.5 h → dừng, ghi lý do; lỗi nạp / kernel MoE FP8 → 1 lần sửa, không được
@@ -133,7 +158,7 @@ giải** của EXP-001 (`soup_job.py --runner judge --judge-logs ...`, config kh
 
 | ID | Biến thể | Tham số hệ | Tích hợp | Zero-shot? |
 |---|---|---|---|---|
-| EXP-020a | **B1** Qwen3.5-4B gốc làm phán xử (list / point / point+think) | 9B + 4B = 13B ✓ | `judge_model` = 4B; 1 GPU / chế độ | có |
+| EXP-020a | **B1** Qwen3.5-4B gốc làm phán xử (list / point / point+think) | 9.41B + 4.54B ≈ 13.95B ✓ (không cộng được với backbone tỉa 14B) | `judge_model` = 4B; 1 GPU / chế độ | có |
 | EXP-020b | **B2 tham chiếu** Qwen3.6-27B-FP8 làm phán xử | 36B ✗ | TP2 trên 2 GPU cùng phiên | có — đo trần verifier |
 | EXP-021 | **B3** bỏ phán xử (chỉ bỏ phiếu) | 9B | phát lại offline từ log EXP-001 (`tests/replay_judge.py`) | có, CPU |
 
@@ -153,6 +178,8 @@ giải** của EXP-001 (`soup_job.py --runner judge --judge-logs ...`, config kh
 | FT-103 | **C3** C1 + huấn luyện chỉ lớp mới (dữ liệu kiểu V3A) | ≈ 11B | — (P3) | thí nghiệm thật của hướng C |
 | — | Recursive Transformer (Bae et al., ICLR 2025) | — | — | **Không chạy:** cần huấn luyện tiếp 15–60 tỷ token ([TL]) để phục hồi; vượt xa tài nguyên Kaggle |
 
+- **Phải kiểm từ config / code trước** (tài liệu hợp nhất §8): đồ thị lớp, residual, norm, cache trạng thái DeltaNet, RoPE; chỉ chép
+  trọn nhóm cấu trúc hợp lệ.
 - **Tích hợp:** `training/expand_depth.py` sinh checkpoint mới (config `num_hidden_layers`, `layer_types` giữ đúng mẫu 3:1) → vLLM nạp như
   9B. Qwen3.5-9B: 32 lớp, hidden 4096 [TL model card].
 
@@ -179,6 +206,10 @@ phải học trên chính bài toán. Không đổi trọng số mô hình → *
 | EXP-050 | **E1** dữ liệu probe | chạy cấu hình ZS trên 1,000 câu train dev (DN train, không held-out) + ghi hidden state lớp {16, 24, 32} tại token cuối chương trình / đáp án (một lượt prefill, prefix cache) → nhãn từ thực thi so với đáp án train |
 | EXP-051 | **E2** áp probe | trích hidden state cho ứng viên trong log EXP-001 (public) → thêm điểm probe làm đặc trưng cho bộ chọn / ngưỡng bỏ trả lời, phát lại offline; so với bỏ phiếu + phán xử ZS trên cùng log |
 
+- **Kiểm soát rò rỉ (tài liệu hợp nhất §6.2):** chia nhóm theo câu gốc + DN (`question_group_id`) để paraphrase không lọt giữa train / val;
+  logistic trước, MLP nhỏ chỉ khi đủ dữ liệu; chọn ngưỡng trên validation train, không trên public; so **cùng ứng viên, cùng seed**:
+  bỏ phiếu + phán xử (cơ chế của framework 0.952) vs + điểm probe. Đặc trưng kèm: `execution_success`, `exception_type`, độ dài chương trình,
+  tỉ lệ phiếu, `lp_mean`.
 - **Dừng:** AUC probe trên tập train tách riêng < 0.70, hoặc phát lại public không tăng ≥ +0.5 → dừng.
 
 ### 3.F Hướng F — GRPO / học tăng cường thưởng thực thi
@@ -211,6 +242,21 @@ Zero-shot few-shot IR có thể thử sau khi có compiler, nhưng mô hình ch�
 | EXP-015 | **A4 tham chiếu** Qwen3.6-27B-FP8 dense | không hợp lệ (27B); chỉ chạy nếu A0 cho thấy trần cao để biết dense hay MoE gần trần hơn |
 | — | Lượng tử hoá 27B / 35B để "vừa" 15B | **loại:** BTC đếm tham số, không đếm byte |
 | — | Tỉa chiều rộng / cắt lớp Qwen3.6-27B dense xuống 15B | **loại:** cắt ≈ 45 % cần healing hàng chục tỷ token |
+| — | Gemma-4-26B-A4B expert pruning | **tạm dừng** (tài liệu hợp nhất §12): dự phòng nếu Qwen MoE thất bại; chưa có số tham số cuối chính xác |
+| — | Distillation truyền thống; soup / DPO không ràng buộc | **tạm dừng:** đã thử, lợi ích không tổng quát |
+
+### 3.J Hướng J — WiSE-FT: nội suy α của LoRA (không huấn luyện mới)
+
+**Giả thuyết.** W(α) = W_gốc + α·ΔW_LoRA. α = 0 chính là ZS, α = 0.70 là neo. Đường liều–đáp ứng (α ∈ {0, 0.70, 0.85, 1.0}) cho biết phần
+lợi ích của fine-tune còn tăng khi đẩy α không: nếu α = 1.0 > 0.70 thì mô hình còn thiếu khớp → đáng đầu tư fine-tune / backbone lớn hơn;
+nếu giảm thì đã sát giới hạn tổng quát. Lịch sử [Đo] (framework kế hoạch 3, khác B0): V3A × 0.70 = 0.909, × 0.35 = 0.891 → không chạy lại 0.35.
+
+| ID | Biến thể | Ghi chú |
+|---|---|---|
+| EXP-080 | V3A × 0.85 (WL1, WJR1 giữ nguyên) | `--adapters V3A --weights 0.85` + `flow_p5_final.json` |
+| EXP-081 | V3A × 1.0 | như trên |
+
+Không chọn α theo public để tìm "lucky seed"; α thắng phải qua held-out + 2 seed. Áp lại cho backbone thắng sau FT-101 (tài liệu hợp nhất §9.3).
 
 ---
 
@@ -314,10 +360,12 @@ lưu output. Nguồn wall: D1 [Đo] cho mô hình 9B; mô hình mới [ƯL] → 
 | EXP-051 | Probe (E2) | trích hidden state log EXP-001 + phát lại | 4 L4 (4 worker) | ACC-08 | 3.0 | 0.75 h [ƯL] | P2 | 1.9 |
 | EXP-060 | TTA (G1) | ví dụ tự sinh theo DN (không cập nhật trọng số) | 4 L4 | ACC-09 | 7.0 | 1.75 h [ƯL] | P2 (sau ≈ 1 ngày code) | 4.4 |
 | EXP-070 | IR / DSL (H0) | phân tích phủ chương trình train | CPU | local | 0 | 2 h (code + chạy) | P2 | 0 |
+| EXP-080 | WiSE-FT (J) | V3A × 0.85 (không huấn luyện mới) | 4 L4 | ACC-12 | 6.4 | 1.6 h | P2 | 4.0 |
+| EXP-081 | WiSE-FT (J) | V3A × 1.0 (không huấn luyện mới) | 4 L4 | ACC-12 | 6.4 | 1.6 h | P2 | 4.0 |
 | EXP-090..093 | Cổng held-out | tối đa 4 biến thể sống sót: `pub_ho400c` + `tr_ho400c` | 4 L4 mỗi cái | ACC-08..09 | 4 × 3.0 = 12.0 | 0.75 h | Cổng | 4 × 1.9 |
 | EXP-094..096 | Cổng seed 2 | tối đa 3 biến thể sống sót, seed 1 | 4 L4 mỗi cái | ACC-10..11 | 3 × 6.0 = 18.0 | 1.5 h | Cổng | 3 × 3.75 |
 | EXP-097 | Cổng chế độ H | biến thể thắng với `flow_p5_final_h` (ẩn `industry.py`) | 4 L4 | ACC-11 | 8.0 | 2.0 h [Đo: H k16 1.8–2.2 h] | Cổng | 5.0 |
-| **Tổng zero-shot + cổng** | | | | **11 acc L4** | **≈ 139** | **≈ 7.5–8.5 h (makespan)** | | **≈ 87** |
+| **Tổng zero-shot + cổng** | | | | **12 acc L4** | **≈ 152** | **≈ 7.5–8.5 h (makespan)** | | **≈ 95** |
 
 Các gói huấn luyện (P3, không thuộc giai đoạn zero-shot):
 
@@ -331,6 +379,7 @@ Các gói huấn luyện (P3, không thuộc giai đoạn zero-shot):
 | FT-106 | Multi-LoRA (D2) | verifier LoRA / adapter giải thích | 4 L4 | 6–8 / adapter | 1.5–2 h | sau E2 / B |
 | FT-107 | TTA (G2) | LoRA theo DN | 4 L4 | trong lúc suy luận | +? | **user quyết** về nguyên tắc dữ liệu test |
 | FT-108 | IR / DSL (H1) | compiler + SFT IR | 4 L4 | 10–12 | 3 h + 2–3 ngày code | H0 phủ ≥ 80 % |
+| FT-109 | MoE (A1b) | LoRA attention + shared expert trên 35B (router / routed expert đóng băng) → gộp → hiệu chuẩn lại → tỉa → SFT phục hồi; so với A1a **cùng tổng compute** (E07) | 4 L4 FSDP / QLoRA | 24–48 | 6–12 h, chuỗi checkpoint | A1a (FT-101 trên MoE tỉa) đã có lợi ích |
 
 ### 5.2 Phụ thuộc
 
@@ -361,9 +410,10 @@ Mọi biến thể P1 / P2 ──> cổng EXP-090..097 ──> quyết định �
 | **ACC-09** ≈ 5:00–6:45 | EXP-091 (held-out #2) | EXP-060 (G1, nếu code xong) | |
 | **ACC-10** ≈ 5:00–6:30 | EXP-094 (seed 2 #1) | EXP-095 (seed 2 #2) | |
 | **ACC-11** ≈ 5:30–7:30 | EXP-096 (seed 2 #3) | EXP-097 (chế độ H của biến thể thắng) | |
+| **ACC-12** 0:45–2:25 | EXP-080 (α 0.85) | EXP-081 (α 1.0) | P2, không phụ thuộc; slot CPU của ACC-12 vẫn dùng tải mô hình |
 | 7:30–8:30 | — | — | tổng hợp, kiểm định ghép cặp, báo cáo quyết định; dự phòng retry / hàng đợi |
 
-**Đỉnh đồng thời:** ≈ 10 phiên GPU (2:15–3:45). **Makespan:** đường găng STG-02..05 (≈ 1 h) → EXP-012 (1.5 h) → EXP-014 (1.6 h) → cổng
+**Đỉnh đồng thời:** ≈ 12 phiên GPU (2:15–3:45). **Makespan:** đường găng STG-02..05 (≈ 1 h) → EXP-012 (1.5 h) → EXP-014 (1.6 h) → cổng
 (≈ 1.5 h) + tổng hợp ≈ 7.5 h; + 1 h dự phòng hàng đợi / retry → **≈ 8.5 h**.
 
 ### 5.4 Timeline tuyệt đối (ví dụ T0 = 15/11 09:00 UTC)
@@ -378,7 +428,8 @@ Mọi biến thể P1 / P2 ──> cổng EXP-090..097 ──> quyết định �
 | Cổng held-out / seed 2 / chế độ H xong | ≈ 16:30 |
 | Báo cáo quyết định | ≈ 17:30 |
 
-**Ràng buộc lịch:** container đóng băng **16/11 04:00 UTC**; hạn nộp **16/11 23:59 GMT+7**. Giai đoạn zero-shot kịp trước đóng băng; giai đoạn
+**Ràng buộc lịch:** container đóng băng **16/11 04:00 UTC**; hạn nộp solution **16/11 23:59 GMT+7**; hạn nộp kết quả private **23/11 23:59
+GMT+7** — **không** tự suy ra được phép đổi mô hình / solution sau 16/11 (phải kiểm thể lệ [R8] trong tài liệu hợp nhất). Giai đoạn zero-shot kịp trước đóng băng; giai đoạn
 fine-tune (≥ 12 h) vượt mốc đó → **user quyết** có tiếp tục sau 16/11 (quota mới 21/11) hay không. Bản nộp hiện tại không đổi trong
 giai đoạn này.
 
@@ -388,9 +439,9 @@ giai đoạn này.
 |---|---|---|---|---|
 | P0 | 18.4 | 4.6 | 10 / 12 | 1.6 h |
 | P1 | 43.2 | 10.8 | 24 / 27 | +3–4 h |
-| P2 (nếu chạy hết) | 39.4 | 9.9 | 22 / 25 | song song |
+| P2 (nếu chạy hết, gồm J) | 52.2 | 13.1 | 29 / 33 | song song |
 | Cổng | 38.0 | 9.5 | 21 / 24 | +2–2.5 h |
-| **Tổng zero-shot** | **≈ 139** | **≈ 35** | **≈ 76 / 87** | **≈ 7.5–8.5 h** |
+| **Tổng zero-shot** | **≈ 152** | **≈ 38** | **≈ 84 / 95** | **≈ 7.5–8.5 h** |
 | P3 (một hướng thắng + C3 + GRPO thử) | 50–130 | 12–33 | 27–82 | 12–24 h |
 
 ---
@@ -405,7 +456,14 @@ giai đoạn này.
 - Theo pha: số hàm W1 qua kiểm, độ chính xác link (so với bộ khớp P), tỉ lệ câu vào phán xử, `judge_pick` / `vote`.
 - Hiệu năng: wall từng pha, tok/s, util GPU, VRAM đỉnh; ước tính thời gian trên 2×RTX 5090 (tỉ lệ theo tok/s; phải ≤ 6 h cho private test).
 - Lỗi: nạp mô hình, thực thi tool, định dạng, timeout, mẫu bị cắt ở trần token, đầu ra lặp.
-- **Ghép cặp:** so từng câu với ZS (cùng câu); báo số câu tốt hơn / kém hơn, z ghép cặp (như các vòng trước: `SE = sqrt(b + c) / n`).
+- **Ghép cặp:** so từng câu với ZS (cùng câu); báo win / loss / tie, đúng → sai, sai → đúng, thay đổi bỏ trả lời; z ghép cặp
+  (`SE = sqrt(b + c) / n`, như các vòng trước) và bootstrap CI 95 % theo câu.
+- **Chỉ số mở rộng (tài liệu hợp nhất §13.2):** chất lượng ứng viên (pass@1, pass@k, oracle@k — chỉ để chẩn đoán, % ứng viên đúng); chất
+  lượng chọn (chọn đúng khi có ứng viên đúng, precision bỏ trả lời); tool (parse, API hợp lệ, chạy được, sửa thành công); tổng quát
+  (DN / schema / luật chưa gặp, paraphrase); runtime (token / câu, K, p50 / p95, wall, VRAM); tuân thủ (số tham số mọi thành phần, giấy phép,
+  offline, tái lập). Mỗi bản ghi: `experiment_id, commit, model_revision, dataset_hash, split, seed, num_params, gpu_hours, latency_p50/p95,
+  correct/wrong/abstain, pass@1/pass@k, score, error_tags`.
+- **Tập khoá:** giữ một phần held-out làm `final holdout` chỉ dùng cho ứng viên cuối; không tune nhiều lần trên đó.
 
 ### 6.2 Nhiễu và ngưỡng
 
@@ -418,10 +476,17 @@ giai đoạn này.
 | **Dừng sớm** | Δ_ZS ≤ −2.0 ở seed 0 và held-out không tốt hơn; lỗi nạp / định dạng > 2 % sau 1 lần sửa; tốc độ dự kiến > 2.5 h wall cho public |
 | **Loại** | không đạt "xác nhận" sau 2 seed; vượt 15B kể cả adapter; container ước tính > 6 h trên 2×5090 |
 
+Thang điểm: mọi ngưỡng tính bằng **điểm phần trăm trên thang 0–100** (0.3 điểm = 0.003 trên thang 0–1), làm rõ chỗ mơ hồ mà tài liệu
+hợp nhất §13.3 nêu.
+
 Biến thể **tham chiếu** (A0, A4, B2) không bao giờ được chọn; chỉ dùng để đo trần: nếu A0 ≤ ZS + 1.0 → hạ ưu tiên hướng A; nếu B2 ≤
 phán xử 9B gốc + 0.5 → verifier mô hình riêng không đáng đầu tư.
 
 ### 6.3 Chọn hướng để fine-tune (P3)
+
+Nhóm finalist mục tiêu (tài liệu hợp nhất §14, không ấn định trước): (1) 9B + probe C3 nếu có lợi; (2) 9B + GRPO hoặc 9B mở rộng 11–13B;
+(3) MoE tỉa 10.93B hoặc 13.95–14.46B + LoRA phục hồi. Chỉ kết hợp thành phần **cùng kiến trúc** và đã có lợi độc lập.
+
 
 Xếp hạng các biến thể "xác nhận" theo: (1) Δ_ZS tb 2 seed; (2) held-out; (3) tốc độ; (4) độ dư ngân sách tham số cho LoRA; (5) chi phí
 fine-tune ước tính. Chọn **tối đa 2 hướng** (một backbone + một cơ chế bổ trợ, ví dụ A3 + B1 hoặc A3 + E). Cơ sở kỳ vọng fine-tune vượt
@@ -429,6 +494,35 @@ fine-tune ước tính. Chọn **tối đa 2 hướng** (một backbone + một 
 neo — phải đo bằng FT-101 / 102, không giả định.
 
 ---
+
+### 6.4 Cổng G0–G6 và mã E00–E12 của tài liệu hợp nhất
+
+| Cổng | Điều kiện | Thí nghiệm trong kế hoạch này |
+|---|---|---|
+| G0 Rule / size | < 15B trên artifact cuối (tensor audit), offline, phụ thuộc hợp lệ | EXP-000 (`param_count.py`) cho mọi checkpoint trước khi chạy |
+| G1 Baseline | B0 tái lập được, output từng câu, eval tái lập | EXP-001 / 002 (ZS), EXP-003 (neo B0) |
+| G2 Feasibility | nạp được, đúng protocol / API / định dạng, VRAM đạt | 10 phút đầu mỗi biến thể mới; smoke `--subset` |
+| G3 Screening | lợi ích trên public + held-out / câu khó, chi phí hợp lý | ngưỡng §6.2 + EXP-090..093 |
+| G4 Training / optimization | 2 seed bền, không overfit, runtime đạt | EXP-094..096; P3 |
+| G5 Integration | ablation cho thấy lợi ích cộng thêm, không regression | P3 (E12) |
+| G6 Submission | số tham số, manifest artifact, checksum, chạy lại offline | ngoài giai đoạn này |
+
+| E-ID (hợp nhất) | Giả thuyết | Thí nghiệm ở đây |
+|---|---|---|
+| E00 | baseline tái lập được | EXP-001 / 002 / 003 |
+| E01 | probe C3 giúp chọn đúng | EXP-050 / 051 |
+| E02 | verifier LoRA hơn mô hình 4B | FT-106 (P3) |
+| E03 | verifier 4B thêm tín hiệu độc lập | EXP-020a (+ B2 tham chiếu, B3) |
+| E04 | RL thưởng thực thi tăng pass@1 | FT-104 / 105 |
+| E05 | MoE 64 giữ đủ năng lực | EXP-011 (+ A0 tham chiếu) |
+| E06 | giữ thêm expert giúp | EXP-013 (77), EXP-014 (90); 88 / 92 quét sau |
+| E07 | prune trước tốt hơn train trước | FT-109 vs FT-101 |
+| E08 | mở rộng chiều sâu cải thiện unseen | EXP-040 / 041 → FT-103 |
+| E09 | few-shot theo schema tăng unseen DN | EXP-060 |
+| E10 | DSL giảm lỗi phép toán | EXP-070 → FT-108 |
+| E11 | nội suy α cải thiện tổng quát | EXP-080 / 081 |
+| E12 | kết hợp cuối có lợi cộng gộp | P3 sau finalist |
+| — | phân rã LoRA (không có trong hợp nhất) | EXP-030 |
 
 ## Phần 7 — Risk Management
 
@@ -447,6 +541,11 @@ neo — phải đo bằng FT-101 / 102, không giả định.
 | Kết luận sai về kiến trúc mới | C2 thấp vì chưa huấn luyện | C2 chỉ là thăm dò; kết luận hướng C chỉ sau FT-103 |
 | Lệch với chính sách nộp chế độ H | thắng ở `flow_p5_final` (còn `industry.py`) nhưng thua ở chế độ H | EXP-097 bắt buộc trước khi chọn |
 | Lộ token | token trong log / lỗi | không in biến môi trường; lọc `KAGGLE_API_TOKEN` khỏi log; file token 600 ngoài repo |
+| Probe học lối tắt (tên DN / paraphrase) | held-out ảo | chia nhóm theo câu gốc + DN; held-out đóng băng |
+| RL reward hacking (P3) | train tăng, private giảm | kiểm provenance, duyệt ≈ 50 false positive / negative trước khi train |
+| Verifier làm tăng latency | vượt 6 h | chỉ gọi cho câu có mẫu bất đồng (như phán xử hiện tại) |
+| HF REAP-64 mạnh HumanEval nhưng yếu tiếng Việt / toolkit | tốn GPU cho phục hồi vô ích | screening task-specific (EXP-011) trước mọi SFT |
+| Chạy nhiều acc không đồng bộ | lẫn artifact | manifest bất biến dùng chung; mỗi thí nghiệm thư mục riêng, không ghi đè baseline |
 
 ---
 
@@ -454,14 +553,14 @@ neo — phải đo bằng FT-101 / 102, không giả định.
 
 1. **Làm trước (P0, ngay khi có token):** EXP-000 → EXP-001 / 002 (ZS baseline 2 seed) + EXP-003 (neo) trên 2 acc; tải mô hình song song
    trên phiên CPU.
-2. **Song song ngay sau (P1):** hướng A (A0 tham chiếu, A1 REAP-64, ACAL → A2 / A3), hướng B (B1 4B + B2 tham chiếu trên cùng log, B3 offline),
+2. **Song song ngay sau (P1):** hướng A (A0 tham chiếu, A1 REAP-64, ACAL → A2 77 expert / A3 90 expert), hướng B (B1 4B + B2 tham chiếu trên cùng log, B3 offline),
    hướng D1 (phân rã). Đây là các biến thể có checkpoint / đường mã gần sẵn và giả thuyết rõ nhất.
-3. **Đáng thử song song nếu quota cho phép (P2):** E1 / E2 (probe), C1 / C2 (kiểm cài đặt + thăm dò độ sâu), G1 (TTA in-context, sau code),
+3. **Đáng thử song song nếu quota cho phép (P2):** J (α 0.85 / 1.0, không huấn luyện mới), E1 / E2 (probe), C1 / C2 (kiểm cài đặt + thăm dò độ sâu), G1 (TTA in-context, sau code),
    H0 (phân tích CPU), I1 (Gemma, có điều kiện), A4 (chỉ khi A0 cho trần cao).
-4. **Hoãn đến sau cổng (P3):** FT-101 / 102 (LoRA phục hồi + W cho backbone thắng), FT-103 (block expansion có huấn luyện), FT-104 / 105
+4. **Hoãn đến sau cổng (P3):** FT-101 / 102 (LoRA phục hồi + W cho backbone thắng), FT-109 (A1b, chỉ khi A1a có lợi), FT-103 (block expansion có huấn luyện), FT-104 / 105
    (GRPO), FT-106 (adapter mới), FT-107 (cần user quyết), FT-108 (IR / DSL).
 5. **Không làm:** Recursive Transformer (chi phí phục hồi), lượng tử hoá để lách 15B (không hợp lệ), tỉa dense 27B.
-6. **Phân bổ GPU:** 11 acc L4, 22 phiên, đỉnh 10 phiên; DP4 cho mô hình vừa 1 GPU, TP2 × DP2 cho tham chiếu lớn, 4 worker độc lập cho
+6. **Phân bổ GPU:** 12 acc L4, 24 phiên, đỉnh ≈ 12 phiên; DP4 cho mô hình vừa 1 GPU, TP2 × DP2 cho tham chiếu lớn, 4 worker độc lập cho
    thí nghiệm trên log cố định; acc quota thấp nhận việc ngắn (EXP-020, EXP-051, held-out).
 7. **Lộ trình:** T0 → T0 + 8.5 h: toàn bộ zero-shot + cổng + báo cáo quyết định → (user duyệt thời gian sau 16/11) P3 cho tối đa 2 hướng
    thắng, mỗi hướng ≈ 12–24 h wall, mục tiêu vượt neo EXP-003 / 0.952 với 2 seed và held-out không giảm.
@@ -480,12 +579,28 @@ neo — phải đo bằng FT-101 / 102, không giả định.
 | `src/probe.py` | trích hidden state + huấn luyện / áp probe | dữ liệu giả |
 | `automation/plans_ep0/*.json` | kế hoạch `launch_many.py` theo bảng §5.3 với `est_h` | `launch_many.py --dry-run` |
 
+**Bố cục artifact** (theo tài liệu hợp nhất §17.2; số liệu nhỏ trong repo, log thô ở `Process/runs/ep0/`):
+
+```
+experiments/unified_plan/
+  manifest.yaml                      # B0, phiên bản code / mô hình / dữ liệu, rule snapshot
+  E00_baseline/{config,metrics,predictions,environment}
+  E01_hidden_probe/{features,model,metrics,predictions}
+  E05_moe64/{model_audit,smoke,metrics}
+  E06_moe_77_90/{importance,counts,metrics}
+  E11_alpha/{metrics}
+  finalists/   final/{artifact_manifest,parameter_audit,offline_test,report}
+```
+
+Báo cáo tự động sau mỗi đợt: Δ score / held-out / runtime / tham số so với ZS và B0; 10–30 câu chuyển trạng thái có ý nghĩa; phân loại
+nguyên nhân (schema grounding, chọn hàm, kỳ / đơn vị, API tool, logic số, định dạng, bất định); quyết định continue / stop / defer + GPU-giờ đã dùng.
+
 Mọi lần đẩy kernel phải qua cổng kiểm tra (`automation/preflight.py` in `PREFLIGHT OK`; tự review diff; thay đổi chỉ chạy trên Kaggle →
 chạy `--subset` nhỏ trước).
 
 ## Tài liệu tham khảo
 
-- `docs/proposed_method_1_b.md` (các hướng đề xuất); `configs/flow_p5_final.json`; `docs/18_PLAN5_TWO_LORA.md`; `handoff/01_SCIENTIFIC_FINDINGS.md`;
+- `proposed_method_merged.pdf` (tài liệu hợp nhất, 18 trang, 15/11); `docs/proposed_method_1_b.md`; `configs/flow_p5_final.json`; `docs/18_PLAN5_TWO_LORA.md`; `handoff/01_SCIENTIFIC_FINDINGS.md`;
   `handoff/ENVIRONMENT_SUMMARY.md`; `Process/runs/v2/d1/` (số đo D1); `Process/kaggle/quota_2026-11-15.txt`.
 - Song & Zheng, Rethinking LLM Pruning via Test-Time Scaling, arXiv 2611.01133 (2026).
 - IAmTheRealGumbo, Qwen3.6-35B-A3B-REAP-64-experts (model card, Hugging Face).

@@ -3,7 +3,7 @@
   "acc": "caohuyen74",
   "name": "fts",
   "jobs": "automation/jobs/p5/fts.jobs",
-  "est_h": 4.0,
+  "est_h": 3.0,
   "args": [
    "--ms",
    "guohaoli4/qwen3-6-35b-a3b/transformers/bf16/1",
@@ -15,7 +15,7 @@
   ]
  },
  {
-  "acc": "caohuyen74",
+  "acc": "hai1108",
   "name": "ftj",
   "jobs": "automation/jobs/p5/ftj.jobs",
   "est_h": 3.0,

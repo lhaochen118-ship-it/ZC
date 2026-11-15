@@ -140,6 +140,10 @@ def main():
         model, info = AutoModelForImageTextToText.from_pretrained(a.model, output_loading_info=True, **kw)
     else:
         model, info = AutoModelForCausalLM.from_pretrained(a.model, output_loading_info=True, **kw)
+    ei = os.environ.get("ZC_EXPERTS_IMPL", "")                             # P5 MoE: fused expert kernels instead of the per-expert loop
+    if ei and hasattr(model, "set_experts_implementation"):
+        try: model.set_experts_implementation(ei); print(f"[sft] experts implementation {ei}", flush=True) if rank == 0 else None
+        except Exception as e: print(f"[sft] experts implementation {ei} unavailable: {type(e).__name__}: {e}", flush=True)
     if rank == 0:
         print(f"[sft] {type(model).__name__} loaded in {time.time() - t0:.0f}s; missing {len(info.get('missing_keys', []))} "
               f"{list(info.get('missing_keys', []))[:5]}; unexpected {len(info.get('unexpected_keys', []))}", flush=True)

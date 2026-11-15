@@ -48,9 +48,20 @@ def main():
            "--metrics", os.path.join(a.out, a.name, "train_metrics.json"), "--ckpt-dir", os.path.join(a.out, a.name, "ckpt")] + \
           (["--max-tokens", str(a.max_tokens)] if a.max_tokens else [])
     os.makedirs(os.path.join(a.out, a.name), exist_ok=True)
-    env = dict(os.environ, PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True")
-    t1 = time.time(); rc = subprocess.run(cmd, env=env).returncode
-    res = {"name": a.name, "rc": rc, "train_s": round(time.time() - t1), "total_s": round(time.time() - t0), "files": a.files, "keep": a.keep}
+    # fastest setting that runs (user 15/11: largest batch, all 4 GPUs): fused expert kernels, then the largest micro-batch;
+    # an attempt that fails (OOM, kernel unsupported on L4) falls back to the next one
+    tries = [(ei, mb) for ei, mb in (("grouped_mm", 8), ("grouped_mm", 4), ("batched_mm", 4), ("grouped_mm", 2), ("batched_mm", 2), ("eager", 2))
+             if mb <= max(a.mb, 8)] if not a.fake else [("eager", a.mb)]
+    t1 = time.time(); rc = 1; used = None
+    for ei, mb in tries:
+        c2 = list(cmd); c2[c2.index("--mb") + 1] = str(mb)
+        env = dict(os.environ, PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True", ZC_EXPERTS_IMPL=ei)
+        ta = time.time(); log = os.path.join(a.out, a.name, f"train_{ei}_mb{mb}.log")
+        with open(log, "w") as lf: rc = subprocess.run(c2, env=env, stdout=lf, stderr=subprocess.STDOUT).returncode
+        tail = open(log, errors="ignore").read()[-1500:]
+        print(f"[moe_ft] experts {ei} mb {mb}: rc {rc} in {time.time() - ta:.0f}s\n{tail[-600:]}", flush=True)
+        if rc == 0: used = (ei, mb); break
+    res = {"name": a.name, "rc": rc, "experts_impl": used, "train_s": round(time.time() - t1), "total_s": round(time.time() - t0), "files": a.files, "keep": a.keep}
     json.dump(res, open(os.path.join(a.out, a.name, "result.json"), "w"), indent=1); print("[moe_ft]", json.dumps(res), flush=True)
     sys.exit(rc)
 

@@ -72,3 +72,4 @@ chính lần chạy, không tốn GPU.
 | es2s2p | S′ seed 2 (W = S′) | 0.856 | 0.848 | −0.007 so mốc |
 | (offline) | ngưỡng bỏ phiếu θ 0.3 / 0.4 / 0.5 × ngưỡng phán xử 0.5 / 0.6 trên log H0a, H0a2, es2s2p | θ 0.5 tốt nhất ở cả 3 (0.863 / 0.863 / 0.856); m 0.6: +0.001 / +0.006 / −0.006 | — | chọn đáp án không phải đòn bẩy |
 | jh (phán xử lại log H0a / H0a2) | list+c, point+c, point+think, list+think (WJR1) | các tổ hợp 0.849–0.866 (tốt nhất list_c+point_think m0.6: 0.863 / 0.866) | point+c 0.845 / 0.854 | phán xử không phải đòn bẩy ở chế độ H |
+| es2s1p | S′ seed 1 | 0.861 | 0.860 | hai seed S′ đều < mốc (0.856 / 0.861) → S′ riêng loại; chờ S′ + WT-b |

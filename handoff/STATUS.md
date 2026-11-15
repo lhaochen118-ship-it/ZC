@@ -33,7 +33,7 @@ Fable, kế hoạch dạng docx). Lỗi vận hành + quy tắc tránh: PDF 2 §
 | TG1n (thuật ngữ mới, suy nghĩ) | huyenco | huỷ | gộp vào TG1b |
 | TG2 cặp tương phản | nguyenhoa99/zc-tg2d-1 | xong (lần 4) | **1,005 cặp** (729 tương phản, kiểm ngược mù 97 %; 276 cách viết); lỗi trước: 2 engine vLLM, HTML-escape `&quot;` |
 | WJR2D (LoRA chồng V3A×0.70 + WJR1; 1,738 bản ghi tương phản + 1,000 WJR1) | quynhle07 (ej2) | xong — **G-J: loại** | public tổ hợp TB 0.9425 (0.934 / 0.946 / 0.950 / 0.940) vs WJR1 0.951; held-out pub_ho400c 0.595 (WJR1 0.609), tr_ho400c 0.912 (0.909), pub_hoind 0.464 (0.470) |
-| Đo S′ (public H: es2s1p / es2s2p; held-out: es2s1h / es2s2h) | nguynduylm, huyenco, loinguyentran | chạy | |
+| Đo S′ trên public H (held-out huỷ theo user 15/11) | nguynduylm ×2 | xong — **S′ riêng loại** | seed 1 0.861, seed 2 0.856 (mốc 0.863) |
 | ewuwtb: độ chính xác hàm WT-b (265 dòng held-out) | synchan5704 | xong | **0.596** (giữ 244, đúng 158; nhãn chương trình đã kiểm 98 / 157) vs W = S 0.517: **+0.079, z 2.82** (39 tốt hơn / 18 kém hơn) |
 | ewuwts: độ chính xác hàm WT-s | synchan5704 | xong | 0.566 (đúng 150; chương trình đã kiểm 100 / 157) < WT-b 0.596 → **WT-b là nhánh chính** (LoRA trên Qwen gốc giữ kỹ năng pandas tổng quát) |
 | Đo WT đầu-cuối (614 câu H: ewtb, ewts_wt) | nhatlong1103 ×2 | chạy | |

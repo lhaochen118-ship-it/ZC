@@ -25,6 +25,7 @@ run test_sandbox 300 python3 tests/test_sandbox.py
 run test_mode_h 120 python3 tests/test_mode_h.py
 run test_judge_constrained 120 python3 tests/test_judge_constrained.py
 run test_force_json 60 python3 tests/test_force_json.py
+run test_merge_first_decides 60 python3 tests/test_merge_first_decides.py
 run test_agent_v2 900 python3 tests/test_agent_v2.py $SPLIT $S/t_v2
 run test_plausibility 900 python3 tests/test_plausibility.py $SPLIT $CACHE
 run test_qnorm 900 python3 tests/test_qnorm.py $SPLIT $S/t_qn

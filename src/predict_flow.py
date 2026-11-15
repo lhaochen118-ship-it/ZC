@@ -124,6 +124,48 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     return f if n else None
 
 
+def prepare_unit_examples(cfg, split, work, model, log, units_path, fake="", cache=""):
+    """v2 I3 (15/11): test-time examples of the shop's OWN functions. The solver called the model-written shop functions in only ~10 %
+    of its samples (its few-shot examples come from training shops, which have no such functions). With "unit_examples": n in the
+    config, the model writes questions an owner may ask that need each verified shop function + the program calling it
+    (lrl_gen --mode unitq, inputs only: the split's rulebook functions and question days), kept when the program runs on the shop's
+    data; agent / hybrid then shows up to n of them (most similar to the question, same shop) among the examples. Returns a file or None."""
+    if not cfg or not units_path: return None
+    c = json.load(open(cfg, encoding="utf-8"))
+    n = int(c.get("unit_examples", 0) or 0)
+    if n <= 0: return None
+    out = os.path.join(work, "unitq"); os.makedirs(out, exist_ok=True); t = time.time()
+    base = [sys.executable, os.path.join(HERE, "lrl_gen.py"), split, out, "--model", model, "--mode", "unitq", "--quant", "fp8", "--rows", units_path,
+            "--samples", str(int(c.get("unit_examples_per_unit", 3) or 3)), "--seed", "4242"] + (["--cache", cache] if cache else []) + \
+           (["--fake-responder", fake] if fake else [])
+    devs = visible_gpus(); ng = 1 if fake else max(1, len(devs))
+    procs = [subprocess.Popen(base + (["--shard", f"{i}/{ng}"] if ng > 1 else []), env=dict(os.environ, **({"CUDA_VISIBLE_DEVICES": devs[i]} if ng > 1 else {})),
+                              stdout=open(os.path.join(out, f"shard{i}.log"), "w"), stderr=subprocess.STDOUT, start_new_session=True) for i in range(ng)]
+    lim = float(c.get("unit_examples_max_s", 900) or 900)
+    for p in procs:
+        try: p.wait(timeout=max(1.0, t + lim - time.time()))
+        except subprocess.TimeoutExpired:
+            import signal
+            try: os.killpg(p.pid, signal.SIGKILL)
+            except Exception: p.kill()
+            p.wait()
+    import glob
+    rows = []
+    for f in sorted(glob.glob(os.path.join(out, "cards_unitq*.jsonl"))):
+        for l in open(f, encoding="utf-8"):
+            if l.strip():
+                q = json.loads(l)
+                rows.append({"id": f"ux_{len(rows)}", "business_id": q["bid"], "question": q["question"], "as_of_date": q["as_of_date"],
+                             "code": q["program"], "unit": q.get("unit_name")})
+    if not rows: log(f"unit examples: none ({time.time() - t:.0f}s)"); return None
+    f = os.path.join(out, "shop_examples.jsonl")
+    with open(f, "w", encoding="utf-8") as w:
+        for r in rows: w.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.environ["ZC_SHOP_EXAMPLES"] = f; os.environ["ZC_SHOP_EXAMPLES_K"] = str(n)
+    log(f"unit examples: {len(rows)} for {len({r['business_id'] for r in rows})} shops ({time.time() - t:.0f}s)")
+    return f
+
+
 def resolve_adapter(name):
     """a LoRA adapter directory given by path or by name (searched next to the code, under /models and /kaggle/input:
     <root>/**/<name>/adapter/adapter_config.json or <root>/**/<name>/adapter_config.json); '' when none.
@@ -341,6 +383,7 @@ def main():
         if hz: os.environ["ZC_HIDE_API"] = hz; log(f"hide_api: {hz} (exported to every phase)")
         um = json.load(open(cfg, encoding="utf-8")).get("units_max") if cfg else None
         if um: os.environ["ZC_UNITS_MAX"] = str(int(um)); log(f"units_max: {um}")
+        if cfg and int(json.load(open(cfg, encoding="utf-8")).get("units_code", 0) or 0): os.environ["ZC_UNITS_CODE"] = "1"; log("units_code: on")
         if cfg and int(json.load(open(cfg, encoding="utf-8")).get("api_extra", 0) or 0): os.environ["ZC_API_EXTRA"] = "1"; log("api_extra: on")
     except Exception as e: log(f"hide_api: config unreadable ({e})")
     merge_sub.merge(a.split, final, [], quiet=True)                  # a complete (abstain) file from the first second
@@ -356,6 +399,7 @@ def main():
     uv = prepare_units(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder)
     free_w_models(a.work, log)
     if uv is not None: extra = extra + ["--units", uv]
+    prepare_unit_examples(cfg, a.split, a.work, a.model, log, uv, a.lrl_fake or a.fake_responder)   # v2 I3 (env for hybrid)
     kv = prepare_link(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder, cards=",".join(x for x in (lv or "").split(",") if "compile" in os.path.basename(x)))
     free_w_models(a.work, log)
     if kv is not None: extra = extra + ["--links", kv]
@@ -387,7 +431,7 @@ def main():
         n = merge_sub.merge(a.split, final, [vote_sub], quiet=True); log(f"after run {i + 1}: {n}")
     jv = judge_phase(cfg, a, dirs, uv, log, t0, kv)                       # plan 5 W3: the judge re-decides from the solver's samples
     free_w_models(a.work, log)
-    if jv: n = merge_sub.merge(a.split, final, [jv, os.path.join(dirs[0], "submission.jsonl")], quiet=True); log(f"after the judge: {n}")
+    if jv: n = merge_sub.merge(a.split, final, [jv, os.path.join(dirs[0], "submission.jsonl")], quiet=True, first_decides=True); log(f"after the judge: {n}")
     log(f"end: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}  ({time.time() - t0:.0f}s)")
 
 

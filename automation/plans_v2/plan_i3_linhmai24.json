@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "linhmai24",
+  "name": "phux2n",
+  "jobs": "automation/jobs/phux2n.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "linhmai24/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "linhmai24",
+  "name": "phux1c",
+  "jobs": "automation/jobs/phux1c.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "linhmai24/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

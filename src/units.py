@@ -166,8 +166,10 @@ def signature(results):
 def block(units):
     if not units: return ""
     lines = ["# SHOP FUNCTIONS (written from this shop's rulebook; already defined: call them like toolkit metrics when the question uses the term)"]
-    for u in units[:MAX_UNITS]:
+    code = os.environ.get("ZC_UNITS_CODE") == "1"                       # v2 I2: the source is shown, so the solver can check that the
+    for u in units[:MAX_UNITS]:                                         # function matches the definition (and reuse its filters)
         lines.append(f"- {u['signature']}: {u.get('term')} = {str(u.get('definition') or u.get('doc') or '')[:300]}")
+        if code and u.get("code"): lines += ["  " + l for l in str(u["code"]).splitlines()[:25]]
     return "\n".join(lines)
 
 

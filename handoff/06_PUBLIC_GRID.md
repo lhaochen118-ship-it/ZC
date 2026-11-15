@@ -95,3 +95,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | pwtbma1 | WT-b, giữ hàm không cần đồng thuận (29 hàm) | 0.848 | — | thêm hàm → thêm sai (64) → loại |
 | ps1b | S′ seed 1 + WT-b | 0.842 | — | loại |
 | pwtbu24 | WT-b, 24 mẫu viết hàm | 0.846 | — | loại |
+| pbase | Qwen gốc làm bộ giải (kênh thứ 2 để gộp) | — | 0.753 (container) | quá yếu → loại |

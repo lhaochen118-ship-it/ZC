@@ -7,20 +7,22 @@ Usage: merge_sub.py <split_dir> <out.jsonl> <first.jsonl> [<second.jsonl> ...]  
 import os, sys, json
 
 
-def read(path):
+def read(path, keep_abstain=False):
     out = {}
     if not os.path.isfile(path): return out
     for l in open(path, encoding="utf-8"):
         try: r = json.loads(l)
         except ValueError: continue                                    # a line being written
-        if isinstance(r, dict) and r.get("id") and r.get("type") and r.get("type") != "abstain": out[r["id"]] = r
+        if isinstance(r, dict) and r.get("id") and r.get("type") and (keep_abstain or r.get("type") != "abstain"): out[r["id"]] = r
     return out
 
 
-def merge(split, out, srcs, quiet=False):
-    """write out from srcs (priority order); -> [answers taken from each source]."""
+def merge(split, out, srcs, quiet=False, first_decides=False):
+    """write out from srcs (priority order); -> [answers taken from each source]. first_decides: the first source's line is final for
+    every question it has, an abstain included (v2 15/11: the judge's decision to abstain was overwritten by the solver's answer,
+    costing 0.003-0.013 PA in every container run); later sources only fill questions the first one lacks."""
     ids = [json.loads(l)["id"] for l in open(os.path.join(split, "questions.jsonl"), encoding="utf-8") if l.strip()]
-    subs = [read(p) for p in srcs]
+    subs = [read(p, keep_abstain=first_decides and i == 0) for i, p in enumerate(srcs)]
     n = [0] * len(srcs); tmp = out + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         for q in ids:

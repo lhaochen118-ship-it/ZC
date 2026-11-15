@@ -33,6 +33,13 @@ class HybridPipeline(pipeline.Pipeline):
         self.escapes = tuple(x for x in (getattr(a, "escape", "python") or "").split(",") if x and x != "none")
         self.spec = api_spec.build_api_spec(hide=self.hide)
         self.bank = retrieval.Bank.load(include_holdout=bool(getattr(a, "bank_holdout", 0)))
+        self.shop_ex, self.own_k = {}, int(os.environ.get("ZC_SHOP_EXAMPLES_K", "0") or 0)   # v2 I3: model-written examples of the
+        if self.own_k and os.path.isfile(os.environ.get("ZC_SHOP_EXAMPLES", "")):           # shop's own functions (predict_flow)
+            byb = {}
+            for l in open(os.environ["ZC_SHOP_EXAMPLES"], encoding="utf-8"):
+                if l.strip(): r = json.loads(l); byb.setdefault(r["business_id"], []).append(r)
+            self.shop_ex = {b: retrieval.Bank(rs) for b, rs in byb.items()}
+            print(f"[hybrid] shop examples: {sum(len(v) for v in byb.values())} for {len(byb)} shops, {self.own_k} per question", flush=True)
         self.excl = {x for x in (getattr(a, "exclude_bids", "") or "").split(",") if x}
         self.variants = [v for v in (getattr(a, "variants", "direct") or "direct").split(",") if v in prompting.VARIANT] or ["direct"]
         self.ctxs = {}
@@ -122,6 +129,9 @@ class HybridPipeline(pipeline.Pipeline):
         st["hints"] = h
         excl = set(self.excl) | {b}                                     # never the shop's own checked examples (honest on train shops)
         exs = self.bank.retrieve(q["question"], h, k=int(a.shots), exclude_bids=excl, exclude_ids={q["id"]})
+        if self.shop_ex.get(b):                                             # v2 I3: the shop's own function examples replace the last
+            ow = self.shop_ex[b].retrieve(q["question"], h, k=self.own_k, per_family=1)   # (least similar) training examples
+            if ow: exs = exs[:max(0, len(exs) - len(ow))] + ow
         st["examples"] = [e.get("id") for e in exs]
         shown = h if getattr(a, "hints", 1) and not pure else None
         cards = self.lib.match(q["question"], bid=b, industry=ctx.ind[2] if ctx.ind else None, k=int(getattr(a, "lrl_k", 4) or 4),

@@ -1,0 +1,4 @@
+run_kaggle.py train OUT/UQ/s0 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode unitq --rows training/data/out/s3/units_unitq.jsonl --samples 2 --shard 0/4
+run_kaggle.py train OUT/UQ/s1 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode unitq --rows training/data/out/s3/units_unitq.jsonl --samples 2 --shard 1/4
+run_kaggle.py train OUT/UQ/s2 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode unitq --rows training/data/out/s3/units_unitq.jsonl --samples 2 --shard 2/4
+run_kaggle.py train OUT/UQ/s3 --script lrl_gen.py --model Qwen/Qwen3.5-9B --quant fp8 --mode unitq --rows training/data/out/s3/units_unitq.jsonl --samples 2 --shard 3/4

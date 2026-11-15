@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "lelynhan",
+  "name": "uq",
+  "jobs": "automation/jobs/uq.jobs",
+  "est_h": 0.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--train-data",
+   "s3",
+   "--no-preflight"
+  ]
+ }
+]

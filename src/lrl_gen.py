@@ -437,6 +437,66 @@ def rows_items(split, cache, rows_file):
     return items
 
 
+UNITQ_EXAMPLES = """## Ví dụ 1 — hàm: khach_sop_nhat(p, k=1) — Khách sộp nhất: khách có giá trị TB / đơn cao nhất trong kỳ, chỉ xét khách >= 3 đơn
+{"questions": [{"question": "thang 3/2025 khach nao sop nhat v shop", "program": "ANSWER = {\\"type\\": \\"list\\", \\"answer\\": khach_sop_nhat(month(2025, 3))}"},
+               {"question": "Quý 4 năm ngoái 2 khách sộp nhất là ai?", "program": "ANSWER = {\\"type\\": \\"list\\", \\"answer\\": khach_sop_nhat(quarter(2024, 4), k=2)}"}]}
+## Ví dụ 2 — hàm: so_dot_giao(p) — Số đợt giao trong tháng: số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt
+{"questions": [{"question": "hom qua giao may dot vay", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(yesterday(TODAY))}"},
+               {"question": "Tháng này tính tới giờ có bao nhiêu đợt giao hàng?", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(this_month(TODAY))}"}]}"""
+
+UNITQ_SCHEMA = {"type": "object", "properties": {"questions": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"type": "object",
+    "properties": {"question": {"type": "string", "maxLength": 240}, "program": {"type": "string", "maxLength": 400}},
+    "required": ["question", "program"], "additionalProperties": False}}}, "required": ["questions"], "additionalProperties": False}
+
+
+def unitq_items(split, units_file, per_unit=2):
+    """v2 data augmentation (handoff/07 U1): a model-written shop function (teacher units of TRAINING shops) -> the base model writes
+    per_unit questions an owner may type that need that function (with a period, in owner style) + the program calling it on that
+    period. Checked afterwards by execution (unitq_check)."""
+    p = units_file if os.path.isfile(units_file) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(units_file)}", recursive=True)), units_file)
+    us = [json.loads(l) for l in open(p, encoding="utf-8") if l.strip()]
+    qs = [json.loads(l) for l in open(os.path.join(split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    days = {}
+    for q in qs: days.setdefault(q["business_id"], []).append(q["as_of_date"])
+    per = api_doc().split("- Filters")[0]                               # the period functions of the toolkit (first block of API_DOC)
+    items = []
+    for k, u in enumerate(us):
+        ds = days.get(u["bid"]) or ["2026-01-15"]; today = sorted(ds)[(k * 7919) % len(ds)]
+        prompt = (f"# HÀM KỲ CỦA TOOLKIT\n{per}\n\n# VÍ DỤ\n{UNITQ_EXAMPLES}\n\n# HÀM CỦA CỬA HÀNG\n{u.get('signature') or u['name']} — {u['term']}: "
+                  f"{(u.get('definition') or u.get('doc') or '')[:300]}\n\n# NHIỆM VỤ (hôm nay = {today})\nViết {per_unit} câu hỏi KHÁC NHAU mà chủ cửa hàng "
+                  "có thể nhắn và cần đúng hàm trên để trả lời: mỗi câu có một kỳ thời gian cụ thể (ngày, tuần, tháng, quý, năm, hôm qua, tháng "
+                  "này...), có câu dùng chính thuật ngữ, có câu nói theo cách thân mật / viết tắt / không dấu. Với mỗi câu viết chương trình "
+                  "ANSWER = {\"type\": ..., \"answer\": <gọi hàm trên với kỳ của câu>} (type: number, list, string, date hoặc percent). JSON: "
+                  "{\"questions\": [{\"question\": \"...\", \"program\": \"...\"}, ...]}")
+        items.append((dict(u, as_of_date=today), prompt))
+    return items
+
+
+def unitq_check(cards, split, cache=""):
+    """keep the generated (question, program) pairs whose program runs on the shop's data with the shop function defined and returns a
+    non-empty answer (the solver's namespace: toolkit bound to the shop at the question's day + C, T)."""
+    import signal, dm, agent, pandas as pd, numpy as np
+    keep = []
+    for c in cards:
+        sh = _shop_load(split, cache, c["bid"])
+        if not sh: continue
+        C, de, T = sh
+        g = {"C": C, "T": {k: v.copy() for k, v in (T or {}).items()}, "pd": pd, "np": np, "re": re, "TODAY": pd.Timestamp(c["as_of_date"])}
+        try:
+            g.update(dm.api(dm.Shop(C, c["as_of_date"], {"data_end": de}), pd.Timestamp(c["as_of_date"])))
+            def _a(*_): raise TimeoutError()
+            old = signal.signal(signal.SIGALRM, _a); signal.alarm(20)
+            try: exec(compile(c["unit_code"] + "\n" + c["program"], "<q>", "exec"), g)
+            finally: signal.alarm(0); signal.signal(signal.SIGALRM, old)
+            a = agent.fmt_answer(g["ANSWER"]) if "ANSWER" in g else None
+        except dm.Unanswerable: a = None
+        except BaseException: a = None
+        v = (a or {}).get("answer")
+        if a is None or v is None or (isinstance(v, (list, dict, str)) and not v): continue
+        keep.append(dict(c, answer=a))
+    return keep
+
+
 def rowgen_items(split, cache, shops, n_rows=20):
     """v2 G / C (teacher data): per training shop, the base model invents n_rows NEW rulebook rows computable on THIS shop's tables
     (variants of existing rows that change one element of the definition, and new metrics an owner of such a shop would define),
@@ -524,6 +584,15 @@ def to_cards(mode, items, texts, names):
                 if meta.get(k) is not None: u[k] = meta[k]
             u["id"] = "U" + hashlib.sha1(json.dumps([u["bid"], u["term"], code], ensure_ascii=False).encode()).hexdigest()[:8]
             out.append(u)
+        elif mode == "unitq" and isinstance(j, dict):
+            import html
+            for e in (j.get("questions") or [])[:3]:
+                if not isinstance(e, dict): continue
+                q, prog = html.unescape(str(e.get("question") or "")).strip(), html.unescape(str(e.get("program") or "")).strip()
+                if q and "ANSWER" in prog and meta["name"] in prog:
+                    out.append({"bid": meta["bid"], "term": meta["term"], "definition": meta.get("definition"), "unit_name": meta["name"],
+                                "unit_code": meta["code"], "signature": meta.get("signature"), "src": meta.get("src"), "question": q,
+                                "program": prog, "as_of_date": meta["as_of_date"]})
         elif mode == "rowgen":
             seen = set()
             for e in (j if isinstance(j, list) else [j]):
@@ -647,6 +716,7 @@ def main():
         p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
         items = induce_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
     elif a.mode == "unit": items = rows_items(a.split, a.cache, a.rows) if a.rows else unit_items(a.split, a.cache)
+    elif a.mode == "unitq": items = unitq_items(a.split, a.rows, a.samples)
     elif a.mode == "rowgen":
         shops = [x for x in a.shops.split(",") if x] or sorted(os.path.basename(d) for d in glob.glob(os.path.join(a.split, "data", "*")) if os.path.isdir(d))
         items = rowgen_items(a.split, a.cache, shops, a.rows_per_shop)
@@ -654,14 +724,14 @@ def main():
     if a.shard:
         i, n = map(int, a.shard.split("/")); items = items[i::n]
     if os.environ.get("ZC_SMOKE") == "1": items = items[:8]
-    if a.mode in ("unit", "bind") and a.samples > 1:                   # k samples per row (after sharding: a row's samples stay
+    if a.mode in ("unit", "bind") and a.samples > 1 and a.mode != "unitq":   # k samples per row (after sharding: a row's samples stay
         items = [it for it in items for _ in range(a.samples)]          # together for the self-consistency choice)
     convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
     think = a.mode == "induce" or (a.mode == "rowgen" and a.think_rowgen) or (a.mode == "unit" and a.think_units)   # newterm without thinking: with it 930 / 940 answers of
                                                                         # lrl0c reasoned past the cap (13/11); the task is simple
     eng = [None]
-    mt = (a.think_tokens if a.mode in ("unit", "rowgen") else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else (5000 if a.mode == "rowgen" else 900)))   # unit: the writer often reasons in
-    js = UNIT_SCHEMA if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else (ROWGEN_SCHEMA if a.mode == "rowgen" and not think else None))       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
+    mt = (a.think_tokens if a.mode in ("unit", "rowgen") else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else (5000 if a.mode == "rowgen" else (700 if a.mode == "unitq" else 900))))   # unit: the writer often reasons in
+    js = UNIT_SCHEMA if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else (ROWGEN_SCHEMA if a.mode == "rowgen" and not think else (UNITQ_SCHEMA if a.mode == "unitq" else None)))       # plain text before its JSON (G0c: 33 / 50 cut at 900); 2048 was
                                                                         # too few: 199 / 199 induction answers of lrl0b reasoned past the cap
     def generate(convs, temps, seed0):                                  # without reaching their JSON (13/11)
         if not convs: return []
@@ -679,10 +749,12 @@ def main():
             if js is None: raise
             print(f"[lrl_gen] constrained JSON unavailable ({type(e).__name__}: {str(e)[:200]}): unconstrained", flush=True)
             return eng[0].gen(convs, temps, seeds, mt, think=think)[0]
-    temps = [0.7 if a.mode in ("translit", "rowgen") else 0.0] * len(convs)
+    temps = [0.7 if a.mode in ("translit", "rowgen", "unitq") else 0.0] * len(convs)
     if a.mode in ("unit", "bind"): temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
     texts = generate(convs, temps, a.seed)
     cards = to_cards("compile" if a.mode == "bind" else a.mode, items, texts, names)
+    if a.mode == "unitq":                                               # v2 data augmentation: programs checked by execution
+        n0 = len(cards); cards = unitq_check(cards, a.split, a.cache); print(f"[unitq] {len(cards)} / {n0} generated pairs run", flush=True)
     if a.mode == "bind":                                                # W1: only hints that run on the section's shops
         cards = verify_binds(cards, items, shop_sections(a.split, a.cache), a.samples)
     rep = {}

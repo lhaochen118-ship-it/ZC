@@ -80,6 +80,30 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
     if not cfg: return None
     c = json.load(open(cfg, encoding="utf-8"))
     if not int(c.get("units_gen", 0) or 0): return None
+    if c.get("units_union") and not c.get("units_file"):                 # v2 I7: the functions of several writers (e.g. S and WT-b v2
+        parts = []                                                      # cover different rows), concatenated; I6 then checks them
+        for k, spec in enumerate([{}] + list(c["units_union"])):
+            ck = {x: y for x, y in c.items() if x != "units_union"}
+            if k: ck = {x: y for x, y in ck.items() if x not in ("units_lora", "units_lora_on", "units_model")}
+            ck.update(spec); wk = os.path.join(work, f"union{k}"); os.makedirs(wk, exist_ok=True)
+            cf = os.path.join(wk, "cfg.json"); json.dump(ck, open(cf, "w", encoding="utf-8"))
+            f = prepare_units(cf, split, wk, model, log, fake, cache); free_w_models(wk, log)
+            if f: parts.append([json.loads(l) for l in open(f, encoding="utf-8") if l.strip()])
+        out, seen = [], set()
+        for us in parts:
+            for u in us:
+                key = (u["bid"], u.get("_sig") or u["code"])
+                if key in seen: continue
+                seen.add(key)
+                if any(o["bid"] == u["bid"] and o["name"] == u["name"] for o in out):
+                    nn = u["name"] + f"_{len(out)}"; u = dict(u, code=u["code"].replace(f"def {u['name']}(", f"def {nn}(", 1),
+                                                           signature=str(u.get("signature") or u["name"]).replace(u["name"], nn, 1), name=nn)
+                out.append(u)
+        if not out: return None
+        f = os.path.join(work, "units_union.jsonl")
+        with open(f, "w", encoding="utf-8") as w:
+            for u in out: w.write(json.dumps(u, ensure_ascii=False) + "\n")
+        log(f"units union: {[len(x) for x in parts]} -> {len(out)} functions"); return f
     if c.get("units_file"):                                             # v2 grid (experiments only): the units of an earlier run with
         f = find_input(c["units_file"])                                 # the same writer -> solver variants compared on the SAME
         if f: log(f"units: reused {f}"); return f                       # functions (and ~10-15 min saved); missing -> stop

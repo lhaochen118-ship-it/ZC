@@ -807,13 +807,13 @@ def main():
         p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
         items = induce_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
     elif a.mode == "unit": items = rows_items(a.split, a.cache, a.rows) if a.rows else unit_items(a.split, a.cache)
-    if a.mode == "unit" and a.units_multi: items = [(m, u + UNIT_MULTI_TAIL) for m, u in items]
-    if a.mode == "unit" and a.units_qctx: items = add_question_context(a.split, items, a.units_qctx)
     elif a.mode == "unitq": items = unitq_items(a.split, a.rows, a.samples)
     elif a.mode == "rowgen":
         shops = [x for x in a.shops.split(",") if x] or sorted(os.path.basename(d) for d in glob.glob(os.path.join(a.split, "data", "*")) if os.path.isdir(d))
         items = rowgen_items(a.split, a.cache, shops, a.rows_per_shop)
     else: sys.exit(f"unknown mode {a.mode}")
+    if a.mode == "unit" and a.units_multi: items = [(m, u + UNIT_MULTI_TAIL) for m, u in items]      # v2 I4 (after the mode chain:
+    if a.mode == "unit" and a.units_qctx: items = add_question_context(a.split, items, a.units_qctx)   # 15/11 an 'if' inside it broke 'unit')
     if a.shard:
         i, n = map(int, a.shard.split("/")); items = items[i::n]
     if os.environ.get("ZC_SMOKE") == "1": items = items[:8]

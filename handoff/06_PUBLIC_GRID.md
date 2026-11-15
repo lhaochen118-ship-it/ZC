@@ -117,3 +117,4 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | phut | S viết hàm có suy nghĩ + budget forcing | caotienminh1 |
 | s3a → es3ar, s3f | S″-A / S″-A′ (UQ lọc: giữ 709 / 1,336 cặp S đồng ý) | duylnng |
 | (sự cố 05:50) | lỗi chuỗi `elif` trong `lrl_gen.main` → `--mode unit` thoát khi `units_qctx` = 0 | — | — | 7 kernel hỏng (phcode, phux2, phux1c, phmu, phuv, pwv2uv, pfix2) bị xoá, đẩy lại 06:00 tên `*b` (phux1c → phunb = I7 hợp hàm S + WT-b v2 + I6; phmu → phqcb) |
+| (06:05, user: ngắt hướng không tiềm năng) | đóng họ WT (WT-b / WT-s / WT-b v2 / hợp hàm với WT-b v2), thêm mẫu (k24, u16), S′, F | — | — | ngắt pwv2uvb, phunb, pfix2b; xoá cấu hình / job / plan của các hướng đã đóng (kết quả giữ ở `Process/runs/v2`, `Process/scores_v2.csv`) |

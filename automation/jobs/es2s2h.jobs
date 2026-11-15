@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/es2s2h --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters V3A,S2S2 --weights 0.70,1.0 --search /kaggle/input --sets pub_ho400c,tr_ho400c,pub_hoind,tr_newterm --eval-configs configs/flow_p5_final_h.json

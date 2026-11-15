@@ -1,1 +1,0 @@
-run_kaggle.py train OUT/TG2 --script training/contrast_job.py --model Qwen/Qwen3.5-9B --items training/data/out/wt/newterm_in.jsonl --dp 4

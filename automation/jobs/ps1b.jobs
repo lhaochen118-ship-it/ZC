@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/ps1b --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters V3A,S2S1 --weights 0.70,1.0 --search /kaggle/input --runner predict --eval-configs configs/flow_wtb_h.json

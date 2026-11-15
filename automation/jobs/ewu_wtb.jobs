@@ -1,1 +1,0 @@
-run_kaggle.py train OUT/ewu_WTB --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters WTB --weights 1.0 --search /kaggle/input --runner script --script lrl_gen.py --script-args=--mode,unit,--rows,training/data/out/wt/wt_eval_rows.jsonl,--samples,5,--quant,fp8 --script-shards 4

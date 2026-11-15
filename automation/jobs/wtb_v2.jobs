@@ -1,1 +1,0 @@
-run_kaggle.py public_test OUT/WTB2 --script training/full_job.py --model Qwen/Qwen3.5-9B --train --data wt2 --r 32 --alpha 64 --lr 2e-4 --epochs 2 --mb 2 --eff-batch 64 --max-len 5120 --no-eval --files wt_train.jsonl --seed 703 --budget 0

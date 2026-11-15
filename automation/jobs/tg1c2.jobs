@@ -1,1 +1,0 @@
-run_kaggle.py train OUT/TG1c/p2 --script training/tg1_job.py --model Qwen/Qwen3.5-9B --part 2/4 --dp 4 --samples 8 --rows-per-shop 30 --train-rows-per-shop 0 --min-agree 3 --seed 777

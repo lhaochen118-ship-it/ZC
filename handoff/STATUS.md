@@ -1,19 +1,16 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-*Cập nhật 2026-11-15 05:20 UTC. **User 15/11 04:20: đổi ý — không đổi khung chat, chạy tiếp tất cả, không tiếc GPU / token, nhiều ý tưởng +
-nhiều biến thể song song, đẩy score sát 1.** Routine mỗi giờ bật lại. Đóng băng 16/11 04:00 UTC. +2 acc (nguyenmanh0404, hai1108; 21 acc).*
+*Cập nhật 2026-11-15 06:10 UTC. User 06:00: báo cáo score, **ngắt các hướng không tiềm năng**, user sẽ đổi hướng nghiên cứu. Đóng băng 16/11
+04:00 UTC. Findings mới nhất: PDF 1 §9 (tích cực §9.2, tiêu cực §9.3, đang chạy §9.4). Lỗi + cách tránh: PDF 2 §10.*
 
-**Mốc:** `configs/flow_v2_final.json` (= `flow_p5_final_h`, chế độ H) public 0.863 ensemble / 0.860 container (H0a). **Đã sửa lỗi gộp container**
-(`merge_sub first_decides`): từ các lần chạy 05:00 trở đi container = ensemble. Kết quả lưới: `handoff/06_PUBLIC_GRID.md` §5–§7.
+**Tốt nhất chế độ H:** mốc `configs/flow_v2_final.json` (= `flow_p5_final_h`) 0.863 ensemble (container sau sửa gộp = ensemble); WT-b v2 0.864
+(≈ mốc, hướng WT đã đóng). Hàm cửa hàng do S viết đóng góp +0.03 (không hàm: 0.834). Lỗi gộp container đã sửa (`merge_sub first_decides`).
 
-**Ý tưởng mới (15/11 04:30–05:15, đều là năng lực mô hình, không luật viết tay):**
-I2 `units_code` (S thấy mã hàm) · I3 `unit_examples` (ví dụ tự sinh của chính cửa hàng) · I4 `units_multi` (1–3 hàm / dòng rulebook; I4b thêm
-hướng dẫn đại lượng tại một ngày, tham số lọc) · I5 `units_qctx` (bộ viết hàm thấy câu hỏi thật dùng thuật ngữ) · I6 `unit_verify` (S tự giải câu
-tự sinh không có hàm; hàm bị S phủ định thì bỏ) · budget forcing cho bộ viết hàm có suy nghĩ · S″-A / S″-A′ (data augmentation).
+**Đã đóng (ngắt 06:05):** WT (mọi biến thể), thêm mẫu (k24, u16), S′, F, phán xử / ngưỡng, Qwen gốc làm kênh 2.
 
-**Đang chạy (27 kernel):** pfix, pfix2 (mốc đã sửa gộp), phcode, phux, phux2, phux2n, phux1c, phmu, phqc, phmq, phmqx, phuv, phuvx, phmquv,
-phqcuv, pwv2uv, pwv2x, phquvx, phmqc, phall, phmq2, phmq2uv, phmq2x, phmq2t, phut, s3a, s3f; tự đẩy es3ar / es3fr khi s3a / s3f xong
-(`after_done.sh`). Kernel id: `$S/runs/<run>/zc-<run>-1.log` → `Process/kaggle/kernels_v2.csv` khi lưu.
+**Còn chạy (hướng chưa đo, nhắm chất lượng hàm cửa hàng — PDF 1 §9.4):** pfix, phux, phux2n, phcodeb, phux2b, phqcb, phuvb, phmq, phmqx,
+phmquv, phqcuv?, phquvx, phmqc, phall, phmq2, phmq2uv, phmq2x, phmq2t, phut; S″: es3ar (đo S″-A), s3f → es3fr. Kết quả về 06:50–08:30;
+chấm bằng `python3 Process/tools/v2/grid_report.py <runs dir>`.
 
 ## Tiến độ v2 (lịch sử, 14/11 17:05 → 15/11 03:40)
 | Bước | Acc / kernel | Trạng thái | Kết quả |

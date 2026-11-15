@@ -130,3 +130,6 @@ hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng
 | phmq2t | ngắt 06:53 | cùng bộ viết hàm có suy nghĩ (I4 + I5 + think) → ngắt theo kết quả phut |
 | phmq | 0.859 (905 / 46 / 49) | I4 (1–3 hàm / dòng) + I5 (câu thật của cửa hàng): 28 hàm (mốc 14–16), pub_ind 0.617 (mốc 0.595–0.606) nhưng tổng = mốc (z −0.5) |
 | phmqx | 0.840 (890 / 50 / 60) | I4 + I5 + I3 (2): **nhiễu bởi sự cố** — 1 / 4 shard viết hàm thoát rc 1 (log chỉ giữ đuôi, không thấy traceback) → 15 hàm (phmq cùng cấu hình bộ viết: 28), mất toàn bộ hàm dev_011, dev_012 còn 5 / 11; ghép cặp −0.023 (z −2.5) không quy được cho I3; 17 ví dụ / 4 cửa hàng |
+| phmqc | 0.862 (906 / 44 / 50) | I4 + I5 + I2 (S thấy mã hàm): ≈ mốc (z −0.1); **shard 2 viết hàm cũng hỏng** (17 hàm) |
+| phmquv | 0.840 (893 / 53 / 54) | I4 + I5 + I3 + I6 (S kiểm hàm, bỏ 2 / 15): **shard 2 hỏng** (15 hàm) → không kết luận được; z −2.4 |
+| (sự cố 07:40) | shard 2 / 4 của bộ viết hàm thoát rc 1 ở 3 / 4 lần chạy I4 + I5 (phmqx, phmqc, phmquv; phmq thì không) → mất hàm dev_011 và nửa dev_012; log chỉ giữ 3 dòng cuối (dòng tắt vLLM) nên không thấy traceback; không tái hiện được trên CPU (mô hình giả không sinh hàm). Sửa ghi log: shard hỏng → ghi traceback (40 dòng) vào eval.log. Kết luận I4 + I5 chỉ dựa vào phmq (0.859) |

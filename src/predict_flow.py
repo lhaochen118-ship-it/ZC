@@ -137,7 +137,12 @@ def prepare_units(cfg, split, work, model, log, fake="", cache=""):
             except Exception: p.kill()
             p.wait(); rcs.append("timeout"); log(f"units shard {i}: killed at the {lim:.0f}s cap")
     for i in range(ng):
-        for l in open(os.path.join(out, f"shard{i}.log"), encoding="utf-8", errors="replace").readlines()[-3:]: log(f"units shard {i}: {l.rstrip()}")
+        ls = open(os.path.join(out, f"shard{i}.log"), encoding="utf-8", errors="replace").readlines()
+        if rcs[i] not in (0, "timeout"):                               # a failed shard: its traceback (vLLM's shutdown lines come
+            tb = [k for k, l in enumerate(ls) if l.startswith("Traceback")]   # after it), not just the last lines (phmqx 15/11)
+            ls = ls[tb[-1]:tb[-1] + 40] if tb else ls[-40:]
+        else: ls = ls[-3:]
+        for l in ls: log(f"units shard {i}: {l.rstrip()[:400]}")
     f = os.path.join(out, "cards_unit.jsonl")
     if ng > 1:                                                         # merge the shards' units
         with open(f, "w", encoding="utf-8") as w:

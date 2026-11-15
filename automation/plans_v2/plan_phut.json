@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "caotienminh1",
+  "name": "phut",
+  "jobs": "automation/jobs/phut.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "caotienminh1/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

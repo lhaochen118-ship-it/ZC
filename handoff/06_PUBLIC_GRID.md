@@ -78,3 +78,14 @@ chính lần chạy, không tốn GPU.
 | ps2b | S′ seed 2 + WT-b | 0.830 | — | 69 sai: S′ và WT-b cùng kéo xuống |
 | (offline, log H0a / pwtb) | mẫu gọi hàm cửa hàng: hàm do S viết đúng 0.514 khi được gọi; hàm WT-b đúng **0.149** | — | — | WT-b viết hàm "lười" gọi hàm toolkit không liên quan (vd. `so_sua` = `top_customers`) vẫn qua kiểm thực thi 13 kỳ; câu mà đa số mẫu gọi hàm: S 13 đúng / 4 sai, WT-b 7 đúng / 10 sai → **loại G1 WT-b / WT-s**; hướng mới B′: bộ viết hàm = S (16 mẫu, có suy nghĩ + budget forcing) |
 | (offline) | gộp mẫu 2 lần chạy mốc (≈ k 32), bỏ phiếu thuần θ 0.5 | 0.857 (từng lần 0.851 / 0.855) | — | thêm mẫu gần như không tăng: đòn bẩy là chất lượng mẫu ở câu ngành (mẫu đúng ~0.2 ở câu khó) |
+
+## 6. Giai đoạn B′ (03:10 UTC): bộ viết hàm = S
+
+Căn cứ: hàm do S viết có ích (câu đa số mẫu gọi hàm: 13 đúng / 4 sai), hàm WT-b có hại; 31 dòng rulebook ngành trên public nhưng H0a chỉ có 14
+hàm (dev_011 không hàm nào, dev_014 chỉ 2). Đòn bẩy: thêm hàm đúng do S viết.
+
+| Lần chạy | Cấu hình | Acc | Giả thuyết |
+|---|---|---|---|
+| phu16 | S viết hàm, 16 mẫu, giữ khi ≥ 3 mẫu cùng kết quả | caotienminh1 | thêm mẫu → nhiều dòng đạt đồng thuận hơn, hàm chọn theo đa số đáng tin hơn |
+| phut | S viết hàm có suy nghĩ (7,168 token) + **budget forcing** (đóng `</think>` ở trần rồi giải mã JSON có ràng buộc) | caotienminh1 | đọc kỹ định nghĩa nhiều điều kiện (vd. tỉ lệ bảo hành = lượt / số máy bán, bỏ đơn huỷ / trả) |
+| phnou | không hàm (đối chứng) | mucnokieu | đo phần đóng góp của hàm do S viết |

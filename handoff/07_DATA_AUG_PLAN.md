@@ -91,3 +91,19 @@ dự phòng.
 | caotienminh1 | đo S″-A + WT-b | đo S″-B + WT-b |
 | phatle1578 | đo lại cấu hình tốt nhất (seed 2) | đường container |
 | mucnokieu | lượt thầy 3 → WT v3 (nếu WT v2 > v1) | dự phòng |
+
+## 8. Điều chỉnh 03:30 UTC sau kết quả lưới public và kiểm dữ liệu UQ
+
+- **WT-b bị loại** (hàm WT-b sai nghĩa trên rulebook public: mẫu gọi hàm đúng 0.149, hàm của S 0.514; `handoff/06` §5). Vì vậy S″ được đo với
+  **hàm do S viết** (dùng lại `cards_unit` + `links` của H0a: `configs/flow_h_reuse.json`), so ghép cặp với H0a / H0a2 trên cùng bộ hàm.
+- **UQ** (lelynhan, 4 shard, 19 phút): 1,336 cặp câu – chương trình chạy được (từ 907 hàm thầy). Claude kiểm ngẫu nhiên 30 cặp: ~15 % sai kỳ
+  ("Chủ nhật tuần trước" → `last_week`, "1/7–10/7" ở tương lai, "cuối tuần này" → `last_week`). Nhãn nhiễu về kỳ có thể làm hỏng kỹ năng
+  kỳ của S (câu không ngành đúng 0.96).
+- **Lọc bằng mô hình (không luật viết tay):** S (V3A × 0.70, chế độ H) giải lại 1,336 câu với hàm thầy trong `# SHOP FUNCTIONS`
+  (`configs/flow_uqchk.json`, tập `uqchk_a/b`, 2 phiên lelynhan); giữ cặp khi đáp án của S trùng đáp án chương trình sinh
+  (`training/data/uq_filter.py`). Hai đường mô hình đồng ý = kiểm nhãn (kỳ, nghĩa của hàm).
+- **Biến thể (thay S″-B):** S″-A = dữ liệu chưa lọc (đang huấn luyện, duylnng phiên 1, 3,436 bản ghi ≈ 13M token, mb 2 × 5120,
+  `expandable_segments`); **S″-A′** = cùng công thức với U1 / U3 đã lọc (duylnng phiên 2 khi uqchk xong). So A vs A′ cho biết tác dụng của
+  việc lọc nhãn. S″-B (thêm bản ghi S′) bỏ vì S′ đã không tăng điểm.
+- Đo: mỗi biến thể 1 lần `flow_h_reuse` (cùng acc với output huấn luyện, vì output kernel chỉ gắn được trong cùng acc) + 1 lần đường đầy đủ
+  (hàm do chính S″ viết) cho biến thể tốt hơn.

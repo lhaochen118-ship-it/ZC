@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "loinguyentran",
+  "name": "es2s1h",
+  "jobs": "automation/jobs/es2s1h.jobs",
+  "est_h": 1.8,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "loinguyentran/zc-ad2,loinguyentran/zc-para,loinguyentran/zc-s2-adapters",
+   "--no-preflight"
+  ]
+ }
+]

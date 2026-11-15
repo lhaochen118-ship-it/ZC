@@ -52,17 +52,36 @@ def worker(a, gid, n):
     tok.padding_side = "left"
     if tok.pad_token is None: tok.pad_token = tok.eos_token
     out = [None] * len(items)
-    bs = a.batch
-    for s in range(0, len(order), bs):
-        idx = order[s:s + bs]
-        texts = [tok.apply_chat_template([{"role": "user", "content": items[i]["text"]}], tokenize=False, add_generation_prompt=False) for i in idx]
-        enc = tok(texts, return_tensors="pt", padding=True, truncation=True, max_length=a.max_tokens).to("cuda")
-        with torch.no_grad(): o = model(**enc, output_hidden_states=True, use_cache=False)
+    texts = {i: tok.apply_chat_template([{"role": "user", "content": items[i]["text"]}], tokenize=False, add_generation_prompt=False) for i in order}
+    ntok = {i: min(a.max_tokens, len(tok(texts[i])["input_ids"])) for i in order}
+    batches, cur = [], []                                              # token-budget batches (10/11 OOM: fixed 8 x 768 + full logits)
+    for i in order:
+        if cur and (len(cur) + 1) * max(ntok[j] for j in cur + [i]) > a.tok_budget: batches.append(cur); cur = []
+        cur.append(i)
+    if cur: batches.append(cur)
+    lay = None
+
+    def run(idx):
+        nonlocal lay
+        enc = tok([texts[i] for i in idx], return_tensors="pt", padding=True, truncation=True, max_length=a.max_tokens).to("cuda")
+        with torch.no_grad():
+            try: o = model(**enc, output_hidden_states=True, use_cache=False, logits_to_keep=1)   # no 248k-vocab logits per position
+            except TypeError: o = model(**enc, output_hidden_states=True, use_cache=False)
         hs = o.hidden_states; L = len(hs) - 1
         lay = [int(x) for x in a.layers.split(",")] if a.layers != "auto" else [L // 2, (3 * L) // 4, L]
         v = torch.cat([hs[l][:, -1, :].float() for l in lay], dim=-1).cpu().numpy().astype(np.float16)   # left padding: last = real
         for j, i in enumerate(idx): out[i] = v[j]
-        if (s // bs) % 50 == 0: print(f"[probe {gid}] {s + len(idx)}/{len(items)} ({time.time() - t0:.0f}s)", flush=True)
+        del o, hs, enc
+
+    def safe(idx):
+        try: run(idx)
+        except torch.cuda.OutOfMemoryError:
+            torch.cuda.empty_cache()
+            if len(idx) == 1: raise
+            h = len(idx) // 2; safe(idx[:h]); safe(idx[h:])
+    for b, idx in enumerate(batches):
+        safe(idx)
+        if b % 20 == 0: print(f"[probe {gid}] batch {b + 1}/{len(batches)} ({time.time() - t0:.0f}s)", flush=True)
     np.save(os.path.join(a.out, f"feat_{gid}.npy"), np.stack(out))
     json.dump([it["uid"] for it in items], open(os.path.join(a.out, f"uid_{gid}.json"), "w"))
     print(f"[probe {gid}] {len(items)} items in {time.time() - t0:.0f}s, layers {lay}", flush=True)
@@ -84,7 +103,7 @@ def fit(a):
     tr = [i for i, u in enumerate(U) if items[u]["split"] == "train"]; pu = [i for i, u in enumerate(U) if items[u]["split"] != "train"]
     y = np.array([int(items[U[i]]["label"]) for i in tr]); grp = np.array([items[U[i]]["group"] for i in tr])
     sc = StandardScaler().fit(X[tr]); Xs = sc.transform(X)
-    pca = PCA(n_components=min(256, len(tr) - 1), random_state=0).fit(Xs[tr]); Z = pca.transform(Xs)
+    pca = PCA(n_components=min(256, len(tr) - 1, X.shape[1]), random_state=0).fit(Xs[tr]); Z = pca.transform(Xs)
     gkf = GroupKFold(n_splits=5); folds = list(gkf.split(Z[tr], y, grp))
     res = {"n_train": len(tr), "n_public": len(pu), "pos_rate": float(y.mean()), "dims": int(X.shape[1])}
     best = None
@@ -114,6 +133,7 @@ def main():
     ap.add_argument("split"); ap.add_argument("out"); ap.add_argument("--items", required=True)
     ap.add_argument("--model-dir", "--model", dest="model_dir", default="Qwen3.5-9B"); ap.add_argument("--layers", default="auto")
     ap.add_argument("--max-tokens", type=int, default=768); ap.add_argument("--batch", type=int, default=8)
+    ap.add_argument("--tok-budget", type=int, default=3072, help="padded tokens per forward batch")
     ap.add_argument("--worker", type=int, default=-1); ap.add_argument("--n", type=int, default=0)
     a = ap.parse_args(); os.makedirs(a.out, exist_ok=True)
     if a.worker >= 0: return worker(a, a.worker, a.n)

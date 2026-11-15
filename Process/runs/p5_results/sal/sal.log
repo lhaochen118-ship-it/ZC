@@ -1,0 +1,25 @@
+[sal] model /kaggle/input/models/guohaoli4/qwen3-6-35b-a3b/transformers/bf16/1 transformers 5.17.0 torch 2.13.0+cu130
+[sal] sha256 of 26 weight files checked in 81s, mismatches: []
+[sal] loaded with AutoModelForImageTextToText in 118s
+[sal] 40 routers found (E=256, top-8, norm_topk True)
+[sal] 1/340 prompts, 3817 tokens, 84 tok/s
+[sal] 26/340 prompts, 87324 tokens, 482 tok/s
+[sal] 51/340 prompts, 169924 tokens, 536 tok/s
+[sal] 76/340 prompts, 254017 tokens, 560 tok/s
+[sal] 101/340 prompts, 340989 tokens, 578 tok/s
+[sal] 126/340 prompts, 425053 tokens, 577 tok/s
+[sal] 151/340 prompts, 507183 tokens, 582 tok/s
+[sal] 176/340 prompts, 588277 tokens, 585 tok/s
+[sal] 201/340 prompts, 671349 tokens, 588 tok/s
+[sal] 226/340 prompts, 754118 tokens, 591 tok/s
+[sal] 251/340 prompts, 836368 tokens, 592 tok/s
+[sal] 276/340 prompts, 922413 tokens, 596 tok/s
+[sal] 301/340 prompts, 1008720 tokens, 599 tok/s
+[sal] 326/340 prompts, 1094652 tokens, 601 tok/s
+[sal] 1140604 tokens in 1897s; expert recompute ok 13600 / fallback 0
+[sal] E=64: overlap with REAP-64 keep-list 0.659
+[sal] E=77: overlap with REAP-64 keep-list 0.731
+[sal] E=88: overlap with REAP-64 keep-list 0.779
+[sal] E=90: overlap with REAP-64 keep-list 0.786
+[sal] E=92: overlap with REAP-64 keep-list 0.795
+[sal] done in 2015s

@@ -8,6 +8,8 @@ luật tổng quát / M mô hình); 12/11 chốt P (public 0.994) + Docker; 13/1
 đáp án** (luật / chương trình sinh thẳng đáp án không qua mô hình); phân tích lỗi chỉ trên public gốc / train, không xem từng câu held-out;
 không train trên public / private test.
 
+**Quyết định user 15/11 01:15 (MỚI NHẤT, thay phần held-out của 14/11):** hết thời gian → **dừng toàn bộ việc chạy held-out**; tập trung thử **thật nhiều giải pháp trên public test**, chọn cái có score cao nhất (vẫn chế độ H, không luật viết tay). Cần thêm acc thì xin user.
+
 **Quyết định user 14/11 17:00 (MỚI NHẤT, bắt buộc):** (1) duyệt kế hoạch v2 (`handoff/04_PROPOSED_PLAN.md`) + kế hoạch chạy `handoff/05_RUN_PLAN.md`, **chạy ngay, tự quyết kỹ thuật, không chờ xác nhận từng bước**; (2) **bản nộp cuối chạy chế độ H** (`hide_api: industry` — không dùng hàm ngành viết tay); (3) nguyên tắc: mọi giải pháp phải giúp Qwen **tự học / tổng quát hoá** sang quy tắc, dạng câu, tình huống mới; **không hard-code, rule-based hay heuristic thủ công** (kể cả quy tắc "có vẻ tổng quát"); sửa nguyên nhân gốc, không vá lỗi của tập đánh giá; không đổi tổng quát lấy điểm; không dùng đáp án tập đánh giá làm cơ sở thiết kế; đánh giá trên dữ liệu độc lập (held-out) để phát hiện overfit / leakage; (4) chạy hết kế hoạch rồi **tự lặp vòng cải tiến** Research → Propose → Plan → Implement → Evaluate → Analyze Failures → Refine → Repeat tới score = 1 (giữ tổng quát) hoặc hết giờ (đóng băng 16/11 04:00 UTC); lưu kế hoạch / kết quả / quyết định để truy vết; routine tự tiếp tục mỗi giờ: `trig_015hi1s1WHshqorFZC7DWY9j` (xoá khi xong). Token 14 acc ở `~/.kaggle` (14/11).
 
 **`final_submission/submission.jsonl` (user 10/11):** file nộp public có PA cao nhất đến nay (`python3 automation/update_final_submission.py

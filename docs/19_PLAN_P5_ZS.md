@@ -52,3 +52,6 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   P02 / P03 sau saliency (~10:30 → cắt CPU → chạy ~11:00–13:30).
 - P3 (D01 / D02 / R01 / G01 / G02 / L01 / S02, huấn luyện 6–48 GPU-h): theo cổng của kế hoạch chỉ mở sau khi P1 có kết quả (~11:00–13:30);
   huấn luyện + đánh giá không kịp trong khung 7–8 h user đặt → chưa khởi chạy (đề xuất kèm báo cáo cuối).
+- 09:31 **H01 dữ liệu xong** (bichthuy93, 31 phút; 1000 câu train trong 800 s trên 4×L4): B00-S trên `tr_dev1k` PA **0.955** (971 / 16 / 13; DN train
+  có hàm toolkit riêng nên dễ hơn public chế độ H). Phát lại K: K1 0.917, K2 0.922, K4 0.923, K thích nghi (chạy) 0.955. 1,127 mục probe
+  (12 % sai). Lưu `Process/runs/p5_results/h01tr/`.

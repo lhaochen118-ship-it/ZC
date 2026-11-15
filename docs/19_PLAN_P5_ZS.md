@@ -106,3 +106,7 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 15:10 **C2** (framework 0.952 + T01 + k24): **0.913** (953 / 40 / 7; −0.039 vs 0.952, z −5.7) → kém; chờ C1 (chỉ + T01) để tách T01 với k24.
 - 15:20 **C1** (framework 0.952 + T01): **0.905** (947 / 42 / 11; −0.047, z −6.6). Trước khi kết luận T01 hại bản tuned: chạy **C0 = `flow_p5_final` trên code hiện tại** (neo EXP-003) để loại trừ trôi code từ D1 (14/11).
 - 15:25 **I02** (giải mã ràng buộc grammar toolkit): **0.675** (Δ −0.079, z −7.4), **337 phút** (ngân sách 20,400 s gần hết, phán xử bị bỏ), util GPU 8 % (mask grammar tính trên CPU) → **loại** (sai cả điểm lẫn tốc độ).
+- 15:30 **New7** (gói user `New7_P5_Package.zip`): kế hoạch cập nhật theo thời gian đo `docs/20_NEW7_PLAN_UPDATED.md`. Cài phase 1 (N4-A cờ tắt mặc
+  định). Độ phủ graph N4-A: 11 / 14 DN public có cạnh → N4-A 2 seed chạy (loinguyentran). **N1-A** (hoán vị dòng, phát lại CPU 2,838 ứng viên
+  B00-S s0 trong 144 s, trung thực 0.995): **0 ứng viên đổi đáp án** → không tác dụng; N1-B đóng theo cổng. N7-A / N3-A / N6-A: prompt dựng
+  offline (`new7_build.py`), một lượt vLLM chung (`src/new7_gen.py`), chấm CPU (`new7_score.py`).

@@ -1,0 +1,12 @@
+{
+ "name": "MS1",
+ "rc": 0,
+ "experts_impl": [
+  "grouped_mm",
+  4
+ ],
+ "train_s": 2775,
+ "total_s": 3144,
+ "files": "v3a_mix.jsonl",
+ "keep": "configs/moe/keep_e88.json"
+}

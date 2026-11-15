@@ -1,0 +1,24 @@
+[
+ {
+  "acc": "caohuyen74",
+  "name": "e1",
+  "jobs": "automation/jobs/p5/e1.jobs",
+  "est_h": 2.3,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,caohuyen74/zc-mgs-1",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "caohuyen74",
+  "name": "e2",
+  "jobs": "automation/jobs/p5/e2.jobs",
+  "est_h": 2.3,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,caohuyen74/zc-mgs-1",
+   "--no-preflight"
+  ]
+ }
+]

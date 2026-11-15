@@ -472,6 +472,14 @@ def main():
     try:                                                              # mode H (user 14/11): hidden toolkit names for every phase
         hz = json.load(open(cfg, encoding="utf-8")).get("hide_api") if cfg else ""
         if hz: os.environ["ZC_HIDE_API"] = hz; log(f"hide_api: {hz} (exported to every phase)")
+        # N4-A experimental flag is derived ONLY from the explicit config
+        n4_enabled = bool(cfg and int(json.load(open(cfg, encoding="utf-8")).get("n4_graph", 0) or 0))
+        if n4_enabled:
+            os.environ["ZC_N4_GRAPH"] = "1"
+            log("N4-A schema graph candidate evidence enabled")
+        else:
+            os.environ.pop("ZC_N4_GRAPH", None)
+
         um = json.load(open(cfg, encoding="utf-8")).get("units_max") if cfg else None
         if um: os.environ["ZC_UNITS_MAX"] = str(int(um)); log(f"units_max: {um}")
         if cfg and int(json.load(open(cfg, encoding="utf-8")).get("units_code", 0) or 0): os.environ["ZC_UNITS_CODE"] = "1"; log("units_code: on")

@@ -61,6 +61,12 @@ class ShopCtx:
         self.card = prompting.compact_card(C, notes, max_chars=1500 if mode == "compact" else 3600)
         self.business = prompting.business_block(self.card, rule_changes=rule_changes(rulebook), industry_doc=ind_doc,
                                                  readme=(biz.readme or "")[:rc] if rc else "")
+        # N4-A: evidence-only schema graph (experiment flag; default OFF)
+        if os.environ.get("ZC_N4_GRAPH", "0") == "1":
+            from new7_graph import graph_context
+            evidence = graph_context(C, max_edges=5)
+            if evidence:
+                self.business += "\n\n" + evidence
         self.system = prompting.system_block(self.spec, hide=self.hide, escapes=self.escapes, mode=mode)
 
     def shop(self, as_of=None):

@@ -1,5 +1,7 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
+**16/11 09:00 (user): bản nộp = `configs/flow_p5_final.json` (framework 0.952) + `Docker submission/submission.jsonl` (D1, PA 0.952); Docker `Docker submission/` mặc định cấu hình này.**
+
 ## P5 — trạng thái 16/11 02:30 UTC (khung chat mới đọc phần này trước)
 
 **Kết quả P5 (public, container):** tốt nhất tổng thể C1L 0.943 (framework 0.952 có `industry.py` + thinking + T01; *không* là chế độ H);

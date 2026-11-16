@@ -1,0 +1,13 @@
+[
+ {
+  "acc": "bichthuy93",
+  "name": "e7rw7",
+  "jobs": "automation/jobs/p5/e7rw7.jobs",
+  "est_h": 2.2,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,bichthuy93/zc-mgs7w-1,bichthuy93/zc-mgl-1,bichthuy93/zc-mgj2b-1",
+   "--no-preflight"
+  ]
+ }
+]

@@ -2,10 +2,10 @@
 # P5 16/11 MS3 chain: training done -> adapter to training/data/out/p5ad/MS3 -> FP8 merges (MS3, ML1, MJ2) on the two eval accounts
 # -> evaluation of the two shop halves (public_test@i/2) with flow_e8r (= flow_p5_final_h with the MoE + LoRAs).
 cd /home/user/ZC
-until grep -q "STATUS=" Process/runs/p5/fts3/zc-fts3-1.log 2>/dev/null; do sleep 60; done
-grep -q "STATUS=DONE" Process/runs/p5/fts3/zc-fts3-1.log || { echo "$(date -u +%H:%M) fts3 not DONE: $(grep STATUS= Process/runs/p5/fts3/zc-fts3-1.log)"; exit 1; }
+until grep -q "STATUS=" Process/runs/p5/fts3b/zc-fts3b-1.log 2>/dev/null; do sleep 60; done
+grep -q "STATUS=DONE" Process/runs/p5/fts3b/zc-fts3b-1.log || { echo "$(date -u +%H:%M) fts3b not DONE: $(grep STATUS= Process/runs/p5/fts3b/zc-fts3b-1.log)"; exit 1; }
 d=/tmp/ms3dl; rm -rf $d; mkdir -p $d
-for t in 1 2 3; do KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_nguynduylm) kaggle kernels output nguynduylm/zc-fts3-1 -p $d -o --file-pattern '.*MS3/(adapter/.*|result\.json|train_metrics\.json)$' > $d.log 2>&1 && break; sleep 30; done
+for t in 1 2 3; do KAGGLE_API_TOKEN=$(cat ~/.kaggle/tok_nguynduylm) kaggle kernels output nguynduylm/zc-fts3b-1 -p $d -o --file-pattern '.*MS3/(adapter/.*|result\.json|train_metrics\.json)$' > $d.log 2>&1 && break; sleep 30; done
 a=$(dirname $(find $d -name adapter_model.safetensors | head -1))
 [ -f "$a/adapter_config.json" ] || { echo "$(date -u +%H:%M) MS3 adapter missing"; exit 1; }
 mkdir -p training/data/out/p5ad/MS3; rm -rf training/data/out/p5ad/MS3/adapter; cp -r $a training/data/out/p5ad/MS3/adapter; cp $(find $d -name result.json | head -1) training/data/out/p5ad/MS3/ 2>/dev/null

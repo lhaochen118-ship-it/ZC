@@ -148,6 +148,9 @@ def main():
         print(f"[sft] {type(model).__name__} loaded in {time.time() - t0:.0f}s; missing {len(info.get('missing_keys', []))} "
               f"{list(info.get('missing_keys', []))[:5]}; unexpected {len(info.get('unexpected_keys', []))}", flush=True)
     xt = ["mlp.experts.gate_up_proj", "mlp.experts.down_proj"] if os.environ.get("ZC_LORA_EXPERTS", "0") == "1" else []   # 16/11 MS3: the
+    if xt and a.dropout:                                                 # PEFT ParamWrapper (fused experts) refuses dropout != 0 (16/11
+        if rank == 0: print(f"[sft] lora_dropout {a.dropout} -> 0: required by PEFT for LoRA on fused expert tensors", flush=True)   # fts3)
+        a.dropout = 0.0
     lcfg = LoraConfig(r=a.r, lora_alpha=a.alpha, lora_dropout=a.dropout, target_modules=LM_TARGET, bias="none", task_type="CAUSAL_LM",   # routed
                       **({"target_parameters": xt} if xt else {}))      # experts too (PEFT ParamWrapper on the fused 3-D expert tensors)
     if xt and rank == 0: print(f"[sft] LoRA also on the routed experts: {xt}", flush=True)

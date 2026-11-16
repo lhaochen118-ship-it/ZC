@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "nguynduylm",
+  "name": "fts3b",
+  "jobs": "automation/jobs/p5/fts3b.jobs",
+  "est_h": 1.9,
+  "args": [
+   "--ms",
+   "guohaoli4/qwen3-6-35b-a3b/transformers/bf16/1",
+   "--ks",
+   "yeshenhi/zc-train-wheels,nhatlong1103/zc-assets",
+   "--train-data",
+   "p5ft",
+   "--no-preflight"
+  ]
+ }
+]

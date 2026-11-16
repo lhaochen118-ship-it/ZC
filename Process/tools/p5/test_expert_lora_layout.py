@@ -10,7 +10,7 @@ cfg = Qwen3_5MoeTextConfig(vocab_size=128, hidden_size=64, num_hidden_layers=2, 
                            layer_types=["linear_attention", "full_attention"], linear_num_key_heads=2, linear_num_value_heads=2,
                            linear_key_head_dim=16, linear_value_head_dim=16)
 m = Qwen3_5MoeForCausalLM(cfg); W0 = {n: p.detach().clone() for n, p in m.named_parameters()}
-r = 4; pm = get_peft_model(m, LoraConfig(r=r, lora_alpha=8, target_modules=[], target_parameters=["mlp.experts.gate_up_proj", "mlp.experts.down_proj"]))
+r = 4; pm = get_peft_model(m, LoraConfig(r=r, lora_alpha=8, lora_dropout=0.0, target_modules=[], target_parameters=["mlp.experts.gate_up_proj", "mlp.experts.down_proj"]))
 sd = {}
 for n, p in pm.named_parameters():
     if "lora" in n:

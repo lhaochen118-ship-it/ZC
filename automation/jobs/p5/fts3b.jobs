@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/fts3b --train --script training/moe_ft_job.py --name MS3 --files v3a_mix.jsonl --r 32 --alpha 64 --lr 2e-4 --epochs 1 --mb 4 --eff-batch 64 --max-len 4608 --seed 62 --max-tokens 6000000 --lora-experts 1

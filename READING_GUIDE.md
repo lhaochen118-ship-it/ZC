@@ -11,7 +11,7 @@ Cho Agent nhận dự án ở khung chat mới. Đọc theo thứ tự, dừng k
    đáp án public (chỉ để chấm): `cp "score 1.jsonl" data/raw/public_gt.jsonl`.
 4. `git lfs pull` nếu cần adapter cục bộ (`Process/adapters/`: WL1, WJR1, MoE `moe_E88/{MS2,ML1,MJ2}`).
 5. Đọc `handoff/STATUS.md` rồi **PDF 3** (`handoff/03_HANDOFF.pdf`) §3 (việc đang chạy) và §5 (việc tiếp theo).
-6. Tiến trình nền đã mất khi đổi container: `python3 automation/resume.py Process/runs/p5` (gắn lại theo dõi kernel), rồi chạy các dòng
+6. Tiến trình nền đã mất khi đổi container: `ZC_OUT_PATTERN='.*\.(log|json|jsonl|csv|txt)$' python3 automation/resume.py Process/runs/p5` (BẮT BUỘC đặt ZC_OUT_PATTERN: thiếu nó resume tải về trọng số mô hình gộp 15 GB/kernel → đầy đĩa) (gắn lại theo dõi kernel), rồi chạy các dòng
    trong `Process/kaggle/p5_chains.txt` (chuỗi gộp → đánh giá, resume-safe) — chỉ khi kernel tương ứng chưa xong.
 
 ## 1. Bắt buộc

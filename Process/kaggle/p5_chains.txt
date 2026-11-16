@@ -1,3 +1,4 @@
+ZC_OUT_PATTERN='.*\.(log|json|jsonl|csv|txt)$' nohup python3 automation/resume.py Process/runs/p5 > Process/runs/p5/resume.log 2>&1 &   # FIRST, after any restart
 nohup Process/tools/p5/after_alpha.sh bichthuy93 0 w5 MS2W5 0.5 0 >> Process/runs/p5/after_alpha_bichthuy93.log 2>&1 &
 nohup Process/tools/p5/after_alpha.sh yuan1103 1 w5 MS2W5 0.5 1 >> Process/runs/p5/after_alpha_yuan1103.log 2>&1 &
 nohup Process/tools/p5/after_alpha.sh thnliu 0 w35 MS2W35 0.35 1 >> Process/runs/p5/after_alpha_thnliu.log 2>&1 &

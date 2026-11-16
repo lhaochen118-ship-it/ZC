@@ -134,7 +134,7 @@ def bind_items(split):
         seen.add((term, definition))
         sec = in_sec.get(k)
         ik = industry.industry_key(sec) if sec else None
-        ind = f"\n\n# TOOLKIT NGÀNH ({sec})\n{industry.INDUSTRY_API.get(ik, '')}" if ik and industry.INDUSTRY_API.get(ik) else ""
+        ind = f"\n\n# TOOLKIT NGÀNH ({sec})\n{industry.api_doc_for(ik)}" if ik and industry.api_doc_for(ik) else ""
         u = (f"# TOOLKIT\n{api_doc()}{ind}\n\n# RULEBOOK SECTION: {sec or 'chung'}\n# RULE\n| {term} | {definition} |\n\n" + BIND_TASK)
         items.append(({"term": term, "definition": definition, "section": sec, "rulebook": rk}, u))
     return items

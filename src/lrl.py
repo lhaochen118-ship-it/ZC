@@ -52,7 +52,12 @@ def hidden_names():
             import industry
             h |= set(industry.INDUSTRY_NAMES) | set(industry.HELPERS)
         except Exception: pass
-    return h - {"industry"}
+    if "industry_metrics" in h:
+        try:
+            import industry
+            h |= set(industry.INDUSTRY_NAMES)
+        except Exception: pass
+    return h - {"industry", "industry_metrics"}
 
 
 def mentions(text, names):

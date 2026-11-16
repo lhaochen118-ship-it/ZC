@@ -158,6 +158,7 @@ def build_api_spec(shop=None, today=None, hide=()):
     """the spec (shop / today do not change it: kept for the per-shop signature of docs/08 §5.1). hide: names or 'industry'."""
     hide = set(hide or ())
     if "industry" in hide: hide |= set(industry.INDUSTRY_NAMES) | set(industry.HELPERS)
+    if "industry_metrics" in hide: hide |= set(industry.INDUSTRY_NAMES)
     ck = tuple(sorted(hide))
     if ck in _CACHE: return _CACHE[ck]
     docs, exs = _doc_lines(), examples()

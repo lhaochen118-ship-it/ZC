@@ -519,7 +519,8 @@ class Pipeline:
         """the canonical tables ('canon') / toolkit ('api') of b's rulebook industry when src/industry.py implements it, else ''."""
         if not getattr(self.a, "industry_kit", 1): return ""
         ind = self.industry(b); k = industry.industry_key(ind[0]) if ind else None
-        return (industry.INDUSTRY_CANON if kind == "canon" else industry.INDUSTRY_API).get(k, "") if k else ""
+        if kind != "canon": return industry.api_doc_for(k) if k else ""
+        return industry.INDUSTRY_CANON.get(k, "") if k else ""
 
     def readme_for(self, b, toolkit=True):
         """README of b + its rulebook industry section (+ the industry toolkit for programs over C; raw-table programs have no

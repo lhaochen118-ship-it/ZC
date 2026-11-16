@@ -596,6 +596,24 @@ INDUSTRY_NAMES = ["devices_sold", "device_sales", "top_lines", "device_share", "
                   "brand_sales", "top_brands"]
 HELPERS = {"model_line": model_line, "brand_of": brand_of, "split_vehicle": split_vehicle, "split_jobs": split_jobs, "job_of": job_of}
 
+# config hide_api "industry_metrics": the industry METRICS (each fixes one rulebook's definitions) are hidden; the general text tools
+# stay, documented here (no definition of any business term: those come from the split's own rulebook, the model writes them)
+HELPERS_DOC = """General text tools (no business definition; follow THIS shop's rulebook for every term):
+- model_line(name): product line of a device name = the part before the storage size ('… 128GB …'); brand_of(name): first word of
+  the name (an iPhone is Apple).
+- split_vehicle(text) -> (model, plate): a cell holding a vehicle model and its number plate; split_jobs(text) -> list of the tasks
+  written in one cell ('a + b, c và d'); job_of(task) -> canonical name of a common motorbike-service task (thay nhớt, vá ruột,
+  bảo dưỡng, rửa xe, thay bugi ...) or None."""
+
+
+def api_doc_for(key, hide=None):
+    """the industry toolkit text for a shop whose rulebook industry is `key`: the full metric toolkit, or only the general text
+    tools when the run hides the industry metrics (hide_api 'industry_metrics'; hide None = $ZC_HIDE_API)."""
+    import os
+    h = set(hide) if hide is not None else {x for x in os.environ.get("ZC_HIDE_API", "").split(",") if x}
+    if "industry_metrics" in h: return HELPERS_DOC if key else ""
+    return INDUSTRY_API.get(key, "") if key else ""
+
 # shown in the mapping prompt (CANONICAL TABLES) / answer prompt (TOOLKIT) of a shop whose README names that rulebook industry
 INDUSTRY_CANON = {
     "cửa hàng điện thoại": """Tables of a phone shop (map every one the files have):

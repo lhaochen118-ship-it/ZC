@@ -60,7 +60,8 @@ class ShopCtx:
         if self.ind:
             title, body, key = self.ind
             ind_doc = f"# RULES OF THIS SHOP'S INDUSTRY (rulebook section '{title}'; they define the terms of its questions)\n{body.strip()[:2500]}"
-            api = industry.INDUSTRY_API.get(key, "") if key and "industry" not in self.hide else ""
+            api = industry.api_doc_for(key, set(self.hide) | {x for x in os.environ.get("ZC_HIDE_API", "").split(",") if x}) \
+                if key and "industry" not in self.hide else ""
             if api: ind_doc += f"\n# TOOLKIT FOR THIS INDUSTRY\n{api}"
         self.industry_doc = ind_doc
         rc = (readme_chars if readme_chars is not None else (0 if mode == "compact" else 1500))

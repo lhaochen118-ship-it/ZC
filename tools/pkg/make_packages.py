@@ -7,7 +7,7 @@ SKIP = {"run_kaggle.py", "stage_hf.py", "eval_flow.py", "para_judge.py", "stress
 KEEP_DOC = "dm.py,industry.py,tools.py,api_spec.py,merge.py"
 
 V = {
-    "Docker_C4": {"config": "configs/flow_p5c4.json", "adapter": "src/adapter_hashes.json", "judge": "src/adapter_hashes_w.json",
+    "Final_Docker_Submission": {"config": "configs/flow_p5c4.json", "adapter": "src/adapter_hashes.json", "judge": "src/adapter_hashes_w.json",
                   "sub": "Process/runs/p5_results/merged/C4_submission.jsonl", "pa": "0.939", "counts": "963 / 24 / 13", "solver": "V3A", "w": "0.70"},
     "Docker_C6": {"config": "configs/flow_p5c6.json", "adapter": "src/adapter_hashes.json", "judge": "src/adapter_hashes_w.json",
                   "sub": "Process/runs/p5_results/merged/p5c6h.jsonl", "pa": "0.834", "counts": "891 / 57 / 52", "solver": "V3A", "w": "0.70"},
@@ -154,7 +154,7 @@ def solution_readme(name, v):
     pg = name == "Docker_PG"
     steps = ["**Ingest and schema** (`src/ingest.py`, `src/automap.py`, `src/canon.py`): CSV / Excel / SQLite files are cleaned and mapped to canonical tables; the model writes the mapping program when no known layout fits.",
              "**Toolkit** (`src/dm.py`, `src/industry.py`): periods, valid orders, aggregation, ranking with ties, rounding and formatting." + (
-                 " Industry toolkits are shown only to shops whose rulebook has that industry section." if name == "Docker_C4" else
+                 " Industry toolkits are shown only to shops whose rulebook has that industry section." if name == "Final_Docker_Submission" else
                  " Industry-specific definitions are not built in: only general text tools (product line, brand, vehicle plate, service task) are given; every business definition comes from the split's rulebook."),
              "**Rule cards and shop functions written by the model at run time** (`src/lrl_gen.py`, `src/units.py`): the split's rulebook rows become rule cards, the shop's data gives value aliases, and each shop-specific row becomes a Python function kept only when it runs on the shop's data and its samples agree.",
              "**Vietnamese glossary** (`src/refs/lrl/glossary_vi.jsonl`): meanings of common abbreviations, chat spellings, money and unit words, shown when the question uses the word.",

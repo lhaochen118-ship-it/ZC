@@ -1,6 +1,6 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
-**16/11 16:00 UTC (user): BẢN NỘP = `Docker_C4/`** (public 0.939).
+**16/11 16:00 UTC (user): BẢN NỘP = `Final_Docker_Submission/` (= C4)** (public 0.939).
 
 **16/11 15:45 UTC — bản nộp hợp lệ (rà soát quy định BTC):** 3 thư mục Docker tự chứa: `Docker_C4/` (public **0.939**, giữ
 `industry.py`), `Docker_C6/` (0.834, ẩn hàm định nghĩa ngành), `Docker_PG/` (0.880, framework P tổng quát hoá). Chung: không WL1

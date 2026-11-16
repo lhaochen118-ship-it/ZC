@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT --script training/merge_fp8.py --name Qwen3.6-35B-A3B-E88-MJ2-FP8 --adapter MJ2 --weight 1.0 --keep configs/moe/keep_e88.json

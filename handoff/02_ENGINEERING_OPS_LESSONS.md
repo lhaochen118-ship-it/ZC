@@ -366,3 +366,5 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 - **Docker nộp:** `Docker_submission/` — thư mục mô hình phục vụ không được chứa "qwen3" (giữ hành vi suy nghĩ của mọi lượt đã chấm).
 - **Chuỗi tự động** (`Process/tools/p5/after_*.sh`): chỉ chạy bước sau khi bước trước `DONE:complete`; tự thử lại STALE CODE (dataset code
   lớn xử lý chậm: đợi 3 phút rồi đẩy lại); mọi kernel sinh trọng số đẩy với `ZC_OUT_PATTERN`.
+- 16/11 pver: dataset adapter chỉ có **một thư mục gốc** (`WG1/`) bị Kaggle bỏ lớp ngoài → mount thành `adapter/…`, `find_adapter` không thấy `WG1/adapter` (kernel thoát sau 5 phút). Luôn thêm `info/README.txt` cạnh thư mục adapter (như `publish_many.py`) và kiểm `kaggle datasets files` trước khi đẩy.
+- 16/11 huấn luyện tiếp: không song song hoá được một lượt huấn luyện qua nhiều phiên / acc (không đồng bộ gradient giữa kernel); nhanh nhất = **khởi tạo từ adapter đã có** (`moe_ft_job --init-adapter`, `ZC_INIT_ADAPTER`; test `tests/test_init_adapter.py`) và mỗi biến thể một acc; giới hạn token theo quota thật (`automation/quota.py` ngay trước khi đẩy: số đọc 1 h trước lệch ~1 h).

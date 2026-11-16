@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/ftc3 --train --script training/moe_ft_job.py --name MS3C --files v3a_mix.jsonl --r 32 --alpha 64 --lr 1e-4 --epochs 1 --mb 4 --eff-batch 64 --max-len 4608 --seed 64 --max-tokens 5500000 --lora-experts 1 --init-adapter MS3

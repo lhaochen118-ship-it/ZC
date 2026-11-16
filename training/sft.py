@@ -182,6 +182,19 @@ def main():
     tr = SFTTrainer(model=model, args=cfg, train_dataset=ds, processing_class=tok, peft_config=lcfg,
                     callbacks=[Meter(), deadline.callback(TrainerCallback, a.deadline_reserve, stats)])
     pm = tr.model
+    ia = os.environ.get("ZC_INIT_ADAPTER", "")                          # 16/11 F2 / E2: continue training an existing adapter (its
+    if ia:                                                               # weights as the LoRA init; fresh optimizer + schedule)
+        from safetensors.torch import load_file
+        from peft import set_peft_model_state_dict
+        f = os.path.join(ia, "adapter_model.safetensors")
+        sd = load_file(f)
+        try: res0 = set_peft_model_state_dict(pm, sd)                   # FSDP cpu_ram_efficient_loading: ranks > 0 hold meta tensors
+        except Exception as e:                                          # until rank 0's values are broadcast (sync_module_states)
+            if rank == 0: raise
+            print(f"[sft] rank {rank}: init adapter skipped ({type(e).__name__}); rank 0 values are broadcast", flush=True); res0 = None
+        miss = [k for k in getattr(res0, "unexpected_keys", []) or [] if "lora" in k]
+        if rank == 0: print(f"[sft] init adapter {ia}: {len(sd)} tensors loaded, {len(miss)} unexpected {miss[:3]}", flush=True)
+        if miss and rank == 0: sys.exit("[sft] init adapter does not match the LoRA layout")
     try:
         names = [n for n, _ in pm.named_modules() if n.endswith("lora_A")]
         if rank == 0:

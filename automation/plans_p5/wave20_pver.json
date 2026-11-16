@@ -1,6 +1,6 @@
 [
  {
-  "acc": "mucnokieu",
+  "acc": "duckzuykobip",
   "name": "pver",
   "jobs": "automation/jobs/p5/pver.jobs",
   "est_h": 1.3,
@@ -10,7 +10,7 @@
    "--ks",
    "nhatlong1103/zc-assets",
    "--ds",
-   "mucnokieu/zc-pad",
+   "duckzuykobip/zc-pad",
    "--no-preflight"
   ]
  }

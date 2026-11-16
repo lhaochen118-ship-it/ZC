@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+import argparse,json,os,sys
+from new7_dimensions import validate_certificate
+
+
+def audit_jsonl(inp:str,out:str):
+    seen=checked=valid=0
+    with open(inp,encoding='utf-8') as fi,open(out,'w',encoding='utf-8') as fo:
+        for line in fi:
+            if not line.strip():continue
+            row=json.loads(line); seen+=1
+            cert=row.get('certificate')
+            if cert is None:
+                record={'id':row.get('id'),'status':'no_certificate','valid':None,
+                        'note':'No model-written certificate; no impact on baseline answer'}
+            else:
+                checked+=1; verdict=validate_certificate(cert); valid+=int(verdict.valid)
+                record={'id':row.get('id'),'status':'checked','valid':verdict.valid,
+                        'inferred':verdict.inferred,'claimed':verdict.claimed,
+                        'reason':verdict.reason}
+            fo.write(json.dumps(record,ensure_ascii=False)+'\n')
+    return {'seen':seen,'checked':checked,'consistent':valid,'coverage':checked/max(seen,1),
+            'consistent_share':valid/max(checked,1),'impact_on_p5_answers':0}
+
+
+def main():
+    ap=argparse.ArgumentParser();ap.add_argument('--input',required=True);ap.add_argument('--output',required=True)
+    a=ap.parse_args(); print(json.dumps(audit_jsonl(a.input,a.output),ensure_ascii=False,indent=2))
+
+if __name__=='__main__':main()

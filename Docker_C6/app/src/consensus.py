@@ -1,0 +1,277 @@
+#!/usr/bin/env python3
+import os, re, sys, json, glob, time, argparse, collections, multiprocessing as mp
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import agent, canon as canonmod, qnorm, qparse, pipeline, vote as votemod
+
+REF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "compile")
+FMT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "formats")
+SKIP = ("escalated", "ungrounded", "fallback", "unans_abstain", "rule")
+
+
+def load_jsonl(p): return [json.loads(l) for l in open(p, encoding="utf-8") if l.strip()] if os.path.isfile(p) else []
+
+
+def run_compile_logs(d):
+    files = sorted(glob.glob(os.path.join(d, "shard*", "compile_logs.jsonl"))) or [os.path.join(d, "compile_logs.jsonl")]
+    return [r for f in files for r in load_jsonl(f)]
+
+
+def candidates(d):
+    cands, chosen, gaps = collections.defaultdict(dict), {}, {}
+    for r in run_compile_logs(d):
+        b = r["business_id"]
+        for s, atts in (r.get("llm_attempts") or {}).items():
+            ok = agent.last_ok(atts)
+            if ok and ok.get("code"): cands[b][f"llm:{s}"] = (ok["code"], None)
+        for s, atts in (r.get("adapt_attempts") or {}).items():
+            ok = agent.last_ok(atts)
+            if ok and ok.get("code"): cands[b][f"adapt:{str(r.get('adapt_of', ''))[4:]}:{s}"] = (ok["code"], None)
+        if r.get("adapt_of"): gaps[b] = r["adapt_of"]
+        if "chosen" in r:
+            chosen[b] = r["chosen"]
+            for c in r["candidates"]:
+                src = str(c[0])
+                p = os.path.join(FMT, src[8:] + ".py") if src.startswith("ref:fmt:") else os.path.join(REF, src[4:] + ".py") if src.startswith("ref:") else None
+                if p and os.path.isfile(p): cands[b][src] = (open(p, encoding="utf-8").read(), src[4:])
+    return cands, chosen, gaps
+
+
+def rule_texts(split, b, qs):
+    try: nz = qnorm.Normalizer.for_split(split, exclude_business=b, extra_texts=qnorm.Normalizer.entity_texts(agent.load_biz(agent._CTX["cache"], split, b)))
+    except Exception: nz = None
+    out = []
+    for q in qs:
+        c = None
+        if nz is not None:
+            try: c = nz.clean(q["question"], q["as_of_date"])
+            except Exception: c = None
+        out.append((q["id"], q["as_of_date"], (c or {}).get("clean") or q["question"]))
+    return out
+
+
+def general_score(r):
+    return float(r.get("coverage") or 0) - sum(canonmod.warning_penalty(w) for w in r.get("warnings") or []
+                                               if not any(rx.search(str(w)) for rx in TOPIC_WARN.values()))
+
+
+def rank(pool_b, topic_q=frozenset()):
+    if not pool_b: return []
+    _, sc = agent.agreement([r["sig"] for _, r in pool_b])
+    def gpen(r): return float(r.get("coverage") or 0) - general_score(r)
+    plaus = [gpen(r) < 20 for _, r in pool_b]
+    ra = [{q: v for q, v in (r.get("rule_answers") or {}).items() if q not in topic_q} for _, r in pool_b]
+    ag = pipeline.Pipeline.answer_agreement([x if ok else {} for x, ok in zip(ra, plaus)])
+    fail = [(sum(1 for v in x.values() if v is None) / len(x)) if x else r.get("fail_share", 0.0) for x, (_, r) in zip(ra, pool_b)]
+    W, F = 30.0, pipeline.Pipeline.SEL_FAIL_W
+    return sorted(range(len(pool_b)), key=lambda i: (-(general_score(pool_b[i][1]) - F * fail[i] + W * ag[i]
+                                                     - (pipeline.Pipeline.REF_GAP_W if pool_b[i][1].get("gaps") else 0.0)), -sc[i], i))
+
+
+TOPIC_FN = {
+    "debt": re.compile(r"\b(?:debts?|debt_\w+|n_debtors|top_debtors|paid_until|n_due_orders)\s*\("),
+    "instalment": re.compile(r"\b(?:instalment_\w+|terms_due|n_overdue_customers)\s*\("),
+    "vehicle": re.compile(r"\b(?:n_vehicles|top_plates|vehicle_sales|top_vehicles)\s*\(|\bvehicle\s*=|\[\s*[\"'](?:plate|vehicle)[\"']\s*\]"),
+    "staff": re.compile(r"\b(?:staff_sales|staff_stats|top_staff|commission)\s*\(|\bstaff\s*=|\[\s*[\"']staff[\"']\s*\]"),
+}
+TOPIC_WARN = {
+    "debt": re.compile(r"C counts \d+ of \d+ orders .* as still owing|the notes \S+ say \d+ orders|the data has a debt book|"
+                       r"the data has an instalment book|C\['instalments'\] lacks|C\['instalment_payments'\] lacks"),
+    "instalment": re.compile(r"the data has an instalment book|C\['instalments'\] lacks|C\['instalment_payments'\] lacks"),
+    "vehicle": re.compile(r"the data records number plates|the data writes the vehicle model|orders\.plate matches the plates"),
+    "staff": re.compile(r"orders\.staff (?:holds given names|does not follow)"),
+}
+
+
+def question_topics(rec, text=None):
+    codes = []
+    for name, v in (rec.get("samples") or {}).items():
+        if name == "rule" and isinstance(v, dict) and v.get("code"): codes.append(str(v["code"]))
+        elif name not in SKIP and isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
+            ok = agent.last_ok(v)
+            if ok and ok.get("code"): codes.append(str(ok["code"]))
+    out = {t for t, rx in TOPIC_FN.items() if codes and sum(1 for c in codes if rx.search(c)) >= len(codes) / 3}
+    if text and qparse.named_vehicle(text): out.add("vehicle")
+    return out
+
+
+def code_of(rec, name):
+    v = (rec.get("samples") or {}).get(name)
+    ok = agent.last_ok(v) if isinstance(v, list) else None
+    return (ok or {}).get("code") or ""
+
+
+def topic_bad(r, topics):
+    return any(TOPIC_WARN[t].search(str(w)) and canonmod.warning_penalty(w) >= 10 for t in topics for w in r.get("warnings") or [])
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("split"); ap.add_argument("cache"); ap.add_argument("work"); ap.add_argument("out"); ap.add_argument("runs", nargs="+")
+    ap.add_argument("--biz", default=""); ap.add_argument("--workers", type=int, default=max(1, min(8, (os.cpu_count() or 2) - 1)))
+    ap.add_argument("--timeout", type=int, default=60)
+    ap.add_argument("--extra", default="fmt:automap", help="format adapters added to every business's pool ('' = none)")
+    ap.add_argument("--force", default="", help="regex: the candidate a business uses when one matches (experiments)")
+    a = ap.parse_args(); t0 = time.time()
+    os.makedirs(os.path.join(a.work, "canon"), exist_ok=True)
+    agent._init_worker(a.cache, a.split)
+    runs = [r for r in a.runs if os.path.isfile(os.path.join(r, "logs.jsonl"))]
+    logs = [{x["id"]: x for x in load_jsonl(os.path.join(r, "logs.jsonl"))} for r in runs]
+    meta = [candidates(r) for r in runs]
+    for x in [x for x in a.extra.split(",") if x.strip()]:
+        p_ = os.path.join(FMT, x.split(":", 1)[1] + ".py")
+        if os.path.isfile(p_) and meta:
+            code_ = open(p_, encoding="utf-8").read()
+            for b in {q["business_id"] for q in map(json.loads, open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8"))}:
+                meta[0][0][b]["ref:" + x] = (code_, x)
+    qs_all = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8")]
+    bids = sorted({q["business_id"] for q in qs_all if not a.biz or re.search(a.biz, q["business_id"])})
+    pool = mp.get_context("fork").Pool(a.workers, initializer=agent._init_worker, initargs=(a.cache, a.split), maxtasksperchild=100)
+    tasks, owners = [], collections.defaultdict(list)
+    for i, (cands, chosen, gaps) in enumerate(meta):
+        for b in bids:
+            for src, (code, rid) in cands.get(b, {}).items():
+                key = (b, src if src.startswith("ref:") else f"r{i}:{src}"); owners[key].append(i)
+                if len(owners[key]) > 1: continue
+                tasks.append((key, b, code, rid, os.path.join(a.work, "canon", f"{b}.{key[1].replace(':', '_')}.pkl")))
+    built = {}
+    for key, r in agent.pmap(pool, agent.run_mapping, tasks):
+        if r.get("ok"): built[key] = r
+    print(f"[consensus] {len(built)}/{len(tasks)} candidate mappings rebuilt ({time.time() - t0:.0f}s)", flush=True)
+    rq = {b: rule_texts(a.split, b, [q for q in qs_all if q["business_id"] == b]) for b in bids}
+    evs = [((k, "eval"), k[0], r["path"], rq[k[0]], 150) for k, r in built.items()]
+    for (k, _), res in agent.pmap(pool, agent.run_rule_eval, evs):
+        built[k]["fail_share"] = res.get("fail_share", 0.0) if res.get("ok") else 0.0
+        built[k]["rule_answers"] = res.get("answers") or {} if res.get("ok") else {}
+    qtext = {q["id"]: q["question"] for q in qs_all}
+    first_rec = {}
+    for L in logs:
+        for qid, rec in L.items(): first_rec.setdefault(qid, rec)
+    topic_q = collections.defaultdict(set)
+    for L in logs:
+        for qid, rec in L.items():
+            if question_topics(rec, qtext.get(qid)): topic_q[rec["business_id"]].add(qid)
+    best, pool_dump = {}, {}
+    for b in bids:
+        pb = sorted([(k[1], r) for k, r in built.items() if k[0] == b], key=lambda x: (not x[0].startswith("ref:"), x[0]))
+        for src, r in pb: r["gaps"] = any(meta[i][2].get(b) == src for i in range(len(meta)))
+        order = rank(pb, topic_q.get(b, frozenset()))
+        if not order: continue
+        best[b] = [pb[j] for j in order]
+        if a.force:
+            forced = [m for m in best[b] if re.search(a.force, m[0])]
+            if forced: best[b] = forced[:1] + [m for m in best[b] if m is not forced[0]]
+        sig = lambda r: json.dumps(sorted((r.get("rule_answers") or {}).items()))
+        top = sig(best[b][0][1])
+        agree_runs = sum(1 for i, (c, ch, g) in enumerate(meta) if b in ch and
+                         (built.get((b, ch[b] if ch[b].startswith("ref:") else f"r{i}:{ch[b]}")) or {}).get("rule_answers") is not None and
+                         sig(built[(b, ch[b] if ch[b].startswith("ref:") else f"r{i}:{ch[b]}")]) == top)
+        pool_dump[b] = [{"src": src, "general": general_score(r), "fail": r.get("fail_share", 0.0), "pen": sum(canonmod.warning_penalty(w) for w in r.get("warnings") or []),
+                         "warnings": [str(w)[:160] for w in r.get("warnings") or []], "rule_answers": r.get("rule_answers") or {}} for src, r in best[b]]
+        pen = sum(canonmod.warning_penalty(w) for w in best[b][0][1].get("warnings") or [])
+        print(f"  {b}: {len(pb)} pooled candidates -> {best[b][0][0]} (penalty {pen:.0f}); {agree_runs}/{len(runs)} runs had chosen that cluster", flush=True)
+    json.dump(pool_dump, open(os.path.join(a.work, "pool.json"), "w", encoding="utf-8"), ensure_ascii=False, default=str)
+    def slots(b, rec):
+        T = question_topics(rec, qtext.get(rec["id"]))
+        if not T:
+            sl = best[b][:2]
+            if all((m[1].get("rule_answers") or {}).get(rec["id"]) is None for m in sl):
+                alt = next((m for m in best[b][2:] if (m[1].get("rule_answers") or {}).get(rec["id"]) is not None
+                            and float(m[1].get("coverage") or 0) - general_score(m[1]) < 20), None)
+                if alt is not None: sl = sl + [alt]
+            return sl, T
+        clean = [m for m in best[b] if not topic_bad(m[1], T)]
+        tq = [q for q in topic_q.get(b, ()) if question_topics(first_rec[q], qtext.get(q)) & T] or list(topic_q.get(b, ()))
+        def tfail(m):
+            ra = m[1].get("rule_answers") or {}; xs = [ra.get(q) for q in tq if q in ra]
+            return round(sum(1 for x in xs if x is None) / len(xs), 1) if xs else 1.0
+        clean = sorted(clean, key=tfail)
+        return clean[:4], T
+    qslots, qtop = {}, {}
+    for L in logs:
+        for qid, rec in L.items():
+            b = rec["business_id"]
+            if b in best and qid not in qslots: qslots[qid], qtop[qid] = slots(b, rec)
+    jobs, uniq, alias = [], {}, {}
+    for i, L in enumerate(logs):
+        for qid, rec in L.items():
+            b = rec["business_id"]
+            if b not in best: continue
+            for src, r in qslots[qid]:
+                for name, v in rec["samples"].items():
+                    if name in SKIP or not isinstance(v, list) or not all(isinstance(x, dict) for x in v): continue
+                    ok = agent.last_ok(v)
+                    if not (ok and ok.get("code")): continue
+                    ck = (qid, src, ok["code"])
+                    if ck not in uniq: uniq[ck] = len(jobs); jobs.append(((len(jobs),), b, rec["as_of_date"], ok["code"], a.timeout, r["path"]))
+                    alias[(i, qid, src, name)] = uniq[ck]
+    rule_jobs = []
+    rtext = {qid: t for b in rq for qid, _, t in rq[b]}
+    for qid in qslots:
+        b = next(L[qid]["business_id"] for L in logs if qid in L)
+        as_of = next(L[qid]["as_of_date"] for L in logs if qid in L)
+        for src, r in qslots[qid]: rule_jobs.append(((qid, src), b, as_of, rtext.get(qid, ""), r["path"], a.timeout))
+    n_top = collections.Counter((next(L[q]["business_id"] for L in logs if q in L), "clean" if qslots[q] else "abstain")
+                                for q in qslots if qtop[q])
+    print(f"[consensus] topic questions (debt / instalment / vehicle / staff) per business: {dict(sorted(n_top.items()))}", flush=True)
+    rj = dict(agent.pmap(pool, agent.run_code, jobs, per_task=a.timeout))
+    res = {k: rj.get((j,)) for k, j in alias.items()}
+    rres = dict(agent.pmap(pool, agent.run_qparse, rule_jobs, per_task=a.timeout))
+    pool.close()
+    print(f"[consensus] {len(jobs)} distinct sample programs ({len(alias)} logged) + {len(rule_jobs)} rule programs executed "
+          f"({time.time() - t0:.0f}s)", flush=True)
+    NEW, WN = pipeline.Pipeline.NEW_RULES, pipeline.Pipeline.NEW_RULE_W
+
+    def vote_q(i, qid, rec, src):
+        votes, rep, total = collections.Counter(), {}, 0.0
+        rr = rres.get((qid, src)) or {}
+        if rr.get("ok") and rr.get("answer") is not None:
+            tpl = str(rr.get("tpl") or ""); w = WN if (tpl.startswith("ind_") or tpl in NEW) else 4.0
+            c = agent.canon_of(rr["answer"]); votes[c] += w; rep.setdefault(c, rr["answer"]); total += w
+        ung = set(rec["samples"].get("ungrounded") or [])
+        for name, v in rec["samples"].items():
+            if name in SKIP or not isinstance(v, list): continue
+            sid = name.rstrip("LBE")
+            if sid.isdigit() and int(sid) in ung: continue
+            r = res.get((i, qid, src, name))
+            if r is None: continue
+            if not qparse.weekday_consistent(qtext.get(qid, ""), r.get("code") or code_of(rec, name)): continue
+            total += 1.0
+            if r.get("ok") and r.get("answer") is not None:
+                c = agent.canon_of(r["answer"]); votes[c] += 1.0; rep.setdefault(c, r["answer"])
+        if not votes or not total: return {"type": "abstain"}, 0.0, str(rr.get("tpl") or "")
+        top, n = votes.most_common(1)[0]
+        return (rep[top] if n / total >= 0.5 else {"type": "abstain"}), n / total, str(rr.get("tpl") or "")
+
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)) or ".", exist_ok=True)
+    new_dirs = []
+    for i, L in enumerate(logs):
+        d = os.path.join(a.work, f"run_{i}"); os.makedirs(d, exist_ok=True); new_dirs.append(d)
+        with open(os.path.join(d, "logs.jsonl"), "w", encoding="utf-8") as f:
+            for qid, rec in L.items():
+                b = rec["business_id"]; rec = dict(rec)
+                if b in best:
+                    sl = qslots.get(qid) or []
+                    if not sl:
+                        final, conf, tpl = {"type": "abstain"}, 0.0, ""; rec["topic_abstain"] = sorted(qtop.get(qid) or [])
+                    else:
+                        final, conf, tpl = vote_q(i, qid, rec, sl[0][0])
+                        for alt in sl[1:]:
+                            if final.get("type") not in ("abstain", "unanswerable"): break
+                            f2, c2, _ = vote_q(i, qid, rec, alt[0])
+                            if f2.get("type") not in ("abstain", "unanswerable"): final, conf = f2, c2
+                        if final.get("type") == "unanswerable" and tpl != "subjective" and "llm:" in sl[0][0] and sl[0][1].get("unused"):
+                            final = {"type": "abstain"}
+                    rec["final_run"] = rec["final"]; rec["final"] = final; rec["conf"] = conf
+                    rec["consensus_map"] = sl[0][0] if sl else None; rec["topics"] = sorted(qtop.get(qid) or [])
+                f.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
+    out = votemod.vote([votemod.load(d) for d in new_dirs], 0.4, None)
+    tmp = a.out + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        for q, (final, _) in out.items(): f.write(json.dumps({"id": q, **final}, ensure_ascii=False) + "\n")
+    os.replace(tmp, a.out)
+    n_ab = sum(1 for f_, _ in out.values() if f_.get("type") == "abstain")
+    print(f"[consensus] {len(out)} answers, {n_ab} abstain -> {a.out} ({time.time() - t0:.0f}s)", flush=True)
+
+
+if __name__ == "__main__":
+    main()

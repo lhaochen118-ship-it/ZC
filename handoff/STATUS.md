@@ -1,5 +1,13 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
+**16/11 15:45 UTC — bản nộp hợp lệ (rà soát quy định BTC):** 3 thư mục Docker tự chứa: `Docker_C4/` (public **0.939**, giữ
+`industry.py`), `Docker_C6/` (0.834, ẩn hàm định nghĩa ngành), `Docker_PG/` (0.880, framework P tổng quát hoá). Chung: không WL1
+(dữ liệu huấn luyện có rulebook public), không thẻ / luật tính sẵn cho tập test (W1 tự viết lúc chạy), bỏ kiểm tra nhóm B/C, lớp
+kiểm tra tổng quát (`src/consistency.py`), từ điển chung (`src/refs/lrl/glossary_vi.jsonl`). Bảng điểm: `docs/19` (16/11 chiều),
+`Process/tools/p5/status_variants.py`; ablation: C5 (bỏ industry.py) 0.830, C6-noR 0.842, C6-noT 0.823. Đóng gói:
+`tools/pkg/make_packages.py` (bỏ comment có kiểm AST: `tools/pkg/strip_comments.py`). Các thư mục cũ `Docker_submission/`,
+`0.994_Docker_submission/` là cấu hình trước rà soát (WL1 / thẻ public / luật P), không dùng để nộp.
+
 **16/11 10:45 UTC (khung chat mới):** pver = **0.987** (P tái lập được). Chuỗi MoE dựng lại (container cũ mất `Process/runs/p5/`): đánh giá
 e8rw5p0/p1, e8rw35p0/p1 chạy; gộp am3l0 / am3j1 và huấn luyện ftc3 đẩy lại (STALE CODE); ftc2 đang huấn luyện → chuỗi `after_cont.sh` tự gộp + đánh giá.
 Bản nộp không đổi (0.952).

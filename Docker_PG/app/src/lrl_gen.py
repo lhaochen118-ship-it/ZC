@@ -1,0 +1,846 @@
+#!/usr/bin/env python3
+import os, re, sys, ast, json, glob, pickle, argparse, hashlib, time
+from collections import Counter
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+SYS = ("Bạn giúp xây dựng bộ luật cho một trợ lý viết chương trình Python trả lời câu hỏi của chủ cửa hàng nhỏ ở Việt Nam về dữ "
+       "liệu bán hàng. Trả lời ĐÚNG một đối tượng JSON, không giải thích.")
+
+
+def api_doc():
+    import dm, prompting
+    return dm.API_DOC + (prompting.api_extra() if os.environ.get("ZC_API_EXTRA", "0") == "1" else "")
+
+
+def api_names():
+    import api_spec
+    import lrl
+    return {e["name"] for e in api_spec.build_api_spec() if e["name"] not in lrl.hidden_names()} | {"TODAY", "ANSWER", "len", "round", "sum", "int", "float", "max", "min", "sorted", "list"}
+
+
+def first_json(text):
+    t = (text or "").split("</think>")[-1]
+    t = re.sub(r"^```(?:json)?|```$", "", t.strip(), flags=re.M)
+    order = sorted((("[", "]"), ("{", "}")), key=lambda oc: t.find(oc[0]) if t.find(oc[0]) >= 0 else 1 << 30)
+    for op, cl in order:
+        i = t.find(op)
+        while i >= 0:
+            depth = 0
+            for j in range(i, len(t)):
+                if t[j] == op: depth += 1
+                elif t[j] == cl:
+                    depth -= 1
+                    if depth == 0:
+                        try: return json.loads(t[i:j + 1])
+                        except Exception: break
+            i = t.find(op, i + 1)
+    return None
+
+
+def json_objects(text):
+    out = []
+    for m in re.finditer(r"\{[^{}]*\}", (text or "").split("</think>")[-1]):
+        try: out.append(json.loads(m.group(0)))
+        except Exception: continue
+    return out
+
+
+def valid_hint(h, names):
+    if not h or not isinstance(h, str): return None
+    h = h.strip().strip("`")
+    try: tree = ast.parse(h if "(" in h else f"f({h})")
+    except SyntaxError: return None
+    calls = {n.func.id for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)} - {"f"}
+    return h if calls <= names else None
+
+
+def valid_check(c):
+    if not c or not isinstance(c, str): return None
+    try: compile(c, "<check>", "eval"); return c if len(c) < 400 and "__" not in c and "import" not in c else None
+    except SyntaxError: return None
+
+
+def card(kind, triggers, content, hint, names, source, **extra):
+    trig = [str(t).strip() for t in (triggers or []) if re.search(r"[^\W_]{2}", str(t)) and len(str(t)) <= 60][:16]
+    content = str(content or "").strip()
+    if not trig or len(re.findall(r"[^\W_]+", content)) < 3 or content.strip(". ") == "": return None
+    if kind not in ("period", "lexicon", "definition", "unit", "value", "check"): kind = "definition"
+    c = {"kind": kind, "trigger": {"words": trig}, "content": str(content).strip()[:400], "code_hint": valid_hint(hint, names), "source": source}
+    c["trigger"].update({k: v for k, v in extra.items() if k in ("bid", "industry", "section", "rulebook") and v})
+    if extra.get("check"): c["check"] = valid_check(extra["check"])
+    c["id"] = "R" + hashlib.sha1(json.dumps([kind, trig, c["content"], c["code_hint"]], ensure_ascii=False).encode()).hexdigest()[:8]
+    return c
+
+
+def compile_items(split):
+    import hints as hintsmod, agent
+    rb = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
+    import lrl
+    rk = lrl.rb_key(rb)
+    secs = agent.rulebook_sections(rb); items = []
+    seen = set()
+    for k, (term, definition) in hintsmod.rulebook_rows(rb).items():
+        if (term, definition) in seen: continue
+        seen.add((term, definition))
+        sec = next((t for t, body in secs.items() if term in body), None)
+        u = (f"# TOOLKIT\n{api_doc()}\n\n# RULEBOOK SECTION: {sec or 'chung'}\n# RULE\n| {term} | {definition} |\n\n"
+             "Viết thẻ luật cho thuật ngữ này. JSON: {\"triggers\": [5-12 cụm từ ngắn chủ cửa hàng có thể gõ trong câu hỏi để nói thuật "
+             "ngữ này: từ đồng nghĩa, cách nói thân mật, viết tắt, viết không dấu], \"content\": \"một câu: thuật ngữ nghĩa là gì và tính "
+             "thế nào\", \"code_hint\": \"lời gọi toolkit với đúng tham số luật này cần, ví dụ revenue(p, payment=\\\"chuyển khoản\\\"); "
+             "null nếu không có hàm nào hợp\"}")
+        items.append(({"term": term, "definition": definition, "section": sec, "rulebook": rk}, u))
+    return items
+
+
+BIND_TASK = ("Viết thẻ luật cho thuật ngữ này. JSON: {\"triggers\": [5-12 cụm từ ngắn chủ cửa hàng có thể gõ trong câu hỏi để nói "
+             "thuật ngữ này: từ đồng nghĩa, cách nói thân mật, viết tắt, viết không dấu], \"content\": \"một câu: thuật ngữ nghĩa là gì và "
+             "tính thế nào\", \"code_hint\": \"MỘT biểu thức Python gọi toolkit (cả TOOLKIT NGÀNH nếu có) tính đúng thuật ngữ này cho kỳ "
+             "p (p là biến kỳ, ví dụ revenue(p, payment=\\\"chuyển khoản\\\"), top_customers(p, 1, by=\\\"n_days\\\")[0], "
+             "avg_ticket(p)); biểu thức phải chạy được và trả về đúng một giá trị; null chỉ khi dòng này không phải đại lượng tính được "
+             "(chỉ là cách ghi, cách làm tròn...)\"}")
+
+
+def bind_items(split):
+    import hints as hintsmod, agent, industry
+    rb = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
+    import lrl
+    rk = lrl.rb_key(rb)
+    secs = agent.rulebook_sections(rb); items = []; seen = set()
+    in_sec = {}
+    for title, body in secs.items():
+        for k in hintsmod.rulebook_rows(body): in_sec.setdefault(k, title)
+    for k, (term, definition) in hintsmod.rulebook_rows(rb).items():
+        if (term, definition) in seen: continue
+        seen.add((term, definition))
+        sec = in_sec.get(k)
+        ik = industry.industry_key(sec) if sec else None
+        ind = f"\n\n# TOOLKIT NGÀNH ({sec})\n{industry.api_doc_for(ik)}" if ik and industry.api_doc_for(ik) else ""
+        u = (f"# TOOLKIT\n{api_doc()}{ind}\n\n# RULEBOOK SECTION: {sec or 'chung'}\n# RULE\n| {term} | {definition} |\n\n" + BIND_TASK)
+        items.append(({"term": term, "definition": definition, "section": sec, "rulebook": rk}, u))
+    return items
+
+
+def shop_sections(split, cache=""):
+    import ingest, automap, shopctx
+    rb0 = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read(); out = {}
+    for d in sorted(glob.glob(os.path.join(split, "data", "*"))):
+        b = os.path.basename(d)
+        if not os.path.isdir(d): continue
+        try:
+            bp = os.path.join(cache or "", b + ".pkl")
+            biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(d)
+            rbp = os.path.join(split, "rulebooks", b + ".md")
+            rb = open(rbp, encoding="utf-8").read() if os.path.isfile(rbp) else rb0
+            ind = shopctx.industry_of(rb, biz)
+            out[b] = (automap.build(biz)[0], automap.parse_readme(biz.readme).get("data_end"), biz.tables, ind[0] if ind else None)
+        except Exception as e: print(f"[bind] {b}: {type(e).__name__}: {e}", flush=True)
+    return out
+
+
+def run_hint(hint, shop_t, timeout=20):
+    import dm, pandas as pd, signal
+    C, data_end, T, _ = shop_t
+    end = pd.Timestamp(data_end) if data_end else None
+    shop = dm.Shop(C, end, {"data_end": data_end})
+    if end is None: end = shop.last
+    g = dm.api(shop, end); g["T"] = T or {}
+    k = end.year * 12 + end.month - 2
+    vals = []
+    for P in (dm.month(k // 12, k % 12 + 1), dm.between(pd.Timestamp(end) - pd.Timedelta(days=365 * 3), end)):
+        g["p"] = P
+        def _alarm(*_): raise TimeoutError("hint ran too long")
+        old = signal.signal(signal.SIGALRM, _alarm); signal.alarm(timeout)
+        try: vals.append(eval(compile(hint, "<hint>", "eval"), g))
+        except dm.Unanswerable: vals.append(None)
+        except Exception as e: return False, f"{type(e).__name__}: {str(e)[:160]}", None
+        finally: signal.alarm(0); signal.signal(signal.SIGALRM, old)
+    if all(v is None for v in vals): return False, "Unanswerable on every test period", None
+    return True, "ok", vals[0]
+
+
+def verify_binds(cards, items_meta, shops, k):
+    import units
+    out, rep = [], Counter()
+    by_row = {}
+    for c in cards: by_row.setdefault(c["source"], []).append(c)
+    for src, cs in by_row.items():
+        sec = (cs[0].get("trigger") or {}).get("section")
+        pool = [v for v in shops.values() if v[3] == sec] if sec else [v for v in shops.values()]
+        pool = pool[:3]
+        good = Counter(); first = {}
+        for c in cs:
+            h = c.get("code_hint")
+            if not h or "(" not in h: continue
+            ok = bool(pool)
+            for sh in pool:
+                r, why, v = run_hint(h, sh)
+                if not r: ok = False; c["_why"] = why; break
+            if ok: good[h] += 1; first.setdefault(h, len(first))
+        best = cs[0]
+        if good:
+            h = max(good, key=lambda x: (good[x], -first[x]))
+            best = next(c for c in cs if c.get("code_hint") == h); rep["bound"] += 1
+        else:
+            best = dict(best, code_hint=None); rep["unbound"] += 1
+        out.append({k2: v for k2, v in best.items() if not k2.startswith("_")})
+    print(f"[bind] {dict(rep)} rows", flush=True)
+    return out
+
+
+CAT_PARAM = {"payment": "payment", "payment_method": "payment", "method": "payment", "channel": "channel", "group": "group",
+             "item_group": "group", "status": "status", "shift": "shift", "unit": "base_unit", "base_unit": "base_unit",
+             "customer_group": "customer_group", "brand": "brand", "size": "size", "item_type": "kind", "area": None, "kind": None}
+
+
+def alias_values(canon_dir):
+    out = []
+    for f in sorted(glob.glob(os.path.join(canon_dir, "*.pkl"))):
+        d = pickle.load(open(f, "rb")); C = d.get("C") if isinstance(d, dict) else None
+        for t, df in (C or {}).items():
+            if not hasattr(df, "columns"): continue
+            for col in df.columns:
+                if col not in CAT_PARAM: continue
+                vals = [str(v) for v in df[col].dropna().astype(str).unique() if str(v).strip()][:40]
+                if 1 <= len(vals) <= 40: out.append({"bid": os.path.basename(f)[:-4], "table": t, "col": col, "values": vals})
+    return out
+
+
+def alias_prompt(m):
+    return (f"Cột '{m['table']}.{m['col']}' trong dữ liệu một cửa hàng có các giá trị: {json.dumps(m['values'], ensure_ascii=False)}.\n"
+            "Với mỗi giá trị, liệt kê 2-6 cách chủ cửa hàng có thể viết nó trong câu hỏi: viết tắt, không dấu, từ thân mật, từ địa "
+            "phương, từ tiếng Anh viết theo cách đọc tiếng Việt. JSON: {\"<giá trị>\": [\"<cách viết>\", ...], ...}")
+
+
+def alias_items(split, cache, values_file=""):
+    if values_file and os.path.isfile(values_file):
+        bids = {os.path.basename(d) for d in glob.glob(os.path.join(split, "data", "*"))}
+        return [(m, alias_prompt(m)) for m in map(json.loads, open(values_file, encoding="utf-8")) if not bids or m["bid"] in bids]
+    import ingest, automap
+    items = []
+    bids = sorted(os.path.basename(d) for d in glob.glob(os.path.join(split, "data", "*")) if os.path.isdir(d))
+    for b in bids:
+        try:
+            pc = os.path.join(cache or "", b + ".canon.pkl")
+            if cache and os.path.isfile(pc): C = pickle.load(open(pc, "rb"))
+            else:
+                bp = os.path.join(cache or "", b + ".pkl")
+                biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", b))
+                C = automap.build(biz)[0]
+        except Exception as e:
+            print(f"[aliases] {b}: {type(e).__name__}: {e}", flush=True); continue
+        for t, df in C.items():
+            if not hasattr(df, "columns"): continue
+            for col in df.columns:
+                if col not in CAT_PARAM: continue
+                vals = [str(v) for v in df[col].dropna().astype(str).unique() if str(v).strip()][:40]
+                if not 1 <= len(vals) <= 40: continue
+                m = {"bid": b, "table": t, "col": col, "values": vals}; items.append((m, alias_prompt(m)))
+    return items
+
+
+def translit_items(split):
+    rb = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()[:6000]
+    u = (f"# TOOLKIT\n{api_doc()}\n\n# RULEBOOK (đầu)\n{rb}\n\n"
+         "Chủ cửa hàng ở Việt Nam hay dùng từ tiếng Anh (hoặc tiếng nước ngoài) cho các khái niệm bán hàng ở trên, và nhiều khi gõ "
+         "theo cách ĐỌC bằng tiếng Việt (ví dụ 'online' -> 'on lai', 'menu' -> 'mê nu'). Liệt kê tới 40 từ như vậy. JSON: "
+         "[{\"english\": \"...\", \"vietnamese\": \"từ tiếng Việt tương ứng\", \"phonetic\": [\"2-4 cách gõ theo cách đọc\"]}, ...]")
+    return [({"k": k}, u) for k in range(4)]
+
+
+def newterm_items(recs):
+    items = []
+    for r in recs:
+        u = ("Dưới đây là một câu hỏi của chủ cửa hàng và chương trình (toolkit bên dưới) trả lời đúng câu đó. Hãy NGHĨ RA một thuật ngữ "
+             "nghiệp vụ MỚI (2-5 từ, chưa có trong toolkit, như một cửa hàng tự đặt trong rulebook của mình) cho đại lượng / cách tính mà "
+             "chương trình làm, viết một dòng rulebook định nghĩa CHÍNH XÁC thuật ngữ đó theo dữ liệu (khớp đúng chương trình: kỳ, lọc, "
+             "cách tính), rồi viết lại câu hỏi dùng thuật ngữ mới thay cho phần mô tả cách tính (giữ nguyên kỳ thời gian, tên hàng, số).\n\n"
+             f"# TOOLKIT\n{api_doc()}\n\n# CÂU HỎI (hôm nay = {r['as_of_date']})\n{r['question']}\n\n# CHƯƠNG TRÌNH\n{r['program']}\n\n"
+             "JSON: {\"term\": \"...\", \"definition\": \"...\", \"question\": \"...\"}")
+        items.append(({"id": r["id"], "business_id": r["business_id"], "as_of_date": r["as_of_date"], "program": r["program"],
+                       "orig_question": r["question"], "answer": r.get("answer")}, u))
+    return items
+
+
+UNIT_EXAMPLES = """## Ví dụ 1 — dòng rulebook: | Khách sộp nhất | khách có giá trị trung bình một đơn cao nhất trong kỳ, chỉ xét khách có từ 3 đơn trở lên trong kỳ |
+{"name": "khach_sop_nhat", "signature": "khach_sop_nhat(p, k=1)", "doc": "k khách có giá trị TB / đơn cao nhất trong kỳ p, chỉ khách >= 3 đơn", "triggers": ["khách sộp", "khach sop", "khách chịu chi"], "code": "def khach_sop_nhat(p, k=1):\n    so_don = customer_sales(p, by=\"n_orders\")\n    tb = customer_sales(p, by=\"aov\")\n    return rank(tb[so_don >= 3], k)"}
+## Ví dụ 2 — dòng rulebook: | Giờ cao điểm | khung một giờ tròn theo giờ tạo đơn có nhiều đơn nhất trong kỳ; đáp án là giờ bắt đầu khung |
+{"name": "gio_cao_diem", "signature": "gio_cao_diem(p)", "doc": "giờ bắt đầu của khung một giờ có nhiều đơn nhất trong kỳ p", "triggers": ["giờ cao điểm", "gio cao diem", "giờ đông khách"], "code": "def gio_cao_diem(p):\n    o = orders(p)\n    gio = pd.to_datetime(o[\"order_time\"]).dt.hour\n    dem = gio.value_counts().sort_index()\n    return int(dem.idxmax())"}
+## Ví dụ 3 — dòng rulebook: | Số đợt giao trong tháng | số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt |
+{"name": "so_dot_giao", "signature": "so_dot_giao(p)", "doc": "số đợt giao có ngày giao trong kỳ p (mỗi đợt của mỗi đơn)", "triggers": ["đợt giao", "chuyến giao", "dot giao"], "code": "def so_dot_giao(p):\n    g = C[\"deliveries\"].copy()\n    g[\"delivery_date\"] = pd.to_datetime(g[\"delivery_date\"]).dt.normalize()\n    g = g[p.mask(g[\"delivery_date\"])]\n    return int(g[[\"order_id\", \"trip_no\"]].drop_duplicates().shape[0])"}
+## Ví dụ 4 — dòng rulebook: | Mặt hàng được ưa chuộng nhất | mặt hàng có mặt trong nhiều đơn nhất trong kỳ |
+{"name": "hang_ua_chuong", "signature": "hang_ua_chuong(p, k=1)", "doc": "k mặt hàng có mặt trong nhiều đơn nhất trong kỳ p", "triggers": ["ưa chuộng", "ua chuong", "được chuộng"], "code": "def hang_ua_chuong(p, k=1):\n    return rank(item_sales(p, by=\"n_orders\"), k)"}
+## Ví dụ 5 — dòng rulebook: | Độ tập trung hàng bán | phần trăm số lượng bán của k mặt hàng bán nhiều nhất trên tổng số lượng bán trong kỳ |
+{"name": "do_tap_trung_hang", "signature": "do_tap_trung_hang(p, k=3)", "doc": "% số lượng bán của k mặt hàng bán nhiều nhất trong kỳ p (số phần trăm)", "triggers": ["độ tập trung", "tap trung hang"], "code": "def do_tap_trung_hang(p, k=3):\n    sl = item_sales(p, by=\"qty\")\n    return pct(sl.sort_values(ascending=False).head(k).sum(), sl.sum())"}
+## Ví dụ 6 — dòng rulebook: | Làm tròn | tiền làm tròn đến đồng |
+{"name": null}"""
+
+
+UNIT_EXAMPLES_NEUTRAL = """## Ví dụ 1 — dòng rulebook: | Khách mua thường xuyên nhất | khách có nhiều đơn nhất trong kỳ, chỉ xét khách có giá trị trung bình một đơn từ 100.000đ trở lên |
+{"name": "khach_thuong_xuyen", "signature": "khach_thuong_xuyen(p, k=1)", "doc": "k khách có nhiều đơn nhất trong kỳ p, chỉ khách có giá trị TB / đơn >= 100.000đ", "triggers": ["khách thường xuyên", "khach thuong xuyen", "khách mua đều"], "code": "def khach_thuong_xuyen(p, k=1):\n    so_don = customer_sales(p, by=\"n_orders\")\n    tb = customer_sales(p, by=\"aov\")\n    return rank(so_don[tb >= 100000], k)"}
+## Ví dụ 2 — dòng rulebook: | Giờ vắng khách | khung một giờ tròn theo giờ tạo đơn có ít đơn nhất trong kỳ, chỉ xét các giờ có đơn; đáp án là giờ bắt đầu khung |
+{"name": "gio_vang_khach", "signature": "gio_vang_khach(p)", "doc": "giờ bắt đầu của khung một giờ có ít đơn nhất (trong các giờ có đơn) trong kỳ p", "triggers": ["giờ vắng khách", "gio vang khach", "giờ ít khách"], "code": "def gio_vang_khach(p):\n    o = orders(p)\n    gio = pd.to_datetime(o[\"order_time\"]).dt.hour\n    dem = gio.value_counts().sort_index()\n    return int(dem.idxmin())"}
+## Ví dụ 3 — dòng rulebook: | Số đợt giao trong tháng | số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt |
+{"name": "so_dot_giao", "signature": "so_dot_giao(p)", "doc": "số đợt giao có ngày giao trong kỳ p (mỗi đợt của mỗi đơn)", "triggers": ["đợt giao", "chuyến giao", "dot giao"], "code": "def so_dot_giao(p):\n    g = C[\"deliveries\"].copy()\n    g[\"delivery_date\"] = pd.to_datetime(g[\"delivery_date\"]).dt.normalize()\n    g = g[p.mask(g[\"delivery_date\"])]\n    return int(g[[\"order_id\", \"trip_no\"]].drop_duplicates().shape[0])"}
+## Ví dụ 4 — dòng rulebook: | Mặt hàng ít người mua nhất | mặt hàng có mặt trong ít đơn nhất trong kỳ, chỉ xét mặt hàng đã bán trong kỳ |
+{"name": "hang_it_nguoi_mua", "signature": "hang_it_nguoi_mua(p, k=1)", "doc": "k mặt hàng có mặt trong ít đơn nhất trong kỳ p (đã bán)", "triggers": ["ít người mua", "it nguoi mua", "ít được mua"], "code": "def hang_it_nguoi_mua(p, k=1):\n    s = item_sales(p, by=\"n_orders\")\n    return rank(-s[s > 0], k)"}
+## Ví dụ 5 — dòng rulebook: | Độ tập trung hàng bán | phần trăm số lượng bán của k mặt hàng bán nhiều nhất trên tổng số lượng bán trong kỳ |
+{"name": "do_tap_trung_hang", "signature": "do_tap_trung_hang(p, k=3)", "doc": "% số lượng bán của k mặt hàng bán nhiều nhất trong kỳ p (số phần trăm)", "triggers": ["độ tập trung", "tap trung hang"], "code": "def do_tap_trung_hang(p, k=3):\n    sl = item_sales(p, by=\"qty\")\n    return pct(sl.sort_values(ascending=False).head(k).sum(), sl.sum())"}
+## Ví dụ 6 — dòng rulebook: | Làm tròn | tiền làm tròn đến đồng |
+{"name": null}"""
+if os.environ.get("ZC_UNIT_EX", "") == "neutral": UNIT_EXAMPLES = UNIT_EXAMPLES_NEUTRAL
+
+
+def _rows(df, n=2, width=160):
+    try:
+        cols = [c for c in df.columns if not str(c).startswith("_")][:14]
+        sub = df[cols].dropna(how="all").head(200)
+        sub = sub.sample(min(n, len(sub)), random_state=0) if len(sub) else sub
+        return ["  " + "; ".join(f"{c}={str(v)[:24]}" for c, v in r.items() if str(v) not in ("nan", "None", "NaT"))[:width] for _, r in sub.iterrows()]
+    except Exception: return []
+
+
+def _tables_card(C, T, max_chars=4500):
+    import prompting
+    out = ["## C (bảng chuẩn)", prompting.compact_card(C, "", max_chars=1500)]
+    for t, df in (C or {}).items():
+        if hasattr(df, "columns") and t not in ("orders", "lines"): out += [f"C[{t!r}] ví dụ:"] + _rows(df)
+    out.append("## T (bảng gốc)")
+    for t, df in (T or {}).items():
+        cols = [str(c) for c in getattr(df, "columns", []) if not str(c).startswith("_")][:25]
+        out.append(f"T[{t!r}] ({len(df)} dòng): {', '.join(cols)}"); out += _rows(df)
+    return "\n".join(out)[:max_chars]
+
+
+_SHOPS = {}
+BIND_SCHEMA = {"type": "object", "properties": {
+    "plan": {"type": "string", "maxLength": 400},
+    "triggers": {"type": "array", "items": {"type": "string", "maxLength": 60}, "maxItems": 12},
+    "content": {"type": "string", "maxLength": 400},
+    "code_hint": {"type": ["string", "null"], "maxLength": 200}},
+    "required": ["plan", "triggers", "content", "code_hint"], "additionalProperties": False}
+
+
+ROWGEN_SCHEMA = {"type": "array", "maxItems": 30, "items": {"type": "object", "properties": {
+    "term": {"type": "string", "maxLength": 60}, "definition": {"type": "string", "maxLength": 400},
+    "variant_of": {"type": ["string", "null"], "maxLength": 60}},
+    "required": ["term", "definition", "variant_of"], "additionalProperties": False}}
+
+
+UNIT_SCHEMA = {"type": "object", "properties": {
+    "plan": {"type": "string", "maxLength": 700},
+    "name": {"type": ["string", "null"], "maxLength": 48},
+    "signature": {"type": "string", "maxLength": 120},
+    "doc": {"type": "string", "maxLength": 300},
+    "triggers": {"type": "array", "items": {"type": "string", "maxLength": 60}, "maxItems": 8},
+    "code": {"type": "array", "items": {"type": "string", "maxLength": 200}, "maxItems": 40}},
+    "required": ["plan", "name", "signature", "doc", "triggers", "code"], "additionalProperties": False}
+
+
+UNIT_MULTI_SCHEMA = {"type": "object", "properties": {
+    "plan": {"type": "string", "maxLength": 900},
+    "functions": {"type": "array", "minItems": 0, "maxItems": 3, "items": {"type": "object", "properties": {
+        "name": {"type": "string", "maxLength": 48}, "signature": {"type": "string", "maxLength": 120}, "doc": {"type": "string", "maxLength": 300},
+        "triggers": {"type": "array", "items": {"type": "string", "maxLength": 60}, "maxItems": 8},
+        "code": {"type": "array", "items": {"type": "string", "maxLength": 200}, "maxItems": 40}},
+        "required": ["name", "signature", "doc", "triggers", "code"], "additionalProperties": False}}},
+    "required": ["plan", "functions"], "additionalProperties": False}
+UNIT_MULTI_TAIL = ("\n\nCÓ THỂ VIẾT 1–3 HÀM cho dòng này: một hàm cho mỗi đại lượng mà dòng định nghĩa (một dòng có thể định nghĩa vài đại lượng, "
+                   "ví dụ một số đếm và một số trung bình); nếu dòng định nghĩa một cách nhóm / phân loại (ví dụ cách xác định nhóm của một "
+                   "mặt hàng hay một khách), viết hàm trả BẢNG đại lượng chính (số lượng, doanh thu hoặc số đơn) theo nhóm đó trong kỳ p, sắp "
+                   "giảm dần. Đại lượng tính TẠI MỘT NGÀY (số còn nợ, số kỳ quá hạn, tồn tới ngày X): dùng p.end làm ngày đó. Khi câu hỏi có thể lọc "
+                   "theo một khách / một nhân viên / một loại hàng / một nhóm, thêm tham số lọc có mặc định None (None = tất cả). "
+                   "Mỗi hàm theo đúng các quy tắc trên. Trả lời JSON: {\"plan\": ..., \"functions\": [{name, signature, doc, triggers, "
+                   "code}, ...]} (functions rỗng khi dòng không phải đại lượng tính được).")
+
+
+def unit_prompt(b, card, term, definition, sec):
+    return (f"# TOOLKIT (đã có sẵn trong chương trình)\n{api_doc()}\n\n# DỮ LIỆU CỦA CỬA HÀNG {b}\n{card}\n\n# VÍ DỤ\n{UNIT_EXAMPLES}\n\n"
+                 f"# DÒNG RULEBOOK CẦN VIẾT HÀM (mục '{sec}')\n| {term} | {definition} |\n\n"
+                 "Viết MỘT hàm Python tính đúng thuật ngữ này trên dữ liệu của cửa hàng: dùng hàm toolkit khi có hàm hợp, nếu không thì pandas "
+                 "trên C hoặc T (đúng tên bảng / cột có ở trên). Tham số đầu là kỳ p (Period: p.mask(series), p.start, p.end) khi thuật ngữ "
+                 "phụ thuộc kỳ; tham số khác phải có giá trị mặc định. Không đọc file. Nếu dòng này không phải một đại lượng tính được "
+                 "(chỉ là cách ghi, cách làm tròn...) thì name = null và code rỗng. Trả lời bằng MỘT đối tượng JSON: plan (vài câu ngắn: "
+                 "bảng / cột dùng, cách tính), name, signature, doc, triggers, code = MẢNG các dòng mã (mỗi dòng một phần tử, thụt lề 4 dấu "
+                 "cách, không dồn nhiều lệnh vào một dòng). Hàm toolkit, C, T, pd, np, re đã có sẵn: không import chúng. Hàm trả về MỘT giá trị "
+                 "đúng dạng đáp án: một số (tiền, số đếm; tỉ lệ / phần trăm là SỐ PHẦN TRĂM, dùng pct(phần, tổng)), hoặc bảng / danh sách "
+                 "khi thuật ngữ là xếp hạng; không trả dict gộp nhiều đại lượng.")
+
+
+def unit_items(split, cache):
+    import ingest, automap, hints as hintsmod, shopctx
+    rb0 = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
+    items = []
+    bids = sorted(os.path.basename(d) for d in glob.glob(os.path.join(split, "data", "*")) if os.path.isdir(d))
+    for b in bids:
+        rbp = os.path.join(split, "rulebooks", b + ".md")
+        rb = open(rbp, encoding="utf-8").read() if os.path.isfile(rbp) else rb0
+        try:
+            bp = os.path.join(cache or "", b + ".pkl")
+            biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", b))
+        except Exception as e:
+            print(f"[unit] {b}: {type(e).__name__}: {e}", flush=True); continue
+        rows = []
+        ind = shopctx.industry_of(rb, biz)
+        if ind: rows += [(t, d, ind[0]) for t, d in hintsmod.rulebook_rows(ind[1]).values()]
+        try:
+            known = set()
+            for f in shopctx.known_rulebooks():
+                try: known |= set(hintsmod.rulebook_rows(open(f, encoding="utf-8").read()))
+                except OSError: pass
+            rows += [(t, d, "mới") for k, (t, d) in hintsmod.rulebook_rows(rb).items() if k not in known]
+        except Exception as e: print(f"[unit] {b}: new rows unavailable ({type(e).__name__}: {e})", flush=True)
+        if not rows: continue
+        try:
+            C = automap.build(biz)[0]; _SHOPS[b] = (C, automap.parse_readme(biz.readme).get("data_end"), biz.tables)
+        except Exception as e:
+            print(f"[unit] {b}: automap {type(e).__name__}: {e}", flush=True); continue
+        seen = set(); card = _tables_card(C, biz.tables)
+        for term, definition, sec in rows:
+            if term in seen: continue
+            seen.add(term)
+            u = unit_prompt(b, card, term, definition, sec)
+            items.append(({"bid": b, "term": term, "definition": definition, "section": sec, "rulebook": __import__("lrl").rb_key(rb)}, u))
+    return items
+
+
+def add_question_context(split, items, n=6):
+    import dm
+    qs = [json.loads(l) for l in open(os.path.join(split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    by = {}
+    for q in qs: by.setdefault(q["business_id"], []).append(q)
+    out = []
+    for m, u in items:
+        pool = by.get(m["bid"], [])
+        def has(q, phrase):
+            ql = q["question"].lower()
+            w = lambda x, t: re.search(r"(?<!\w)" + re.escape(x) + r"(?!\w)", t)
+            na = lambda x: "".join(c for c in __import__("unicodedata").normalize("NFD", x.replace("đ", "d").replace("Đ", "D")) if not __import__("unicodedata").combining(c))
+            return bool(w(phrase.lower(), ql) or (na(ql) == ql and w(na(phrase.lower()), ql)))
+        hit = [q for q in pool if has(q, m["term"])]
+        if not hit:
+            ws = [x for x in m["term"].split() if len(x) >= 3]
+            hit = [q for q in pool if ws and all(has(q, x) for x in ws)]
+        if hit:
+            u = u + "\n\n# CÂU HỎI CỦA CHỦ CỬA HÀNG CÓ DÙNG THUẬT NGỮ NÀY (để hàm đúng dạng cách hỏi; không trả lời chúng)\n" + \
+                "\n".join(f"- {q['question']}" for q in hit[:n])
+        out.append((m, u))
+    return out
+
+
+def _shop_load(split, cache, b):
+    if b in _SHOPS: return _SHOPS[b]
+    import ingest, automap
+    try:
+        bp = os.path.join(cache or "", b + ".pkl")
+        biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", b))
+        _SHOPS[b] = (automap.build(biz)[0], automap.parse_readme(biz.readme).get("data_end"), biz.tables)
+    except Exception as e:
+        print(f"[lrl_gen] {b}: {type(e).__name__}: {e}", flush=True); _SHOPS[b] = None
+    return _SHOPS[b]
+
+
+def rows_items(split, cache, rows_file):
+    p = rows_file if os.path.isfile(rows_file) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(rows_file)}", recursive=True)), rows_file)
+    rows = [json.loads(l) for l in open(p, encoding="utf-8") if l.strip()]
+    items, cards = [], {}
+    for r in rows:
+        b = r["bid"]
+        if b not in cards:
+            sh = _shop_load(split, cache, b)
+            cards[b] = _tables_card(sh[0], sh[2]) if sh else None
+        if cards[b] is None: continue
+        meta = dict(r, section=r.get("section") or "rulebook", rulebook=r.get("rulebook"))
+        items.append((meta, unit_prompt(b, cards[b], r["term"], r["definition"], meta["section"])))
+    return items
+
+
+UNITQ_EXAMPLES = """## Ví dụ 1 — hàm: khach_sop_nhat(p, k=1) — Khách sộp nhất: khách có giá trị TB / đơn cao nhất trong kỳ, chỉ xét khách >= 3 đơn
+{"questions": [{"question": "thang 3/2025 khach nao sop nhat v shop", "program": "ANSWER = {\\"type\\": \\"list\\", \\"answer\\": khach_sop_nhat(month(2025, 3))}"},
+               {"question": "Quý 4 năm ngoái 2 khách sộp nhất là ai?", "program": "ANSWER = {\\"type\\": \\"list\\", \\"answer\\": khach_sop_nhat(quarter(2024, 4), k=2)}"}]}
+## Ví dụ 2 — hàm: so_dot_giao(p) — Số đợt giao trong tháng: số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt
+{"questions": [{"question": "hom qua giao may dot vay", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(yesterday(TODAY))}"},
+               {"question": "Tháng này tính tới giờ có bao nhiêu đợt giao hàng?", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(this_month(TODAY))}"}]}"""
+
+UNITQ_EXAMPLES_NEUTRAL = """## Ví dụ 1 — hàm: khach_thuong_xuyen(p, k=1) — Khách mua thường xuyên nhất: khách có nhiều đơn nhất trong kỳ, chỉ khách có giá trị TB / đơn >= 100.000đ
+{"questions": [{"question": "thang 3/2025 khach nao mua thuong xuyen nhat v shop", "program": "ANSWER = {\\"type\\": \\"list\\", \\"answer\\": khach_thuong_xuyen(month(2025, 3))}"},
+               {"question": "Quý 4 năm ngoái 2 khách mua thường xuyên nhất là ai?", "program": "ANSWER = {\\"type\\": \\"list\\", \\"answer\\": khach_thuong_xuyen(quarter(2024, 4), k=2)}"}]}
+## Ví dụ 2 — hàm: so_dot_giao(p) — Số đợt giao trong tháng: số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt
+{"questions": [{"question": "hom qua giao may dot vay", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(yesterday(TODAY))}"},
+               {"question": "Tháng này tính tới giờ có bao nhiêu đợt giao hàng?", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(this_month(TODAY))}"}]}"""
+if os.environ.get("ZC_UNIT_EX", "") == "neutral": UNITQ_EXAMPLES = UNITQ_EXAMPLES_NEUTRAL
+
+UNITQ_SCHEMA = {"type": "object", "properties": {"questions": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"type": "object",
+    "properties": {"question": {"type": "string", "maxLength": 240}, "program": {"type": "string", "maxLength": 400}},
+    "required": ["question", "program"], "additionalProperties": False}}}, "required": ["questions"], "additionalProperties": False}
+
+
+def unitq_items(split, units_file, per_unit=2):
+    p = units_file if os.path.isfile(units_file) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(units_file)}", recursive=True)), units_file)
+    us = [json.loads(l) for l in open(p, encoding="utf-8") if l.strip()]
+    qs = [json.loads(l) for l in open(os.path.join(split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    days = {}
+    for q in qs: days.setdefault(q["business_id"], []).append(q["as_of_date"])
+    per = api_doc().split("- Filters")[0]
+    items = []
+    for k, u in enumerate(us):
+        ds = days.get(u["bid"]) or ["2026-01-15"]; today = sorted(ds)[(k * 7919) % len(ds)]
+        prompt = (f"# HÀM KỲ CỦA TOOLKIT\n{per}\n\n# VÍ DỤ\n{UNITQ_EXAMPLES}\n\n# HÀM CỦA CỬA HÀNG\n{u.get('signature') or u['name']} — {u['term']}: "
+                  f"{(u.get('definition') or u.get('doc') or '')[:300]}\n\n# NHIỆM VỤ (hôm nay = {today})\nViết {per_unit} câu hỏi KHÁC NHAU mà chủ cửa hàng "
+                  "có thể nhắn và cần đúng hàm trên để trả lời: mỗi câu có một kỳ thời gian cụ thể (ngày, tuần, tháng, quý, năm, hôm qua, tháng "
+                  "này...), có câu dùng chính thuật ngữ, có câu nói theo cách thân mật / viết tắt / không dấu. Với mỗi câu viết chương trình "
+                  "ANSWER = {\"type\": ..., \"answer\": <gọi hàm trên với kỳ của câu>} (type: number, list, string, date hoặc percent). JSON: "
+                  "{\"questions\": [{\"question\": \"...\", \"program\": \"...\"}, ...]}")
+        items.append((dict(u, as_of_date=today), prompt))
+    return items
+
+
+def unitq_check(cards, split, cache=""):
+    import signal, dm, agent, pandas as pd, numpy as np
+    keep = []
+    for c in cards:
+        sh = _shop_load(split, cache, c["bid"])
+        if not sh: continue
+        C, de, T = sh
+        g = {"C": C, "T": {k: v.copy() for k, v in (T or {}).items()}, "pd": pd, "np": np, "re": re, "TODAY": pd.Timestamp(c["as_of_date"])}
+        try:
+            g.update(dm.api(dm.Shop(C, c["as_of_date"], {"data_end": de}), pd.Timestamp(c["as_of_date"])))
+            def _a(*_): raise TimeoutError()
+            old = signal.signal(signal.SIGALRM, _a); signal.alarm(20)
+            try: exec(compile(c["unit_code"] + "\n" + c["program"], "<q>", "exec"), g)
+            finally: signal.alarm(0); signal.signal(signal.SIGALRM, old)
+            a = agent.fmt_answer(g["ANSWER"]) if "ANSWER" in g else None
+        except dm.Unanswerable: a = None
+        except BaseException: a = None
+        v = (a or {}).get("answer")
+        if a is None or v is None or (isinstance(v, (list, dict, str)) and not v): continue
+        keep.append(dict(c, answer=a))
+    return keep
+
+
+def rowgen_items(split, cache, shops, n_rows=20):
+    import hints as hintsmod
+    rb = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
+    known = "\n".join(f"| {t} | {d[:140]} |" for t, d in hintsmod.rulebook_rows(rb).values())
+    items = []
+    for b in shops:
+        sh = _shop_load(split, cache, b)
+        if not sh: continue
+        u = (f"# DỮ LIỆU CỦA CỬA HÀNG {b}\n{_tables_card(sh[0], sh[2])}\n\n# RULEBOOK HIỆN CÓ (thuật ngữ | định nghĩa)\n{known}\n\n"
+             f"# NHIỆM VỤ\nViết {n_rows} dòng rulebook MỚI mà chủ cửa hàng này có thể tự đặt, mỗi dòng là MỘT đại lượng TÍNH ĐƯỢC từ bảng dữ liệu "
+             "của chính cửa hàng ở trên (dùng đúng bảng / cột có thật). Khoảng một phần ba là BIẾN THỂ của một dòng rulebook hiện có: đổi đúng "
+             "một yếu tố của định nghĩa (ngưỡng, cửa sổ thời gian, đối tượng được đếm, điều kiện lọc, cách gộp, tiêu chí xếp hạng, cách xử lý "
+             "hoà) — ghi tên dòng gốc vào variant_of. Phần còn lại là đại lượng MỚI kiểu một ngành / cửa hàng tự đặt (ưu tiên đại lượng cần "
+             "bảng hoặc cột riêng của cửa hàng này, kết hợp nhiều điều kiện, tỉ lệ, xếp hạng có điều kiện). Định nghĩa phải CHÍNH XÁC, không mơ "
+             "hồ: đối tượng, kỳ (nếu phụ thuộc kỳ), điều kiện, đơn vị, cách xếp hạng / hoà. Không viết dòng về cách ghi chép hay làm tròn. Tên "
+             "thuật ngữ 2-6 từ tiếng Việt, khác mọi thuật ngữ hiện có. Trả lời bằng MỘT mảng JSON: "
+             "[{\"term\": \"...\", \"definition\": \"...\", \"variant_of\": \"tên dòng gốc\" hoặc null}, ...]")
+        items.append(({"bid": b, "n_rows": n_rows}, u))
+    return items
+
+
+def induce_items(cases):
+    items = []
+    for c in cases:
+        u = ("Trợ lý viết chương trình (toolkit bên dưới) đã trả lời SAI một câu hỏi của chủ cửa hàng. Hãy rút ra tối đa 2 LUẬT TỔNG "
+             "QUÁT (áp dụng cho mọi cửa hàng: KHÔNG nhắc tên hàng, tên khách, tên người, số liệu riêng của cửa hàng này) giúp lần sau "
+             "viết đúng chương trình.\n\n"
+             f"# TOOLKIT\n{api_doc()}\n\n# CÂU HỎI (hôm nay = {c['as_of_date']})\n{c['question']}\n\n# CHƯƠNG TRÌNH CỦA TRỢ LÝ\n{c.get('program') or '(không có)'}\n"
+             f"Kết quả: {json.dumps(c.get('answer'), ensure_ascii=False)}\n\n# ĐÁP ÁN ĐÚNG\n{json.dumps(c['reference'], ensure_ascii=False)}\n"
+             + (f"\n# MỘT CHƯƠNG TRÌNH ĐÚNG\n{c['gold_program']}\n" if c.get("gold_program") else "") +
+             "\nJSON: [{\"kind\": \"period|lexicon|definition|unit|value|check\", \"triggers\": [\"cụm từ trong câu hỏi khiến luật áp dụng "
+             "(viết như chủ cửa hàng gõ, gồm cả bản không dấu)\"], \"content\": \"một câu luật\", \"code_hint\": \"đoạn toolkit đúng hoặc null\", "
+             "\"check\": \"biểu thức Python trên q (câu hỏi không dấu, chữ thường) và code (chương trình) = True khi chương trình VI PHẠM "
+             "luật, ví dụ 're.search(r\\\"\\\\bmoi thang\\\\b\\\", q) and \\\"month_seq\\\" not in code'; null nếu không viết được\"}]")
+        items.append((c, u))
+    return items
+
+
+def to_cards(mode, items, texts, names):
+    out = []
+    for (meta, _), t in zip(items, texts):
+        j = first_json(t)
+        if mode in ("translit", "induce") and (j is None or (isinstance(j, list) and not any(isinstance(x, dict) for x in j))):
+            j = json_objects(t) or None
+        if j is None: continue
+        if mode == "compile" and isinstance(j, dict):
+            trig = list(j.get("triggers") or []) + [meta["term"]]
+            c = card("definition", trig, f"{meta['term']}: {j.get('content') or meta['definition']}", j.get("code_hint"), names,
+                     "rulebook:" + meta["term"], section=meta.get("section"), rulebook=meta.get("rulebook"))
+            if c: c["rule"] = meta["definition"][:400]; out.append(c)
+        elif mode == "aliases" and isinstance(j, dict):
+            p = CAT_PARAM.get(meta["col"])
+            for v, forms in j.items():
+                if v not in meta["values"] or not isinstance(forms, list): continue
+                c = card("value", forms, f"'{forms[0]}' là giá trị '{v}' của cột {meta['table']}.{meta['col']}", f'{p}="{v}"' if p else None,
+                         names | {"f"}, f"data:{meta['table']}.{meta['col']}", bid=meta["bid"])
+                if c: out.append(c)
+        elif mode == "translit" and isinstance(j, list):
+            for e in j:
+                if not isinstance(e, dict) or not e.get("phonetic"): continue
+                c = card("lexicon", e["phonetic"], f"'{e['phonetic'][0]}' là cách đọc '{e.get('english')}' = {e.get('vietnamese')}", None, names,
+                         "translit:" + str(e.get("english")))
+                if c: c["translit"] = {"english": e.get("english"), "vietnamese": e.get("vietnamese"), "phonetic": e["phonetic"]}; out.append(c)
+        elif mode == "newterm" and isinstance(j, dict):
+            t, d, q = (str(j.get(k) or "").strip() for k in ("term", "definition", "question"))
+            if t and d and q and t.lower() in q.lower() and 2 <= len(t.split()) <= 6 and q != meta["orig_question"]:
+                out.append(dict(meta, term=t, definition=d, question=q, row=f"| {t} | {d} |"))
+        elif mode == "unit" and isinstance(j, dict) and isinstance(j.get("functions"), list):
+            out += to_cards("unit", [(meta, None)] * len(j["functions"][:3]),
+                            [json.dumps(dict(f, plan=j.get("plan")), ensure_ascii=False) for f in j["functions"][:3] if isinstance(f, dict)], names)
+        elif mode == "unit" and isinstance(j, dict):
+            if not j.get("name") or not j.get("code"): continue
+            name = re.sub(r"[^0-9a-zA-Z_]", "_", str(j["name"]))[:48].strip("_") or "unit"
+            code = "\n".join(str(x) for x in j["code"]) if isinstance(j["code"], list) else str(j["code"])
+            if "&quot;" in code or "&lt;" in code or "&gt;" in code or "&amp;" in code or "&#" in code:
+                import html; code = html.unescape(code)
+            code = "\n".join(l for l in code.split("\n") if not re.match(r"\s*(from|import)\s+(toolkit|datamate)\b", l))
+            m = re.search(r"def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", code)
+            if m and m.group(1) != name: code = code.replace(f"def {m.group(1)}(", f"def {name}(", 1)
+            u = {"kind": "unit", "bid": meta["bid"], "term": meta["term"], "definition": meta["definition"][:400], "section": meta.get("section"),
+                 "rulebook": meta.get("rulebook"), "name": name, "signature": str(j.get("signature") or name)[:120], "doc": str(j.get("doc") or "")[:300],
+                 "triggers": [str(t) for t in (j.get("triggers") or [])][:8], "code": code[:3000], "plan": str(j.get("plan") or "")[:700]}
+            for k in ("src", "variant_of", "orig_id", "qid"):
+                if meta.get(k) is not None: u[k] = meta[k]
+            u["id"] = "U" + hashlib.sha1(json.dumps([u["bid"], u["term"], code], ensure_ascii=False).encode()).hexdigest()[:8]
+            out.append(u)
+        elif mode == "unitq" and isinstance(j, dict):
+            import html
+            for e in (j.get("questions") or [])[:3]:
+                if not isinstance(e, dict): continue
+                q, prog = html.unescape(str(e.get("question") or "")).strip(), html.unescape(str(e.get("program") or "")).strip()
+                if q and "ANSWER" in prog and meta["name"] in prog:
+                    out.append({"bid": meta["bid"], "term": meta["term"], "definition": meta.get("definition"), "unit_name": meta["name"],
+                                "unit_code": meta["code"], "signature": meta.get("signature"), "src": meta.get("src"), "question": q,
+                                "program": prog, "as_of_date": meta["as_of_date"]})
+        elif mode == "rowgen":
+            seen = set()
+            for e in (j if isinstance(j, list) else [j]):
+                if not isinstance(e, dict): continue
+                import html
+                t, d = html.unescape(str(e.get("term") or "")).strip(), html.unescape(str(e.get("definition") or "")).strip()
+                if not t or not d or len(d) < 15 or t.lower() in seen or not (1 <= len(t.split()) <= 8): continue
+                seen.add(t.lower())
+                v = e.get("variant_of"); v = str(v).strip() if v not in (None, "", "null") else None
+                out.append({"bid": meta["bid"], "term": t, "definition": d[:500], "variant_of": v, "section": "tổng hợp",
+                            "src": "synth_variant" if v else "synth_new"})
+        elif mode == "induce":
+            for e in (j if isinstance(j, list) else [j]):
+                if not isinstance(e, dict): continue
+                c = card(e.get("kind") or "definition", e.get("triggers"), e.get("content"), e.get("code_hint"), names,
+                         "induced:" + meta["id"], check=e.get("check"))
+                if c: c["case"] = {"id": meta["id"], "business_id": meta["business_id"]}; out.append(c)
+    return out
+
+
+def force_json(eng, convs, temps, seeds, think_tokens, schema, answer_tokens=2560):
+    from vllm import SamplingParams
+    so = {}
+    try:
+        from vllm.sampling_params import StructuredOutputsParams
+        so = {"structured_outputs": StructuredOutputsParams(json=schema)}
+    except ImportError:
+        from vllm.sampling_params import GuidedDecodingParams
+        so = {"guided_decoding": GuidedDecodingParams(json=schema)}
+    fitted = [eng.fit(c, think_tokens + answer_tokens, True) for c in convs]
+    idx = [i for i, (p, _) in enumerate(fitted) if p is not None]
+    sp = lambda i, n, **kw: SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=n, seed=seeds[i], **kw)
+    outs = eng.llm.generate([fitted[i][0] for i in idx], [sp(i, max(256, fitted[i][1] - answer_tokens), stop=["</think>"]) for i in idx],
+                            use_tqdm=False, lora_request=eng.lora)
+    thoughts = {i: o.outputs[0].text.split("</think>")[0].rstrip() for i, o in zip(idx, outs)}
+    p2 = [fitted[i][0] + thoughts[i] + "\n</think>\n\n" for i in idx]
+    outs2 = eng.llm.generate(p2, [sp(i, answer_tokens, **so) for i in idx], use_tqdm=False, lora_request=eng.lora)
+    texts = [""] * len(convs)
+    for i, o in zip(idx, outs2): texts[i] = thoughts[i] + "\n</think>\n\n" + o.outputs[0].text
+    print(f"[lrl_gen] budget forcing: {len(idx)} samples, {sum(len(o.outputs[0].token_ids) >= max(256, fitted[i][1] - answer_tokens) for i, o in zip(idx, outs))} "
+          f"thoughts closed at the cap", flush=True)
+    return texts
+
+
+def check_units(cands, split, cache):
+    import units, ingest, automap
+    for u in cands:
+        if "_ok" in u: continue
+        b = u["bid"]
+        if b not in _SHOPS:
+            try:
+                bp = os.path.join(cache or "", b + ".pkl")
+                biz = pickle.load(open(bp, "rb")) if cache and os.path.isfile(bp) else ingest.load_business(os.path.join(split, "data", b))
+                _SHOPS[b] = (automap.build(biz)[0], automap.parse_readme(biz.readme).get("data_end"), biz.tables)
+            except Exception as e: _SHOPS[b] = None; print(f"[unit] {b}: {type(e).__name__}: {e}", flush=True)
+        if _SHOPS[b] is None: u["_ok"], u["_why"] = False, "shop data unavailable"; continue
+        ok, why, sample = units.verify(u, *_SHOPS[b])
+        u["_ok"], u["_why"] = ok, why
+        if ok: u["verified"] = {"sample": str(sample)[:200]}
+
+
+def select_units(cands, min_agree=2, multi=0):
+    from collections import defaultdict, Counter
+    good, fails, out = defaultdict(list), {}, []
+    for u in cands:
+        k = (u["bid"], u["term"])
+        if u.get("_ok"): good[k].append(u)
+        else: fails.setdefault(k, u.get("_why") or "not checked")
+    if multi:
+        for k, us in good.items():
+            votes = Counter(u.get("_sig") for u in us); names = set()
+            for sig, v in votes.most_common(3):
+                if v < min_agree: break
+                best = min((u for u in us if u.get("_sig") == sig), key=lambda u: (u.get("_nerr", 0), us.index(u)))
+                b = {x: y for x, y in best.items() if not x.startswith("_")}
+                if b["name"] in names or b["name"] in {o["name"] for o in out if o["bid"] == b["bid"]}:
+                    nn = f"{b['name']}_{len(names) + 2}"; b["code"] = b["code"].replace(f"def {b['name']}(", f"def {nn}(", 1)
+                    b["signature"] = b["signature"].replace(b["name"], nn, 1); b["name"] = nn
+                names.add(b["name"]); b["verified"] = dict(best.get("verified") or {}, agree=f"{v}/{len(us)} runnable samples")
+                out.append(b); fails.pop(k, None)
+            if not any(o["bid"] == k[0] and o["term"] == k[1] for o in out): fails[k] = f"no agreement ({votes.most_common(1)[0][1]} / {len(us)})"
+        return out, fails
+    for k, us in good.items():
+        votes = Counter(u.get("_sig") for u in us)
+        best = max(us, key=lambda u: (votes[u.get("_sig")], -u.get("_nerr", 0), -us.index(u)))
+        if votes[best.get("_sig")] < min_agree: fails[k] = f"no agreement ({votes[best.get('_sig')]} / {len(us)} runnable samples)"; continue
+        fails.pop(k, None)
+        b = {x: y for x, y in best.items() if not x.startswith("_")}
+        b["verified"] = dict(best.get("verified") or {}, agree=f"{votes[best.get('_sig')]}/{len(us)} runnable samples")
+        out.append(b)
+    return out, fails
+
+
+def verify_units(cands, split, cache, min_agree=2):
+    check_units(cands, split, cache)
+    out, fails = select_units(cands, min_agree)
+    print(f"[unit] {len(out)} units verified for {len({u['bid'] for u in out})} shops; {len(fails)} rows without a working unit", flush=True)
+    return out
+
+
+def repair_convs(cands, prompts, sel, min_agree, k):
+    from collections import defaultdict
+    done = {(u["bid"], u["term"]) for u in sel}
+    rows = defaultdict(list)
+    for u in cands: rows[(u["bid"], u["term"])].append(u)
+    items, convs = [], []
+    for key, us in rows.items():
+        if key in done or key not in prompts or sum(1 for u in us if u.get("_ok")) >= min_agree: continue
+        bad = [u for u in us if not u.get("_ok")]
+        if not bad: continue
+        u = min(bad, key=lambda x: (str(x.get("_why", "")).startswith("syntax"), bad.index(x)))
+        meta, prompt = prompts[key]
+        prev = json.dumps({"name": u["name"], "signature": u.get("signature"), "doc": u.get("doc"), "triggers": u.get("triggers"),
+                           "code": u["code"].split("\n")}, ensure_ascii=False)
+        fix = (f"Chạy hàm này trên dữ liệu của cửa hàng: {u.get('_why')}. Sửa hàm: đúng tên bảng / cột có ở phần DỮ LIỆU, p là Period "
+               "(p.mask(cột ngày) cho mặt nạ, p.start, p.end; không dùng p[...]), kỳ không có dữ liệu thì trả 0 hoặc bảng rỗng chứ không lỗi. "
+               "Trả lời lại bằng MỘT đối tượng JSON cùng dạng.")
+        for _ in range(k):
+            items.append((meta, prompt))
+            convs.append([{"role": "system", "content": SYS}, {"role": "user", "content": prompt}, {"role": "assistant", "content": prev},
+                          {"role": "user", "content": fix}])
+    return items, convs
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("split"); ap.add_argument("out"); ap.add_argument("--model", default=""); ap.add_argument("--mode", required=True)
+    ap.add_argument("--cases", default=""); ap.add_argument("--cache", default=""); ap.add_argument("--quant", default="")
+    ap.add_argument("--max-len", type=int, default=8192); ap.add_argument("--fake-responder", default="")
+    ap.add_argument("--shard", default=""); ap.add_argument("--samples", type=int, default=3, help="unit: samples per rulebook row")
+    ap.add_argument("--think-units", type=int, default=0, help="unit: the writer reasons first (4096-token cap)")
+    ap.add_argument("--think-force", type=int, default=1, help="unit with thinking: budget forcing (think to the cap, close, constrained JSON)")
+    ap.add_argument("--units-qctx", type=int, default=0, help="unit: show up to N of the split's questions that use the term (v2 I5)")
+    ap.add_argument("--units-multi", type=int, default=0, help="unit: 1-3 functions per rulebook row (v2 I4), every agreed computation kept")
+    ap.add_argument("--unit-repairs", type=int, default=1, help="unit: self-debugging rounds (a failed function + its error -> new samples)")
+    ap.add_argument("--rows", default="", help="unit (v2 G teacher): explicit rows jsonl {bid, term, definition, ...} instead of the split's industry / new rows")
+    ap.add_argument("--shops", default="", help="rowgen: comma list of shops (default: every shop of the split)")
+    ap.add_argument("--rows-per-shop", type=int, default=20); ap.add_argument("--min-agree", type=int, default=0, help="unit: samples that must agree (0 = 2 when samples >= 3)")
+    ap.add_argument("--think-tokens", type=int, default=4096, help="unit / rowgen with thinking: output token cap (thinking + JSON)")
+    ap.add_argument("--max-num-seqs", type=int, default=0)
+    ap.add_argument("--seed", type=int, default=4242, help="sampling seed base (a second teacher pass draws other rows)")
+    ap.add_argument("--think-rowgen", type=int, default=0, help="rowgen: reason first (off: tg1p0 14/11, the base model looped past 8k tokens)")
+    a = ap.parse_args(); os.makedirs(a.out, exist_ok=True); t0 = time.time()
+    names = api_names()
+    if a.mode == "compile": items = compile_items(a.split)
+    elif a.mode == "bind": items = bind_items(a.split)
+    elif a.mode == "aliases":
+        vf = a.cases if (a.cases and os.path.isfile(a.cases)) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), "") if a.cases else ""
+        items = alias_items(a.split, a.cache, vf)
+    elif a.mode == "translit": items = translit_items(a.split)
+    elif a.mode == "newterm":
+        p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
+        items = newterm_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
+    elif a.mode == "induce":
+        p = a.cases if os.path.isfile(a.cases) else next(iter(glob.glob(f"/kaggle/**/{os.path.basename(a.cases)}", recursive=True)), a.cases)
+        items = induce_items([json.loads(l) for l in open(p, encoding="utf-8") if l.strip()])
+    elif a.mode == "unit": items = rows_items(a.split, a.cache, a.rows) if a.rows else unit_items(a.split, a.cache)
+    elif a.mode == "unitq": items = unitq_items(a.split, a.rows, a.samples)
+    elif a.mode == "rowgen":
+        shops = [x for x in a.shops.split(",") if x] or sorted(os.path.basename(d) for d in glob.glob(os.path.join(a.split, "data", "*")) if os.path.isdir(d))
+        items = rowgen_items(a.split, a.cache, shops, a.rows_per_shop)
+    else: sys.exit(f"unknown mode {a.mode}")
+    if a.mode == "unit" and a.units_multi: items = [(m, u + UNIT_MULTI_TAIL) for m, u in items]
+    if a.mode == "unit" and a.units_qctx: items = add_question_context(a.split, items, a.units_qctx)
+    if a.shard:
+        i, n = map(int, a.shard.split("/")); items = items[i::n]
+    if os.environ.get("ZC_SMOKE") == "1": items = items[:8]
+    if a.mode in ("unit", "bind") and a.samples > 1 and a.mode != "unitq":
+        items = [it for it in items for _ in range(a.samples)]
+    convs = [[{"role": "system", "content": SYS}, {"role": "user", "content": u}] for _, u in items]
+    think = a.mode == "induce" or (a.mode == "rowgen" and a.think_rowgen) or (a.mode == "unit" and a.think_units)
+    eng = [None]
+    mt = (a.think_tokens if a.mode in ("unit", "rowgen") else 6144) if think else (2560 if a.mode == "unit" else (1200 if a.mode == "bind" else (5000 if a.mode == "rowgen" else (700 if a.mode == "unitq" else 900))))
+    js = (UNIT_MULTI_SCHEMA if a.units_multi else UNIT_SCHEMA) if a.mode == "unit" and not think else (BIND_SCHEMA if a.mode == "bind" else (ROWGEN_SCHEMA if a.mode == "rowgen" and not think else (UNITQ_SCHEMA if a.mode == "unitq" else None)))
+    def generate(convs, temps, seed0):
+        if not convs: return []
+        if a.fake_responder:
+            g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
+            return [g["responder"](c) for c in convs]
+        if eng[0] is None:
+            sys.argv = [sys.argv[0]]; import agent
+            eng[0] = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=think, eager=False, lora="", quant=a.quant,
+                                                     gpu_util=0.92, max_num_seqs=a.max_num_seqs or 128, max_batched_tokens=16384,
+                                                     spec_mtp=0, prefix_budget=0))
+        seeds = [seed0 + i for i in range(len(convs))]
+        if think and a.mode == "unit" and a.think_force:
+            return force_json(eng[0], convs, temps, seeds, mt, UNIT_MULTI_SCHEMA if a.units_multi else UNIT_SCHEMA)
+        try: return eng[0].gen(convs, temps, seeds, mt, think=think, json_schema=js)[0]
+        except Exception as e:
+            if js is None: raise
+            print(f"[lrl_gen] constrained JSON unavailable ({type(e).__name__}: {str(e)[:200]}): unconstrained", flush=True)
+            return eng[0].gen(convs, temps, seeds, mt, think=think)[0]
+    temps = [0.7 if a.mode in ("translit", "rowgen", "unitq") else 0.0] * len(convs)
+    if a.mode in ("unit", "bind"): temps = [0.0 if i % max(1, a.samples) == 0 else 0.7 for i in range(len(convs))]
+    texts = generate(convs, temps, a.seed)
+    cards = to_cards("compile" if a.mode == "bind" else a.mode, items, texts, names)
+    if a.mode == "unitq":
+        n0 = len(cards); cards = unitq_check(cards, a.split, a.cache); print(f"[unitq] {len(cards)} / {n0} generated pairs run", flush=True)
+    if a.mode == "bind":
+        cards = verify_binds(cards, items, shop_sections(a.split, a.cache), a.samples)
+    rep = {}
+    if a.mode == "unit":
+        ma = a.min_agree or (2 if a.samples >= 3 else 1)
+        prompts = {(m["bid"], m["term"]): (m, u) for m, u in items}
+        check_units(cards, a.split, a.cache)
+        sel, fails = select_units(cards, ma, multi=a.units_multi)
+        for r in range(max(0, a.unit_repairs)):
+            it2, cv2 = repair_convs(cards, prompts, sel, ma, max(2, min(3, a.samples)))
+            if not cv2: break
+            k2 = max(2, min(3, a.samples))
+            tx2 = generate(cv2, [0.0 if i % k2 == 0 else 0.7 for i in range(len(cv2))], 90000 + 1000 * r)
+            new = to_cards("unit", it2, tx2, names)
+            check_units(new, a.split, a.cache); cards += new
+            n0 = len(sel); sel, fails = select_units(cards, ma, multi=a.units_multi)
+            rep[f"repair{r + 1}"] = {"rows": len(cv2) // k2, "parsed": len(new), "units_before": n0, "units_after": len(sel)}
+            print(f"[unit] repair round {r + 1}: {len(cv2) // k2} rows, {len(new)} parsed -> units {n0} -> {len(sel)}", flush=True)
+            items, texts = items + it2, texts + tx2
+        print(f"[unit] {len(sel)} units verified for {len({u['bid'] for u in sel})} shops; {len(fails)} rows without a working unit", flush=True)
+        cards = sel
+    tag = ("compile" if a.mode == "bind" else a.mode) + (("_" + a.shard.replace("/", "of")) if a.shard else "")
+    with open(os.path.join(a.out, f"cards_{tag}.jsonl"), "w", encoding="utf-8") as f:
+        for c in cards: f.write(json.dumps(c, ensure_ascii=False) + "\n")
+    with open(os.path.join(a.out, f"raw_{tag}.jsonl"), "w", encoding="utf-8") as f:
+        for (meta, _), t in zip(items, texts): f.write(json.dumps({"meta": meta, "text": (t or "")[-3000:]}, ensure_ascii=False, default=str) + "\n")
+    summ = {"mode": a.mode, "items": len(items), "cards": len(cards), "with_hint": sum(bool(c.get("code_hint")) for c in cards),
+            "with_check": sum(bool(c.get("check")) for c in cards), "s": round(time.time() - t0), **rep}
+    json.dump(summ, open(os.path.join(a.out, f"summary_{tag}.json"), "w"), indent=1)
+    print("LRL_GEN", json.dumps(summ), flush=True)
+
+
+if __name__ == "__main__":
+    main()

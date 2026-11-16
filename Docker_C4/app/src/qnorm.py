@@ -1,0 +1,578 @@
+#!/usr/bin/env python3
+import os, re, sys, json, math, unicodedata
+from collections import Counter, defaultdict
+
+ABBR = {
+    "hqua": "hôm qua", "hwa": "hôm qua", "homqua": "hôm qua", "hnay": "hôm nay", "homnay": "hôm nay", "bữa ni": "hôm nay",
+    "dthu": "doanh thu", "đthu": "doanh thu", "dt": None,
+    "bn": "bao nhiêu", "bnhiu": "bao nhiêu", "bnhieu": "bao nhiêu", "bnh": "bao nhiêu", "baonhieu": "bao nhiêu",
+    "nhiu": "nhiêu", "nhìu": "nhiều", "nhiu tiền": "nhiêu tiền",
+    "đc": "được", "dc": "được", "đươc": "được", "dk": "được", "đk": "được",
+    "ko": "không", "kh": "không", "hok": "không", "hông": "không", "kô": "không", "k0": "không", "khg": "không", "hem": "không",
+    "trc": "trước", "vs": "với", "z": "vậy", "zậy": "vậy", "dzậy": "vậy", "dzay": "vậy", "zay": "vậy",
+    "sp": "sản phẩm", "đh": "đơn hàng", "dh": "đơn hàng", "ntn": "như thế nào", "nhứt": "nhất",
+    "nhut": "nhất", "kòn": "còn", "kả": "cả", "wán": "quán", "mik": "mình", "mk": "mình", "cko": "cho", "xố": "số", "kó": "có", "mí": "mấy",
+    "trog": "trong", "jum": "giùm", "júp": "giúp", "zô": "vô", "zo": "vô", "tíh": "tính", "từg": "từng", "ngừi": "người",
+    "tỉ nệ": "tỉ lệ", "nượt": "lượt", "lựơt": "lượt", "xửa": "sửa", "cũa": "của", "nheiu": "nhiêu", "ddown": "đơn",
+    "ck": "chuyển khoản", "tm": "tiền mặt", "ncc": "nhà cung cấp", "kh lẻ": "khách lẻ",
+    "xi ô đi": "COD", "xi o đi": "COD", "xiôđi": "COD", "si ô đi": "COD",
+    "o đờ": "đơn", "ô đờ": "đơn", "o-đờ": "đơn", "ođờ": "đơn", "oder": "đơn",
+}
+ABBR = {k: v for k, v in ABBR.items() if v}
+MULTI = sorted([k for k in ABBR if " " in k], key=len, reverse=True)
+DIALECT_NI = {"tháng", "tuần", "năm", "bữa", "hôm", "ngày", "quý", "lúc", "đợt", "kỳ", "thang", "tuan", "nam", "bua", "hom", "ngay", "quy", "luc", "dot", "ky"}
+DIALECT_MO = {"thợ", "ngày", "tháng", "xe", "hàng", "món", "khách", "loại", "nhóm", "người", "tho", "ngay", "thang", "hang", "mon",
+              "khach", "loai", "nhom", "nguoi", "dòng", "dong", "sp"}
+COMMON = """bao nhiêu tháng năm ngày tuần hôm qua nay doanh thu tiền bán được đơn hàng khách tổng số trước sau với của cửa tiệm quán
+nào nhất nhiều ít cao thấp tăng giảm trung bình phần trăm tỉ lệ huỷ hủy trả nợ còn hết giá nhập vốn lãi lời mặt món nhóm
+cho biết xem giúp giùm mình tôi em anh chị vậy nhỉ không có là gì mấy những các mỗi một hai ba từ đến tới trong ngoài liền
+đầu cuối kỳ quý tết thứ chủ nhật sáng chiều tối ca giờ lượt phiếu xe thợ máy điện thoại nhân viên người chiếm so sánh cùng
+lần đợt giao chưa đã đang rồi thì mà và hay hoặc bằng hơn kém thêm bớt khoảng gần nhất chạy ế tồn kho thuốc kê đơn hoạt chất
+lô hạn dùng size gói hộp chai lon thùng bao cây viên vỉ tuýp ly cà phê trà sữa bánh nước đá cơm mì cháo phở bỏ tính đếm liệt kê
+những ai đắt rẻ trị giá vào ra mua chi tiêu nhà cung cấp ship phí điểm thành viên voucher đăng ký góp cũ mới biển dòng
+bảo hành sửa làm việc vị lẻ sỉ quen trung thành sộp đổi ý ưa chuộng chăm chỉ cao điểm khung này""".split()
+WORD = re.compile(r"[^\W\d_]+", re.U)
+_TONE = {"s": "́", "f": "̀", "r": "̉", "x": "̃", "j": "̣"}
+_VOW = [("aa", "â"), ("aw", "ă"), ("ee", "ê"), ("oo", "ô"), ("ow", "ơ"), ("uw", "ư"), ("dd", "đ")]
+
+
+def qnorm_key(s):
+    return re.findall(r"[^\W_]+", strip_accents(str(s)).lower())
+
+
+def strip_accents(s):
+    s = unicodedata.normalize("NFD", s).replace("đ", "d").replace("Đ", "D")
+    return unicodedata.normalize("NFC", "".join(c for c in s if unicodedata.category(c) != "Mn"))
+
+
+def telex_all(w):
+    s = w.lower(); tone = ""
+    if len(s) > 2 and s[-1] in _TONE and re.search(r"[aeiouy]", s[:-1]): tone, s = _TONE[s[-1]], s[:-1]
+    t = s
+    for a, b in _VOW: t = t.replace(a, b)
+    t = t.replace("uơ", "ươ")
+    if t == s and not tone: return []
+    if not tone: return [unicodedata.normalize("NFC", t)]
+    return [unicodedata.normalize("NFC", t[:i + 1] + tone + t[i + 1:]) for i, ch in enumerate(t) if ch in "aeiouyăâêôơư"]
+
+
+def telex(w):
+    s = w.lower(); tone = ""
+    if len(s) > 2 and s[-1] in _TONE and re.search(r"[aeiouy]", s[:-1]): tone, s = _TONE[s[-1]], s[:-1]
+    t = s
+    for a, b in _VOW: t = t.replace(a, b)
+    t = t.replace("uơ", "ươ")
+    if t == s and not tone: return None
+    if tone:
+        vs = [i for i, ch in enumerate(t) if ch in "aeiouyăâêôơư"]
+        if not vs: return None
+        pri = [i for i in vs if t[i] in "ăâêôơư"]
+        i = pri[-1] if pri else (vs[-2] if len(vs) >= 2 and vs[-1] == len(t) - 1 else vs[-1])
+        t = t[:i + 1] + tone + t[i + 1:]
+    return unicodedata.normalize("NFC", t)
+
+
+def _case_like(src, dst):
+    if strip_accents(dst).lower() == src.lower() and dst.lower() == src.lower(): return src
+    if len(src) > 1 and src.isupper(): return dst.upper()
+    return dst[:1].upper() + dst[1:] if src[:1].isupper() else dst
+
+
+def _recase(src, dst):
+    if len(src) > 1 and src.isupper(): return dst.upper()
+    return dst[:1].upper() + dst[1:].lower() if src[:1].isupper() else dst.lower()
+
+
+_TONES = "\u0300\u0301\u0303\u0309\u0323"
+
+
+def word_sig(w):
+    d = unicodedata.normalize("NFD", w.lower())
+    return "".join(c for c in d if c not in _TONES), "".join(sorted(c for c in d if c in _TONES))
+
+
+def _not_after_thang(f):
+    def g(m):
+        return m.group(0) if strip_accents(m.string[:m.start()]).lower().rstrip().endswith(("thang", "thg")) else f(m)
+    return g
+
+
+MONTHS = [
+    (re.compile(r"\b(?:th|thg|t)\s?(\d{1,2})\s*[/\-]\s*(20\d\d|\d\d)\b", re.I),
+     lambda m: f"tháng {int(m.group(1))}/{m.group(2) if len(m.group(2)) == 4 else '20' + m.group(2)}"),
+    (re.compile(r"(?<![\d/\-.])(\d{1,2})\s*-\s*(20\d\d)\b"), _not_after_thang(lambda m: f"tháng {int(m.group(1))}/{m.group(2)}")),
+    (re.compile(r"(?<![\d/\-.])(\d{1,2})/(2[3-9])(?![\d/])"), _not_after_thang(lambda m: f"tháng {int(m.group(1))}/20{m.group(2)}")),
+    (re.compile(r"\b(?:th|thg)\s?(\d{1,2})\b(?!\s*(?:giờ|h\b|ngày|/))", re.I), lambda m: f"tháng {int(m.group(1))}"),
+    (re.compile(r"\b(?:th|thg)\s+(trước|này|sau|rồi|tới|nay|liền trước|kế tiếp)\b", re.I), lambda m: f"tháng {m.group(1)}"),
+    (re.compile(r"\b(?:th|thg)(trước|này|sau|rồi|tới|nay)\b", re.I), lambda m: f"tháng {m.group(1)}"),
+]
+
+
+MIXED_MAX = 0.9
+_TITLES = {"khách", "anh", "chị", "em", "bạn", "cô", "chú", "ông", "bà", "thợ", "viên", "sếp", "cậu", "dì", "bác", "bình", "binh", "hải",
+           "hai", "sơn", "son", "minh", "đức", "duc", "anh"}
+_QWORDS = re.compile(r"\b(nhất|hơn|hay ít|ít hay|nào|gì|mấy|bao nhiêu|bao lâu|ai|sao|đâu|không|chưa|top|liệt kê|xếp hạng|"
+                     r"có phải|so với|so sánh|nhiêu)\b")
+
+
+_REG = []
+
+
+def _regional_words():
+    if not _REG:
+        try:
+            import dm
+            _REG.append({w for a, b in dm.REGIONAL for x in (a, b) for w in x.lower().split()})
+        except Exception: _REG.append(set())
+    return _REG[0]
+
+
+class Normalizer:
+    def __init__(self, texts):
+        self.uni, self.bi, self.forms = Counter(), Counter(), defaultdict(Counter)
+        for t in list(texts) + [" ".join(COMMON)]:
+            for line in re.split(r"[\n.;:!?()|]+", unicodedata.normalize("NFC", t)):
+                ws = [w.lower() for w in WORD.findall(line)]
+                if not ws or sum(not w.isascii() for w in ws) < 0.5 * len(ws): continue
+                for i, w in enumerate(ws):
+                    self.uni[w] += 1; self.forms[strip_accents(w)][w] += 1
+                    if i: self.bi[(ws[i - 1], w)] += 1
+        bad = {w for w in self.uni if (w.isascii() and any(t != w and t in self.uni for t in telex_all(w))) or w in ABBR}
+        for w in bad:
+            del self.uni[w]; f = self.forms.get(strip_accents(w))
+            if f is not None:
+                f.pop(w, None)
+                if not f: del self.forms[strip_accents(w)]
+        self.bi = Counter({k: v for k, v in self.bi.items() if k[0] not in bad and k[1] not in bad})
+        self.N = sum(self.uni.values()) or 1
+        self.vocab = {w for w in self.uni}
+
+    _INIT = [("tr", "ch"), ("ch", "tr"), ("s", "x"), ("x", "s"), ("d", "gi"), ("gi", "d"), ("d", "v"), ("v", "d"), ("r", "d"), ("d", "r"),
+             ("r", "gi"), ("gi", "r"), ("l", "n"), ("n", "l"), ("ng", "nh"), ("k", "c"), ("c", "k"), ("ph", "f"), ("q", "c")]
+    _FINAL = [("ng", "n"), ("n", "ng"), ("c", "t"), ("t", "c"), ("nh", "n"), ("n", "nh"), ("ch", "t"), ("i", "y"), ("y", "i")]
+    _LETTERS = "aăâeêioôơuưyhngcthđmnrsvx"
+
+    def _edits(self, w):
+        out = set()
+        for a, b in self._INIT:
+            if w.startswith(a): out.add(b + w[len(a):])
+        for a, b in self._FINAL:
+            if w.endswith(a): out.add(w[:-len(a)] + b)
+        for i in range(len(w) - 1):
+            out.add(w[:i] + w[i + 1] + w[i] + w[i + 2:])
+        if len(w) >= 3:
+            for i in range(len(w)):
+                out.add(w[:i] + w[i + 1:])
+                for c in self._LETTERS: out.add(w[:i] + c + w[i:])
+        return {x for x in out if len(x) >= 2}
+
+    def glue_split(self, w, prev=None, nxt=None):
+        m = re.search(r"[a-zà-ỹđ](?=[A-Z])", w)
+        if m:
+            k = m.end()
+            for cut in (k, k - 1):
+                a = w[:cut]
+                if len(a) >= 2 and (a.lower() in self.vocab or a.lower() in self.forms): return a + " " + w[cut:]
+        lw = w.lower()
+        if len(lw) < 4 or lw in self.vocab or (lw.isascii() and lw in self.forms): return None
+        best, bs = None, 0
+        for i in range(2, len(lw) - 1):
+            a, b = lw[:i], lw[i:]
+            if lw.isascii():
+                if a not in self.forms or b not in self.forms: continue
+                n = sum(self.bi.get((x, y), 0) for x in self.forms[a] for y in self.forms[b])
+            else:
+                if a not in self.vocab or b not in self.vocab: continue
+                n = self.bi.get((a, b), 0)
+            if lw.isascii():
+                fa, fb = sum(self.forms[a].values()), sum(self.forms[b].values())
+            else:
+                fa, fb = self.uni.get(a, 0), self.uni.get(b, 0)
+            sc = n + (0.5 if min(fa, fb) >= 30 and min(len(a), len(b)) >= 3 else 0)
+            if sc >= 1 and (sc > bs or (sc == bs and min(len(a), len(b)) > min(len(best[0]), len(best[1])))): best, bs = (a, b), sc
+        return f"{best[0]} {best[1]}" if best else None
+
+    def glue_segment(self, w):
+        lw = w.lower()
+        if len(lw) < 4 or len(re.findall(r"[aeiouy]+", strip_accents(lw))) < 2: return None
+        if strip_accents(lw) in getattr(self, "name_words", ()): return None
+        plain = lw.isascii()
+        strong = set()
+        def part(x):
+            if len(x) < 2: return None
+            if x in ABBR: strong.add(x); return ABBR[x], 50, True
+            if x.isascii() and len(x) >= 3:
+                ts = [t for t in telex_all(x) if t != x and self.uni.get(t, 0) >= 3]
+                if ts: strong.add(x); t = max(ts, key=lambda t: self.uni[t]); return t, self.uni[t], True
+            if plain:
+                nf = sum(self.forms[x].values()) if x in self.forms else 0
+                return (x, nf, len(x) >= 3) if nf >= 10 else None
+            if x in self.vocab and self.uni.get(x, 0) >= (1 if not x.isascii() else 3): return x, self.uni[x], True
+            fx = strip_accents(x); nf = sum(self.forms[fx].values()) if fx in self.forms else 0
+            if nf >= 3: return x, (nf if x.isascii() else max(1, nf // 4)), x.isascii()
+            return None
+        best = None
+        for n in (2, 3):
+            for cuts in ([(i,) for i in range(2, len(lw) - 1)] if n == 2 else
+                         [(i, j) for i in range(2, len(lw) - 3) for j in range(i + 2, len(lw) - 1)]):
+                bounds = (0,) + cuts + (len(lw),)
+                xs = [lw[bounds[k]:bounds[k + 1]] for k in range(n)]
+                ps = [part(x) for x in xs]
+                if any(x is None for x in ps): continue
+                if plain and not all(e for _, _, e in ps) and not any(x in strong for x in xs): continue
+                sc = (sum(e for _, _, e in ps), min(f for _, f, _ in ps), sum(math.log(1 + f) for _, f, _ in ps))
+                if best is None or sc > best[0]: best = (sc, " ".join(r for r, _, _ in ps))
+            if best: return best[1]
+        return None
+
+    def typo_fix(self, w, prev=None, nxt=None):
+        lw = w.lower()
+        if len(lw) < 2 or lw in self.vocab or not re.fullmatch(r"[^\W\d_]+", lw): return None
+        if lw in _regional_words(): return None
+        def score(c):
+            sc = math.log(1 + self.uni.get(c, 0))
+            if prev: sc += 2.0 * math.log(1 + self.bi.get((prev, c), 0))
+            if nxt: sc += 2.0 * math.log(1 + self.bi.get((c, nxt), 0))
+            return sc
+        nb = getattr(self, "name_bigrams", set()); fp = strip_accents(prev).lower() if prev else None; fn = strip_accents(nxt).lower() if nxt else None
+        if strip_accents(lw) in self.forms: nb = set()
+        def in_name(c):
+            fc = strip_accents(c.split()[0]).lower(); lc = strip_accents(c.split()[-1]).lower()
+            return bool(nb) and ((fp is not None and (fp, fc) in nb) or (fn is not None and (lc, fn) in nb))
+        cands = {}
+        base = strip_accents(lw)
+        if lw.isascii():
+            if base in self.forms: return None
+            for e in self._edits(lw):
+                if e in self.forms and (sum(self.forms[e].values()) >= 5 or in_name(e)):
+                    cands[e] = math.log(1 + sum(self.forms[e].values())) + 2.0 * math.log(1 + sum(self.bi.get((prev, c), 0) for c in self.forms[e]) if prev else 1)
+        else:
+            for c, n in (self.forms.get(base) or {}).items():
+                cands[c] = score(c) + 1.0
+            for e in self._edits(lw):
+                if e in self.vocab and (self.uni.get(e, 0) >= 3 or in_name(e)): cands[e] = max(cands.get(e, -1e9), score(e) + 0.5)
+                for c in (self.forms.get(strip_accents(e)) or {}):
+                    if self.uni.get(c, 0) >= 3: cands[c] = max(cands.get(c, -1e9), score(c) - 1.0)
+        for i in range(2, len(lw) - 1):
+            a, b = lw[:i], lw[i:]
+            a2, b2 = ABBR.get(a, a).split()[-1], ABBR.get(b, b).split()[0]
+            if (a in self.vocab or a in ABBR) and (b in self.vocab or b in ABBR) and self.uni.get(a2, 0) >= 5 and self.uni.get(b2, 0) >= 5:
+                ca, cb = ABBR.get(a, a), ABBR.get(b, b)
+                cands[ca + " " + cb] = 0.5 * (score(a2) + score(b2)) + math.log(1 + self.bi.get((a2, b2), 0))
+        def ctx(c):
+            if in_name(c): return True
+            ws = c.split(); first, last = ws[0], ws[-1]
+            fs = self.forms.get(first, {first: 1}) if c.isascii() else {first: 1}
+            ls = self.forms.get(last, {last: 1}) if c.isascii() else {last: 1}
+            if len(ws) >= 2: return self.bi.get((ws[-2], ws[-1]), 0) >= 1 or len(ws) > 2
+            bp = max([self.bi.get((prev, f), 0) for f in fs] or [0]); bn = max([self.bi.get((l, nxt), 0) for l in ls] or [0])
+            return math.log(1 + bp) + math.log(1 + bn) >= math.log(21)
+        cands = {c: v for c, v in cands.items() if ctx(c)}
+        if not cands: return None
+        best = max(cands, key=lambda c: (in_name(c), cands[c], c))
+        return best if cands[best] >= math.log(1 + 3) or in_name(best) else None
+
+    def _typo_cands(self, lw):
+        out = {}
+        for c in (self.forms.get(strip_accents(lw)) or {}): out[c] = math.log(1 + self.uni.get(c, 0)) + 1.0
+        for e in self._edits(lw):
+            if e in self.vocab and self.uni.get(e, 0) >= 3: out[e] = max(out.get(e, -1e9), math.log(1 + self.uni[e]) + 0.5)
+            for c in (self.forms.get(strip_accents(e)) or {}):
+                if self.uni.get(c, 0) >= 3: out[c] = max(out.get(c, -1e9), math.log(1 + self.uni[c]) - 1.0)
+        return out
+
+    def pair_fix(self, a, b, prev=None, nxt=None):
+        ca = sorted(self._typo_cands(a).items(), key=lambda x: -x[1])[:10]; cb = sorted(self._typo_cands(b).items(), key=lambda x: -x[1])[:10]
+        best, bs = None, -1e9
+        for x, sx in ca:
+            for y, sy in cb:
+                n = self.bi.get((x, y), 0)
+                if n < 3: continue
+                sc = 2 * math.log(1 + n) + math.log(1 + self.bi.get((prev, x), 0)) + math.log(1 + self.bi.get((y, nxt), 0)) + 0.1 * (sx + sy)
+                if sc > bs: best, bs = (x, y), sc
+        return best if best is not None and bs >= 2 * math.log(1 + 3) + 0.5 else None
+
+    def set_entities(self, names):
+        idx = defaultdict(lambda: defaultdict(Counter)); idx_a = defaultdict(lambda: defaultdict(Counter))
+        self.name_bigrams = set(); self.name_upper = set(); self.name_words = set()
+        for n in {unicodedata.normalize("NFC", str(n)) for n in names}:
+            lw = WORD.findall(n)
+            self.name_upper.update(w for w in lw if len(w) > 1 and w.isupper())
+            kl = [strip_accents(w).lower() for w in lw]; self.name_bigrams.update(zip(kl, kl[1:])); self.name_words.update(kl)
+            ws = re.findall(r"[^\W_]+", n)
+            if len(ws) < 2 or len(ws) > 24: continue
+            kw = [strip_accents(w).lower() for w in ws]; d = idx_a if n.isascii() else idx
+            if len(" ".join(kw)) >= 6: d[" ".join(kw)][" ".join(w.lower() for w in ws)][" ".join(ws)] += 1
+            for a in range(len(ws)):
+                for b in range(a + 3, min(len(ws) - (a == 0), a + 8) + 1):
+                    d[" ".join(kw[a:b])][" ".join(w.lower() for w in ws[a:b])][" ".join(ws[a:b])] += 1
+        self.ent = {}
+        for d, plain in ((idx_a, True), (idx, False)):
+            for k, sp in d.items():
+                low = max(sp, key=lambda v: sum(sp[v].values()))
+                self.ent[k] = (low.split(), [any(v.split()[x][:1].islower() for v in sp[low]) for x in range(len(k.split()))], plain)
+        self.maxn = max((len(k.split()) for k in self.ent), default=0)
+        self.entities = bool(self.ent)
+
+    def protected(self, words):
+        nb = getattr(self, "name_bigrams", ()); keys = [strip_accents(w).lower() for w in words]
+        return [bool(nb) and ((i > 0 and (keys[i - 1], keys[i]) in nb) or (i + 1 < len(keys) and (keys[i], keys[i + 1]) in nb))
+                for i in range(len(keys))]
+
+    def link(self, s, typed=()):
+        if not getattr(self, "entities", None): return s, []
+        words = [(m.start(), m.end(), m.group(0)) for m in re.finditer(r"[^\W_]+", s)]
+        keys = [strip_accents(w).lower() for _, _, w in words]; typed = {word_sig(w) for w in typed}
+        cands = []
+        for i in range(len(words)):
+            for j in range(min(len(words), i + self.maxn), i + 1, -1):
+                e = self.ent.get(" ".join(keys[i:j]))
+                if e is None: continue
+                nw, lowinit, plain = e; qw = [w for _, _, w in words[i:j]]
+                if any(word_sig(q) in typed and word_sig(q) != word_sig(x) for q, x in zip(qw, nw)): continue
+                if not all(q[:1].isupper() or q[:1].isdigit() for q in qw) and \
+                        any(i + x > 0 and q[:1].isupper() and not q.isupper() and lowinit[x] for x, q in enumerate(qw)): continue
+                cands.append((j - i, i, j, nw, plain))
+        used = [False] * len(words); repl = []
+        for _, i, j, nw, plain in sorted(cands, key=lambda c: (-c[0], c[1])):
+            if any(used[i:j]): continue
+            for x in range(i, j): used[x] = True
+            for (a, b, q), e in zip(words[i:j], nw):
+                if word_sig(q) == word_sig(e) or word_sig(q) in typed: continue
+                if plain and e not in self.uni: continue
+                repl.append((a, b, _recase(q, e)))
+        ch = [[s[a:b], n, "entity"] for a, b, n in sorted(repl)]
+        for a, b, n in sorted(repl, reverse=True): s = s[:a] + n + s[b:]
+        return s, ch
+
+    @staticmethod
+    def entity_texts(biz, max_unique=5000):
+        out = []
+        for name, df in biz.tables.items():
+            for c in df.columns:
+                if c.startswith("_"): continue
+                import pandas as pd
+                if not (df[c].dtype == object or pd.api.types.is_string_dtype(df[c])): continue
+                vals = df[c].dropna().astype(str).unique()
+                if len(vals) > max_unique: continue
+                out += [v for v in vals if len(v) >= 3]
+        return out
+
+    @classmethod
+    def for_split(cls, split_dir, train_questions=None, exclude_business=None, extra_texts=(), extra_weight=2):
+        texts = [open(os.path.join(split_dir, "rulebook.md"), encoding="utf-8").read()]
+        ph = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qnorm_phrases.txt")
+        if os.path.isfile(ph):
+            texts += [l for l in open(ph, encoding="utf-8").read().replace(";", "\n").splitlines() if l.strip() and not l.startswith("#")] * 3
+        tq = train_questions or os.path.join(os.path.dirname(os.path.abspath(__file__)), "qnorm_train_questions.txt")
+        if os.path.isfile(tq):
+            for l in open(tq, encoding="utf-8"):
+                b, _, q = l.rstrip("\n").partition("\t")
+                if b != exclude_business: texts.append(q)
+        nz = cls(texts); nz.add_names([t for t in extra_texts if not t.isascii()], extra_weight); nz.set_entities(extra_texts); return nz
+
+    def add_names(self, names, weight=2, cap=6):
+        tally = Counter()
+        for t in names:
+            for line in re.split(r"[\n.;:!?()|]+", unicodedata.normalize("NFC", t)):
+                ws = [w.lower() for w in WORD.findall(line)]
+                if not ws or sum(not w.isascii() for w in ws) < 0.5 * len(ws): continue
+                for i, w in enumerate(ws):
+                    tally[w] += weight
+                    if i: self.bi[(ws[i - 1], w)] += weight
+        for w, k in tally.items():
+            if w in ABBR or (w.isascii() and any(x != w and x in self.uni for x in telex_all(w))): continue
+            self.uni[w] += min(k, cap); self.forms[strip_accents(w)][w] += min(k, cap)
+        self.N = sum(self.uni.values()) or 1
+        self.vocab = {w for w in self.uni}
+
+    def _lp(self, prev, w):
+        pu = (self.uni[w] + 0.1) / (self.N + 0.1 * len(self.uni))
+        if prev is None: return math.log(pu)
+        return math.log((self.bi[(prev, w)] + 2.0 * pu) / (self.uni[prev] + 2.0))
+
+    def restore(self, words):
+        cands = []
+        for w in words:
+            if any(ord(c) > 127 for c in w) or w not in self.forms and w not in self.uni: cands.append([w])
+            else:
+                cs = list(self.forms.get(w, {}).keys()) or [w]
+                cands.append(cs if (w in cs or w not in self.uni) else cs + [w])
+        best = [{c: (self._lp(None, c), None) for c in cands[0]}]
+        for i in range(1, len(words)):
+            col = {}
+            for c in cands[i]:
+                p, s = max(((best[-1][pc][0] + self._lp(pc, c), pc) for pc in best[-1]), key=lambda x: x[0])
+                col[c] = (p, s)
+            best.append(col)
+        out = [max(best[-1], key=lambda c: best[-1][c][0])]
+        for i in range(len(words) - 1, 0, -1): out.append(best[i][out[-1]][1])
+        return out[::-1]
+
+    def restore_only(self, text):
+        parts = re.split(r"([^\W\d_]+)", unicodedata.normalize("NFC", text)); ws = parts[1::2]
+        if ws:
+            rest = self.restore([w.lower() for w in ws])
+            parts[1::2] = self._context_fixes([_case_like(w, r) for w, r in zip(ws, rest)], ws, restored=True, seps=parts[0::2])
+        return "".join(parts)
+
+    @staticmethod
+    def _context_fixes(words, typed, restored, seps=None, protect=None):
+        out = list(words); low = [w.lower() for w in out]; n = len(out); seps = seps or [""] * (n + 1)
+        for i, w in enumerate(low):
+            nxt = " ".join(low[i + 1:i + 4]); prv = low[i - 1] if i else ""
+            if protect and protect[i]: continue
+            if w == "nhiêu" and prv != "bao" and (re.search(r"\b(nhất|nhứt|nhat|nhut|hơn|hay ít)\b", nxt)
+                                                  or "nào" in low[max(0, i - 3):i]): out[i] = _case_like(out[i], "nhiều")
+            elif w == "mấy" and typed[i].isascii() and (prv.endswith("nhiêu") or prv in ("chiếc", "cái")
+                                                       or i + 1 < n and typed[i + 1].lower() in ("cu", "moi", "cũ", "mới")):
+                out[i] = _case_like(out[i], "máy")
+                if i + 1 < n and typed[i + 1].lower() in ("cu", "moi"): out[i + 1] = _case_like(typed[i + 1], "cũ" if typed[i + 1].lower() == "cu" else "mới")
+            elif w == "nhiêu" and prv != "bao": out[i] = _case_like(out[i], "bao nhiêu")
+            elif w == "nay" and typed[i] == "nay" and prv in ("tháng", "th", "tuần", "quý", "kỳ", "đợt"):
+                out[i] = "này"
+            elif typed[i].lower() == "the" and restored and i == n - 1:
+                out[i] = "thế"
+            elif typed[i].lower() == "the" and restored and (prv in ("bằng", "qua", "quẹt", "cà", "trả", "bàng")
+                                                             or nxt.split()[:1] in (["tín"], ["ngân"], ["atm"], ["visa"])):
+                out[i] = "thẻ"
+            elif w == "quân" and restored and typed[i] == "quan" and prv not in _TITLES:
+                out[i] = "quán"
+            elif w in ("hà", "ha") and i == n - 1 and typed[i][:1].islower(): out[i] = "hả"
+            elif w == "lệ" and restored and prv not in ("tỉ", "tỷ") and typed[i].isascii(): out[i] = _case_like(out[i], "lẻ")
+            elif w == "j" and i > 0 and typed[i] == "j": out[i] = "gì"
+            elif w == "k" and i > 0 and typed[i] == "k" and not re.search(r"\d\s*$", seps[i]): out[i] = "không"
+            elif w == "len" and re.search(r"\d\s*(đ|d|đồng|dong|k)?\s*$", (seps[i - 1] + low[i - 1] if i and low[i - 1] in ("đ", "đồng", "d", "dong", "k") else "") + seps[i]): out[i] = "lên"
+            elif w == "tạ" and i == n - 1: out[i] = "ta"
+            elif w == "hồng" and i == n - 1 and typed[i] == "hong" and "có" in low[:i] and not _QWORDS.search(" ".join(low[:i])):
+                out[i] = "không"
+            elif w == "nhiều" and restored and typed[i].lower() == "nhieu" and prv != "bao" and \
+                    not _QWORDS.search(" ".join(low[:i] + low[i + 1:])): out[i] = _case_like(typed[i], "bao nhiêu")
+            elif i == 0 and typed[i] in ("e", "E") and n > 1: out[i] = _case_like(typed[i], "ê")
+            elif w == "chi" and i == n - 1 and prv == "là": out[i] = "gì"
+            elif w == "nên" and prv == "trở" and re.search(r"\d", "".join(seps[max(0, i - 6):i + 1])): out[i] = _case_like(out[i], "lên")
+            elif not typed[i].isascii(): continue
+            elif w == "mọi" and i + 1 < n and low[i + 1] == "loại" and re.search(r"\bbao nhiêu\b", " ".join(low[i + 2:i + 5])): out[i] = _case_like(out[i], "mỗi")
+            elif w == "số" and i + 1 < n and low[i + 1] == "ngày" and re.fullmatch(r"\s*\d+\s*", seps[i + 1] or "") \
+                    and re.search(r"\bvới\b", " ".join(low[i + 2:])): out[i] = _case_like(out[i], "so")
+            elif w == "tục" and re.search(r",\s*$", seps[i]): out[i] = "tức"
+            elif w == "nhưng" and i + 1 < n and low[i + 1] in ("đơn", "mặt", "sản", "khách", "lô", "món", "nhân", "hàng", "ngày"): out[i] = _case_like(out[i], "những")
+            elif w in ("vị", "vỉ", "ví") and i + 1 < n and low[i + 1] in ("giao", "lỗi", "hết", "mua", "khách", "sai", "hỏng", "trễ", "hư", "gói",
+                                                                   "món", "nhầm", "đổi", "bị", "không", "chê", "thiếu"):
+                out[i] = _case_like(out[i], "vì")
+            elif w == "đếm" and i + 1 < n and low[i + 1] in ("về", "lại") and re.search(r"\b(doanh thu|tiền|lãi|lời)\b", " ".join(low[i + 2:i + 7])):
+                out[i] = _case_like(out[i], "đem")
+            elif w == "mã" and i + 2 < n and low[i + 1] == "khách" and low[i + 2] in ("chưa", "không", "vẫn", "còn"): out[i] = _case_like(out[i], "mà")
+        return out
+
+    def clean(self, q, as_of=None):
+        changes = []
+        s = unicodedata.normalize("NFC", str(q))
+        s2 = "".join(c for c in s if unicodedata.category(c) not in ("So", "Sk", "Cn") and c not in "️‍")
+        if s2 != s: changes.append([s, s2, "symbols"]); s = s2
+        s = re.sub(r"\s+", " ", s).strip()
+        for k in MULTI:
+            s2 = re.sub(r"(?<!\w)" + re.escape(k) + r"(?!\w)", ABBR[k], s, flags=re.I)
+            if s2 != s: changes.append([k, ABBR[k], "abbr"]); s = s2
+        parts = re.split(r"([^\W\d_]+)", s)
+        words = parts[1::2]; prev = None; outw = []
+        prot = self.protected(words)
+        glued = [bool(re.search(r"\d$", parts[2 * i]) or re.match(r"\d", parts[2 * i + 2])) for i in range(len(words))]
+        for i, w in enumerate(words):
+            lw = w.lower(); r = None; rule = None
+            inner_cap = i > 0 and w[:1].isupper() and not re.search(r"[.?!:;]\s*$", parts[2 * i])
+            keep = prot[i] or glued[i] or (len(w) > 1 and w.isupper() and w in getattr(self, "name_upper", ()))
+            if glued[i] and lw == "d" and re.search(r"\d{3}$", parts[2 * i]): r, rule = "đ", "unit"
+            elif keep: pass
+            elif lw in ABBR: r, rule = ABBR[lw], "abbr"
+            elif lw not in self.vocab and lw not in self.forms and not inner_cap:
+                ts = [t for t in telex_all(lw) if t in self.vocab]
+                if ts: r, rule = max(ts, key=lambda t: self.uni[t]), "telex"
+            if keep: pass
+            elif r is None and lw in ("ni",) and prev in DIALECT_NI: r, rule = "này", "dialect"
+            elif r is None and (lw == "mô" or (lw == "mo" and prev in DIALECT_MO)): r, rule = "nào", "dialect"
+            elif r is None and lw in ("rứa", "chừ"): r, rule = {"rứa": "vậy", "chừ": "giờ"}[lw], "dialect"
+            elif r is None and not inner_cap and lw not in self.vocab and (not lw.isascii() or lw not in self.forms):
+                nxt = words[i + 1].lower() if i + 1 < len(words) else None
+                r = self.glue_split(w, prev, nxt)
+                if r is not None: rule = "glue"
+                else:
+                    r = self.glue_segment(w)
+                    if r is not None: rule = "glue"
+                    else:
+                        r = self.typo_fix(lw, prev, nxt)
+                        if r is not None: rule = "typo"
+            elif r is None and inner_cap and re.match(r"^[^\W\d_]*[a-zà-ỹđ][A-Z]", w):
+                r = self.glue_split(w)
+                if r is not None: rule = "glue"
+            if r is not None: changes.append([w, r, rule]); outw.append(_case_like(w, r))
+            else: outw.append(w)
+            prev = (r or lw).split()[-1].lower()
+        for i in range(len(outw) - 1):
+            a_, b_ = outw[i], outw[i + 1]
+            if a_ != words[i] or b_ != words[i + 1] or prot[i] or prot[i + 1] or glued[i] or glued[i + 1]: continue
+            la, lb = a_.lower(), b_.lower()
+            if la in self.vocab or lb in self.vocab or la.isascii() or lb.isascii() or la in ABBR or lb in ABBR: continue
+            if _regional_words() & {la, lb}: continue
+            pv = outw[i - 1].split()[-1].lower() if i else None; nx = outw[i + 2].split()[0].lower() if i + 2 < len(outw) else None
+            r = self.pair_fix(la, lb, pv, nx)
+            if r: outw[i], outw[i + 1] = _case_like(a_, r[0]), _case_like(b_, r[1]); changes.append([f"{a_} {b_}", f"{r[0]} {r[1]}", "typo"])
+        toks = " ".join(outw).split(" ") if outw else []
+        flat = [t.lower() for t in toks]
+        typed = [w for w in words if w.lower() not in ABBR and w.lower() not in ("đ", "đồng")]
+        accented = sum(1 for w in typed if not w.isascii()) / max(1, len(typed))
+        mixed = flat and 0.15 <= accented < MIXED_MAX
+        if flat and accented < 0.15:
+            rest = self.restore(flat)
+        elif mixed:
+            rest = self.restore(flat)
+            def sure(i, w, r):
+                if r == w or not w.isascii() or w not in self.forms or self.forms[w].get(r, 0) < 3 * self.forms[w].get(w, 0): return False
+                return (i > 0 and self.bi.get((rest[i - 1], r), 0) >= 1) or (i + 1 < len(rest) and self.bi.get((r, rest[i + 1]), 0) >= 1)
+            rest = [r if sure(i, w, r) else w for i, (w, r) in enumerate(zip(flat, rest))]
+        else: rest = flat
+        k = 0; final = []
+        for i, w in enumerate(outw):
+            n = len(w.split(" ")); new = rest[k:k + n]; k += n
+            if glued[i]: final.append(w); continue
+            orig = w.split(" ")
+            fixed = " ".join(_case_like(o, x) for o, x in zip(orig, new))
+            if fixed != w: changes.append([w, fixed, "accent"])
+            final.append(fixed)
+        final = self._context_fixes(final, [w for w in outw], restored=bool(flat) and (accented < 0.15 or bool(mixed)), seps=parts[0::2],
+                                    protect=[a or b for a, b in zip(prot, glued)])
+        for w0, w1 in zip(outw, final):
+            if w0 != w1 and not any(c[1] == w1 for c in changes): changes.append([w0, w1, "context"])
+        parts[1::2] = final
+        s = "".join(parts)
+        for rx, f in MONTHS:
+            s2 = rx.sub(f, s)
+            if s2 != s: changes.append(["month", s2, "month"]); s = s2
+        s = re.sub(r"\s+", " ", s).strip()
+        s, ch = self.link(s, typed=[w for w in words if not w.isascii()]); changes += ch
+        out = {"clean": s, "changes": changes, "key": strip_accents(s).lower(), "period": None}
+        if as_of is not None:
+            try:
+                import qparse
+                p, code = qparse.parse_period(s, as_of)
+                if p is not None: out["period"] = {"start": str(p.start.date()), "end": str(p.end.date()), "code": code}
+            except Exception: pass
+        return out
+
+
+def build_train_vocab(train_split, out_path):
+    with open(out_path, "w", encoding="utf-8") as f:
+        for l in open(os.path.join(train_split, "questions.jsonl"), encoding="utf-8"):
+            q = json.loads(l)
+            if any(ord(c) > 127 for c in q["question"]): f.write(f"{q['business_id']}\t{q['question'].strip()}\n")
+
+
+if __name__ == "__main__":
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    split, out = sys.argv[1], sys.argv[2]
+    nz = Normalizer.for_split(split)
+    with open(out, "w", encoding="utf-8") as f:
+        for l in open(os.path.join(split, "questions.jsonl"), encoding="utf-8"):
+            q = json.loads(l); r = nz.clean(q["question"], q["as_of_date"])
+            f.write(json.dumps({"id": q["id"], "business_id": q["business_id"], "as_of_date": q["as_of_date"], "question": q["question"], **r},
+                               ensure_ascii=False) + "\n")

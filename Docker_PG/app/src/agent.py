@@ -1,0 +1,1286 @@
+#!/usr/bin/env python3
+import os, re, sys, ast, json, time, math, signal, pickle, argparse, textwrap, traceback
+if __name__ == "__main__":
+    sys.modules.setdefault("agent", sys.modules["__main__"])
+os.environ.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
+from collections import Counter, defaultdict
+from decimal import Decimal, ROUND_HALF_UP
+import numpy as np
+import pandas as pd
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ingest
+import dm, qparse, fewshot
+import canon as canonmod
+from score import norm
+
+ENV_DOC = """Environment available to your program (already loaded, do NOT read files):
+- `T`: dict table_name -> pandas DataFrame, cleaned: numeric columns are float, date columns are datetime64, text is NFC-normalised. Every table has `_source` (file[sheet]) and maybe `_sheet`; a `<col>__unit` column holds the unit text that followed a number (e.g. "bao 25kg").
+- `RAW`: same tables with the original cell strings (use only if a cleaned column looks wrong).
+- `CAL`: solar-lunar calendar DataFrame: date (datetime64), weekday, lunar_day, lunar_month, lunar_year, lunar_leap, holiday.
+- helpers: `parse_num(x)`, `parse_date(x)`, `norm_text(s)` (lowercase, no punctuation), `strip_accents(s)`, `match_names(query, candidates, k=5)` -> best matching candidate strings (accent/typo tolerant),
+  `month_range(y, m)` -> (first_day, last_day), `lunar_to_solar(lunar_year, lunar_month, lunar_day)` -> Timestamp, `round_half_up(x, ndigits=0)` (rulebook rounding: half rounds up; Python's round() does not).
+- pandas as `pd`, numpy as `np`, `re`, `math`, `datetime`."""
+
+ANSWER_DOC = """Finish by assigning `ANSWER = {"type": <one of number|percent|string|date|boolean|list|table|unanswerable>, "answer": <value>}`.
+   - number/percent: a Python number (money = integer VND; averages / percentages rounded to 2 decimals unless the rulebook says otherwise, with round_half_up). percent 12.4% -> 12.4.
+   - string: the name exactly as written in the data. date: "YYYY-MM-DD" (or "YYYY-MM" for month questions). boolean: True/False.
+   - list: Python list in the order the question asks (one element is still a list). table: {"columns": [...], "rows": [[...], ...]} with the entity name first, then the measures in the order the question asks.
+   - unanswerable: when the released data cannot answer (rulebook section on unanswerable questions), with "answer": None."""
+
+SYSTEM_RAW = f"""You are DataMate, an expert data analyst for Vietnamese small businesses. You answer a question by writing ONE Python program that computes the answer from the business's tables with pandas.
+
+{ENV_DOC}
+- `TODAY`: pandas Timestamp of the as-of date ("hôm nay"). Records dated after TODAY have not happened yet unless the rulebook says otherwise.
+
+Rules:
+1. Follow the RULEBOOK exactly (definitions of revenue, valid orders, weeks, "tháng này", ranking and tie-breaks, debt, cost, rounding, answer formats). Where the business README explains its own columns, statuses or unit conversions, use it.
+2. Inspect values you rely on (statuses, units, names) programmatically rather than guessing spellings; status labels differ between shops (e.g. "Xong", "Đã hoàn thành", "ok" = completed). Use match_names for names written loosely in the question.
+3. {ANSWER_DOC}
+4. You may print() short diagnostics. Output only one ```python code block, no explanation."""
+
+SYSTEM_CANON = f"""You are DataMate, an expert data analyst for Vietnamese small businesses. You answer a question by writing ONE Python program that computes the answer with pandas.
+
+{ENV_DOC}
+- `C`: canonical tables already built for this business from T following the rulebook (described in the CANONICAL TABLES card together with NOTES). Prefer C; fall back to T for anything C does not cover.
+- `TODAY`: pandas Timestamp of the as-of date ("hôm nay"). Records dated after TODAY have not happened yet unless the rulebook says otherwise.
+
+Rules:
+1. Follow the RULEBOOK exactly (periods, ranking and tie-breaks, debt, cost, rounding, answer formats). In C, `valid` already marks the orders that count for revenue and `revenue` / `line_amount` follow the rulebook definition; re-check the rulebook for anything else.
+2. Inspect values you rely on programmatically rather than guessing spellings. Use match_names for names written loosely in the question.
+3. {ANSWER_DOC}
+4. You may print() short diagnostics. Output only one ```python code block, no explanation."""
+
+SYSTEM_COMPILE = f"""You are DataMate's data engineer. Write ONE Python program that converts the raw tables of a Vietnamese small business into canonical tables, following the RULEBOOK and the business README. The canonical tables are reused to answer about a hundred questions, so they must be exactly right.
+
+{ENV_DOC}
+There is no TODAY here: keep the full history, including records after any date.
+
+Build `C`, a dict of pandas DataFrames, using only what the data contains (omit tables or columns that do not exist; never invent values):
+- C["orders"]: one row per sales order / invoice / bill: order_id, order_time (datetime, with time of day when recorded), order_date (= order_time normalised to the day), customer_id, customer_name (None for walk-in customers: khách lẻ / vãng lai / blank), customer_group, staff, channel, payment_method, status (exactly one of "hoàn thành", "huỷ", "trả hàng", "đang giao"), valid (bool: the order counts for revenue per the rulebook), revenue (rulebook revenue of the order: sum of line amounts after line discounts, excluding order-level discounts, VAT and delivery fees), order_discount, shipping_fee, vat, total_payable (what the customer must pay for the whole order), paid_at_purchase, plus any other order-level column that may matter.
+- C["lines"]: one row per order line: order_id, order_time, order_date, status, valid, item_code, item_name, item_group, unit, qty, factor (units -> base unit), base_unit, qty_base, unit_price (per sold unit, before line discount), line_discount, line_amount (after line discount), unit_cost (per sold unit, when recorded on the line).
+- C["items"]: product catalogue: item_code, item_name, item_group, base_unit, larger units with their factors, cost, price, and any attribute columns (prescription, active ingredient, size, ...).
+- C["purchases"]: purchase (nhập hàng) lines: receipt_id, receipt_date, supplier, item_code, item_name, qty, unit, qty_base, unit_cost, amount, cancelled (bool).
+- C["payments"]: later payments of credit (ghi nợ) orders: order_id, pay_date, amount, method.
+- Any other useful table (stock snapshots, lots and expiry dates, expenses, price list, deliveries, warranty slips, shifts, ...) under a clear English name.
+Rules:
+1. Map every raw status label to the canonical statuses explicitly (inspect the unique values; read the README). An order with any returned item is "trả hàng".
+2. Order-level cells left blank on the following lines of the same order inherit the order's first line (rulebook: "Cách ghi trong file"). Drop exact duplicate lines inside the same order; keep identical lines of different orders.
+3. Use the README / conversion tables for qty_base. Keep codes as strings.
+4. Set `NOTES` (a string): what the canonical tables mean for this shop, every assumption you made, and which kinds of information are NOT recorded (e.g. no cost price, no supplier, no customer address), so that questions needing them are unanswerable.
+5. End with print() of a short summary: row count per table, status counts, valid revenue of the first 3 months.
+6. The tables are ALREADY loaded in T: never open, read or glob files. Assign the result to the variable `C` (a dict) and `NOTES` (a string).
+Keep the program compact (about 150 lines at most); output only one ```python code block, no explanation."""
+
+
+SYSTEM_LIB = f"""You are DataMate, an expert data analyst for Vietnamese small businesses. You answer a question by writing ONE short Python program that calls the DataMate toolkit on the business's canonical tables.
+
+{dm.API_DOC}
+- `TODAY`: pandas Timestamp of the as-of date ("hôm nay").
+
+Rules:
+1. Read the question carefully: period, measure (revenue, quantity in base units, number of orders, ...), filters, ranking size k, and the answer type. Follow the RULEBOOK for every definition; the toolkit already implements the defaults, so prefer a toolkit call over re-implementing it.
+2. Use the exact names, codes and labels written in the data (see the CANONICAL TABLES card); names in the question may be written loosely (no accents, abbreviations): pick the matching value from the card.
+3. If the data does not record what the question needs (the NOTES say what is missing), or the period lies outside the data, `raise Unanswerable("<reason>")`. A quality no column records and the RULEBOOK does not define ('ngon nhất', 'thân thiện nhất', 'uy tín', 'nhiệt tình nhất'; unlike the rulebook's 'trung thành', 'sộp', 'chăm chỉ', 'nhà cung cấp chính') is unanswerable too. Before that, look at the RAW TABLES NOT IN C (when listed): they are in `T` (pandas DataFrames with their original column names, `T["<table>"]`) and may hold exactly what C lacks (instalments, trade-ins, warranty visits, ...); use them, with the RULEBOOK definitions.
+4. {ANSWER_DOC}
+5. Output only one ```python code block, no explanation. The EXAMPLES come from other shops (their names and data differ); use them for the method only."""
+
+SYSTEM_MAP = f"""You are DataMate's data engineer. Write ONE short Python program that maps the raw tables of a Vietnamese small business onto canonical tables, following the business README and the RULEBOOK. About a hundred questions are answered from these tables, so the mapping must be exactly right.
+
+{dm.MAP_DOC}
+
+Canonical tables (use only what the data contains; never invent values):
+{dm.CANON_DOC}
+
+Rules:
+1. Map every raw column you need by its exact name. Map status labels with map_status (inspect the README for statuses written in notes or for returns written as negative quantities). Keep codes as text.
+2. Customer names: walk-in customers ("khách lẻ", "lẻ", "kl", blank) become None automatically. Use the customer list to add names / groups when orders only carry a code.
+3. Build C["orders"] and C["lines"] with finalize, plus the other tables the business has (items with item_group / cost / prescription / active_ingredient, purchases, payments with pay_date, stock, lots, prices, expenses, deliveries, conversions).
+4. Set NOTES (a string): what the tables mean for this shop and which kinds of information are NOT recorded (no cost price, no customers, no time of day, ...).
+5. The tables are already loaded in T: never read files. Output only one ```python code block (about 15-40 lines), no explanation. The EXAMPLES are mapping programs written for other shops."""
+
+
+def clean_hint(q):
+    c = q.get("_clean")
+    if not c: return ""
+    out = f"\ncleaned (abbreviations / accents / Telex fixed, may contain mistakes): {c['clean']}" if c["clean"] != q["question"].strip() else ""
+    if c.get("period"): out += f"\nperiod read by the rulebook: {c['period']['start']} .. {c['period']['end']} = {c['period']['code']}"
+    return out
+
+
+TRAIN_RULEBOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "train_rulebook.md")
+
+
+def rulebook_sections(text):
+    out, cur = {}, None
+    for line in str(text).split("\n"):
+        m = re.match(r"^###\s+(.+?)\s*$", line)
+        if m: cur = m.group(1); out[cur] = []; continue
+        if re.match(r"^#{1,2}\s", line): cur = None; continue
+        if cur is not None: out[cur].append(line)
+    return {k: "\n".join(v).strip() for k, v in out.items()}
+
+
+def industry_of(rulebook, readme):
+    rk = " " + dm.key(readme or "") + " "
+    try: train = {dm.key(t) for t in rulebook_sections(open(TRAIN_RULEBOOK, encoding="utf-8").read())}
+    except OSError: train = set()
+    best = None
+    for title, body in rulebook_sections(rulebook).items():
+        tk = dm.key(title)
+        if len(tk) >= 4 and f" {tk} " in rk and (best is None or len(tk) > len(dm.key(best[0]))): best = (title, body, tk not in train)
+    return best
+
+
+REF_READMES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "readmes")
+_FILE_BULLET = re.compile(r"^`[^`]+\.(xlsx|xls|csv|sqlite|json|txt)`")
+
+
+def _readme_bullets(text):
+    out = []
+    for l in str(text).split("\n"):
+        if re.match(r"^\s{2,}[-*] ", l): continue
+        m = re.match(r"^[-*] (.+)$", l.strip())
+        if m and "du lieu co den het" not in dm.key(l) and not _FILE_BULLET.match(m.group(1).strip()): out.append(m.group(1).strip())
+    return out
+
+
+def readme_gaps(target, ref):
+    import difflib
+    nrm = lambda x: re.sub(r"\d+", "#", dm.key(x)); toks = lambda x: {w for w in nrm(x).split() if len(w) > 1 and w != "#"}
+    rb = _readme_bullets(ref); out = []
+    for x in _readme_bullets(target):
+        if not rb: out.append(x); continue
+        best = max(rb, key=lambda r: difflib.SequenceMatcher(None, nrm(x), nrm(r)).ratio())
+        if difflib.SequenceMatcher(None, nrm(x), nrm(best)).ratio() < 0.8 or len(toks(x) - toks(best)) >= 5: out.append(x)
+    return out
+
+
+def ref_readme(rid):
+    p = os.path.join(REF_READMES, f"{rid}.md")
+    return open(p, encoding="utf-8").read() if os.path.isfile(p) else None
+
+
+def user_msg_adapt(rulebook, biz_readme, card, ref_code, gaps):
+    return "\n\n".join([f"# RULEBOOK (extract)\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}", f"# RAW TABLES (in T)\n{card}",
+                         "# REFERENCE PROGRAM\nIt maps a shop that exports the same files, and it runs on these tables, but that shop's README "
+                         f"does not have the conventions listed below.\n```python\n{ref_code.strip()}\n```",
+                         "# CONVENTIONS OF THIS README THE REFERENCE DOES NOT FOLLOW\n" + "\n".join(f"- {g}" for g in gaps),
+                         "# TASK\nOutput the complete reference program, changed so that it also follows these conventions of THIS README "
+                         "(for example: split cells that hold several items into one line per item, or turn unit factors into base-unit "
+                         "factors). Keep everything else as it is. If a convention needs no change in the mapping, leave that part alone."])
+
+
+def user_msg_lib(rulebook, biz_readme, canon_card, examples, q):
+    return "\n\n".join([f"# RULEBOOK\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}",
+                         f"# CANONICAL TABLES (in C; metrics use them)\n{canon_card}",
+                         f"# EXAMPLES (other shops)\n{examples or '(none)'}",
+                         f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}{clean_hint(q)}\n\nWrite the program."])
+
+
+def user_msg_map(rulebook, biz_readme, card, examples, industry_doc=""):
+    return "\n\n".join([f"# RULEBOOK (extract)\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}",
+                         f"# RAW TABLES (in T)\n{card}"] +
+                        ([f"# CANONICAL TABLES OF THIS SHOP'S INDUSTRY (besides orders / lines; the toolkit computes the rulebook "
+                          f"definitions from them; helpers split_vehicle, model_line, brand_of, split_jobs are imported)\n{industry_doc}"] if industry_doc else []) +
+                        [f"# EXAMPLES (mapping programs of other shops)\n{examples}",
+                         "# TASK\nWrite the mapping program for this business (the RAW TABLES above, not the examples' tables)."])
+
+
+def user_msg(rulebook, biz_readme, card, q=None, canon_card=None, notes=None):
+    parts = [f"# RULEBOOK\n{rulebook}", f"# BUSINESS README\n{biz_readme.strip() or '(empty)'}", f"# RAW TABLES (in T)\n{card}"]
+    if canon_card is not None:
+        parts.append(f"# CANONICAL TABLES (in C)\n{canon_card}\n\nNOTES:\n{notes or ''}")
+    if q is None: parts.append("Write the program that builds C and NOTES.")
+    else: parts.append(f"# QUESTION\nas_of_date (TODAY): {q['as_of_date']}\nquestion: {q['question']}{clean_hint(q)}\n\nWrite the program.")
+    return "\n\n".join(parts)
+
+
+CODE_RE = re.compile(r"```(?:python|py)?\s*\n(.*?)```", re.S)
+
+
+def extract_code(text):
+    if "</think>" in text: text = text.rsplit("</think>", 1)[1]
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
+    m = CODE_RE.findall(text)
+    if m: return textwrap.dedent(max(m, key=len))
+    m = re.search(r"```(?:python|py)?\s*\n(.*)$", text, re.S)
+    if m and ("ANSWER" in m.group(1) or re.search(r"\bC\s*(=|\[)", m.group(1))): return textwrap.dedent(m.group(1))
+    return None
+
+
+def _target_key(st):
+    if isinstance(st, ast.Assign) and len(st.targets) == 1: return ast.unparse(st.targets[0])
+    if isinstance(st, ast.AnnAssign): return ast.unparse(st.target)
+    return None
+
+
+def splice(prev, frag):
+    try: P, F = ast.parse(prev).body, ast.parse(frag).body
+    except SyntaxError: return None
+    store = lambda sts: {n.id for st in sts for n in ast.walk(st) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store)}
+    loaded = {n.id for st in F for n in ast.walk(st) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+    outs = {k for k in ("C", "ANSWER") if any(_target_key(st) == k for st in P)}
+    partial = bool((loaded - store(F)) & store(P)) or bool(outs - store(F))
+    if not P or not F or not partial: return None
+    first = {}
+    for i, st in enumerate(F):
+        k = _target_key(st)
+        if k is not None: first.setdefault(k, i)
+    out, used = [], set()
+    for st in P:
+        k = _target_key(st); i = first.get(k) if k is not None else None
+        if i is not None and i not in used: out.append(F[i]); used.add(i)
+        else: out.append(st)
+    rest = [st for i, st in enumerate(F) if i not in used]
+    late = [st for st in rest if re.match(r"(C|ANSWER)\[", _target_key(st) or "")]
+    rest = [st for st in rest if not any(st is x for x in late)]
+    end = next((j for j in range(len(out) - 1, -1, -1) if _target_key(out[j]) in ("C", "ANSWER")), len(out))
+    return ast.unparse(ast.Module(body=out[:end] + rest + out[end:end + 1] + late + out[end + 1:], type_ignores=[]))
+
+
+def month_range(y, m):
+    s = pd.Timestamp(int(y), int(m), 1); return s, s + pd.offsets.MonthEnd(0)
+
+
+def round_half_up(x, ndigits=0):
+    q = Decimal(1).scaleb(-ndigits)
+    v = float(Decimal(repr(float(x))).quantize(q, rounding=ROUND_HALF_UP))
+    return int(v) if ndigits == 0 else v
+
+
+def norm_text(s): return ingest.norm_text(s)
+
+
+def match_names(query, candidates, k=5):
+    import difflib
+    cands = list(dict.fromkeys(str(c) for c in candidates if c is not None and str(c) != "nan"))
+    qn = ingest.strip_accents(norm_text(query))
+    keyed = {}
+    for c in cands: keyed.setdefault(ingest.strip_accents(norm_text(c)), c)
+    exact = [c for kk, c in keyed.items() if kk == qn]
+    sub = [c for kk, c in keyed.items() if qn and (qn in kk or kk in qn) and c not in exact]
+    fuzzy = [keyed[x] for x in difflib.get_close_matches(qn, list(keyed), n=k, cutoff=0.5)]
+    return list(dict.fromkeys(exact + sub + fuzzy))[:k]
+
+
+_BIZ, _CAN, _CTX = {}, {}, {}
+
+
+def _init_worker(cache_dir, split_dir):
+    _CTX["cache"], _CTX["split"] = cache_dir, split_dir
+    try: _CTX["rulebook"] = open(os.path.join(split_dir, "rulebook.md"), encoding="utf-8").read()
+    except OSError: _CTX["rulebook"] = ""
+    cal = pd.read_csv(os.path.join(split_dir, "calendar.csv"))
+    cal["date"] = pd.to_datetime(cal["date"]); _CTX["cal"] = cal; dm.set_calendar(cal)
+
+
+def _lru(d, key, loader, cap=6):
+    if key not in d:
+        if len(d) >= cap: d.pop(next(iter(d)))
+        d[key] = loader()
+    return d[key]
+
+
+def _namespace(bid, as_of=None, canon_path=None):
+    biz = _lru(_BIZ, bid, lambda: load_biz(_CTX["cache"], _CTX["split"], bid))
+    cal = _CTX["cal"]
+    def lunar_to_solar(ly, lm, ld, leap=False):
+        r = cal[(cal.lunar_year == int(ly)) & (cal.lunar_month == int(lm)) & (cal.lunar_day == int(ld)) &
+                (cal.lunar_leap.astype(str).str.lower().eq("true") == bool(leap))]
+        return r.date.iloc[0] if len(r) else pd.NaT
+    import datetime
+    g = {"T": {k: v.copy() for k, v in biz.tables.items()}, "RAW": biz.raw, "CAL": cal.copy(), "pd": pd, "np": np, "re": re,
+         "math": math, "datetime": datetime, "parse_num": ingest.parse_num, "parse_date": ingest.parse_date, "norm_text": norm_text,
+         "strip_accents": ingest.strip_accents, "match_names": match_names, "month_range": month_range, "round_half_up": round_half_up,
+         "lunar_to_solar": lunar_to_solar, "__name__": "__datamate__"}
+    if as_of is not None: g["TODAY"] = pd.Timestamp(as_of)
+    if canon_path:
+        can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
+        if can.get("v2"):
+            shop = dm.Shop(can["C"], as_of, {"data_end": can.get("data_end")})
+            g.update(dm.api(shop, as_of if as_of is not None else shop.last)); g["T"] = {k: v.copy() for k, v in biz.tables.items()}
+            try:
+                import tools
+                g.update(tools.bind_tools(shop, as_of, _CTX.get("rulebook", ""), can.get("data_end")))
+            except Exception as e: print(f"[tools] unavailable: {type(e).__name__}: {e}", flush=True)
+            if os.environ.get("ZC_UNITS"):
+                try:
+                    import units as _units
+                    _units.bind(g, _units.for_shop(_units.env_units(), bid))
+                except Exception as e: print(f"[units] unavailable: {type(e).__name__}: {e}", flush=True)
+            import sqlesc
+            g["sql_answer"] = sqlesc.make_sql_answer(can["C"], biz.tables)
+        else: g["C"] = {k: v.copy() for k, v in can["C"].items()}
+        g["NOTES"] = can.get("notes", "")
+    dm._TOOLKIT_NS.clear(); dm._TOOLKIT_NS.update(g)
+    return g
+
+
+class _Timeout(BaseException):
+    pass
+
+
+_ARMED = [False]
+
+
+def _alarm(*_):
+    if _ARMED[0]:
+        _ARMED[0] = False; raise _Timeout()
+
+
+def arm(seconds):
+    signal.signal(signal.SIGALRM, _alarm); _ARMED[0] = True; signal.alarm(int(seconds))
+
+
+def disarm():
+    signal.alarm(0); _ARMED[0] = False
+
+
+def _exec(code, g, timeout):
+    import io, contextlib
+    buf = io.StringIO()
+    arm(timeout)
+    try:
+        with contextlib.redirect_stdout(buf): exec(compile(code, "<program>", "exec"), g)
+    finally: disarm()
+    return buf.getvalue()
+
+
+def pmap(pool, fn, tasks, per_task=300, deadline=None):
+    nproc = max(1, getattr(pool, "_processes", 1) or 1)
+    if deadline is None: deadline = (per_task + 60) * math.ceil(max(1, len(tasks)) / nproc) + 600
+    t0 = time.time(); asy = [(t[0], pool.apply_async(fn, (t,))) for t in tasks]
+    for key, ar in asy:
+        try: yield ar.get(timeout=max(1.0, t0 + deadline - time.time()))
+        except BaseException as e: yield key, {"ok": False, "error": f"worker failed: {type(e).__name__}: {e}"[:300], "t": 0.0}
+
+
+def _err(e, out=""):
+    if isinstance(e, _Timeout): return {"ok": False, "error": "timeout: the program ran too long", "stdout": out[-800:]}
+    tb = traceback.format_exc().splitlines()
+    where = [l.strip() for l in tb if 'File "<program>"' in l][-2:]
+    msg = f"{type(e).__name__}: {e}"[:600]
+    if isinstance(e, FileNotFoundError): msg += "\n(Do not read files: every table is already loaded in T.)"
+    return {"ok": False, "error": msg + ("\nat " + " -> ".join(where) if where else ""), "stdout": out[-800:]}
+
+
+_START = None
+START_SLOTS = 1 << 16
+
+
+def _timed(arg):
+    slot, fn, task = arg
+    if _START is not None: _START[slot] = time.time()
+    return fn(task)
+
+
+def run_code(task):
+    key, bid, as_of, code, timeout, canon_path = task[:6]
+    t0 = time.time(); out = ""
+    try:
+        g = _namespace(bid, as_of, canon_path)
+        out = _exec(code, g, timeout)
+        if "ANSWER" not in g: r = {"ok": False, "error": "the program did not assign ANSWER", "stdout": out[-1500:]}
+        else: r = {"ok": True, "answer": fmt_answer(g["ANSWER"]), "stdout": out[-1500:]}
+    except dm.Unanswerable as e: r = {"ok": True, "answer": {"type": "unanswerable", "answer": None}, "reason": str(e)[:200], "stdout": out[-600:]}
+    except BaseException as e: r = _err(e, out)
+    alts = task[6] if len(task) > 6 else ()
+    if alts and r.get("ok"): r["alt"] = [_alt_answer(code, bid, as_of, p, timeout) for p in alts]
+    r["t"] = time.time() - t0
+    return key, r
+
+
+def _alt_answer(code, bid, as_of, path, timeout):
+    try:
+        g = _namespace(bid, as_of, path); _exec(code, g, timeout)
+        return fmt_answer(g["ANSWER"]) if "ANSWER" in g else None
+    except dm.Unanswerable: return {"type": "unanswerable", "answer": None}
+    except BaseException: return None
+
+
+CANON_STATUS = {"hoàn thành", "huỷ", "trả hàng", "đang giao"}
+
+
+def check_canon(C):
+    errs, warns = [], []
+    if not isinstance(C, dict) or not C: return ["C must be a non-empty dict of DataFrames"], []
+    for k, v in C.items():
+        if not isinstance(v, pd.DataFrame): errs.append(f"C[{k!r}] is {type(v).__name__}, not a DataFrame")
+    if errs: return errs, warns
+    o = C.get("orders")
+    if o is not None:
+        for c in ("order_id", "order_date", "status", "valid"):
+            if c not in o.columns: errs.append(f"C['orders'] lacks column {c!r}")
+        if "status" in o.columns:
+            if o["status"].isna().any(): errs.append(f"C['orders'].status is empty for {int(o['status'].isna().sum())} orders (a raw status label was not mapped)")
+            bad = sorted(set(o["status"].dropna().astype(str)) - CANON_STATUS)
+            if bad: errs.append(f"C['orders'].status has non-canonical values {bad[:8]} (allowed: {sorted(CANON_STATUS)})")
+        if "order_id" in o.columns and o["order_id"].duplicated().any():
+            errs.append(f"C['orders'].order_id is not unique ({int(o['order_id'].duplicated().sum())} duplicates); orders must have one row per order")
+        if "valid" in o.columns and not pd.api.types.is_bool_dtype(o["valid"]): errs.append("C['orders'].valid must be a bool column")
+        if "order_date" in o.columns and not pd.api.types.is_datetime64_any_dtype(o["order_date"]): errs.append("C['orders'].order_date must be datetime64")
+        if "valid" in o.columns and "status" in o.columns and pd.api.types.is_bool_dtype(o["valid"]):
+            if o.loc[o["status"].isin(["huỷ", "trả hàng"]), "valid"].any(): errs.append("cancelled or returned orders are marked valid")
+    l = C.get("lines")
+    if l is not None:
+        for c in ("order_id", "item_name", "qty"):
+            if c not in l.columns: warns.append(f"C['lines'] lacks column {c!r}")
+        if o is not None and "order_id" in l.columns and "order_id" in o.columns:
+            miss = ~l["order_id"].isin(set(o["order_id"]))
+            if miss.mean() > 0.01: errs.append(f"{int(miss.sum())} lines have an order_id that is not in C['orders']")
+    return errs, warns
+
+
+def signature(C):
+    sig = {}
+    try:
+        o = C.get("orders")
+        if o is not None and {"order_date", "valid"} <= set(o.columns):
+            m = pd.to_datetime(o["order_date"]).dt.to_period("M").astype(str)
+            sig.update({f"orders:{k}": int(v) for k, v in o.groupby(m).size().items()})
+            v = o["valid"].astype(bool)
+            sig.update({f"valid:{k}": int(x) for k, x in v.groupby(m).sum().items()})
+            if "revenue" in o.columns:
+                sig.update({f"rev:{k}": int(round(float(x))) for k, x in o.loc[v, "revenue"].groupby(m[v]).sum().items()})
+        l = C.get("lines")
+        if l is not None and {"order_date", "qty_base", "valid"} <= set(l.columns):
+            m = pd.to_datetime(l["order_date"]).dt.to_period("M").astype(str); v = l["valid"].astype(bool)
+            sig.update({f"qty:{k}": round(float(x), 2) for k, x in l.loc[v, "qty_base"].groupby(m[v]).sum().items()})
+    except Exception as e: sig["error"] = type(e).__name__
+    return sig
+
+
+def run_mapping(task):
+    key, bid, code, rid, out_path = task
+    t0 = time.time()
+    try:
+        biz = _lru(_BIZ, bid, lambda: load_biz(_CTX["cache"], _CTX["split"], bid))
+        meta = canonmod.load_meta().get(rid, {}).get("tables") if rid and not rid.startswith("fmt:") else None
+        arm(300)
+        try: r = canonmod.run_mapping(code, biz, meta, llm=rid is None)
+        finally: disarm()
+        if r["ok"]:
+            C = r.pop("C"); pickle.dump({"C": C, "notes": r["notes"], "v2": True, "data_end": canonmod.data_end(biz)}, open(out_path, "wb"), protocol=4)
+            r.update(path=out_path, sig=signature(C), card=canonmod.card(C, r["notes"]))
+        else: r.pop("C", None)
+    except BaseException as e: r = _err(e)
+    r["t"] = time.time() - t0
+    return key, r
+
+
+def run_compile(task):
+    key, bid, code, timeout, out_path = task
+    t0 = time.time(); out = ""
+    try:
+        g = _namespace(bid)
+        out = _exec(code, g, timeout)
+        C = g.get("C"); errs, warns = check_canon(C)
+        if errs: r = {"ok": False, "error": "canonical tables failed the checks:\n- " + "\n- ".join(errs), "stdout": out[-1200:]}
+        else:
+            notes = str(g.get("NOTES", ""))
+            pickle.dump({"C": C, "notes": notes}, open(out_path, "wb"), protocol=4)
+            card = "\n".join(ingest.table_card(k, v) for k, v in C.items())
+            r = {"ok": True, "sig": signature(C), "card": card, "notes": notes, "warnings": warns, "stdout": out[-1500:], "path": out_path}
+    except BaseException as e: r = _err(e, out)
+    r["t"] = time.time() - t0
+    return key, r
+
+
+def agreement(sigs):
+    def agree(a, b):
+        return sum(1 for k in set(a) & set(b) if (abs(a[k] - b[k]) <= 1 if isinstance(a[k], (int, float)) else a[k] == b[k]))
+    scores = [sum(agree(s, t) for j, t in enumerate(sigs) if j != i) for i, s in enumerate(sigs)]
+    return max(range(len(sigs)), key=lambda i: (scores[i], -i)), scores
+
+
+TYPES = {"number", "percent", "string", "date", "boolean", "list", "table", "unanswerable"}
+
+
+def _py(v):
+    if isinstance(v, (np.integer,)): return int(v)
+    if isinstance(v, (np.floating,)): v = float(v)
+    if isinstance(v, (np.bool_,)): return bool(v)
+    if isinstance(v, (pd.Timestamp,)): return v.strftime("%Y-%m-%d")
+    if isinstance(v, float):
+        if not math.isfinite(v): raise ValueError("non-finite number in the answer (NaN / inf): check filters and empty selections")
+        v = round(v, 2); return int(v) if v == int(v) else v
+    return v
+
+
+def fmt_answer(a):
+    if not isinstance(a, dict) or a.get("type") not in TYPES: raise ValueError(f"ANSWER must be a dict with a valid type, got {a!r}"[:300])
+    t, v = a["type"], a.get("answer")
+    if t == "unanswerable": return {"type": t, "answer": None}
+    if v is None: raise ValueError("answer is None (use type unanswerable only if the released data cannot answer)")
+    if isinstance(v, (pd.Series, np.ndarray, pd.Index)): v = list(v)
+    if t in ("number", "percent"):
+        if isinstance(v, (list, tuple)) and len(v) == 1: v = v[0]
+        v = _py(v) if not isinstance(v, str) else _py(float(ingest.parse_num(v)))
+        if not isinstance(v, (int, float)) or isinstance(v, bool): raise ValueError("number answer is not numeric")
+    elif t == "string":
+        if isinstance(v, (list, tuple)) and len(v) == 1: v = v[0]
+        v = str(v).strip()
+        if not v: raise ValueError("empty string answer")
+    elif t == "date":
+        if not (isinstance(v, str) and re.fullmatch(r"\d{4}-\d{2}(-\d{2})?", v.strip())): v = pd.Timestamp(v).strftime("%Y-%m-%d")
+        v = v.strip()
+    elif t == "boolean":
+        if isinstance(v, str): v = v.strip().lower() in ("true", "có", "co", "yes", "1")
+        v = bool(v)
+    elif t == "list":
+        if not isinstance(v, (list, tuple)): v = [v]
+        v = [_py(x) if not isinstance(x, str) else x for x in v]
+    elif t == "table":
+        if isinstance(v, pd.DataFrame): v = {"columns": [str(c) for c in v.columns], "rows": v.values.tolist()}
+        v = {"columns": [str(c) for c in v["columns"]], "rows": [[_py(x) if not isinstance(x, str) else x for x in r] for r in v["rows"]]}
+    json.dumps(v)
+    return {"type": t, "answer": v}
+
+
+def canon(a):
+    t, v = a["type"], a.get("answer")
+    def el(x): return ("n", round(float(x), 2)) if isinstance(x, (int, float)) and not isinstance(x, bool) else ("s", norm(x))
+    if t in ("number", "percent"): return (t, round(float(v), 2))
+    if t == "string": return (t, norm(v))
+    if t == "list": return (t, tuple(el(x) for x in v))
+    if t == "table": return (t, tuple(norm(c) for c in v["columns"]), tuple(sorted(tuple(el(x) for x in r) for r in v["rows"])))
+    return (t, json.dumps(v, ensure_ascii=False, sort_keys=True))
+
+
+def suspicious(a):
+    t, v = a["type"], a.get("answer")
+    return (t in ("number", "percent") and v == 0) or (t == "list" and len(v) == 0) or (t == "table" and len(v["rows"]) == 0)
+
+
+_K_WORDS = r"(mat hang|san pham|mon|khach|nha cung cap|nhan vien|tho|ngay|thang|loai|nhom|dong xe|xe|lo|hang)"
+
+
+def answer_flags(question_key, a, period=None):
+    t, v, q = a.get("type"), a.get("answer"), question_key
+    flags = []
+    if t in ("abstain", None): return ["abstain"]
+    if t == "unanswerable": return ["unanswerable"]
+    if suspicious(a): flags.append("zero / empty result")
+    asks_pct = bool(re.search(r"(bao nhieu|may|bn|bnhiu|nhieu|nhiu)\s?%|(?<![\d,.])\s%|phan tram|ti le|ty le|tang truong|chiem bao nhieu", q))
+    if asks_pct and t == "number": flags.append("question asks a percentage")
+    if t == "percent" and isinstance(v, (int, float)) and abs(v) > 1000: flags.append("percentage beyond 1000 %")
+    m = re.search(r"\btop (\d{1,2})\b|(?<![/\-\d])\b(\d{1,2}) " + _K_WORDS + r"\b.*\b(nhat|chay|nhieu|it)\b", q)
+    names = t == "list" and isinstance(v, list) and v and all(isinstance(x, str) for x in v)
+    if m and names and len(v) > int(m.group(1) or m.group(2)): flags.append(f"list of {len(v)}, question asks {m.group(1) or m.group(2)}")
+    if names and len(v) != len(set(v)): flags.append("duplicates in list")
+    if re.search(r"\b(bao nhieu|may) (don|bill|hoa don|lan|khach|luot|phieu|lo|mat hang|san pham|dot|chiec|xe)\b", q) and t == "number" \
+            and isinstance(v, (int, float)) and (v < 0 or v != int(v)): flags.append("a count must be a non-negative integer")
+    if re.search(r"\b(ngay nao|hom nao|bua nao)\b", q) and t != "date": flags.append("question asks a date")
+    if t == "date" and period and isinstance(v, str) and len(v) == 10 and re.search(r"\b(ngay nao|hom nao|bua nao)\b", q) \
+            and not re.search(r"\bhan\b|het han|\blo\b", q):
+        if not (period["start"] <= v <= period["end"]): flags.append(f"date {v} outside the asked period {period['start']}..{period['end']}")
+    return flags
+
+
+CARDS = {}
+
+
+def load_biz(cache_dir, split_dir, bid):
+    p = os.path.join(cache_dir, bid + ".pkl") if cache_dir else None
+    if p and os.path.isfile(p): return pickle.load(open(p, "rb"))
+    biz = ingest.load_business(os.path.join(split_dir, "data", bid))
+    if p: os.makedirs(cache_dir, exist_ok=True); pickle.dump(biz, open(p, "wb"), protocol=4)
+    return biz
+
+
+def select_subset(qs, subset):
+    byb = defaultdict(list)
+    for q in sorted(qs, key=lambda q: q["id"]): byb[q["business_id"]].append(q)
+    if not byb: return []
+    per = max(1, subset // len(byb)); return [q for b in sorted(byb) for q in byb[b][:per]]
+
+
+def shard_of(qs, n):
+    cnt = Counter(q["business_id"] for q in qs); load = [0] * n; out = {}
+    for b, c in sorted(cnt.items(), key=lambda x: (-x[1], x[0])):
+        j = load.index(min(load)); out[b] = j; load[j] += c
+    return out
+
+
+class Engine:
+    def __init__(self, a):
+        from vllm import LLM
+        import torch
+        tp = a.tp or max(1, torch.cuda.device_count())
+        half = torch.cuda.get_device_capability()[0] < 8
+        kw = {"enable_lora": True, "max_lora_rank": 64} if a.lora else {}
+        cfg = os.path.join(a.model, "config.json")
+        mt = str(json.load(open(cfg)).get("model_type", "")) if os.path.isfile(cfg) else ""
+        self.qwen3 = "qwen3" in a.model.lower() or mt.startswith("qwen3")
+        if os.path.isfile(cfg) and "vision_config" in json.load(open(cfg)):
+            kw["limit_mm_per_prompt"] = {"image": 0, "video": 0}
+        if a.quant: kw["quantization"] = a.quant
+        if getattr(a, "max_num_seqs", 0): kw["max_num_seqs"] = a.max_num_seqs
+        if getattr(a, "max_batched_tokens", 0): kw["max_num_batched_tokens"] = a.max_batched_tokens
+        kvd = getattr(a, "kv_dtype", "") or os.environ.get("ZC_KV_DTYPE", "")
+        if kvd: kw["kv_cache_dtype"] = kvd
+        t0 = time.time(); base = dict(model=a.model, tensor_parallel_size=tp, dtype="half" if half else "auto", max_model_len=a.max_len,
+                                      gpu_memory_utilization=a.gpu_util, enable_prefix_caching=True, seed=0, enforce_eager=a.eager)
+        spec = {"speculative_config": {"method": "mtp", "num_speculative_tokens": a.spec_mtp}} if getattr(a, "spec_mtp", 0) else {}
+        tries = [(kw, spec)]
+        if spec: tries.append((kw, {}))
+        if "kv_cache_dtype" in kw: tries += [({k: v for k, v in kw.items() if k != "kv_cache_dtype"}, spec)] + ([({k: v for k, v in kw.items() if k != "kv_cache_dtype"}, {})] if spec else [])
+        for n, (kw_, spec_) in enumerate(tries):
+            try: self.llm = LLM(**base, **kw_, **spec_); kw, spec = kw_, spec_; break
+            except Exception as e:
+                if n == len(tries) - 1: raise
+                print(f"[engine] {kw_.get('kv_cache_dtype', '')} {spec_} unavailable ({type(e).__name__}: {str(e)[:200]}); retrying without it", flush=True)
+                import gc, torch; gc.collect(); torch.cuda.empty_cache()
+        self.kv_tokens = self._kv_tokens()
+        self.prefix_budget = a.prefix_budget or (self.kv_tokens // 2 if self.kv_tokens else 32000)
+        print(f"[engine] {os.path.basename(a.model.rstrip('/'))} tp={tp} {kw} {spec} loaded in {time.time() - t0:.0f}s | "
+              f"KV cache {self.kv_tokens} tokens | prefix budget {self.prefix_budget}", flush=True)
+        self.lora = None
+        if a.lora:
+            from vllm.lora.request import LoRARequest
+            self.lora = LoRARequest("sft", 1, a.lora)
+        self.tok = self.llm.get_tokenizer(); self.a = a
+
+    def _kv_tokens(self):
+        for path in ("llm_engine.vllm_config.cache_config", "llm_engine.cache_config"):
+            obj = self.llm
+            try:
+                for name in path.split("."): obj = getattr(obj, name)
+                if obj.num_gpu_blocks: return int(obj.num_gpu_blocks) * int(obj.block_size)
+            except Exception: pass
+        return None
+
+    def render(self, msgs, think=None):
+        tk = os.environ.get("ZC_THINK_KW", "legacy")
+        use = {"legacy": "qwen3" in self.a.model.lower(),
+               "explicit": getattr(self, "qwen3", False), "default": False}.get(tk, "qwen3" in self.a.model.lower())
+        kw = {"enable_thinking": self.a.think if think is None else think} if use else {}
+        try: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, **kw)
+        except TypeError: return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+
+    def fit(self, conv, max_tokens, think=None):
+        for c in (conv, conv[:2] + conv[-2:] if len(conv) > 4 else None, conv[:2] if len(conv) > 2 else None):
+            if c is None: continue
+            p = self.render(c, think); n = len(self.tok.encode(p, add_special_tokens=False))
+            room = self.a.max_len - n - 16
+            if room >= min(max_tokens, 768): return p, min(max_tokens, room)
+        return None, 0
+
+    PREFIX_MARKS = ("\n\n# EXAMPLES", "\n\n# QUESTION", "\n\n# TASK")
+
+    @staticmethod
+    def prefix_of(p):
+        cuts = [c for c in (p.find(m) for m in Engine.PREFIX_MARKS) if c > 0]
+        return p[:min(cuts)] if cuts else p
+
+    def gen(self, convs, temps, seeds, max_tokens, think=None, json_schema=None, regex=None):
+        from vllm import SamplingParams
+        fitted = [self.fit(c, max_tokens, think) for c in convs]
+        idx = [i for i, (p, _) in enumerate(fitted) if p is not None]
+        groups = {}
+        for i in idx: groups.setdefault(self.prefix_of(fitted[i][0]), []).append(i)
+        waves, cur, cur_tok = [], [], 0
+        for prefix, members in groups.items():
+            t = len(self.tok.encode(prefix, add_special_tokens=False))
+            if cur and cur_tok + t > self.prefix_budget: waves.append(cur); cur, cur_tok = [], 0
+            cur.append((prefix, members)); cur_tok += t
+        if cur: waves.append(cur)
+        texts = [""] * len(convs); ntok = 0
+        for wave in waves:
+            warm = [fitted[m[0]][0] for _, m in wave if len(m) > 1]
+            if warm: self.llm.generate(warm, [SamplingParams(max_tokens=1)] * len(warm), use_tqdm=False, lora_request=self.lora)
+            members = [i for _, m in wave for i in m]
+            so = {}
+            if json_schema is not None or regex is not None:
+                kw = {"json": json_schema} if json_schema is not None else {"regex": regex}
+                try:
+                    from vllm.sampling_params import StructuredOutputsParams
+                    so = {"structured_outputs": StructuredOutputsParams(**kw)}
+                except ImportError:
+                    from vllm.sampling_params import GuidedDecodingParams
+                    so = {"guided_decoding": GuidedDecodingParams(**kw)}
+            sps = [SamplingParams(temperature=temps[i], top_p=1.0 if temps[i] == 0 else 0.95, max_tokens=fitted[i][1], seed=seeds[i], **so) for i in members]
+            outs = self.llm.generate([fitted[i][0] for i in members], sps, use_tqdm=False, lora_request=self.lora)
+            for i, o in zip(members, outs): texts[i] = o.outputs[0].text; ntok += len(o.outputs[0].token_ids)
+        if len(idx) < len(convs): print(f"  {len(convs) - len(idx)} prompts too long for max_len={self.a.max_len}: skipped", flush=True)
+        return texts, ntok
+
+
+class FakeEngine:
+    def __init__(self, responder): self.responder = responder
+    def gen(self, convs, temps, seeds, max_tokens, think=None):
+        outs = [self.responder(c) for c in convs]; return outs, sum(len(o) // 4 for o in outs)
+
+
+def a_timeout(tasks):
+    return max((t[4] for t in tasks if len(t) == 6 and isinstance(t[4], (int, float))), default=300)
+
+
+def generate_and_run(engine, pool, items, greedy, make_task, runner, repairs, max_tokens, temp, label, reflect=False, think=None):
+    attempts = defaultdict(list); convs = dict(items); pending = sorted(convs); reflected = set()
+    for rnd in range(repairs + 1):
+        if not pending: break
+        t0 = time.time()
+        temps = [0.0 if k in greedy else temp for k in pending]
+        seeds = [1000 * rnd + 17 * k[1] + 1 for k in pending]
+        texts, ntok = engine.gen([convs[k] for k in pending], temps, seeds, max_tokens, think)
+        t1 = time.time(); tasks, codes, nxt = [], {}, []
+        for k, text in zip(pending, texts):
+            convs[k] = convs[k] + [{"role": "assistant", "content": text}]
+            code = extract_code(text)
+            if code is None:
+                attempts[k].append({"round": rnd, "ok": False, "error": "no python code block", "gen": text[-400:]})
+                if rnd < repairs:
+                    convs[k].append({"role": "user", "content": "No ```python block was found. Output only the complete program in one ```python block."}); nxt.append(k)
+                continue
+            codes[k] = code; tasks.append(make_task(k, code))
+        for k, r in pmap(pool, runner, tasks, per_task=300 if runner in (run_mapping, run_compile) else a_timeout(tasks)):
+            att = {"round": rnd, "code": codes[k], **{x: r[x] for x in r if x not in ("t", "card")}, "exec_s": round(r["t"], 2)}
+            if "card" in r: att["card"] = r["card"]
+            attempts[k].append(att)
+            if not r["ok"]:
+                if rnd < repairs:
+                    convs[k].append({"role": "user", "content": f"The program failed:\n{r['error']}\nstdout:\n{r.get('stdout', '')[-600:]}\n"
+                                                                "Fix it and output the full corrected program."}); nxt.append(k)
+            elif reflect and rnd < repairs and k not in reflected and suspicious(r["answer"]):
+                reflected.add(k); att["reflect"] = True
+                convs[k].append({"role": "user", "content": f"The program returned {json.dumps(r['answer'], ensure_ascii=False)}. A zero or empty result often means "
+                                                            "a wrong filter (status labels, date range, name spelling: use match_names, unit). Re-check each filter "
+                                                            "against the actual values. If the result is really correct, output the same program again."})
+                nxt.append(k)
+        print(f"[{label}] round {rnd}: {len(pending)} gens, {ntok} tok in {t1 - t0:.0f}s ({ntok / max(t1 - t0, 1e-9):.0f} tok/s), "
+              f"exec {time.time() - t1:.0f}s, {len(nxt)} to redo", flush=True)
+        pending = sorted(nxt)
+    return attempts
+
+
+def last_ok(atts):
+    ok = [x for x in atts if x.get("ok")]
+    return ok[-1] if ok else None
+
+
+def build_parser():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("split"); ap.add_argument("out")
+    ap.add_argument("--model", default="Qwen/Qwen3-14B-AWQ"); ap.add_argument("--k", type=int, default=4)
+    ap.add_argument("--paths", default="", help="path of each sample: A = canonical C, B = raw T (default: all B, or AABB.. with --compile)")
+    ap.add_argument("--compile", action="store_true"); ap.add_argument("--kc", type=int, default=4)
+    ap.add_argument("--repairs", type=int, default=2); ap.add_argument("--subset", type=int, default=0)
+    ap.add_argument("--tau", type=float, default=0.5); ap.add_argument("--cache", default="")
+    ap.add_argument("--tp", type=int, default=0); ap.add_argument("--max-len", type=int, default=24576)
+    ap.add_argument("--shot-schema", type=float, default=0.0, help="P5 T01: weight of the shop-schema Jaccard when ranking the examples (0 = off)")
+    ap.add_argument("--dp-tp", type=int, default=1, help="GPUs per data-parallel process (tensor parallel inside it): 4 L4 = DP2 x TP2")
+    ap.add_argument("--think", action="store_true"); ap.add_argument("--workers", type=int, default=0)
+    ap.add_argument("--max-tokens", type=int, default=2048); ap.add_argument("--compile-tokens", type=int, default=6144)
+    ap.add_argument("--timeout", type=int, default=60); ap.add_argument("--temp", type=float, default=0.7)
+    ap.add_argument("--eager", action="store_true"); ap.add_argument("--no-reflect", action="store_true")
+    ap.add_argument("--lora", default="", help="LoRA adapter dir from train_sft.py")
+    ap.add_argument("--dp", type=int, default=1, help="data parallel: one model copy per GPU, businesses split across them")
+    ap.add_argument("--shard", default="", help="internal: i/N")
+    ap.add_argument("--chunk", type=int, default=0, help="businesses per chunk (answers appended after each chunk)")
+    ap.add_argument("--budget", type=float, default=0, help="wall-clock budget in seconds: fast mode / abstain when running out")
+    ap.add_argument("--hard-deadline", type=float, default=0, help="pipeline: epoch seconds at which every unanswered question is "
+                    "abstained and the run ends (Kaggle's 12 h session, set from ZC_DEADLINE by eval_flow); unlike --budget no fast mode")
+    ap.add_argument("--log-dir", default="", help="also write one JSON log per question here (Docker: /result/logs)")
+    ap.add_argument("--v1", action="store_true", help="old pipeline (LLM writes raw pandas / compile programs) instead of the toolkit")
+    ap.add_argument("--qw", type=float, default=2.0, help="v2: vote weight of the rule-based template program (0 = off)")
+    ap.add_argument("--shots", type=int, default=4, help="v2: few-shot examples per question")
+    ap.add_argument("--map-llm", action="store_true", help="v2: LLM mapping candidates even when a reference program fits")
+    ap.add_argument("--no-llm", action="store_true", help="v2: no model at all (reference mappings + template programs only)")
+    ap.add_argument("--pipeline", action="store_true", help="pipelined scheduler: generation, execution and repairs overlap; GPU processes steal businesses")
+    ap.add_argument("--active", type=int, default=2, help="pipeline: businesses answering at once per GPU (prefix-cache locality)")
+    ap.add_argument("--low-water", type=int, default=64, help="pipeline: admit one more business when fewer requests are queued")
+    ap.add_argument("--claim-dir", default="", help="internal: shared claim directory of the GPU processes")
+    ap.add_argument("--claim-procs", type=int, default=1, help="internal: number of GPU processes sharing the claims")
+    ap.add_argument("--steal-chunk", type=int, default=16, help="pipeline: questions per stealable work unit")
+    ap.add_argument("--escalate", type=int, default=0, help="pipeline: extra thinking samples for low-confidence / flagged answers (0 = off)")
+    ap.add_argument("--esc-conf", type=float, default=0.75, help="pipeline: escalate when the vote share of the top answer is below this")
+    ap.add_argument("--esc-tokens", type=int, default=6144, help="pipeline: max tokens of an escalation (thinking) sample")
+    ap.add_argument("--esc-raw", type=int, default=1, help="pipeline: raw-table samples added when the answer is unanswerable and the mapping left tables unused")
+    ap.add_argument("--complete-map", type=int, default=1, help="pipeline: ask once per mapping sample to map the raw tables it left unused")
+    ap.add_argument("--qclean", type=int, default=1, help="pipeline: show the cleaned question + period next to the original")
+    ap.add_argument("--ref-adapt", type=int, default=3, help="pipeline: when the best transferred reference mapping misses conventions "
+                    "of this README (agent.readme_gaps), this many LLM rewrites of it that follow them (0 = off)")
+    ap.add_argument("--adj-rows", default="keep", choices=["keep", "move"], help="invoice adjustment rows written as lines ('Voucher', "
+                    "'Dùng N điểm', 'Phí ship'): keep = in the revenue as the book totals them (measured on held-out runs), move = out of the lines "
+                    "(rulebook §1 literally; v24 0.747); both fill orders.order_discount / points_discount / shipping_fee")
+    ap.add_argument("--industry-kit", type=int, default=1, help="pipeline: canonical tables + toolkit of the reference rulebook's industries "
+                    "(src/industry.py: phone shops, repair shops, mother & baby) in the mapping / answer prompts of such shops (0 = off)")
+    ap.add_argument("--industry-raw", type=int, default=2, help="pipeline: for a shop of an industry whose rulebook section is not in "
+                    "the training rulebook: this many extra programs on the raw tables per question, the rule program's weight 1 "
+                    "and no --confirm shortcut (0 = treat it like any shop)")
+    ap.add_argument("--unans-unused", type=int, default=1, help="pipeline: an 'unanswerable' answer on an LLM mapping that left raw "
+                    "tables unused becomes abstain (train v6-v13: 16 such answers right, 42 wrong; 0 = off)")
+    ap.add_argument("--map-fallback", type=int, default=2, help="pipeline: when the vote on the chosen mapping abstains or says "
+                    "unanswerable, the same programs' vote on the next ranked candidate mappings (up to M-1 of them; replay v11 "
+                    "train: PA 0.967 -> 0.974; 1 = off)")
+    ap.add_argument("--map-vote", type=int, default=1, help="pipeline: every program of a question also runs on the next M-1 ranked "
+                    "candidate mappings and each mapping gets an equal share of the program's vote (1 = chosen mapping only)")
+    ap.add_argument("--sel-agree", type=float, default=30.0, help="pipeline: ranking points for a candidate mapping whose rule answers "
+                    "agree with the majority of the other candidates (share of questions; offline v9-v12: rule PA of the chosen "
+                    "candidate 0.919 -> 0.930, never worse; 0 = off)")
+    ap.add_argument("--map-repairs", type=int, default=-1, help="pipeline: repair rounds of a mapping sample (-1 = --repairs)")
+    ap.add_argument("--map-repair-think", type=int, default=1, help="pipeline: 0 = mapping repair rounds without reasoning (a repair is "
+                    "a local fix; round 1 succeeded 25 %% of the time without reasoning vs 31 %% with, at a fraction of the tokens)")
+    ap.add_argument("--think-budget", type=int, default=12288, help="pipeline: reasoning tokens of a thinking request before its "
+                    "reasoning is ended and the rest of the budget goes to the program (budget forcing; 0 = off)")
+    ap.add_argument("--seed-base", type=int, default=0, help="pipeline: shift every sampling seed (independent runs of a multi-run vote)")
+    ap.add_argument("--map-min-cands", type=int, default=2, help="pipeline: --map-retry runs when fewer candidate mappings than this "
+                    "ran (2: a single candidate leaves no choice and no fallback)")
+    ap.add_argument("--map-retry", type=int, default=1, help="pipeline: when every LLM mapping sample of a business fails, one more "
+                    "batch of --kc samples (fresh seeds) before falling back to raw-table programs")
+    ap.add_argument("--select-rules", type=int, default=1, help="pipeline: rank candidate mappings also by how often the rule programs "
+                    "of the business's questions fail on them (coverage - warnings - 30 x failure share)")
+    ap.add_argument("--confirm", type=int, default=0, help="pipeline: rule program + the greedy sample first; when they agree that is "
+                    "the answer, else the other k-1 samples (offline on v4b: same PA, 61 %% fewer LLM samples)")
+    ap.add_argument("--q-inflight", type=int, default=64, help="pipeline: questions answering at once per GPU process")
+    ap.add_argument("--deadline", type=float, default=0, help="internal: absolute end time (epoch s) of the whole run")
+    ap.add_argument("--think-map", action="store_true", help="thinking mode for the mapping programs only (3x token budget)")
+    ap.add_argument("--quant", default="", help="vLLM quantization for an unquantised checkpoint, e.g. fp8 (L4 / 5090)")
+    ap.add_argument("--prefix-budget", type=int, default=0, help="tokens of distinct shared prefixes per generation wave (0 = half the KV cache vLLM allocated)")
+    ap.add_argument("--gpu-util", type=float, default=0.92, help="vLLM gpu_memory_utilization (weights + activations + KV cache)")
+    ap.add_argument("--max-num-seqs", type=int, default=0, help="vLLM max concurrent sequences (0 = vLLM default)")
+    ap.add_argument("--max-batched-tokens", type=int, default=0, help="vLLM max tokens per scheduler step (0 = vLLM default)")
+    ap.add_argument("--kv-dtype", default="", help="vLLM kv_cache_dtype ('fp8': twice the KV tokens; '' = model dtype)")
+    ap.add_argument("--spec-mtp", type=int, default=0, help="speculative decoding with the model's MTP head, N draft tokens (Qwen3.5); falls back to plain decoding")
+    ap.add_argument("--prefer-map", default="", help="pipeline: regex of a mapping source (e.g. 'fmt:automap') chosen whenever it runs "
+                    "without a heavy warning (the deterministic mapper of the rule-first stage: train 3000 / 3000)")
+    ap.add_argument("--fake-responder", default="", help="tests: python file defining responder(conv) -> text; no model is loaded")
+    ap.add_argument("--flow", default="legacy", choices=["legacy", "hybrid"], help="hybrid: src/hybrid.py (rules only prepare context / check)")
+    ap.add_argument("--prompt", default="compact", choices=["compact", "full"], help="hybrid: compact API signatures | full API_DOC")
+    ap.add_argument("--hints", type=int, default=1, help="hybrid: the # HINTS block (src/hints.py)")
+    ap.add_argument("--grammar", type=int, default=0, help="hybrid: grammar-constrained decoding (src/grammar.py); off by QĐ12 (WP1: 32x slower)")
+    ap.add_argument("--max-enum", type=int, default=5000, help="hybrid: entity values enumerated in the grammar per kind (more: free string)")
+    ap.add_argument("--escape", default="python", help="hybrid: escape blocks allowed (python | python,sql | none)")
+    ap.add_argument("--tools", default="find,period,check,help", help="hybrid: tools named in the prompt (all are bound in programs)")
+    ap.add_argument("--explore-turns", type=int, default=2, help="hybrid: tool exploration turns of the explore variant")
+    ap.add_argument("--variants", default="direct,rephrase", help="hybrid: prompt variants of round 2 (direct, rephrase, explore, think)")
+    ap.add_argument("--think-tokens", type=int, default=4096, help="hybrid: max new tokens of a 'think' variant sample (reasoning + program)")
+    ap.add_argument("--think-rescue", type=int, default=0, help="hybrid: a sample cut at the token cap without a program is re-run once with thinking (off: "
+                    "it answered more but with more wrong answers)")
+    ap.add_argument("--k-fast", type=int, default=2, help="hybrid: samples of round 1"); ap.add_argument("--k-max", type=int, default=8, help="hybrid: samples in all")
+    ap.add_argument("--early-stop", type=int, default=1, help="hybrid: stop after round 1 when its samples agree without flags")
+    ap.add_argument("--max-turns", type=int, default=2, help="hybrid: repair turns of a sample (precheck / execution errors)")
+    ap.add_argument("--review", type=int, default=0, help="hybrid: model reads suspicious results (M11, WP8): 1 missing data + postcheck flags, 2 missing data only, 3 = 2 + a sample still answering after the review is flagged")
+    ap.add_argument("--prefill-plan", type=int, default=0, help="hybrid: plain samples start with '<plan>' already written (the fine-tuned soups otherwise reason in free text and hit the token cap)")
+    ap.add_argument("--hint-counts", type=int, default=0, help="hybrid: hints name what the question counts ('mấy bữa' -> ngày) and its thresholds ('từ 10 củ trở lên')")
+    ap.add_argument("--consistency", type=int, default=0, help="hybrid (pure): general question <-> program consistency facts for the prechecks (src/consistency.py: periods, thresholds, answer form); never shown in the prompt")
+    ap.add_argument("--mask-check", type=int, default=0, help="hybrid: precheck error for len() of a True / False Series (counts every row)")
+    ap.add_argument("--size-use-check", type=int, default=0, help="hybrid: precheck error when the hints name a catalogue size ('sữa bột số 4') and the program does not filter by it")
+    ap.add_argument("--lrl", default="", help="hybrid (plan 3): learned rule cards (src/lrl.py), comma-separated jsonl files or names under <split>/lrl/; matched cards go to the # RULES block")
+    ap.add_argument("--lrl-max-df", type=float, default=0.02, help="hybrid: drop card triggers found in more than this share of the run's questions")
+    ap.add_argument("--lrl-k", type=int, default=4, help="hybrid: at most this many rule cards per question")
+    ap.add_argument("--lrl-check", type=int, default=1, help="hybrid: 1 = a matched card's check that flags the program asks for one repair turn")
+    ap.add_argument("--pure", type=int, default=0, help="hybrid: pure model (user 12/11): no rule-read hints in the prompt, the example retrieval (question text only), the prechecks or the flags; only the toolkit API / execution feedback")
+    ap.add_argument("--ticket-avg-check", type=int, default=0, help="hybrid: precheck error for aov(p) in a shop whose industry counts tickets (avg_ticket: revenue / tickets with money)")
+    ap.add_argument("--count-check", type=int, default=0, help="hybrid: precheck error when the question counts something (hints 'counted', no money word) and a by= function uses a money metric (weekday_avg(p, d) = revenue)")
+    ap.add_argument("--unit-check", type=int, default=0, help="hybrid: precheck error when the question counts a base unit ('bao nhiêu gói') and item_qty(p) has no filter")
+    ap.add_argument("--size-check", type=int, default=0, help="hybrid: precheck error when a size filter is a size the question does not name (size_qty(p, 'L') for 'bao nhiêu lon')")
+    ap.add_argument("--threshold-flag", type=int, default=0, help="hybrid: a sample whose program does not use a threshold the question sets (hints 'thresholds') counts as flagged")
+    ap.add_argument("--named-periods-flag", type=int, default=0, help="hybrid: a sample that does not use every period the question names (hints 'periods') counts as flagged")
+    ap.add_argument("--period-flag", type=int, default=0, help="hybrid: a sample whose program period differs from the question's (precheck warn) counts as flagged (half vote, no early stop)")
+    ap.add_argument("--fmt-fix", type=int, default=0, help="hybrid: answer wrapped in the hinted type before the vote ([5] -> 5 for a number, '2025-07' -> date)")
+    ap.add_argument("--retriever", default="ngram", choices=["ngram", "embed"]); ap.add_argument("--embed-model", default="")
+    ap.add_argument("--verifier", default=""); ap.add_argument("--verifier-weight", type=float, default=0.0)
+    ap.add_argument("--calibrator", default=""); ap.add_argument("--theta-abstain", type=float, default=0.5, help="hybrid: answer when conf >= this")
+    ap.add_argument("--units", default="", help="hybrid: executable rule units written by the model from the split's rulebook (src/lrl_gen.py --mode unit; files / dirs, comma-separated): verified per shop, shown as # SHOP FUNCTIONS and callable in programs (plan 4 W)")
+    ap.add_argument("--links", default="", help="hybrid (plan 5 W2): rulebook rows linked to each question by the model (src/link.py links.jsonl); they replace the keyword-matched definition cards of the # RULES block")
+    ap.add_argument("--selector", default="", help="hybrid: learned answer selector (src/selector.py json, trained on the solver's own logs of TRAINING shops): it picks the answer group and abstains below its theta (plan 4 V; replaces the vote)")
+    ap.add_argument("--exclude-bids", default="", help="hybrid: shops whose examples are never retrieved (held-out evaluation)")
+    ap.add_argument("--api-extra", type=int, default=0, help="v2 F: append to the API block the toolkit functions API_DOC does not name (api_spec)")
+    ap.add_argument("--hide-api", default="", help="hybrid: hidden API names, 'industry' = every industry function")
+    ap.add_argument("--bank-holdout", type=int, default=0, help="hybrid: the held-out shops' checked examples in the bank (final model only)")
+    ap.add_argument("--config", default="", help="JSON file of default flag values (configs/<name>.json); command-line flags override")
+    return ap
+
+
+def parse_with_config(ap, argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if "--config" in argv:
+        cfg = json.load(open(argv[argv.index("--config") + 1], encoding="utf-8"))
+        ap.set_defaults(**{k.lstrip("-").replace("-", "_"): v for k, v in cfg.items() if not k.startswith("_")})
+    return ap.parse_args(argv)
+
+
+def main():
+    ap = build_parser()
+    a = parse_with_config(ap)
+    if a.dp > 1 and not a.shard and not a.claim_dir: return run_dp(a)
+    if a.fake_responder:
+        g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
+        import pipeline
+        return run(a, engine=pipeline.FakeStepLLM(g["responder"]) if a.pipeline else FakeEngine(g["responder"]))
+    return run(a)
+
+
+def run(a, engine=None):
+    t_start = time.time(); os.makedirs(a.out, exist_ok=True)
+    os.environ["ZC_ADJ_ROWS"] = getattr(a, "adj_rows", "keep") or "keep"
+    if getattr(a, "units", ""): os.environ["ZC_UNITS"] = a.units
+    cache = a.cache or os.path.join(a.out, "cache")
+    qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    if a.subset: qs = select_subset(qs, a.subset)
+    if a.shard:
+        i, n = map(int, a.shard.split("/")); sh = shard_of(qs, n); qs = [q for q in qs if sh[q["business_id"]] == i]
+    rulebook = open(os.path.join(a.split, "rulebook.md"), encoding="utf-8").read()
+    bids = sorted({q["business_id"] for q in qs})
+
+    from concurrent.futures import ProcessPoolExecutor
+    nw = a.workers or max(1, (os.cpu_count() or 4))
+    os.makedirs(cache, exist_ok=True)
+    todo = [b for b in bids if not os.path.isfile(os.path.join(cache, b + ".pkl"))]
+    if todo:
+        with ProcessPoolExecutor(nw) as ex: list(ex.map(ingest._cache_one, [(a.split, cache, b) for b in todo]))
+    pipe = a.pipeline and not a.v1 and not a.no_llm
+    if pipe:
+        class LazyBiz(dict):
+            def __missing__(self, b): z = load_biz(cache, a.split, b); CARDS[b] = z.card(); self[b] = z; return z
+        bizs = LazyBiz()
+    else:
+        bizs = {b: load_biz(cache, a.split, b) for b in bids}
+        for b, z in bizs.items(): CARDS[b] = z.card()
+    print(f"ingest {len(bids)} businesses {time.time() - t_start:.0f}s", flush=True)
+
+    if not (a.no_llm and not a.v1): engine = engine or Engine(a)
+    print(f"model ready {time.time() - t_start:.0f}s", flush=True)
+    import multiprocessing as mp
+    global _START
+    _START = mp.get_context("fork").Array("d", START_SLOTS, lock=False)
+    pool = mp.get_context("fork").Pool(nw, initializer=_init_worker, initargs=(cache, a.split), maxtasksperchild=1000)
+    full_paths = (a.paths or ("".join("A" if i % 2 == 0 else "B" for i in range(a.k)) if a.compile else "B" * a.k))
+    full_paths = (full_paths * a.k)[:a.k]
+
+    sub = open(os.path.join(a.out, "submission.jsonl"), "w", encoding="utf-8")
+    logf = open(os.path.join(a.out, "logs.jsonl"), "w", encoding="utf-8")
+    clog = open(os.path.join(a.out, "compile_logs.jsonl"), "w", encoding="utf-8")
+    if a.log_dir: os.makedirs(a.log_dir, exist_ok=True)
+    if pipe:
+        import pipeline
+        pipeline.bind(sys.modules[__name__])
+        llm = engine if hasattr(engine, "add") and hasattr(engine, "step") else pipeline.StepLLM(engine, getattr(a, "think_budget", 0))
+        if getattr(a, "flow", "legacy") == "hybrid":
+            import hybrid
+            hybrid.HybridPipeline(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, a.claim_dir).run()
+        else: pipeline.Pipeline(a, llm, pool, rulebook, bizs, qs, sub, logf, clog, a.claim_dir).run()
+        pool.close(); sub.close(); logf.close(); clog.close()
+        print(f"DONE {len(qs)} questions in {time.time() - t_start:.0f}s", flush=True)
+        if not a.claim_dir: score_if_possible(a, qs)
+        return
+    chunks = [bids[i:i + a.chunk] for i in range(0, len(bids), a.chunk)] if a.chunk else [bids]
+    sec_per_q = None
+    for ci, cb in enumerate(chunks):
+        cq = [q for q in qs if q["business_id"] in set(cb)]; t_chunk = time.time(); elapsed = t_chunk - t_start
+        mode = "full"
+        if a.budget:
+            if elapsed > 0.97 * a.budget: mode = "abstain"
+            elif sec_per_q and elapsed + sec_per_q * len(cq) > 0.92 * a.budget: mode = "fast"
+        print(f"=== chunk {ci + 1}/{len(chunks)}: {len(cb)} businesses, {len(cq)} questions, mode={mode}, elapsed {elapsed:.0f}s", flush=True)
+        if mode == "abstain":
+            for q in cq: write_answer(sub, logf, a, q, {"type": "abstain"}, 0.0, Counter(), {}, {}, 0.0)
+            continue
+        if not a.v1:
+            k = 0 if a.no_llm else (a.k if mode == "full" else 1)
+            canon = canon_stage_v2(engine, pool, a, rulebook, bizs, cb, clog)
+            qatt, path_of, by_q, rule = answer_stage_v2(engine, pool, a, rulebook, bizs, cq, canon, k, a.repairs if mode == "full" else 1)
+            per_q = (time.time() - t_chunk) / max(len(cq), 1)
+            for q in cq:
+                votes, rep = Counter(), {}
+                rr = rule.get(q["id"]); total = float(k)
+                if rr and rr.get("ok"):
+                    c = canon_of(rr["answer"]); votes[c] += a.qw; rep[c] = rr["answer"]; total += a.qw
+                for kk in sorted(by_q[q["id"]]):
+                    r = last_ok(qatt[kk])
+                    if r: c = canon_of(r["answer"]); votes[c] += 1.0; rep.setdefault(c, r["answer"])
+                if votes and total:
+                    top, n = votes.most_common(1)[0]; conf = n / total
+                    final = rep[top] if conf >= a.tau else {"type": "abstain"}
+                else: conf, final = 0.0, {"type": "abstain"}
+                samples = {f"{kk[1]}{path_of[kk]}": qatt[kk] for kk in sorted(by_q[q["id"]])}
+                if rr: samples["rule"] = rr
+                write_answer(sub, logf, a, q, final, conf, votes, samples, path_of, per_q)
+            sub.flush(); logf.flush()
+            sec_per_q = (time.time() - t_start) / max(1, sum(len([q for q in qs if q["business_id"] in set(c)]) for c in chunks[:ci + 1]))
+            continue
+        paths = full_paths if mode == "full" else "B"
+        k = len(paths)
+        canon = compile_stage(engine, pool, a, rulebook, bizs, cb, clog) if (a.compile and "A" in paths) else {}
+        qatt, path_of, by_q = answer_stage(engine, pool, a, rulebook, bizs, cq, canon, paths, a.repairs if mode == "full" else 1)
+        per_q = (time.time() - t_chunk) / max(len(cq), 1)
+        for q in cq:
+            res = [(kk, last_ok(qatt[kk])) for kk in sorted(by_q[q["id"]])]
+            res = [(kk, r["answer"]) for kk, r in res if r]
+            votes = Counter(canon_of(x) for _, x in res); rep = {canon_of(x): x for _, x in res}
+            if votes:
+                top, n = votes.most_common(1)[0]; conf = n / k
+                final = rep[top] if conf >= a.tau else {"type": "abstain"}
+            else: conf, final = 0.0, {"type": "abstain"}
+            write_answer(sub, logf, a, q, final, conf, votes, {f"{kk[1]}{path_of[kk]}": qatt[kk] for kk in sorted(by_q[q["id"]])}, path_of, per_q)
+        sub.flush(); logf.flush()
+        sec_per_q = (time.time() - t_start) / max(1, sum(len([q for q in qs if q["business_id"] in set(c)]) for c in chunks[:ci + 1]))
+    pool.close(); sub.close(); logf.close(); clog.close()
+    print(f"DONE {len(qs)} questions in {time.time() - t_start:.0f}s", flush=True)
+    score_if_possible(a, qs)
+
+
+def write_answer(sub, logf, a, q, final, conf, votes, samples, path_of, elapsed):
+    sub.write(json.dumps({"id": q["id"], **final}, ensure_ascii=False) + "\n")
+    rec = {"id": q["id"], "question": q["question"], "business_id": q["business_id"], "as_of_date": q["as_of_date"], "final": final,
+           "conf": conf, "elapsed_s": round(elapsed, 2), "votes": [[str(k), v] for k, v in votes.most_common()], "samples": samples}
+    logf.write(json.dumps(rec, ensure_ascii=False, default=str) + "\n")
+    if a.log_dir:
+        json.dump(rec, open(os.path.join(a.log_dir, f"{q['id']}.json"), "w", encoding="utf-8"), ensure_ascii=False, default=str, indent=1)
+
+
+def compile_stage(engine, pool, a, rulebook, bizs, bids, clog):
+    cdir = os.path.join(a.cache or a.out, "canon_" + (a.shard.replace("/", "of") or "main")); os.makedirs(cdir, exist_ok=True); canon = {}
+    items = {(b, s): [{"role": "system", "content": SYSTEM_COMPILE}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b])}]
+             for b in bids for s in range(a.kc)}
+    catt = generate_and_run(engine, pool, items, {k for k in items if k[1] == 0},
+                            lambda k, code: (k, k[0], code, 300, os.path.join(cdir, f"{k[0]}.c{k[1]}.pkl")),
+                            run_compile, a.repairs, a.compile_tokens, a.temp, "compile")
+    for b in bids:
+        cands = [(s, last_ok(catt[(b, s)])) for s in range(a.kc)]
+        cands = [(s, r) for s, r in cands if r]
+        if cands:
+            best, scores = agreement([r["sig"] for _, r in cands])
+            s, r = cands[best]; canon[b] = r
+            print(f"  {b}: {len(cands)}/{a.kc} compiled, chose c{s} agreement {scores}", flush=True)
+        else: print(f"  {b}: compile failed", flush=True)
+        clog.write(json.dumps({"business_id": b, "chosen": canon[b]["path"] if b in canon else None,
+                               "attempts": {s: catt[(b, s)] for s in range(a.kc)}}, ensure_ascii=False, default=str) + "\n")
+    clog.flush()
+    return canon
+
+
+def rulebook_extract(rulebook):
+    secs = re.split(r"\n(?=## )", rulebook)
+    keep = [x for x in secs if re.match(r"## \d+\.\s*(Đơn hàng|Theo ngành|Cách ghi)", x)]
+    return "\n".join(keep) if keep else rulebook
+
+
+resolvable = canonmod.resolvable
+
+
+def map_examples(biz, bid, exclude_own, k=2):
+    meta = canonmod.load_meta(); progs = canonmod.ref_programs(formats=False)
+    cards = json.load(open(os.path.join(canonmod.REF_DIR, "_cards.json"), encoding="utf-8")) if os.path.isfile(os.path.join(canonmod.REF_DIR, "_cards.json")) else {}
+    out = []
+    for rid in canonmod.nearest_refs(biz, k, meta, exclude=(bid,) if exclude_own else ()):
+        out.append(f"## Example shop: raw tables\n{cards.get(rid, '(card not available)')}\n## Its mapping program\n```python\n{progs[rid].strip()}\n```")
+    return "\n\n".join(out)
+
+
+def canon_stage_v2(engine, pool, a, rulebook, bizs, bids, clog):
+    cdir = os.path.join(a.cache or a.out, "canon2_" + (a.shard.replace("/", "of") or "main")); os.makedirs(cdir, exist_ok=True)
+    exclude_own = os.path.isfile(os.path.join(a.split, "answers.jsonl"))
+    progs, meta = canonmod.ref_programs(), canonmod.load_meta()
+    tasks = [((b, rid), b, code, rid, os.path.join(cdir, f"{b}.ref_{rid}.pkl")) for b in bids for rid, code in progs.items()
+             if not (exclude_own and rid == b) and resolvable(bizs[b], "generic" if rid.startswith("fmt:") else meta.get(rid, {}))]
+    cands = defaultdict(list); t0 = time.time()
+    for k, r in pmap(pool, run_mapping, tasks):
+        if r.get("ok"): cands[k[0]].append(("ref:" + k[1], r))
+    print(f"[map] transfer: {len(tasks)} reference programs tried, {sum(len(v) for v in cands.values())} fit, "
+          f"{sum(1 for b in bids if cands[b])}/{len(bids)} businesses mapped ({time.time() - t0:.0f}s)", flush=True)
+    need = [b for b in bids if a.map_llm or not cands[b]]
+    if need and engine is not None:
+        rb = rulebook_extract(rulebook)
+        items = {(b, s): [{"role": "system", "content": SYSTEM_MAP},
+                          {"role": "user", "content": user_msg_map(rb, bizs[b].readme, CARDS[b], map_examples(bizs[b], b, exclude_own))}]
+                 for b in need for s in range(a.kc)}
+        catt = generate_and_run(engine, pool, items, {k for k in items if k[1] == 0},
+                                lambda k, code: (k, k[0], code, None, os.path.join(cdir, f"{k[0]}.llm{k[1]}.pkl")),
+                                run_mapping, a.repairs, a.compile_tokens * (3 if a.think_map else 1), a.temp, "map",
+                                think=True if a.think_map else None)
+        for (b, sidx), atts in catt.items():
+            r = last_ok(atts)
+            if r: cands[b].append((f"llm:{sidx}", r))
+        for b in need: clog.write(json.dumps({"business_id": b, "llm_attempts": {s: catt[(b, s)] for s in range(a.kc)}}, ensure_ascii=False, default=str) + "\n")
+    canon = {}
+    for b in bids:
+        cs = cands[b]
+        if not cs: print(f"  {b}: no canonical tables", flush=True); continue
+        best, scores = agreement([r["sig"] for _, r in cs])
+        order = sorted(range(len(cs)), key=lambda i: (-cs[i][1]["coverage"], -scores[i], i))
+        src, r = cs[order[0]]; canon[b] = r
+        print(f"  {b}: {len(cs)} candidates, chose {src} coverage {r['coverage']:.0f}", flush=True)
+        clog.write(json.dumps({"business_id": b, "chosen": src, "candidates": [[x, y["coverage"]] for x, y in cs]}, ensure_ascii=False) + "\n")
+    clog.flush()
+    return canon
+
+
+def run_rule_eval(task):
+    key, bid, canon_path, qs, budget = task
+    t0 = time.time(); n = fail = 0; answers = {}
+    try:
+        can = _lru(_CAN, canon_path, lambda: pickle.load(open(canon_path, "rb")))
+        meta = {"data_end": can.get("data_end")}
+        for qid, as_of, text in qs:
+            if time.time() - t0 > budget: break
+            shop = dm.Shop(can["C"], as_of, meta)
+            try: pr = qparse.parse(text, as_of, shop)
+            except Exception: pr = None
+            if not pr: continue
+            n += 1
+            try:
+                arm(20)
+                try: a = fmt_answer(dm.run_program(pr[1], shop, as_of))
+                finally: disarm()
+                if a.get("type") == "unanswerable" or a.get("answer") in (0, 0.0, [], None): fail += 1; answers[qid] = None
+                else: answers[qid] = repr(canon_of(a))
+            except dm.Unanswerable: fail += 1; answers[qid] = None
+            except (Exception, _Timeout): fail += 1; answers[qid] = None
+        r = {"ok": True, "parsed": n, "fail": fail, "fail_share": fail / max(n, 1), "answers": answers}
+    except BaseException as e: r = _err(e)
+    r["t"] = time.time() - t0
+    return key, r
+
+
+def rule_text(q):
+    c = q.get("_clean") or {}
+    return c.get("clean") or q["question"]
+
+
+def _rule_on(bid, as_of, question, path, timeout):
+    can = _lru(_CAN, path, lambda: pickle.load(open(path, "rb")))
+    pr = qparse.parse(question, as_of, dm.Shop(can["C"], as_of, {"data_end": can.get("data_end")}))
+    if not pr: return None
+    _, r = run_code((None, bid, as_of, pr[1], timeout, path)); return pr[0], pr[1], r
+
+
+def run_qparse(task):
+    key, bid, as_of, question, canon_path, timeout = task[:6]
+    t0 = time.time(); r = {"ok": False, "error": "unparsed"}
+    try:
+        x = _rule_on(bid, as_of, question, canon_path, timeout)
+        if x:
+            tpl, code, r = x; r.update(code=code, tpl=tpl); r.pop("t", None)
+            alts = task[6] if len(task) > 6 else ()
+            if alts:
+                r["alt"] = []
+                for p in alts:
+                    try: y = _rule_on(bid, as_of, question, p, timeout)
+                    except BaseException: y = None
+                    r["alt"].append(y[2]["answer"] if y and y[2].get("ok") else None)
+    except BaseException as e: r = _err(e)
+    r["t"] = time.time() - t0
+    return key, r
+
+
+def answer_stage_v2(engine, pool, a, rulebook, bizs, qs, canon, k, repairs):
+    ex = fewshot.AnswerExamples(); exclude_own = os.path.isfile(os.path.join(a.split, "answers.jsonl"))
+    qmap = {q["id"]: q for q in qs}; items = {}; greedy = set(); path_of = {}
+    for q in qs:
+        b = q["business_id"]
+        if b in canon:
+            exs = ex.pick(q["question"], k=a.shots, exclude_business=b if exclude_own else None)
+            msgs = [{"role": "system", "content": SYSTEM_LIB},
+                    {"role": "user", "content": user_msg_lib(rulebook, bizs[b].readme, canon[b]["card"], fewshot.render_examples(exs), q)}]
+        else:
+            msgs = [{"role": "system", "content": SYSTEM_RAW}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q)}]
+        for sidx in range(k):
+            items[(q["id"], sidx)] = msgs; path_of[(q["id"], sidx)] = "L" if b in canon else "B"
+        greedy.add((q["id"], 0))
+    def make_task(kk, code):
+        q = qmap[kk[0]]; b = q["business_id"]
+        return (kk, b, q["as_of_date"], code, a.timeout, canon[b]["path"] if b in canon else None)
+    qatt = generate_and_run(engine, pool, items, greedy, make_task, run_code, repairs, a.max_tokens, a.temp, "answer",
+                            reflect=not a.no_reflect) if (engine is not None and k) else defaultdict(list)
+    rule = {}
+    if a.qw > 0:
+        tasks = [((q["id"], "Q"), q["business_id"], q["as_of_date"], rule_text(q), canon[q["business_id"]]["path"], a.timeout)
+                 for q in qs if q["business_id"] in canon]
+        for kk, r in pmap(pool, run_qparse, tasks, per_task=a.timeout): rule[kk[0]] = r
+        print(f"[rule] {sum(1 for r in rule.values() if r.get('ok'))}/{len(tasks)} questions answered by templates", flush=True)
+    by_q = defaultdict(list)
+    for kk in items: by_q[kk[0]].append(kk)
+    return qatt, path_of, by_q, rule
+
+
+def answer_stage(engine, pool, a, rulebook, bizs, qs, canon, paths, repairs):
+    qmap = {q["id"]: q for q in qs}; items = {}; path_of = {}; greedy = set()
+    for q in qs:
+        b = q["business_id"]
+        for s in range(len(paths)):
+            p = paths[s] if (paths[s] == "B" or b in canon) else "B"
+            if p == "A":
+                msgs = [{"role": "system", "content": SYSTEM_CANON},
+                        {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q, canon[b]["card"], canon[b]["notes"])}]
+            else:
+                msgs = [{"role": "system", "content": SYSTEM_RAW}, {"role": "user", "content": user_msg(rulebook, bizs[b].readme, CARDS[b], q)}]
+            key = (q["id"], s); items[key] = msgs; path_of[key] = p
+            if paths.index(paths[s]) == s: greedy.add(key)
+    def make_task(k, code):
+        q = qmap[k[0]]
+        return (k, q["business_id"], q["as_of_date"], code, a.timeout, canon[q["business_id"]]["path"] if path_of[k] == "A" else None)
+    qatt = generate_and_run(engine, pool, items, greedy, make_task, run_code, repairs, a.max_tokens, a.temp, "answer", reflect=not a.no_reflect)
+    by_q = defaultdict(list)
+    for k in items: by_q[k[0]].append(k)
+    return qatt, path_of, by_q
+
+
+def canon_of(x): return str(canon(x))
+
+
+def score_if_possible(a, qs):
+    ans_path = os.path.join(a.split, "answers.jsonl")
+    if not os.path.isfile(ans_path): return
+    import score
+    ids = {q["id"] for q in qs}
+    refs = {k: v for k, v in score.load(ans_path).items() if k in ids}
+    res, _ = score.score(refs, score.load(os.path.join(a.out, "submission.jsonl")), by="type")
+    print("SCORE", json.dumps({k: res.get(k, 0) for k in ("PA", "n", "correct", "wrong", "abstain")}), flush=True)
+    json.dump(res, open(os.path.join(a.out, "score.json"), "w"), ensure_ascii=False, indent=1)
+
+
+def run_dp(a):
+    import subprocess
+    t0 = time.time()
+    if a.fake_responder: n = max(1, a.dp // max(1, a.dp_tp))
+    else:
+        import torch; n = min(a.dp, max(1, torch.cuda.device_count() // max(1, a.dp_tp)))
+    argv = list(sys.argv[1:]); i = argv.index("--dp"); del argv[i:i + 2]
+    cache = a.cache or os.path.join(a.out, "cache"); os.makedirs(a.out, exist_ok=True)
+    nw = str(max(1, (a.workers or os.cpu_count() or 4) // n))
+    pipe = a.pipeline and not a.v1 and not a.no_llm
+    if pipe:
+        qs0 = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+        if a.subset: qs0 = select_subset(qs0, a.subset)
+        todo = [b for b in sorted({q["business_id"] for q in qs0}) if not os.path.isfile(os.path.join(cache, b + ".pkl"))]
+        os.makedirs(cache, exist_ok=True)
+        if todo:
+            from concurrent.futures import ProcessPoolExecutor
+            with ProcessPoolExecutor(max(1, os.cpu_count() or 4)) as ex: list(ex.map(ingest._cache_one, [(a.split, cache, b) for b in todo]))
+        print(f"[dp] ingested {len(todo)} businesses in {time.time() - t0:.0f}s", flush=True)
+        claims = os.path.join(a.out, "claims"); import shutil; shutil.rmtree(claims, ignore_errors=True); os.makedirs(claims)
+    procs = []
+    vis = [x.strip() for x in os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",") if x.strip()]
+    devs = vis if vis else [str(g) for g in range(n)]
+    for g in range(n):
+        args = [sys.executable, os.path.abspath(__file__), a.split, os.path.join(a.out, f"shard{g}")] + argv[2:] + \
+               (["--claim-dir", claims, "--claim-procs", str(n)] if pipe else ["--shard", f"{g}/{n}"]) + ["--cache", cache, "--tp", str(max(1, a.dp_tp)), "--workers", nw] + \
+               (["--deadline", f"{t0 + a.budget:.0f}"] if a.budget else [])
+        tpn = max(1, a.dp_tp); grp = ",".join(devs[(g * tpn + k) % len(devs)] for k in range(tpn))
+        procs.append(subprocess.Popen(args, env=dict(os.environ, CUDA_VISIBLE_DEVICES=grp),
+                                      stdout=open(os.path.join(a.out, f"shard{g}.log"), "w"), stderr=subprocess.STDOUT))
+    def merge(files=("submission.jsonl",)):
+        for f in files:
+            tmp = os.path.join(a.out, f + ".tmp")
+            with open(tmp, "w", encoding="utf-8") as w:
+                for g in range(n):
+                    p = os.path.join(a.out, f"shard{g}", f)
+                    if os.path.isfile(p):
+                        txt = open(p, encoding="utf-8").read(); w.write(txt[:txt.rfind("\n") + 1])
+            os.replace(tmp, os.path.join(a.out, f))
+    while any(p.poll() is None for p in procs):
+        merge(); time.sleep(5)
+    rcs = [p.wait() for p in procs]
+    for g in range(n): print(f"--- shard{g} rc={rcs[g]}\n" + "".join(open(os.path.join(a.out, f"shard{g}.log")).readlines()[-12:]), flush=True)
+    merge(("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"))
+    print(f"DP DONE {n} shards in {time.time() - t0:.0f}s", flush=True)
+    qs = [json.loads(l) for l in open(os.path.join(a.split, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    score_if_possible(a, select_subset(qs, a.subset) if a.subset else qs)
+
+
+if __name__ == "__main__":
+    main()

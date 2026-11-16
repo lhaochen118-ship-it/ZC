@@ -1,0 +1,1638 @@
+{
+"biz_101": {
+"tables": {
+"ban_hang": [
+"Giá bán",
+"Kết quả",
+"Nội dung",
+"Ngày tháng",
+"Đơn vị (tính)",
+"so_luong",
+"Thanh tien",
+"Quy ra ĐV lẻ",
+"Mã hóa đơn",
+"Đối tác"
+]
+},
+"optional": [],
+"doc": "flat sales book: one row per order line; status in \"Kết quả\"; base quantity already in \"Quy ra ĐV lẻ\""
+},
+"biz_102": {
+"tables": {
+"DonHang_ChiTiet": [
+"Mã đơn hàng",
+"Ngày đặt hàng",
+"Trạng thái đơn hàng",
+"Tên khách hàng",
+"Tên sản phẩm",
+"Số lượng sản phẩm",
+"Số lượng sản phẩm__unit",
+"Giá sản phẩm",
+"Tổng tiền",
+"Đơn vị tính"
+],
+"DanhSachQuyDoi": [
+"Tên sản phẩm",
+"Đơn vị quy đổi",
+"Tỉ lệ quy đổi",
+"Đơn vị cơ bản"
+]
+},
+"optional": [],
+"doc": "online-shop export: one row per order line (order cells may be blank on later lines); unit conversion table"
+},
+"biz_103": {
+"tables": {
+"DonHang_ChiTiet": [
+"Mã đơn hàng",
+"Ngày đặt hàng",
+"Trạng thái đơn hàng",
+"Tên khách hàng",
+"Tên sản phẩm",
+"Số lượng sản phẩm",
+"Số lượng sản phẩm__unit",
+"Giá sản phẩm",
+"Tổng tiền",
+"Đơn vị tính"
+],
+"DanhSachQuyDoi": [
+"Tên sản phẩm",
+"Đơn vị quy đổi",
+"Tỉ lệ quy đổi",
+"Đơn vị cơ bản"
+]
+},
+"optional": [],
+"doc": "online-shop export: one row per order line (order cells may be blank on later lines); unit conversion table"
+},
+"biz_104": {
+"tables": {
+"DonHang_ChiTiet": [
+"Mã đơn hàng",
+"Ngày đặt hàng",
+"Trạng thái đơn hàng",
+"Tên khách hàng",
+"Tên sản phẩm",
+"Số lượng sản phẩm",
+"Giá sản phẩm",
+"Tổng tiền",
+"Đơn vị tính"
+],
+"DanhSachQuyDoi": [
+"Tên sản phẩm",
+"Đơn vị quy đổi",
+"Tỉ lệ quy đổi",
+"Đơn vị cơ bản"
+]
+},
+"optional": [],
+"doc": "online-shop export: one row per order line (order cells may be blank on later lines); unit conversion table"
+},
+"biz_105": {
+"tables": {
+"SoBanHang": [
+"Hàng",
+"so_luong",
+"Unit",
+"Trị giá",
+"Status",
+"Giá lẻ",
+"Giờ",
+"Mã hóa đơn",
+"Ngày giao dịch",
+"Khách"
+],
+"DanhMuc": [
+"Tên món",
+"Đơn vị gốc",
+"ĐV nhập",
+"Hệ số"
+],
+"SoNhapHang": [
+"Số phiếu",
+"Ngày nhập",
+"Ghi chu",
+"Thành tiền",
+"Nhà cung cấp",
+"Tên mặt hàng",
+"Giá nhập",
+"ĐVT",
+"SL nhập"
+],
+"TonKho": [
+"Hàng hóa",
+"Đơn vị tính",
+"Tồn cuối"
+],
+"BangGia": [
+"Ngày áp dụng",
+"ten_hang",
+"Giá mới",
+"Giá cũ"
+]
+},
+"optional": [],
+"doc": "hand-kept sales book, one sheet per month: one row per order line; returns are lines with negative quantity in the same\norder; time of day in \"Giờ\"; purchases, stock snapshot, price list, unit conversions (DanhMuc)"
+},
+"biz_106": {
+"tables": {
+"DanhSachHoaDon": [
+"Mã hóa đơn",
+"Thời gian",
+"Mã KH",
+"Khách hàng",
+"Tổng tiền hàng",
+"Giảm giá",
+"Tổng sau giảm giá",
+"Khách đã trả",
+"Phương thức thanh toán",
+"Trạng thái",
+"Thời gian tạo"
+],
+"DanhSachHoaDonChiTiet": [
+"Mã hóa đơn",
+"STT",
+"Mã hàng",
+"Tên hàng",
+"Đơn vị tính",
+"Số lượng",
+"Đơn giá",
+"Giảm giá",
+"Thành tiền",
+"Số lượng quy đổi",
+"Giá vốn"
+],
+"DanhSachSanPham": [
+"Được bán trực tiếp",
+"Nhóm hàng(3 Cấp)",
+"Mã barcode",
+"Mã hàng",
+"Tồn lớn nhất",
+"Tên hàng",
+"Giá bán",
+"Loại hàng hóa",
+"Giá vốn",
+"ĐVT",
+"Đang kinh doanh",
+"Định mức tồn tối thiểu",
+"Thời gian tạo"
+],
+"SoQuy": [
+"Mã phiếu",
+"Thời gian",
+"Mã hóa đơn",
+"Phương thức thanh toán",
+"Giá trị"
+],
+"DanhSachDonViTinh": [
+"Mã hàng",
+"ĐVT",
+"Quy đổi",
+"Giá bán"
+],
+"DanhSachNhapHang": [
+"Mã nhập hàng",
+"Thời gian",
+"Mã NCC",
+"Cần trả NCC",
+"Trạng thái",
+"Ghi chú"
+],
+"DanhSachChiTietNhapHang": [
+"Mã nhập hàng",
+"STT",
+"Mã hàng",
+"ĐVT",
+"Số lượng",
+"Đơn giá"
+],
+"BaoCaoTonKho": [
+"Mã hàng",
+"Tên hàng",
+"ĐVT",
+"Tồn cuối kỳ"
+]
+},
+"optional": [],
+"doc": "POS export: invoice headers + invoice lines; payments (one row per payment) in SoQuy; catalogue, stock, purchases"
+},
+"biz_107": {
+"tables": {
+"SoBanHang": [
+"Trạng thái xử lý",
+"Tổng tiền",
+"ngay_ban",
+"Số lượng",
+"Số lượng__unit",
+"Nội dung",
+"don_gia",
+"Đơn vị (tính)",
+"Số lượng lẻ"
+]
+},
+"optional": [],
+"doc": "hand-kept sales book without order ids or customers: every row is one sale record (no orders to count); the sale date\nis an Excel serial number; base quantity in \"Số lượng lẻ\""
+},
+"biz_108": {
+"tables": {
+"DanhSachHoaDon": [
+"Mã hóa đơn",
+"Thời gian",
+"Mã KH",
+"Khách hàng",
+"Tổng tiền hàng",
+"Giảm giá",
+"Khách đã trả",
+"Trạng thái",
+"Thời gian tạo",
+"Tổng sau giảm giá",
+"Còn nợ",
+"Kênh bán",
+"Người bán"
+],
+"DanhSachHoaDonChiTiet": [
+"Mã hóa đơn",
+"Mã hàng",
+"Tên hàng",
+"Số lượng",
+"Đơn giá",
+"Giảm giá",
+"Thành tiền",
+"Số lượng quy đổi",
+"Đơn vị tính",
+"STT"
+],
+"DanhSachKhachHang": [
+"Đối tượng KH",
+"Tổng điểm",
+"Trạng thái",
+"Mã số thuế",
+"Mã khách hàng",
+"Tên khách hàng",
+"Điện thoại",
+"Ngày sinh",
+"Nhóm khách hàng",
+"Địa chỉ",
+"Người tạo",
+"Điểm hiện tại",
+"Ngày tạo"
+],
+"DanhSachSanPham": [
+"Mã hàng",
+"Tên hàng",
+"Nhóm hàng(3 Cấp)",
+"Mã barcode",
+"Loại hàng hóa",
+"Giá bán",
+"Được bán trực tiếp",
+"ĐVT",
+"Định mức tồn tối thiểu"
+],
+"DanhSachNhapHang": [
+"Mã nhập hàng",
+"Thời gian",
+"Mã NCC",
+"Cần trả NCC",
+"Trạng thái",
+"Ghi chú"
+],
+"DanhSachChiTietNhapHang": [
+"Mã nhập hàng",
+"STT",
+"Mã hàng",
+"ĐVT",
+"Số lượng",
+"Đơn giá"
+],
+"BaoCaoTonKho": [
+"Mã hàng",
+"Tên hàng",
+"ĐVT",
+"Tồn cuối kỳ"
+]
+},
+"optional": [],
+"doc": "POS export: invoice headers (debt left at the end of the data in \"Còn nợ\") + lines; customers with groups; purchases; stock"
+},
+"biz_109": {
+"tables": {
+"DuLieuBanHang": [
+"Mã hóa đơn",
+"Thời gian",
+"Mã KH",
+"Khách hàng",
+"Tổng tiền hàng",
+"Giảm giá",
+"Tổng sau giảm giá",
+"Khách đã trả",
+"Phương thức thanh toán",
+"Trạng thái",
+"Thời gian tạo",
+"Kênh bán",
+"Người bán"
+],
+"DanhSachHoaDonChiTiet": [
+"Mã hóa đơn",
+"STT",
+"Mã hàng",
+"Tên hàng",
+"Đơn vị tính",
+"Số lượng",
+"Đơn giá",
+"Giảm giá",
+"Thành tiền",
+"Số lượng quy đổi",
+"Giá vốn"
+],
+"DuLieuBanHang_2": [
+"Mã khách hàng",
+"Tổng điểm",
+"Tên khách hàng",
+"Điện thoại",
+"MST",
+"Trạng thái",
+"Loại hình khách",
+"Người tạo",
+"Nhóm khách hàng",
+"Ngày tạo",
+"Sinh nhật"
+],
+"DuLieuBanHang_1": [
+"Tồn lớn nhất",
+"Nhóm hàng(3 Cấp)",
+"Mã hàng",
+"Tên hàng",
+"Giá bán",
+"Định mức tồn tối thiểu",
+"Giá vốn",
+"Được bán trực tiếp",
+"ĐVT",
+"Đang kinh doanh",
+"Thời gian tạo"
+],
+"DuLieuBanHang_6": [
+"Mã phiếu",
+"Thời gian",
+"Mã hóa đơn",
+"Phương thức thanh toán",
+"Giá trị"
+],
+"DuLieuBanHang_7": [
+"Mã hàng",
+"ĐVT",
+"Quy đổi",
+"Giá bán"
+],
+"DuLieuBanHang_5": [
+"Mã nhập hàng",
+"STT",
+"Mã hàng",
+"ĐVT",
+"Số lượng",
+"Đơn giá"
+],
+"DuLieuBanHang_4": [
+"Mã nhập hàng",
+"Thời gian",
+"Mã NCC",
+"Cần trả NCC",
+"Trạng thái",
+"Ghi chú"
+],
+"DuLieuBanHang_3": [
+"Mã hàng",
+"Tên hàng",
+"ĐVT",
+"Tồn cuối kỳ"
+]
+},
+"optional": [],
+"doc": "POS export with generic sheet names: DuLieuBanHang = invoice headers, _1 products, _2 customers, _3 stock, _4 purchase\nheaders, _5 purchase lines, _6 payments (one row per payment), _7 unit conversions"
+},
+"biz_110": {
+"tables": {
+"danh_sach_hoa_don": [
+"Tien hang",
+"TongTien",
+"Mã bill",
+"Bên mua",
+"Ngày giao dịch",
+"Status",
+"Da tra",
+"Chưa trả"
+]
+},
+"optional": [],
+"doc": "invoice list only (one row per invoice, no item lines): invoice value, paid, unpaid at the end of the data"
+},
+"biz_111": {
+"tables": {
+"don_hang": [
+"Số KH",
+"Xử lý",
+"NgayBan",
+"Bán qua",
+"Còn lại",
+"Khách trả",
+"Tổng bill",
+"Phương thức TT",
+"Mã chứng từ"
+],
+"chi_tiet_don": [
+"SL quy đổi",
+"Thứ tự",
+"Giá đơn vị",
+"SL",
+"SL__unit",
+"T.Tiền",
+"ID SP",
+"Ma don",
+"Đơn vị (tính)"
+],
+"khach_hang": [
+"ma_kh",
+"Điểm tích lũy",
+"Nhóm",
+"Trạng thái",
+"Mã số thuế",
+"Loại hình khách",
+"Ngày sinh",
+"Phone",
+"Người tạo",
+"Addr",
+"Khách lẻ/sỉ",
+"Tổng điểm"
+],
+"san_pham": [
+"Được bán trực tiếp",
+"Mã barcode",
+"SKU",
+"Giá",
+"Đơn vị",
+"Loại hàng hóa",
+"Nhom hang",
+"Tồn nhỏ nhất",
+"Sản phẩm"
+],
+"thanh_toan": [
+"Thời gian thu",
+"Phương thức",
+"Tiền",
+"Mã phiếu thu",
+"Số HĐ"
+]
+},
+"optional": [],
+"doc": "relational export: orders, order lines, payments (one row per payment), customers (with group), products"
+},
+"biz_112": {
+"tables": {
+"So_chi_tiet_ban_hang": [
+"Ngày",
+"Mã đơn hàng",
+"Tên hàng hóa",
+"Đơn vị tính",
+"Số lượng",
+"Số lượng__unit",
+"Đơn giá",
+"Thành tiền",
+"Trạng thái",
+"Số lượng quy đổi"
+],
+"Danh s#U00e1ch h#U00e0ng h#U00f3a": [
+"Mã hàng hóa",
+"Mã vạch EAN",
+"Tồn nhỏ nhất",
+"Loại hàng hóa",
+"Tên hàng hóa",
+"Nhóm hàng hóa",
+"Đơn vị tính",
+"Giá bán",
+"Tồn lớn nhất",
+"Giá vốn"
+]
+},
+"optional": [],
+"doc": "sales book export: one row per order line, order info repeated on every line"
+},
+"biz_113": {
+"tables": {
+"SoBanHang": [
+"DonVi",
+"Ngày mua",
+"Số lượng lẻ",
+"thanh_tien",
+"Đơn giá bán",
+"SL bán",
+"Ghi chú TT",
+"Mặt hàng"
+]
+},
+"optional": [],
+"doc": "hand-kept sales book without order ids or customers: every row is one sale record; status in \"Ghi chú TT\"; base quantity in \"Số lượng lẻ\""
+},
+"biz_114": {
+"tables": {
+"ban_hang": [
+"Giá bán lẻ",
+"Đơn vị tính",
+"Mã GD",
+"Quy ra ĐV lẻ",
+"Sluong",
+"Sluong__unit",
+"Sản phẩm",
+"Tổng",
+"Tên khách",
+"Ngày",
+"trang_thai"
+]
+},
+"optional": [],
+"doc": "flat sales book: one row per order line; base quantity already in \"Quy ra ĐV lẻ\"; conversions in the README"
+},
+"biz_115": {
+"tables": {
+"So_chi_tiet_ban_hang": [
+"Ngày",
+"Mã đơn hàng",
+"Tên hàng hóa",
+"Đơn vị tính",
+"Số lượng",
+"Số lượng__unit",
+"Đơn giá",
+"Thành tiền",
+"Trạng thái",
+"Số lượng quy đổi",
+"Khách hàng"
+],
+"Danh s#U00e1ch h#U00e0ng h#U00f3a": [
+"Mã hàng hóa",
+"Được bán trực tiếp",
+"Tên hàng hóa",
+"Nhóm hàng hóa",
+"Loại hàng hóa",
+"Đơn vị tính",
+"Giá vốn",
+"Định mức tồn tối thiểu"
+],
+"B#U1ea3ng k#U00ea phi#U1ebfu giao h#U00e0ng": [
+"Ngày giao hàng",
+"Mã đơn hàng",
+"Lần giao",
+"Tên hàng hóa",
+"Đơn vị tính",
+"Số lượng giao",
+"Biển số xe",
+"Biển số xe__unit",
+"Người giao hàng"
+],
+"Chi ti#U1ebft c#U00f4ng n#U1ee3 theo h#U1ea1n": [
+"Mã đơn hàng",
+"Số ngày được nợ",
+"Hạn thanh toán"
+]
+},
+"optional": [
+"B#U1ea3ng k#U00ea phi#U1ebfu giao h#U00e0ng",
+"Chi ti#U1ebft c#U00f4ng n#U1ee3 theo h#U1ea1n"
+],
+"doc": "sales book export: one row per order line, order info repeated on every line; delivery trips; credit terms of credit orders"
+},
+"biz_116": {
+"tables": {
+"Bao_cao_ban_hang": [
+"Ngày",
+"Mã đơn hàng",
+"Tên hàng hóa",
+"Đơn vị tính",
+"Số lượng",
+"Số lượng__unit",
+"Đơn giá",
+"Thành tiền",
+"Trạng thái",
+"Số lượng quy đổi",
+"Khách hàng"
+],
+"Bao_cao_ban_hang_1": [
+"Mã hàng hóa",
+"Tên hàng hóa",
+"Nhóm hàng hóa",
+"Đơn vị tính",
+"Tồn nhỏ nhất",
+"Được bán trực tiếp",
+"Giá vốn",
+"Tồn lớn nhất"
+],
+"Bao_cao_ban_hang_2": [
+"Ngày giao hàng",
+"Mã đơn hàng",
+"Lần giao",
+"Tên hàng hóa",
+"Đơn vị tính",
+"Số lượng giao",
+"Biển số xe",
+"Biển số xe__unit",
+"Người giao hàng"
+],
+"Bao_cao_ban_hang_3": [
+"Mã đơn hàng",
+"Số ngày được nợ",
+"Hạn thanh toán"
+]
+},
+"optional": [
+"Bao_cao_ban_hang_2",
+"Bao_cao_ban_hang_3"
+],
+"doc": "sales book export: one row per order line, order info repeated on every line; delivery trips; credit terms of credit orders"
+},
+"biz_117": {
+"tables": {
+"SoBanHang": [
+"Giờ",
+"Mã phiếu",
+"TenKH",
+"Ngày lập",
+"Tiền",
+"Ghi chú TT",
+"Giá",
+"DonVi",
+"Số lượng hàng",
+"Số lượng hàng__unit",
+"Tên SP"
+],
+"DanhMuc": [
+"Hàng",
+"ĐV lớn",
+"ĐV nhỏ",
+"Hệ số QĐ"
+],
+"SoNhapHang": [
+"Số phiếu",
+"Product",
+"Ngày nhập",
+"ĐVT",
+"Thành tiền",
+"Nội dung",
+"Nhà cung cấp",
+"SL nhập",
+"Giá nhập"
+],
+"TonKho": [
+"Tồn thực",
+"Đơn vị",
+"Product"
+],
+"BangGia": [
+"Ngày áp dụng",
+"Giá cũ",
+"Giá mới",
+"TenHang"
+],
+"SoGiaoHang": [
+"ĐV gốc",
+"Biển số xe",
+"Biển số xe__unit",
+"Mã bill",
+"Lượt giao",
+"SL thực giao",
+"Tên hàng",
+"Ngày chở",
+"Người chở"
+],
+"SoHanNo": [
+"So hoa don",
+"Hạn nợ (ngày)",
+"Han tra"
+]
+},
+"optional": [],
+"doc": "hand-kept sales book: one row per order line; returns are negative-quantity lines of the same order; time in \"Giờ\";\ndeliveries (trips), credit terms, purchases, stock snapshot, price list, unit conversions (DanhMuc)"
+},
+"biz_118": {
+"tables": {
+"So_chi_tiet_ban_hang": [
+"Ngày",
+"Mã đơn hàng",
+"Tên hàng hóa",
+"Đơn vị tính",
+"Số lượng",
+"Số lượng__unit",
+"Đơn giá",
+"Thành tiền",
+"Trạng thái",
+"Số lượng quy đổi",
+"Khách hàng"
+],
+"Danh s#U00e1ch h#U00e0ng h#U00f3a": [
+"Mã hàng hóa",
+"Mã barcode",
+"Tên hàng hóa",
+"Loại hàng hóa",
+"Nhóm hàng hóa",
+"Đơn vị tính",
+"Tồn lớn nhất",
+"Được bán trực tiếp"
+],
+"B#U1ea3ng k#U00ea phi#U1ebfu giao h#U00e0ng": [
+"Ngày giao hàng",
+"Mã đơn hàng",
+"Lần giao",
+"Tên hàng hóa",
+"Đơn vị tính",
+"Số lượng giao",
+"Biển số xe",
+"Biển số xe__unit",
+"Người giao hàng"
+],
+"Chi ti#U1ebft c#U00f4ng n#U1ee3 theo h#U1ea1n": [
+"Mã đơn hàng",
+"Số ngày được nợ",
+"Hạn thanh toán"
+]
+},
+"optional": [
+"B#U1ea3ng k#U00ea phi#U1ebfu giao h#U00e0ng",
+"Chi ti#U1ebft c#U00f4ng n#U1ee3 theo h#U1ea1n"
+],
+"doc": "sales book export: one row per order line, order info repeated on every line; delivery trips; credit terms of credit orders"
+},
+"biz_119": {
+"tables": {
+"DanhSachHoaDon": [
+"Mã hóa đơn",
+"Thời gian",
+"Mã KH",
+"Khách hàng",
+"Tổng tiền hàng",
+"Giảm giá",
+"Khách đã trả",
+"Trạng thái",
+"Thời gian tạo",
+"Tổng sau giảm giá",
+"Còn nợ"
+],
+"DanhSachHoaDonChiTiet": [
+"Mã hóa đơn",
+"Mã hàng",
+"Tên hàng",
+"Số lượng",
+"Đơn giá",
+"Giảm giá",
+"Thành tiền",
+"Số lượng quy đổi",
+"STT"
+],
+"DanhSachKhachHang": [
+"Tổng điểm",
+"Mã khách hàng",
+"Ngày sinh",
+"Tên khách hàng",
+"Người tạo",
+"Đối tượng KH",
+"Điểm tích lũy",
+"Điện thoại",
+"MST",
+"Địa chỉ"
+],
+"DanhSachSanPham": [
+"Mã hàng",
+"Loại hàng hóa",
+"Tên hàng",
+"Tồn nhỏ nhất",
+"Được bán trực tiếp",
+"Nhóm hàng(3 Cấp)",
+"Giá bán",
+"ĐVT",
+"Mã vạch EAN",
+"Tồn lớn nhất"
+],
+"DanhSachNhapHang": [
+"Mã nhập hàng",
+"Thời gian",
+"Mã NCC",
+"Cần trả NCC",
+"Trạng thái",
+"Ghi chú"
+],
+"DanhSachChiTietNhapHang": [
+"Mã nhập hàng",
+"STT",
+"Mã hàng",
+"ĐVT",
+"Số lượng",
+"Đơn giá",
+"Lô",
+"Hạn sử dụng"
+],
+"BaoCaoTonKho": [
+"Mã hàng",
+"Tên hàng",
+"ĐVT",
+"Tồn cuối kỳ"
+],
+"DanhSachThuoc": [
+"Mã hàng",
+"Hoạt chất",
+"Thuốc kê đơn"
+],
+"DanhSachLoHang": [
+"Mã nhập hàng",
+"Mã hàng",
+"Lô",
+"Hạn sử dụng",
+"Số lượng (ĐVT cơ bản)"
+],
+"DanhSachHoaDonChiTietLo": [
+"Mã hóa đơn",
+"STT",
+"Lô",
+"Số lượng (ĐVT cơ bản)",
+"Số lượng trả (ĐVT cơ bản)"
+]
+},
+"optional": [],
+"doc": "pharmacy POS export: invoice headers (debt left at the end in \"Còn nợ\") + lines, lots sold per line, lots received,\ndrug info (active ingredient, prescription), purchases, stock"
+},
+"biz_120": {
+"tables": {
+"DanhSachHoaDon": [
+"Mã hóa đơn",
+"Thời gian",
+"Mã KH",
+"Khách hàng",
+"Tổng tiền hàng",
+"Giảm giá",
+"Khách đã trả",
+"Trạng thái",
+"Thời gian tạo",
+"Còn nợ",
+"Kênh bán"
+],
+"DanhSachHoaDonChiTiet": [
+"Mã hóa đơn",
+"Mã hàng",
+"Tên hàng",
+"Số lượng",
+"Đơn giá",
+"Giảm giá",
+"Thành tiền",
+"Số lượng quy đổi"
+],
+"DanhSachKhachHang": [
+"Mã khách hàng",
+"Mã số thuế",
+"Tên khách hàng",
+"Người tạo",
+"Ngày sinh",
+"Đối tượng KH",
+"Điện thoại",
+"Địa chỉ"
+],
+"DanhSachSanPham": [
+"Mã hàng",
+"Định mức tồn tối thiểu",
+"Tên hàng",
+"Nhóm hàng(3 Cấp)",
+"Định mức tồn tối đa",
+"Được bán trực tiếp",
+"Giá bán",
+"Loại hàng hóa",
+"ĐVT",
+"Giá vốn",
+"Thời gian tạo"
+],
+"DanhSachNhapHang": [
+"Mã nhập hàng",
+"Thời gian",
+"Mã NCC",
+"Cần trả NCC",
+"Trạng thái",
+"Ghi chú"
+],
+"DanhSachChiTietNhapHang": [
+"Mã nhập hàng",
+"STT",
+"Mã hàng",
+"ĐVT",
+"Số lượng",
+"Đơn giá",
+"Lô",
+"Hạn sử dụng"
+],
+"BaoCaoTonKho": [
+"Mã hàng",
+"Tên hàng",
+"ĐVT",
+"Tồn cuối kỳ"
+],
+"DanhSachThuoc": [
+"Mã hàng",
+"Hoạt chất",
+"Thuốc kê đơn"
+],
+"DanhSachLoHang": [
+"Mã nhập hàng",
+"Mã hàng",
+"Lô",
+"Hạn sử dụng",
+"Số lượng (ĐVT cơ bản)"
+],
+"DanhSachHoaDonChiTietLo": [
+"Mã hóa đơn",
+"STT",
+"Lô",
+"Số lượng (ĐVT cơ bản)",
+"Số lượng trả (ĐVT cơ bản)"
+]
+},
+"optional": [],
+"doc": "pharmacy POS export: invoice headers (debt left at the end in \"Còn nợ\") + lines, lots sold per line, lots received,\ndrug info (active ingredient, prescription), purchases, stock"
+},
+"biz_121": {
+"tables": {
+"DonHang_ChiTiet": [
+"Mã đơn hàng",
+"Ngày đặt hàng",
+"Trạng thái đơn hàng",
+"Tên khách hàng",
+"Tên sản phẩm",
+"Số lượng sản phẩm",
+"Giá sản phẩm",
+"Tổng tiền",
+"Đơn vị tính"
+],
+"DuLieuXuat": [
+"Tên sản phẩm",
+"Đơn vị quy đổi",
+"Tỉ lệ quy đổi",
+"Đơn vị cơ bản"
+],
+"DuLieuXuat_1": [
+"Mã SKU",
+"Tên sản phẩm",
+"Mã barcode",
+"Đơn vị",
+"Tồn lớn nhất",
+"Loại sản phẩm",
+"Loại hàng hóa"
+],
+"DuLieuXuat_5": [
+"Mã SKU",
+"Hoạt chất",
+"Thuốc kê đơn"
+],
+"DuLieuXuat_2": [
+"Mã đơn nhập",
+"Ngày nhập",
+"Mã nhà cung cấp"
+],
+"DuLieuXuat_3": [
+"Mã đơn nhập",
+"Mã SKU",
+"Mã lô",
+"Hạn sử dụng",
+"Số lượng nhập"
+],
+"DuLieuXuat_4": [
+"Mã đơn hàng",
+"Mã lô",
+"Số lượng",
+"Số lượng trả"
+]
+},
+"optional": [],
+"doc": "online-shop export: one row per order line (order cells may be blank on later lines); unit conversion table;\npharmacy: generic sheet names DuLieuXuat_1 products, _2 receipt headers, _3 receipt lines = lots, _4 lots sold per order, _5 drug info"
+},
+"biz_122": {
+"tables": {
+"DonHang_ChiTiet": [
+"Mã đơn hàng",
+"Ngày đặt hàng",
+"Trạng thái đơn hàng",
+"Tên khách hàng",
+"Tên sản phẩm",
+"Số lượng sản phẩm",
+"Giá sản phẩm",
+"Tổng tiền",
+"Đơn vị tính"
+],
+"DanhSachQuyDoi": [
+"Tên sản phẩm",
+"Đơn vị quy đổi",
+"Tỉ lệ quy đổi",
+"Đơn vị cơ bản"
+],
+"DanhSachSanPham": [
+"Tồn lớn nhất",
+"Mã SKU",
+"Tên sản phẩm",
+"Mã vạch EAN",
+"Đơn vị",
+"Định mức tồn tối thiểu",
+"Loại hàng hóa",
+"Loại sản phẩm"
+],
+"DanhSachThuoc": [
+"Mã SKU",
+"Hoạt chất",
+"Thuốc kê đơn"
+],
+"DonNhapHang": [
+"Mã đơn nhập",
+"Ngày nhập",
+"Mã nhà cung cấp"
+],
+"DonNhapHang_ChiTiet": [
+"Mã đơn nhập",
+"Mã SKU",
+"Mã lô",
+"Hạn sử dụng",
+"Số lượng nhập"
+],
+"DonHang_Lo": [
+"Mã đơn hàng",
+"Mã lô",
+"Số lượng",
+"Số lượng trả"
+]
+},
+"optional": [],
+"doc": "online-shop export: one row per order line (order cells may be blank on later lines); unit conversion table;\npharmacy: products, drug info, receipts (lots), lots sold per order"
+},
+"biz_123": {
+"tables": {
+"don_hang": [
+"IDCuaHang",
+"MaHoaDon",
+"MaChiNhanh",
+"MaKhachHang",
+"MaNhanVien",
+"MaCaLam",
+"KenhBanHang",
+"ThoiGianLap",
+"NgayLap",
+"TinhTrang",
+"TongTienHang",
+"ChietKhau",
+"PhiVanChuyen",
+"ThueGTGT",
+"TongThanhToan",
+"KhachDaTra",
+"ConPhaiThu",
+"PhuongThucTT",
+"SoHoaDonDienTu",
+"TinhTrangHDDT",
+"MaKhuyenMai",
+"DienGiai"
+],
+"chi_tiet_don": [
+"IDCuaHang",
+"MaHoaDon",
+"SoThuTu",
+"MaHangHoa",
+"DonViTinh",
+"SL",
+"SLQuyDoi",
+"GiaDonVi",
+"ChietKhau",
+"TriGia",
+"GiaVonLucBan"
+],
+"khach_hang": [
+"trang_thai_kh",
+"cccd",
+"IDCuaHang",
+"diem_hien_tai",
+"MaKhachHang",
+"ghi_chu_kh",
+"ngay_sinh",
+"email",
+"TenGoi",
+"SoDienThoai",
+"NamNu",
+"nguoi_tao",
+"LoaiKhachHang",
+"cong_ty",
+"tong_diem",
+"TaoLuc",
+"loai_hinh_kh",
+"DiaChiLienHe"
+],
+"san_pham": [
+"hinh_anh",
+"ma_vach_ean",
+"bao_hanh",
+"ban_truc_tiep",
+"IDCuaHang",
+"MaHangHoa",
+"ghi_chu_hh",
+"vi_tri",
+"TenGoi",
+"DanhMuc",
+"loai_hang_hoa",
+"ton_nho_nhat",
+"thuong_hieu",
+"DonViCoSo",
+"GiaBanLe",
+"GiaVonHang",
+"mau_ghi_chu",
+"mo_ta",
+"TyLeThue",
+"ConKinhDoanh",
+"TaoLuc",
+"ton_lon_nhat"
+],
+"thong_tin_thuoc": [
+"IDCuaHang",
+"MaHangHoa",
+"ThanhPhanChinh",
+"BanTheoDon"
+],
+"thanh_toan": [
+"IDCuaHang",
+"MaPhieuThu",
+"MaHoaDon",
+"NgayGioThu",
+"SoTienThu",
+"PhuongThuc",
+"DienGiai"
+],
+"tra_hang": [
+"IDCuaHang",
+"MaPhieuTra",
+"MaHoaDon",
+"NgayGioTra",
+"NguyenNhan",
+"TienHoanTra",
+"CachHoanTien"
+],
+"phieu_nhap": [
+"IDCuaHang",
+"MaPhieuNhap",
+"MaNhaCungCap",
+"MaChiNhanh",
+"NgayNhapKho",
+"TinhTrang",
+"TongGiaTriNhap",
+"DienGiai"
+],
+"chi_tiet_nhap": [
+"IDCuaHang",
+"MaPhieuNhap",
+"SoThuTu",
+"MaHangHoa",
+"DonViTinh",
+"SL",
+"DonGiaNhap",
+"MaLo",
+"HanSuDung"
+],
+"nha_cung_cap": [
+"IDCuaHang",
+"MaNhaCungCap",
+"TenGoi",
+"SoDienThoai",
+"DiaChiLienHe",
+"DiaChiLienHe__unit"
+],
+"lo_hang": [
+"IDCuaHang",
+"MaHangHoa",
+"MaLo",
+"MaPhieuNhap",
+"HanSuDung",
+"SLNhapQuyDoi",
+"DonGiaNhap"
+],
+"chi_tiet_don_lo": [
+"IDCuaHang",
+"MaHoaDon",
+"SoThuTu",
+"MaLo",
+"SLQuyDoi",
+"SLTraQuyDoi"
+],
+"the_kho": [
+"IDCuaHang",
+"MaGiaoDichKho",
+"MaHangHoa",
+"MaChiNhanh",
+"NgayGioPhatSinh",
+"LoaiGiaoDich",
+"SLQuyDoi",
+"KieuChungTu",
+"MaChungTu",
+"TonCuoi"
+],
+"lich_su_gia": [
+"IDCuaHang",
+"MaHangHoa",
+"NgayApDung",
+"GiaBanLe"
+],
+"don_vi_sp": [
+"IDCuaHang",
+"MaHangHoa",
+"DonViTinh",
+"HeSoQuyDoi",
+"GiaDonVi"
+],
+"nhan_vien": [
+"IDCuaHang",
+"MaNhanVien",
+"TenGoi",
+"MaChiNhanh",
+"ChucVu",
+"NgayNhanViec",
+"NgayThoiViec"
+]
+},
+"optional": [],
+"doc": "full relational database: orders, lines (cost at sale), payments, returns, stock ledger (the_kho: stock after every\nmovement), lots, lots sold per line, purchases, products, customers (with type), unit conversions, price history, drugs"
+},
+"biz_124": {
+"tables": {
+"BanHang_HoaDon": [
+"Đã thu",
+"Tên KH",
+"Trạng thái",
+"Giờ tạo đơn",
+"Mã NV bán",
+"Phương thức TT",
+"Ngày bán",
+"Nguồn đơn",
+"Còn nợ",
+"Mã KH mua",
+"Tiền hàng trước giảm",
+"Tong tien",
+"Order ID",
+"CK"
+],
+"BanHang_ChiTietHoaDon": [
+"Giá vốn lúc bán",
+"SL cơ bản",
+"Khuyến mãi",
+"Giá niêm yết",
+"Thanh tien",
+"Mã giao dịch",
+"Chi tiết hàng",
+"Slg",
+"TT dòng",
+"Ma hang",
+"Đ.vị"
+],
+"BanHang_KhachHang": [
+"Điểm tích lũy",
+"Hạng",
+"MST",
+"Ngày sinh",
+"Trạng thái",
+"ten_kh",
+"Người tạo",
+"Tổng điểm",
+"Loại hình khách",
+"Số điện thoại",
+"Customer ID"
+],
+"BanHang_HangHoa": [
+"Định mức tồn tối thiểu",
+"Giá vốn hiện tại",
+"Phân loại",
+"Món",
+"Được bán trực tiếp",
+"ma_sp",
+"Giá",
+"Đơn vị",
+"Loại hàng hóa"
+],
+"BanHang_Thuoc": [
+"Mã HH",
+"Hoạt chất",
+"Kê đơn"
+],
+"BanHang_PhieuThu": [
+"Số tiền thu",
+"Mã bill",
+"Phiếu thu",
+"Thời gian thu",
+"PTTT"
+],
+"SoTay_NhapHang": [
+"SL nhập",
+"Mô tả",
+"Product",
+"Thành tiền",
+"Lô",
+"HSD",
+"Ngày nhập",
+"Nhà cung cấp",
+"ĐVT nhập",
+"Số phiếu",
+"Giá nhập"
+],
+"BanHang_LoHang": [
+"HSD",
+"Mã món",
+"SL nhập (ĐVT cơ bản)",
+"Mã phiếu nhập",
+"Lô"
+],
+"BanHang_BanTheoLo": [
+"Lô",
+"SL quy ra lẻ",
+"SL trả (ĐVT cơ bản)",
+"No.",
+"Mã hóa đơn"
+],
+"SoTay_ChiPhi": [
+"Ghi chú",
+"Ngày chi",
+"Mục",
+"So tien"
+],
+"ton_kho": [
+"ID SP",
+"Đơn vị",
+"Ton kho",
+"Hàng hóa"
+],
+"BanHang_LichSuGia": [
+"Mã sản phẩm",
+"Giá mới",
+"Ngày áp dụng",
+"Sản phẩm",
+"Giá cũ"
+],
+"BanHang_DonViQuyDoi": [
+"Đơn vị",
+"Bằng",
+"Giá bán theo đơn vị quy đổi",
+"Mã sp"
+]
+},
+"optional": [],
+"doc": "pharmacy, three sources: sales software (BanHang_*: invoices, lines with cost at sale, payments, lots sold, lots, products,\nunit conversions, customers with tier, drug info, price history), notebook (SoTay_*: purchases with lots, expenses), stock"
+},
+"biz_125": {
+"tables": {
+"ban_hang": [
+"dvt",
+"Hàng bán",
+"Khách hàng (tên)",
+"Số lượng lẻ",
+"Amount",
+"Trạng thái xử lý",
+"SL bán",
+"Ngày bán",
+"Số phiếu",
+"Giá 1 đv"
+]
+},
+"optional": [],
+"doc": "restaurant flat sales book: one row per order line (incl. \"Phí phục vụ\" service lines); base quantity in \"Số lượng lẻ\""
+},
+"biz_126": {
+"tables": {
+"SoBanHang": [
+"Đơn vị tính",
+"Số lượng bán",
+"Thành tiền (đ)",
+"Ten hang",
+"SL lẻ",
+"Trạng thái đơn",
+"Ngày tháng",
+"Price"
+]
+},
+"optional": [],
+"doc": "restaurant hand-kept sales book without order ids or customers: every row is one sale record (incl. \"Phí phục vụ\" service lines)"
+},
+"biz_127": {
+"tables": {
+"don_hang": [
+"Còn nợ",
+"Tổng đơn",
+"Loại bán",
+"Ngày",
+"Mã chứng từ",
+"Customer ID",
+"Khách trả",
+"Trả bằng",
+"Tình trạng"
+],
+"chi_tiet_don": [
+"Mã đơn hàng",
+"SoLuong",
+"No.",
+"DVT",
+"Amount",
+"Số lượng lẻ",
+"Mã mặt hàng",
+"Đơn giá (đ)"
+],
+"khach_hang": [
+"Di động",
+"Sinh nhật",
+"Người tạo",
+"Tổng điểm",
+"Loại hình khách",
+"Mã KH",
+"Khách hàng (tên)",
+"Điểm hiện tại",
+"MST",
+"Trạng thái"
+],
+"san_pham": [
+"Giá niêm yết",
+"Danh mục",
+"Mã sản phẩm bán",
+"Tên SP",
+"Mã barcode",
+"Loại hàng hóa",
+"Tồn lớn nhất",
+"Đơn vị cơ bản",
+"Được bán trực tiếp"
+],
+"thanh_toan": [
+"Số CT",
+"Ngày thu",
+"Mã GD",
+"Giá trị",
+"HTTT"
+]
+},
+"optional": [],
+"doc": "restaurant relational export: orders (debt left at the end in \"Còn nợ\"), lines (incl. \"Phí phục vụ\"), payments, customers, products"
+},
+"biz_128": {
+"tables": {
+"DanhSachHoaDon": [
+"Mã hóa đơn",
+"Thời gian",
+"Mã KH",
+"Khách hàng",
+"Tổng tiền hàng",
+"Giảm giá",
+"Khách đã trả",
+"Trạng thái",
+"Thời gian tạo",
+"Tổng sau giảm giá",
+"Còn nợ"
+],
+"DanhSachHoaDonChiTiet": [
+"Mã hóa đơn",
+"Mã hàng",
+"Tên hàng",
+"Số lượng",
+"Đơn giá",
+"Giảm giá",
+"Thành tiền",
+"Số lượng quy đổi",
+"STT"
+],
+"DanhSachKhachHang": [
+"Sinh nhật",
+"Người tạo",
+"Mã khách hàng",
+"Tên khách hàng",
+"Điện thoại",
+"Nhóm khách hàng",
+"Loại hình khách",
+"Điểm hiện tại",
+"Địa chỉ",
+"Trạng thái",
+"Tổng điểm"
+],
+"DanhSachSanPham": [
+"Mã hàng",
+"Tồn nhỏ nhất",
+"Loại hàng hóa",
+"Tồn lớn nhất",
+"Tên hàng",
+"Nhóm hàng(3 Cấp)",
+"Giá bán",
+"Mã barcode",
+"ĐVT",
+"Thời gian tạo"
+],
+"DanhSachNhapHang": [
+"Mã nhập hàng",
+"Thời gian",
+"Mã NCC",
+"Cần trả NCC",
+"Trạng thái",
+"Ghi chú"
+],
+"DanhSachChiTietNhapHang": [
+"Mã nhập hàng",
+"STT",
+"Mã hàng",
+"ĐVT",
+"Số lượng",
+"Đơn giá"
+],
+"BaoCaoTonKho": [
+"Mã hàng",
+"Tên hàng",
+"ĐVT",
+"Tồn cuối kỳ"
+],
+"DanhSachHoaDonPhongBan": [
+"Mã hóa đơn",
+"Phòng/Bàn",
+"Khu vực",
+"Số khách"
+]
+},
+"optional": [],
+"doc": "restaurant POS export: invoice headers (debt left at the end in \"Còn nợ\") + lines (incl. \"Phí phục vụ\" service lines),\ntable / area / guests per invoice, customers with groups, purchases, stock"
+},
+"biz_129": {
+"tables": {
+"don_hang": [
+"Hình thức thanh toán",
+"Dư nợ",
+"Thanh toán",
+"Tình trạng đơn",
+"Số phiếu",
+"Mã khách mua",
+"Phải thu",
+"Ngày bán"
+],
+"chi_tiet_don": [
+"Tiền bán",
+"TT dòng",
+"S.L",
+"Mã hàng bán",
+"Quy ra ĐV lẻ",
+"Số CT",
+"Giảm giá",
+"Giá 1 đv",
+"ĐV tính"
+],
+"khach_hang": [
+"Ngày sinh",
+"Điểm hiện tại",
+"Nhóm",
+"Tổng điểm",
+"KH",
+"Mã số thuế",
+"Người tạo",
+"Số điện thoại",
+"Đối tượng KH",
+"Trạng thái",
+"Mã khách lẻ/sỉ"
+],
+"san_pham": [
+"Giá hiện tại",
+"Mã vạch EAN",
+"Đơn vị tính",
+"Tên sản phẩm",
+"Nhom hang",
+"Được bán trực tiếp",
+"Mã HH",
+"Loại hàng hóa",
+"Định mức tồn tối đa"
+],
+"thanh_toan": [
+"Mã GD",
+"PTTT",
+"Tiền",
+"Mã giao dịch",
+"Thời điểm"
+]
+},
+"optional": [],
+"doc": "restaurant relational export: orders, lines (incl. \"Phí phục vụ\"), payments, customers (with group), products"
+},
+"biz_130": {
+"tables": {
+"So_chi_tiet_ban_hang": [
+"Ngày",
+"Mã đơn hàng",
+"Tên hàng hóa",
+"Đơn vị tính",
+"Số lượng",
+"Số lượng__unit",
+"Đơn giá",
+"Thành tiền",
+"Trạng thái",
+"Số lượng quy đổi"
+],
+"Danh s#U00e1ch h#U00e0ng h#U00f3a": [
+"Mã hàng hóa",
+"Được bán trực tiếp",
+"Loại hàng hóa",
+"Tên hàng hóa",
+"Nhóm hàng hóa",
+"Định mức tồn tối thiểu",
+"Đơn vị tính",
+"Định mức tồn tối đa",
+"Giá vốn"
+]
+},
+"optional": [],
+"doc": "sales book export: one row per order line, order info repeated on every line"
+}
+}

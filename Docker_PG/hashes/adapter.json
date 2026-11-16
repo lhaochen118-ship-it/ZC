@@ -1,0 +1,9 @@
+{
+ "dataset": "nhatlong1103/zc-p-adapter",
+ "note": "WG1 files = src/adapter_hashes_p.json (12/11 system P); soup.json rewritten 16/11 with the same members / weights (WG1 x 0.35)",
+ "files": {
+  "soup.json": "806e22ed8c2a8ec742381d257e33534fe88e4d4603803d5688ec4bddb8edf62c",
+  "WG1/adapter/adapter_config.json": "aedb6f9e400ab2d317b03f37ff4a6c1d835309f7e017f7faf6b1bfd89299efd6",
+  "WG1/adapter/adapter_model.safetensors": "0d4eef7d3a9e3d3544ccece932c5c1ef67bf15aac3c1dd7bf7368a0070b48efd"
+ }
+}

@@ -1,0 +1,91 @@
+split: /kaggle/input/datasets/nhatlong1103/zc-2026/public_test/public_test  start: 2026-11-16T05:40:15Z
+think_kw: default (every phase)
+model /tmp/models/Qwen3.6-35B-A3B-E88-MS2W7-FP8  dp 4  config configs/flow_e7rw7.json  runs up to 1
+lrl: compiled cards of this rulebook are shipped (6 card files)
+units shard 0: (EngineCore pid=2674) INFO 11-16 05:49:43 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+units shard 0: (MainProcess pid=313) WARNING 11-16 05:49:48 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+units shard 0: (MainProcess pid=313) WARNING 11-16 05:49:48 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 2674
+units shard 1: (EngineCore pid=2675) INFO 11-16 05:49:48 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+units shard 1: (MainProcess pid=314) WARNING 11-16 05:49:53 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+units shard 1: (MainProcess pid=314) WARNING 11-16 05:49:53 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 2675
+units shard 2: (MainProcess pid=315) INFO 11-16 05:51:03 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 2: (MainProcess pid=315) INFO 11-16 05:51:03 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 2: (MainProcess pid=315) INFO 11-16 05:51:03 [core_client.py:777] [shutdown] MPClient: complete
+units shard 3: (MainProcess pid=316) INFO 11-16 05:50:09 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+units shard 3: (MainProcess pid=316) INFO 11-16 05:50:09 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+units shard 3: (MainProcess pid=316) INFO 11-16 05:50:09 [core_client.py:777] [shutdown] MPClient: complete
+units: rc=[0, 0, 0, 0], 17 verified units (650s)
+links: model /tmp/models/Qwen3.6-35B-A3B-E88-ML1-FP8
+links shard 0: (MainProcess pid=5406) WARNING 11-16 05:59:50 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 0: (MainProcess pid=5406) WARNING 11-16 05:59:50 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 6194
+links shard 1: (MainProcess pid=5407) WARNING 11-16 05:59:45 [utils.py:648] [shutdown] Process manager: force killing remaining processes count=1
+links shard 1: (MainProcess pid=5407) WARNING 11-16 05:59:45 [utils.py:653] [shutdown] Process manager: force killing remaining process EngineCore pid 6187
+links shard 2: (MainProcess pid=5408) INFO 11-16 05:59:44 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 2: (MainProcess pid=5408) INFO 11-16 05:59:44 [core_client.py:777] [shutdown] MPClient: complete
+links shard 3: (MainProcess pid=5409) INFO 11-16 05:59:55 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+links shard 3: (MainProcess pid=5409) INFO 11-16 05:59:55 [core_client.py:777] [shutdown] MPClient: complete
+links: rc=[0, 0, 0, 0], 1000 questions linked (532s)
+[dp] ingested 14 businesses in 48s
+--- shard0 rc=0
+DONE 1000 questions in 2321s
+(MainProcess pid=9266) INFO 11-16 06:39:28 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=10459) INFO 11-16 06:39:28 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=10459) INFO 11-16 06:39:28 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=10459) INFO 11-16 06:39:29 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=10459) INFO 11-16 06:39:29 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=9266) WARNING 11-16 06:39:33 [core_client.py:817] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+(MainProcess pid=9266) INFO 11-16 06:39:33 [core_client.py:770] [shutdown] MPClient: start timeout=default
+(MainProcess pid=9266) INFO 11-16 06:39:33 [core_client.py:772] [shutdown] MPClient: stopping engine manager
+(MainProcess pid=9266) INFO 11-16 06:39:33 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+(MainProcess pid=9266) INFO 11-16 06:39:33 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+(MainProcess pid=9266) INFO 11-16 06:39:33 [core_client.py:777] [shutdown] MPClient: complete
+
+--- shard1 rc=0
+finalize: 540 summary rows dropped (order_id like 'None', no date)
+(MainProcess pid=9267) INFO 11-16 06:42:00 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=10438) INFO 11-16 06:42:00 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=10438) INFO 11-16 06:42:00 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=10438) INFO 11-16 06:42:00 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=10438) INFO 11-16 06:42:00 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=9267) WARNING 11-16 06:42:04 [core_client.py:817] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+(MainProcess pid=9267) INFO 11-16 06:42:04 [core_client.py:770] [shutdown] MPClient: start timeout=default
+(MainProcess pid=9267) INFO 11-16 06:42:04 [core_client.py:772] [shutdown] MPClient: stopping engine manager
+(MainProcess pid=9267) INFO 11-16 06:42:04 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+(MainProcess pid=9267) INFO 11-16 06:42:04 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+(MainProcess pid=9267) INFO 11-16 06:42:04 [core_client.py:777] [shutdown] MPClient: complete
+
+--- shard2 rc=0
+DONE 1000 questions in 1792s
+(MainProcess pid=9268) INFO 11-16 06:30:40 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=10452) INFO 11-16 06:30:40 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=10452) INFO 11-16 06:30:40 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=10452) INFO 11-16 06:30:40 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=10452) INFO 11-16 06:30:40 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=9268) WARNING 11-16 06:30:44 [core_client.py:817] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+(MainProcess pid=9268) INFO 11-16 06:30:44 [core_client.py:770] [shutdown] MPClient: start timeout=default
+(MainProcess pid=9268) INFO 11-16 06:30:44 [core_client.py:772] [shutdown] MPClient: stopping engine manager
+(MainProcess pid=9268) INFO 11-16 06:30:44 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+(MainProcess pid=9268) INFO 11-16 06:30:44 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+(MainProcess pid=9268) INFO 11-16 06:30:44 [core_client.py:777] [shutdown] MPClient: complete
+
+--- shard3 rc=0
+finalize: 511 summary rows dropped (order_id like 'tổng 01/05', no date)
+(MainProcess pid=9269) INFO 11-16 06:31:57 [utils.py:628] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=10451) INFO 11-16 06:31:57 [core.py:1454] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=10451) INFO 11-16 06:31:57 [core.py:1635] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=10451) INFO 11-16 06:31:57 [core.py:1666] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=10451) INFO 11-16 06:31:57 [core.py:1499] [shutdown] EngineCore: exiting busy loop
+(MainProcess pid=9269) WARNING 11-16 06:32:01 [core_client.py:817] [shutdown] MPClient: engine core exited unexpectedly; starting cleanup
+(MainProcess pid=9269) INFO 11-16 06:32:01 [core_client.py:770] [shutdown] MPClient: start timeout=default
+(MainProcess pid=9269) INFO 11-16 06:32:01 [core_client.py:772] [shutdown] MPClient: stopping engine manager
+(MainProcess pid=9269) INFO 11-16 06:32:01 [core_client.py:774] [shutdown] MPClient: engine manager stopped
+(MainProcess pid=9269) INFO 11-16 06:32:01 [core_client.py:775] [shutdown] MPClient: cleaning up background resources
+(MainProcess pid=9269) INFO 11-16 06:32:01 [core_client.py:777] [shutdown] MPClient: complete
+
+DP DONE 4 shards in 2530s
+after run 1: [983]
+judge: 
+judge: [judge] ensemble of ['list', 'point', 'point+think'] (margin 0.5): {'vote': 923, 'judge_pick': 52, 'vote(judge_split)': 15, 'judge_none': 10}
+judge: [judge] done {'list': 0, 'point': 0, 'point+think': 0} in 1258s
+after the judge: [1000, 0]
+end: 2026-11-16T07:05:19Z  (5104s)

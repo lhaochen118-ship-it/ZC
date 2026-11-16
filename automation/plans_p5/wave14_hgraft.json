@@ -1,0 +1,77 @@
+[
+ {
+  "acc": "huyenco",
+  "name": "ht01",
+  "jobs": "automation/jobs/p5/ht01.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huyenco/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "phuongnehe",
+  "name": "ht01s1",
+  "jobs": "automation/jobs/p5/ht01s1.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "phuongnehe/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "hai1108",
+  "name": "hq01",
+  "jobs": "automation/jobs/p5/hq01.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "hai1108/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "nhatlong1103",
+  "name": "hq01s1",
+  "jobs": "automation/jobs/p5/hq01s1.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "nhatlong1103/zc-ad2",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "mucnokieu",
+  "name": "hn4a",
+  "jobs": "automation/jobs/p5/hn4a.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "mucnokieu/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

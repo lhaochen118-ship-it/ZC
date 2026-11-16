@@ -1,5 +1,25 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
+## P5 — trạng thái 16/11 02:30 UTC (khung chat mới đọc phần này trước)
+
+**Kết quả P5 (public, container):** tốt nhất tổng thể C1L 0.943 (framework 0.952 có `industry.py` + thinking + T01; *không* là chế độ H);
+MoE E88 tốt nhất E7 0.916 (có `industry.py`); **chế độ H: chưa biến thể P5 nào vượt mốc nộp `flow_p5_final_h` / `flow_v2_final` 0.863**
+(E8 0.843, P02T 0.841). Bảng: `Process/scores_p5zs.csv`; nhật ký `docs/19_PLAN_P5_ZS.md`; lỗi: PDF 2 §11.
+
+**Đang chạy (đẩy 16/11 02:23, ước xong ~04:00–04:45 UTC):**
+
+| Kernel | Acc | Việc | Chấm khi xong |
+|---|---|---|---|
+| zc-jph12-1 | lelynhan | phán xử (V3A×0.7 + WJR1, chính sách container) trên ứng viên **gộp H0a + H0a2** | `ensemble/submission.jsonl` so 0.863 |
+| zc-jph1e-1 | huyenco | phán xử trên gộp H0a + E8 (MoE) | như trên |
+| zc-jph12e-1 | hai1108 | phán xử trên gộp H0a + H0a2 + E8 | như trên |
+| zc-h0as1-1 / zc-h0as2-1 | thnliu / phatle1578 | thêm 2 lượt cấu hình nộp (`seed_base` 1 / 2) để gộp 3–4 lượt | archive + p5_report; rồi gộp log (`training/data/out/jpool`, script trong `docs/19` 16/11) |
+
+Theo dõi: `bash Process/tools/p5_watch_loop.sh &` → `Process/runs/p5/watch.out`; mất kết nối: `automation/resume.py` / `run_kernel.py --attach`.
+Chấm: `bash Process/tools/p5/archive.sh <run>` + `python3 Process/tools/p5/p5_report.py` (lượt predict); lượt phán xử: chấm
+`Process/runs/p5/<run>/*_out/results/<run>/judge/ensemble/submission.jsonl` bằng `src/score.py` với `data/raw/public_gt.jsonl`.
+Quy tắc: chỉ đổi cấu hình nộp nếu thắng 0.863 có ý nghĩa (ghép cặp z ≥ 2) **và** chạy được trong container ≤ 6 h.
+
 *Cập nhật 2026-11-15 11:15 UTC. User 06:00: báo cáo score, ngắt hướng không tiềm năng, **user sẽ đổi hướng nghiên cứu (chờ chỉ thị; không
 đẩy kernel mới)**. Đóng băng 16/11 04:00 UTC. Findings: PDF 1 §9 (giai đoạn C §9.4). Lỗi + cách tránh: PDF 2 §10. Nhật ký: `handoff/06` §7.*
 

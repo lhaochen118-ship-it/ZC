@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/h0as2 --script training/soup_job.py --model Qwen/Qwen3.5-9B --adapters V3A --weights 0.70 --runner predict --eval-configs configs/flow_p5_final_h_sb2.json

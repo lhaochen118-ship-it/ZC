@@ -10,7 +10,7 @@ unless --fp8-dir is given. Output: <out>/models/<name>/ (official FP8 format, lo
 
 Usage (CPU kernel with internet): run_kaggle.py public_test OUT --script ../training/merge_fp8.py --name E88-MS1-FP8
         --adapter MS1 [--weight 1.0] [--keep configs/moe/keep_e88.json] [--fp8-dir DIR]"""
-import os, sys, json, glob, time, argparse, subprocess, re, struct, shutil
+import os, sys, json, glob, time, argparse, subprocess, re, struct, shutil, math
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 SRC = ROOT if os.path.isfile(os.path.join(ROOT, "stage_hf.py")) else os.path.join(ROOT, "src")
@@ -57,7 +57,9 @@ def main():
         if rc: sys.exit(rc)
         shutil.move(os.path.join("/tmp/fp8slice", "models", a.name), dst)
     ad = find_adapter(a.adapter); cfg = json.load(open(os.path.join(ad, "adapter_config.json")))
-    scale = a.weight * float(cfg.get("lora_alpha", 16)) / float(cfg.get("r", 8))
+    r = float(cfg.get("r", 8))                                       # rsLoRA scales by alpha / sqrt(r) (16/11 review: was ignored)
+    scale = a.weight * float(cfg.get("lora_alpha", 16)) / (math.sqrt(r) if cfg.get("use_rslora") else r)
+    if cfg.get("use_dora") or cfg.get("modules_to_save"): sys.exit("[merge_fp8] DoRA / modules_to_save adapters are not supported")
     sd = load_file(os.path.join(ad, "adapter_model.safetensors"))
     pairs = {}
     for k, v in sd.items():

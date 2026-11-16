@@ -1,4 +1,4 @@
-# PDF 2 — Engineering & Operations Lessons (DataMate, đến 15/11/2026)
+# PDF 2 — Engineering & Operations Lessons (DataMate, đến 16/11/2026)
 
 *Phạm vi: kinh nghiệm lập trình, cấu hình môi trường, quản lý Kaggle, tổ chức thử nghiệm, lỗi đã gặp và cách sửa,
 bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạng thái và việc tiếp theo ở PDF 3; cấu hình máy ở
@@ -303,3 +303,45 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 | Sinh UQ 907 hàm × 2 câu (4 shard, không suy nghĩ) | 19 phút + cài ~5 | |
 | Huấn luyện FSDP 13M token (mb 2, max-len 5120) | ~2.3 h | quota ~5.5 h |
 | Quota thực | 2.0–2.4 h quota / giờ tường | kế hoạch dùng hệ số 2.5 |
+
+## 11. Kế hoạch P5 zero-shot + ghép (15/11 08:00 → 16/11 02:30) — lỗi, cách sửa, quy tắc tránh
+
+*Rà soát code 16/11 02:00 (37 tệp, ~1.900 dòng thay đổi của P5) + đối chiếu log mọi lần chạy (`units: rc`, số hàm, link, phán xử).*
+
+### 11.1 Lỗi ảnh hưởng điểm (đã sửa; đã chạy lại hoặc đã có lần chạy thay thế)
+
+| # | Lỗi | Hậu quả | Cách sửa / quy tắc tránh |
+|---|---|---|---|
+| 1 | Template Qwen3.5 **tự suy nghĩ khi không truyền `enable_thinking`**; `agent.render` chỉ truyền khi đường dẫn mô hình chứa `qwen3` → các lần 0.952 (thư mục merged, không có `qwen3`) suy nghĩ, còn bản ghép dùng tên khác thì không | C0 0.921 thay vì 0.952; mọi lần chạy MoE (`Qwen3.6-...` chứa `qwen3`) tắt suy nghĩ | Công tắc `think_kw` (legacy / explicit / default, env `ZC_THINK_KW`); chạy lại C0L 0.942, C1L 0.943, C2L, E1L, E2L. **Quy tắc: mọi config ghi rõ `think_kw`; hành vi không được phụ thuộc tên thư mục** |
+| 2 | `lrl_gen` (W1 bind / alias / units) dùng mặc định vLLM (256 seq, util 0.9) → engine không khởi động với MoE 15.5 GB trên L4 | **mọi lần chạy E88 trước 15/11 19:20** (P02, P02s1, P03, P02x, P02xk, P02T, C3, C3T, C4, E1, E1L, E3, E5, E6) chạy **0 hàm, không thẻ bind**; log chỉ ghi `units: rc=[1,1,1,1]` | `max_num_seqs` 128, util 0.92, `max_batched_tokens` 16384. Chạy lại có ghép cặp: E3→E3FT z +1.85, C3T→C3FT z +0.57, E1L→E7 z +3.54, nhưng **P02T→P02xFT z −2.72** (hàm do MoE chưa tinh chỉnh viết làm hại). **Quy tắc: bảng điểm phải có cột `units rc / số hàm`; một bản sửa khôi phục một pha cũng là một biến thể, phải đo ghép cặp, không mặc định là tốt hơn** |
+| 3 | Mô hình W (link / phán xử) đọc thẳng từ mount `/kaggle/input` bởi 4 tiến trình | nạp 27 phút, pha link bị giết ở trần → E5 = 0.0 | `predict_flow.resolve_model`: chép một lần sang `/tmp/models/<tên>` (khoá `fcntl`, dấu `.complete`) |
+| 4 | Trần phán xử 1800 s cắt phán xử của mô hình zero-shot (chậm hơn bản tinh chỉnh) | S01 bị trần: thiếu +0.023 | `judge_max_s` 5400 cho zero-shot; luôn kiểm dòng `judge: killed at the cap` |
+
+### 11.2 Lỗi vận hành / hạ tầng
+
+| # | Lỗi | Hậu quả | Quy tắc tránh |
+|---|---|---|---|
+| 5 | `run_kernel` tải toàn bộ output (18 GB trọng số stage) | đầy đĩa container | `ZC_OUT_PATTERN` chỉ tải kết quả; trọng số ở lại Kaggle (mount bằng `--ks`) |
+| 6 | Output kernel (`--ks`) là **riêng tư theo acc**; failover của `fanout` chuyển E1/E2 sang acc khác | kernel chạy không có mô hình | `fanout` chặn failover khi `--ks` trỏ output riêng tư (danh sách `PUBLIC_KS`) |
+| 7 | Hai `fanout` liên tiếp trên cùng acc | STALE CODE (dataset code bị ghi đè giữa chừng) | Đẩy tuần tự từng acc; chờ dataset ready |
+| 8 | Probe H01 lấy logits toàn từ vựng | OOM | `logits_to_keep=1`, lô theo ngân sách token |
+| 9 | `--judge-args --tau,...` (giá trị bắt đầu bằng `--`) | argparse báo `expected one argument` (bắt được trước khi đẩy, 16/11) | Viết `--judge-args=--tau,...` |
+| 10 | Acc có quota nhưng không dùng được: `mxuanquy` chưa accept rules `gemma-4-developer-agent` (không có L4), `yeshenhi` chỉ T4 (FP8 MoE 15 GB không vừa) | E4m bỏ trắng toàn bộ | Probe acc 1 dòng trước khi giao việc GPU; `accounts.json` → `no_l4` |
+| 11 | Quota thấp: `launch_many` từ chối E2L, E4FT (cần 6.0 / 8.8 h) | 2 biến thể không chạy, log ghi `not launched` nhưng dòng cuối vẫn `all launched` | Sau mỗi lần đẩy grep `not launched`; mô hình stage chỉ có ở acc đã stage → stage sớm trên ≥ 2 acc nhiều quota |
+| 12 | Worker phiên khởi động lại (13:20, 17:15–19:05, 01:57) | watcher / script nối tiếp chết | `ps` sau mỗi lần khởi động lại; `resume.py`, `p5_watch_loop.sh` |
+| 13 | `tests/run_all.sh` với timeout 900 s (lặp lại lỗi §10 #12) | bị cắt | timeout ≥ 2700 s, chạy nền, ghi file |
+| 14 | I02 (grammar ràng buộc theo hàm cửa hàng) | 337 phút, CPU tạo mask là nút cổ chai, 0.675 | Đo tốc độ 1 DN trước khi chạy toàn tập |
+| 15 | N6-A: SQL trả về `None` được tính như đáp án; `CertificateResult` có `.valid`, không phải `.ok` | chấm sai / ngoại lệ | Lọc đáp án `None`; test đơn vị cho mọi API mới trước khi chấm |
+
+### 11.3 Lỗi tiềm ẩn phát hiện khi rà soát 16/11 (chưa ảnh hưởng điểm)
+
+- `training/merge_fp8.py` bỏ qua `use_rslora` (hệ số α/√r) và không từ chối DoRA / `modules_to_save` → đã thêm; mọi adapter P5 (MS1, MS2, ML1, MJ1, MJ2) là LoRA thường nên kết quả không đổi.
+- `new7_score.py` dòng 94: biến `sq` gán rồi bị ghi đè (mã chết, không ảnh hưởng).
+- Vote của `new7_score` (θ = 0.5 trên mọi mẫu) khác vote của container → điểm N7 / N3 / N6 chỉ so ghép cặp với chính mốc của nó, không so với điểm container.
+
+### 11.4 Kết quả âm cần nhớ (không lặp lại)
+
+- REAP-64 cộng đồng: 0.429 (sụp); tỉa theo saliency trên prompt của chính framework (E88 / E92) mới dùng được.
+- 4B làm phán xử (V01 / V02 / C5): luôn kém 9B.
+- Gộp ứng viên nhiều lần chạy rồi **bỏ phiếu** (cùng mô hình 2 seed, hoặc 9B + MoE): ≤ +0.005, thường âm; oracle tăng (946 → 959) nhưng bộ chọn là nút cổ chai.
+- N3-A, N6-A, N7-A, N4-A: không cải thiện (z ≤ 0.7).

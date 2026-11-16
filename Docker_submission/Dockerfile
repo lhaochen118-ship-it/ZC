@@ -1,4 +1,4 @@
-# DataMate solution image (Zalo AI Challenge 2026) — final configuration configs/flow_p5_final.json (the 0.952 framework).
+# DataMate solution image (Zalo AI Challenge 2026) — final configuration configs/flow_p5c4.json.
 # Base: official vLLM image, CUDA >= 12.8 (Blackwell / RTX 5090), the vLLM version of every scored Kaggle run (0.32.0).
 # If the organisers' Docker guideline names another base image, change both FROM lines and keep the rest.
 # Build context = repo root (Docker_submission/build.sh); weights in ./models/ (Docker_submission/fetch_assets.sh).

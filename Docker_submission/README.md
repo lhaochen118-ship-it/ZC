@@ -1,7 +1,7 @@
 # Docker_submission — hướng dẫn build, chạy thử và nộp
 
-Thư mục này đóng gói **cấu hình nộp cuối = framework mạnh nhất** `configs/flow_p5_final.json` (Qwen3.5-9B + V3A × 0.70, WL1, WJR1,
-toolkit có `industry.py`): public **0.952** (D1, `quynhtran35/zc-d1-1`). **`submission.jsonl`** trong thư mục này là file do chính lượt chạy
+Thư mục này đóng gói **cấu hình nộp cuối (bản hợp lệ 16/11)** `configs/flow_p5c4.json` (Qwen3.5-9B + V3A × 0.70, WJR1; không WL1, không thẻ / luật tính sẵn cho tập test nào;
+W1 tự viết thẻ luật và hàm cửa hàng lúc chạy; lớp kiểm tra tổng quát; từ điển chung): public **0.939** (`Process/runs/p5_results/merged/C4_submission.jsonl` = `submission_flow_p5c4.jsonl`). `submission.jsonl` cũ (D1 0.952) là file vòng public của cấu hình trước, giữ để đối chiếu. File do chính lượt chạy
 đó tạo ra (đầu ra phán xử = file container sau khi sửa lỗi gộp; 1000 câu, 973 đúng / 21 sai / 6 bỏ; bản sao `final_submission/p5_container_d1/submission.jsonl`). README cho BTC (khai báo mô hình, phương pháp): `README_SOLUTION.md`. Mọi lệnh chạy từ **thư mục gốc repo**
 (branch `claude/datamate-v3-0dny90`); tên thư mục có dấu cách nên luôn đặt trong ngoặc kép.
 
@@ -9,7 +9,8 @@ toolkit có `industry.py`): public **0.952** (D1, `quynhtran35/zc-d1-1`). **`sub
 
 | File | Nội dung |
 |---|---|
-| `submission.jsonl` | file nộp public của cấu hình này (D1, PA 0.952) |
+| `submission_flow_p5c4.jsonl` | file public của cấu hình nộp (PA 0.939) |
+| `submission.jsonl` | file vòng public của cấu hình cũ flow_p5_final (D1, PA 0.952) |
 | `README_SOLUTION.md` | README nộp kèm (mô hình ≤ 15B, giấy phép, phương pháp, định dạng log) |
 | `Dockerfile` | 2 stage: gộp LoRA V3A × 0.70 vào Qwen3.5-9B → image chạy (vLLM 0.32.0, CUDA ≥ 12.8) |
 | `predict.sh` | điểm vào: đọc `/data`, ghi `/result/submission.jsonl` + `/result/logs/` |
@@ -43,7 +44,7 @@ Docker_submission/fetch_assets.sh Qwen/Qwen3.5-9B
 ```
 
 Kết quả: `models/Qwen3.5-9B/` (sha256 khớp `src/model_hashes.json`), `models/adapter/` (V3A + `soup.json` trọng số 0.70) và
-`models/adapters/{WL1,WJR1}/adapter/` (sha256 khớp `src/adapter_hashes*.json`; script dừng nếu sai).
+`models/adapters/WJR1/adapter/` (sha256 khớp `src/adapter_hashes*.json`; script dừng nếu sai).
 
 ```bash
 Docker_submission/build.sh datamate:latest
@@ -64,7 +65,7 @@ Docker_submission/run_public_test.sh ~/zc_data/public_test ./result_public
   `result_public/logs/run.log`: log tổng (các pha: thẻ luật W1 → hàm cửa hàng → link → giải → phán xử).
 - Thời gian tham chiếu: 69–110 phút trên Kaggle 4 × L4 cho 1000 câu; máy chấm 2 × RTX 5090 dự kiến tương đương hoặc nhanh hơn.
   Ngân sách mặc định 5 h 40 phút (`BUDGET=20400`), tự dừng các pha còn lại khi gần hết giờ.
-- Điểm public kỳ vọng ~0.94–0.95 (D1 0.952; chạy lại bằng mã hiện tại 0.942). Lệch quá ±0.03 → kiểm `run.log` (dòng `units: rc=[...]`, `links: rc=[...]`,
+- Điểm public kỳ vọng ~0.93–0.95 (cấu hình nộp 0.939). Lệch quá ±0.03 → kiểm `run.log` (dòng `units: rc=[...]`, `links: rc=[...]`,
   `judge: ...`) trước khi nộp.
 
 ## 5. Xuất file nộp

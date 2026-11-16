@@ -539,6 +539,9 @@ def prepare_lrl(cfg, split, work, model, log, fake=""):
     keys = {(cd.get("trigger") or {}).get("rulebook") for f in have if "compile" in os.path.basename(f) for cd in map(json.loads, open(f, encoding="utf-8"))}
     if rk in keys and not int(c.get("lrl_regen", 0) or 0):            # v2 evaluation grid: lrl_regen 1 = W1 rewrites the cards even when
         log(f"lrl: compiled cards of this rulebook are shipped ({len(have)} card files)"); return ",".join(have)   # shipped (as on private)
+    if not int(c.get("lrl_gen", 1) if c.get("lrl_gen") is not None else 1):   # 16/11 ablation: the model writes no rule card for this
+        keep = [f for f in have if not any(k in os.path.basename(f) for k in ("compile", "alias"))]   # split (generic cards only)
+        log(f"lrl: lrl_gen 0, no card written for this split ({len(keep)} generic card files)"); return ",".join(keep)
     out = os.path.join(work, "lrl"); os.makedirs(out, exist_ok=True)
     t = time.time()
     cm = c.get("lrl_compile_mode", "compile")                         # plan 5 W1: "bind" = executable, checked toolkit bindings

@@ -1,0 +1,13 @@
+[
+ {
+  "acc": "namhunhh",
+  "name": "e8ms3p1",
+  "jobs": "automation/jobs/p5/e8ms3p1.jobs",
+  "est_h": 1.9,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,namhunhh/zc-m3s1-1,namhunhh/zc-m3l1-1,namhunhh/zc-m3j1-1",
+   "--no-preflight"
+  ]
+ }
+]

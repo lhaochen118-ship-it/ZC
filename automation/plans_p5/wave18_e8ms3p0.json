@@ -1,0 +1,13 @@
+[
+ {
+  "acc": "loinguyentran",
+  "name": "e8ms3p0",
+  "jobs": "automation/jobs/p5/e8ms3p0.jobs",
+  "est_h": 1.9,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,loinguyentran/zc-m3s0-1,loinguyentran/zc-m3l0-1,loinguyentran/zc-m3j0-1",
+   "--no-preflight"
+  ]
+ }
+]

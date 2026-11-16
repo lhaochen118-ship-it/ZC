@@ -21,6 +21,8 @@ Chấm: `bash Process/tools/p5/archive.sh <run>` + `python3 Process/tools/p5/p5_
 `Process/runs/p5/<run>/*_out/results/<run>/judge/ensemble/submission.jsonl` bằng `src/score.py` với `data/raw/public_gt.jsonl`.
 Quy tắc: chỉ đổi cấu hình nộp nếu thắng 0.863 có ý nghĩa (ghép cặp z ≥ 2) **và** chạy được trong container ≤ 6 h.
 
+**16/11 09:00: bản nộp = `configs/flow_p5_final.json` (0.952) + `Docker submission/submission.jsonl`; Docker `Docker submission/`.**
+
 *Cập nhật 2026-11-15 11:15 UTC. User 06:00: báo cáo score, ngắt hướng không tiềm năng, **user sẽ đổi hướng nghiên cứu (chờ chỉ thị; không
 đẩy kernel mới)**. Đóng băng 16/11 04:00 UTC. Findings: PDF 1 §9 (giai đoạn C §9.4). Lỗi + cách tránh: PDF 2 §10. Nhật ký: `handoff/06` §7.*
 

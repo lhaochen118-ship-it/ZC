@@ -1,13 +1,15 @@
 # Docker submission — hướng dẫn build, chạy thử và nộp
 
-Thư mục này đóng gói **cấu hình nộp cuối** `configs/flow_v2_final.json` (chế độ H, không dùng hàm ngành viết tay; public 0.857–0.863,
-TB 0.860 qua 4 lượt). README cho BTC (khai báo mô hình, phương pháp): `README_SOLUTION.md`. Mọi lệnh chạy từ **thư mục gốc repo**
+Thư mục này đóng gói **cấu hình nộp cuối = framework mạnh nhất** `configs/flow_p5_final.json` (Qwen3.5-9B + V3A × 0.70, WL1, WJR1,
+toolkit có `industry.py`): public **0.952** (D1, `quynhtran35/zc-d1-1`). **`submission.jsonl`** trong thư mục này là file do chính lượt chạy
+đó tạo ra (đầu ra phán xử = file container sau khi sửa lỗi gộp; 1000 câu, 973 đúng / 21 sai / 6 bỏ; bản sao `final_submission/p5_container_d1/submission.jsonl`). README cho BTC (khai báo mô hình, phương pháp): `README_SOLUTION.md`. Mọi lệnh chạy từ **thư mục gốc repo**
 (branch `claude/datamate-v3-0dny90`); tên thư mục có dấu cách nên luôn đặt trong ngoặc kép.
 
 ## 1. Đọc gì trước
 
 | File | Nội dung |
 |---|---|
+| `submission.jsonl` | file nộp public của cấu hình này (D1, PA 0.952) |
 | `README_SOLUTION.md` | README nộp kèm (mô hình ≤ 15B, giấy phép, phương pháp, định dạng log) |
 | `Dockerfile` | 2 stage: gộp LoRA V3A × 0.70 vào Qwen3.5-9B → image chạy (vLLM 0.32.0, CUDA ≥ 12.8) |
 | `predict.sh` | điểm vào: đọc `/data`, ghi `/result/submission.jsonl` + `/result/logs/` |
@@ -60,9 +62,9 @@ Giải nén public test sao cho một thư mục chứa `questions.jsonl`, `rule
 - `result_public/submission.jsonl`: một dòng mỗi câu, ghi dần trong lúc chạy (dừng giữa chừng vẫn giữ các dòng đã ghi).
 - `result_public/logs/<id>.json`: id, đáp án, thời gian, chương trình mô hình viết, output thực thi, phiếu bầu, phán xử;
   `result_public/logs/run.log`: log tổng (các pha: thẻ luật W1 → hàm cửa hàng → link → giải → phán xử).
-- Thời gian tham chiếu: 110–125 phút trên Kaggle 4 × L4 cho 1000 câu; máy chấm 2 × RTX 5090 dự kiến tương đương hoặc nhanh hơn.
+- Thời gian tham chiếu: 69–110 phút trên Kaggle 4 × L4 cho 1000 câu; máy chấm 2 × RTX 5090 dự kiến tương đương hoặc nhanh hơn.
   Ngân sách mặc định 5 h 40 phút (`BUDGET=20400`), tự dừng các pha còn lại khi gần hết giờ.
-- Điểm public kỳ vọng ~0.86 (0.857–0.863). Lệch quá ±0.03 → kiểm `run.log` (dòng `units: rc=[...]`, `links: rc=[...]`,
+- Điểm public kỳ vọng ~0.94–0.95 (D1 0.952; chạy lại bằng mã hiện tại 0.942). Lệch quá ±0.03 → kiểm `run.log` (dòng `units: rc=[...]`, `links: rc=[...]`,
   `judge: ...`) trước khi nộp.
 
 ## 5. Xuất file nộp

@@ -1,4 +1,4 @@
-# DataMate solution image (Zalo AI Challenge 2026) — final configuration configs/flow_v2_final.json (mode H).
+# DataMate solution image (Zalo AI Challenge 2026) — final configuration configs/flow_p5_final.json (the 0.952 framework).
 # Base: official vLLM image, CUDA >= 12.8 (Blackwell / RTX 5090), the vLLM version of every scored Kaggle run (0.32.0).
 # If the organisers' Docker guideline names another base image, change both FROM lines and keep the rest.
 # Build context = repo root ("Docker submission/build.sh"); weights in ./models/ ("Docker submission/fetch_assets.sh").
@@ -28,6 +28,6 @@ COPY models/adapters/ /models/adapters/
 # and src/agent.py passes it only for paths containing "qwen3" (think_kw "legacy"). Every scored run served a merged directory
 # without that word (/tmp/soup_*/merged), i.e. with reasoning on; /models/solver reproduces that behaviour exactly.
 COPY --from=merge /w/model/ /models/solver/
-RUN chmod +x /app/predict.sh && python3 -c "import sys; sys.path.insert(0, '/app/src'); import ingest, dm, automap, agent, pipeline, merge_sub, predict_flow, api_spec, hints, prompting, retrieval, shopctx, hybrid, units, lrl, lrl_gen, link, judge, duckdb; print('agent import OK')"
+RUN chmod +x /app/predict.sh && python3 -c "import sys; sys.path.insert(0, '/app/src'); import ingest, dm, industry, automap, agent, pipeline, merge_sub, predict_flow, api_spec, hints, prompting, retrieval, shopctx, hybrid, units, lrl, lrl_gen, link, judge, duckdb; print('agent import OK')"
 ENV MODEL=/models/solver ZC_ADAPTER_ROOT=/models/adapters HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 VLLM_NO_USAGE_STATS=1 DO_NOT_TRACK=1 PYTHONHASHSEED=0
 ENTRYPOINT ["/app/predict.sh"]

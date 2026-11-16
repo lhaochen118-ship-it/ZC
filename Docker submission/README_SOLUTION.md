@@ -11,13 +11,13 @@ Three LoRA adapters of the same backbone (trained on the competition's training 
 - **W2 (linker)** WL1 and **W3 (judge)** WJR1, merged at run time into a copy of the S weights (`training/merge.py`, ~80 s each).
 sha256 of every adapter file: `src/adapter_hashes.json`, `src/adapter_hashes_w.json`. No other model; no network (`--network none`).
 
-## Method (`src/predict_flow.py`, configuration `configs/flow_v2_final.json`)
+## Method (`src/predict_flow.py`, configuration `configs/flow_p5_final.json`)
 
-No hand-written business rule: the model writes every answer program and every shop-specific rule (mode H: the hand-written
-industry functions of `src/industry.py` are hidden from every prompt and from the program namespace).
+The model writes every answer program; no logic keyed on question or business identifiers, no hard-coded answer.
 
 1. **Ingest + schema** (`src/ingest.py`, `src/automap.py`): generic cleaning of CSV / Excel / SQLite, mapping to canonical tables.
-2. **Neutral toolkit** (`src/dm.py`): periods, valid orders, aggregation, ranking with ties, formatting (rulebook general definitions).
+2. **Toolkit** (`src/dm.py`, `src/industry.py`): periods, valid orders, aggregation, ranking with ties, formatting, and the rulebook's
+   industry definitions as tested functions (generic per industry, never per shop or question).
 3. **W1 — rule cards and shop functions written by the model** (`src/lrl_gen.py`, `src/units.py`): rulebook rows compiled into cards,
    value aliases, and one Python function per shop-specific row, kept only when it runs on the shop's data and samples agree.
 4. **W2 — linker** (`src/link.py`): the model links each question to the rulebook rows it uses.
@@ -33,4 +33,5 @@ answer, elapsed time, the programs written, execution output, votes, judge verdi
 
 ## Results (public test, 1000 questions, organisers' matching rules, Kaggle 4×L4)
 
-Container path of this configuration: **0.863, 0.863, 0.858, 0.857** in four independent runs (mean 0.860; wall clock 110–125 min).
+This configuration: **0.952** (file `submission.jsonl` of this folder = the output of that run, D1);
+an independent re-run with the current code: 0.942 (run-to-run spread ~±0.01, Rule 8 tolerance 0.03). Wall clock 69–110 min.

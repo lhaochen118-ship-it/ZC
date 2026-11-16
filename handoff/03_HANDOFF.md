@@ -13,6 +13,7 @@ tham số ≤ 15B (tính mọi expert), offline, ≤ 6 h trên 2 × RTX 5090, n�
 
 | Ngày (UTC) | Quyết định |
 |---|---|
+| 16/11 09:00 | **Bản nộp = framework mạnh nhất `flow_p5_final` (0.952) + `submission.jsonl` của nó** (thay quyết định chế độ H 14/11) |
 | 16/11 05:30 | **Thí nghiệm chỉ thay đúng thành phần nghiên cứu**; baseline fine-tune = `flow_p5_final` (0.952), chế độ H = `flow_p5_final_h`; baseline zero-shot = cùng framework với Qwen3.5-9B gốc; nhiều thay đổi ⇒ ablation riêng |
 | 16/11 02:15 | Còn ~12 h: chạy nhanh nhất, không tiết kiệm acc / GPU; chạy mọi biến thể P5 còn trong ngưỡng thời gian |
 | 15/11 13:20 | Chỉ tối ưu trên public test, không chia tập khác |
@@ -21,14 +22,15 @@ tham số ≤ 15B (tính mọi expert), offline, ≤ 6 h trên 2 × RTX 5090, n�
 
 ## 3. Tiến độ
 
-- **Cấu hình nộp: `configs/flow_v2_final.json` (= `flow_p5_final_h`)**, public 0.863 / 0.863 / 0.858 / 0.857 (TB 0.860). Docker đóng gói
-  xong trong `Docker submission/` (chưa build — cần máy có Docker; hướng dẫn trong `Docker submission/README.md`).
+- **Cấu hình nộp: `configs/flow_p5_final.json` (framework 0.952)**; file nộp public `Docker submission/submission.jsonl` (D1, PA 0.952;
+  chạy lại bằng mã hiện tại C0L 0.942). Docker đóng gói trong `Docker submission/` (mặc định cấu hình này; chưa build — cần máy có
+  Docker, hướng dẫn `Docker submission/README.md`). Chế độ H (`flow_p5_final_h`, 0.860) chỉ còn là tham chiếu.
 - P5 (zero-shot, MoE, ghép component): không tổ hợp nào vượt 0.952 / 0.863; chi tiết PDF 1 §10, bảng `docs/21_COMBO_PLAN.md`.
 - **Đang chạy lúc bàn giao** (tự động, theo dõi `Process/runs/p5/watch.out`):
 
 | Việc | Kernel / script | Dự kiến (UTC) | Quyết định khi xong |
 |---|---|---|---|
-| MS3 (MoE E88 + LoRA cả 88 expert) trên F_H, 2 nửa cửa hàng | `after_ms3b.sh` → `zc-m3*` (gộp) → `zc-e8ms3p0/1` | ~11:30 | ghép 2 file, chấm; chỉ thay bản nộp nếu > 0.863 có ý nghĩa (z ≥ 2 vs H0a, H0a2) **và** cấu hình MoE vừa 6 h |
+| MS3 (MoE E88 + LoRA cả 88 expert) trên F_H, 2 nửa cửa hàng | `after_ms3b.sh` → `zc-m3*` (gộp) → `zc-e8ms3p0/1` | ~11:30 | ghép 2 file, chấm; chỉ ghi nhận (MoE trên chế độ H; không thay bản nộp 0.952) |
 | e8r (ablation trọng số MS2 × 1.0, F_H) | `caohuyen74/zc-e8r-1` | ~09:30 | chỉ ghi nhận |
 | Gộp ML1 (huyenco, `zc-hml-1`) | — | ~09:00 | không dùng nữa (rsl đã huỷ: lai 9B + MoE vượt 15B) |
 
@@ -36,7 +38,7 @@ tham số ≤ 15B (tính mọi expert), offline, ≤ 6 h trên 2 × RTX 5090, n�
 
 | Thứ | Ở đâu |
 |---|---|
-| Luồng nộp + Docker | `src/predict_flow.py`, `configs/flow_v2_final.json`, **`Docker submission/`** (Dockerfile, predict.sh, fetch / build / run / export, README) |
+| Luồng nộp + Docker | `src/predict_flow.py`, `configs/flow_p5_final.json`, **`Docker submission/`** (+ `submission.jsonl`) (Dockerfile, predict.sh, fetch / build / run / export, README) |
 | Kế hoạch / nhật ký P5 | `docs/19_PLAN_P5_ZS.md` (nhật ký), `docs/20_NEW7_PLAN_UPDATED.md`, `docs/21_COMBO_PLAN.md` (tổ hợp) |
 | Config thí nghiệm P5 | `configs/flow_p5_zs_*`, `flow_c*`, `flow_e*`, `flow_h_*`, `flow_t02*`, `flow_rs_*`; MoE keep-list `configs/moe/` |
 | Job / plan / sổ chạy | `automation/jobs/p5/`, `automation/plans_p5/`, `Process/runs/p5/` (kernel), `Process/runs/p5_results/` (kết quả gzip) |
@@ -47,10 +49,10 @@ tham số ≤ 15B (tính mọi expert), offline, ≤ 6 h trên 2 × RTX 5090, n�
 
 ## 5. Việc tiếp theo (theo thứ tự)
 
-1. **Build + chạy thử Docker** trên máy có GPU (`Docker submission/README.md` mục 3–4): điểm public phải ~0.86 (± 0.03); kiểm `run.log`
+1. **Build + chạy thử Docker** trên máy có GPU (`Docker submission/README.md` mục 3–4): điểm public phải ~0.94–0.95 (± 0.03); kiểm `run.log`
    (`units: rc`, `links: rc`, `judge:`), thời gian.
-2. Khi MS3 xong: chấm 2 nửa (`cat` 2 `submission.jsonl` → `jscore.py`), ghi `docs/19` + `docs/21`. Chỉ đổi bản nộp theo quy tắc §3.
-3. Xuất image (`export_image.sh`), upload, nộp form trước 16/11 23:59 GMT+7.
+2. Khi MS3 xong: chấm 2 nửa (`cat` 2 `submission.jsonl` → `jscore.py`), ghi `docs/19` + `docs/21`. Không đổi bản nộp.
+3. Nộp `Docker submission/submission.jsonl` trên portal (nếu cần); xuất image (`export_image.sh`), upload, nộp form trước 16/11 23:59 GMT+7.
 4. Sau nộp: xoá routine `trig_013dELF9kwndZnzmL5KAZ6GS` (và `trig_015hi1s1WHshqorFZC7DWY9j`); hướng mở cho vòng sau: PDF 1 §10.3.
 
 **Token Kaggle** chỉ ở `~/.kaggle/tok_<acc>` (mất khi đổi container, xin lại user); quota làm mới 21/11 00:00 UTC.

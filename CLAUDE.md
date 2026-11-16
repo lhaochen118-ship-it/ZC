@@ -8,7 +8,9 @@ luật tổng quát / M mô hình); 12/11 chốt P (public 0.994) + Docker; 13/1
 đáp án** (luật / chương trình sinh thẳng đáp án không qua mô hình); phân tích lỗi chỉ trên public gốc / train, không xem từng câu held-out;
 không train trên public / private test.
 
-**Quyết định user 15/11 04:00 (MỚI NHẤT):** tạm dừng — để các tiến trình đang chạy chạy xong, **không khởi tạo tiến trình mới**; chuẩn bị bàn giao (3 PDF, `Process/`, dọn dẹp); khung chat mới mới chạy tiếp. Routine `trig_015hi1s1WHshqorFZC7DWY9j` đã tắt.
+**Quyết định user 16/11 09:00 (MỚI NHẤT, thay quyết định chế độ H 14/11 về bản nộp):** **nộp framework mạnh nhất `configs/flow_p5_final.json` (0.952)** cùng `submission.jsonl` do nó tạo ra (`Docker submission/submission.jsonl` = D1 `quynhtran35/zc-d1-1`, PA 0.952); Docker `Docker submission/` mặc định cấu hình này.
+
+**Quyết định user 15/11 04:00:** tạm dừng — để các tiến trình đang chạy chạy xong, **không khởi tạo tiến trình mới**; chuẩn bị bàn giao (3 PDF, `Process/`, dọn dẹp); khung chat mới mới chạy tiếp. Routine `trig_015hi1s1WHshqorFZC7DWY9j` đã tắt.
 
 **Quyết định user 15/11 01:15 (thay phần held-out của 14/11):** hết thời gian → **dừng toàn bộ việc chạy held-out**; tập trung thử **thật nhiều giải pháp trên public test**, chọn cái có score cao nhất (vẫn chế độ H, không luật viết tay). Cần thêm acc thì xin user.
 

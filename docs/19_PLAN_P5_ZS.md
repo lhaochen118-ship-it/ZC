@@ -161,3 +161,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
   - **Gộp nhiều thay đổi (chỉ dùng làm thăm dò, không dùng để quy công):** P02T, P02x, P02xk, P02xFT, C3, C3T, C3FT (MoE zero-shot + T01 + trần phán xử + thinking), C2L (k_max + T01). Phép so zero-shot sạch: **P02 vs B00-S chỉ khác mô hình: 0.781 vs 0.753 (z 2.26)**; P03 0.773, P01 0.429, M01 0.709, M02 0.717 (M01: DP2×TP2 + KV fp8 là điều chỉnh tương thích để 14B vừa L4).
   - **Đúng:** C0L, C1L (T01 trên 0.952), L02, B00T, T01, Q01, N4-A, H01, A01/A02, các lượt ghép chế độ H (ht01, hq01, hn4a), T02 (trên 0.863), jph* (chỉ đổi bộ ứng viên).
 - 16/11 05:44 ht01s1 (T01 ghép vào flow_p5_final_h, seed 1): **0.860** (909/49/42; vs H0a z 0.0) — trong dải mốc 0.857–0.863.
+- 16/11 05:48 ht01 (T01 ghép vào flow_p5_final_h, seed 0): **0.857** → T01 ở chế độ H: 0.857 / 0.860 (TB 0.8585) vs mốc 0.857–0.863 (TB 0.860) → **không cải thiện, đóng**.

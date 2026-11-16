@@ -196,7 +196,7 @@ def choice_dist(row):
 
 
 def ensemble(rows_by_variant, margin=0.7, denom="valid", u_answers=True):
-    """plan 5 W3 final policy (14/11, four public solver logs: list + point + point+think, margin 0.7 -> 0.948-0.954, the most stable):
+    """plan 5 W3 final policy:
     per question the variants' choice shares are averaged; the top choice wins when its mean share >= margin, else the vote.
     rows_by_variant: {variant: {id: verdict row}} -> {id: (final, conf, how)}."""
     vs = list(rows_by_variant); out = {}
@@ -296,8 +296,7 @@ def unanimous(cands, n):
 
 def build_requests(rows, ctxs, mode, k, only_split=True, links=None):
     """(meta, conversation, temperature, seed) per judge sample. list: k samples per question; point: k per candidate.
-    only_split: questions whose samples all ran and agree are not judged (the vote stands; 14/11 zero-shot replay on public:
-    judging every question 0.941, only the split ones 0.947 vs the vote 0.938) - ~10 % of the questions."""
+    only_split: questions whose samples all ran and agree are not judged - ~10 % of the questions."""
     reqs, cands_of = [], {}
     for qi, (i, r) in enumerate(rows.items()):
         cands, n = candidates(r); cands_of[i] = (cands, n)

@@ -102,7 +102,7 @@ def system_block(api_spec=None, hide=(), escapes=("python",), tools_doc="", mode
         out = OUTPUT_COMPACT + ("\n" + OUTPUT_SQL if "sql" in escapes else "")
         return f"{ROLE}\n\n# API\n{api}\n\n{out}"
     api = dm.API_DOC
-    if os.environ.get("ZC_API_EXTRA", "0") == "1":                       # v2 F: every public period / metric function the
+    if os.environ.get("ZC_API_EXTRA", "0") == "1":                       # v2 F: every evaluation period / metric function the
         api += api_extra(api_spec, hide)                                # hand-written API_DOC does not mention, from api_spec
     if tools_doc: api += "\n- Tools (deterministic lookups, callable inside the program):\n" + tools_doc
     out = OUTPUT + ("\n" + OUTPUT_SQL if "sql" in escapes else "")

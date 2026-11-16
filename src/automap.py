@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic mapping of one business's raw tables onto the canonical tables (dm.CANON_DOC), without an LLM.
 
-Why: the LLM-written mapping programs were the main source of error and of run-to-run variance (the same business got
-3 different mappings in 3 runs; the public score moved +-0.03 from that alone). The data packages are exports of one
+Why: the LLM-written mapping programs were the main source of error and of run-to-run variance. The data packages are exports of one
 canonical model (orders, lines, catalogue, purchases, payments, stock ...) written with a closed vocabulary of column
 names and README descriptions ("mã đơn", "thành tiền sau giảm", "số lượng đã đổi ra đơn vị cơ bản" ...). Inverting
 that export is a deterministic problem:
@@ -19,7 +18,7 @@ that export is a deterministic problem:
      written in notes, toppings in the dish cell, voucher / points / shipping pseudo-lines, abbreviation sheets ...).
 
 Nothing here is keyed on a business id, a file name of a particular business or a question. Validation:
-tests/eval_split.py (answers of the rule programs on train and public), tests/test_automap.py."""
+tests/eval_split.py, tests/test_automap.py."""
 import os, re, sys, math, fnmatch, unicodedata
 from collections import OrderedDict, defaultdict, Counter
 import numpy as np
@@ -789,7 +788,7 @@ TOPPING = re.compile(r"\s+\+\s+(?:(\d+)\s*(?:x\s*)?)?(.+?)\s*\(\s*([\d.,]+)\s*(?
 def split_toppings(L, rd):
     """README: 'topping ghi chung ô với món, nối bằng " + " ... tiền topping ghi trong ngoặc và đã cộng vào thành tiền'
     -> one line for the dish (amount minus the toppings) and one line per topping (qty = its number of portions, default
-    1; amount = the price in brackets). Public rulebook: the topping is its own item."""
+    1; amount = the price in brackets). the reference rulebook: the topping is its own item."""
     if "item_name" not in L: return L
     said = any(re.search(r"topping", c, re.I) and "+" in c for c in rd["conventions"])
     if not said:                                                     # no README note: the cells themselves show the pattern
@@ -1278,8 +1277,7 @@ def _norm_ids(s):
 
 
 def build_side_books(K, C, notes):
-    """books of a shop selling on credit / instalments / with trade-ins / warranty visits (public rulebook 'Cửa hàng điện thoại';
-    src/industry.py reads them): instalment book -> C['instalments'] + C['instalment_payments']; debt book -> C['payments']
+    """books of a shop selling on credit / instalments / with trade-ins / warranty visits: instalment book -> C['instalments'] + C['instalment_payments']; debt book -> C['payments']
     + orders.paid_at_purchase; warranty book -> C['warranty']; trade-in book -> C['tradeins']."""
     O = C["orders"]; oid = _norm_ids(O["order_id"])
     O["order_id"] = oid

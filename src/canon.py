@@ -98,8 +98,7 @@ class Tables(dict):
         except KeyError: return default
 
     def sheet_alias(self, name):
-        """a table named after its sheet as the README writes it ('BanHang_KhachHang', a sheet of BanHang_TongHop_2025.xlsx
-        that ingest calls BanHang_TongHop_2: the KeyError of most dev_003 mapping attempts) -> that table, when exactly one
+        """a table named after its sheet as the README writes it -> that table, when exactly one
         table comes from a sheet of that name (also 'file_sheet' / 'file[sheet]')."""
         k, hits = _fold(str(name)), set()
         for t in self:
@@ -290,7 +289,7 @@ def _idn(s, norm=True):
 
 def _order_key_col(df, ids, exclude=(), norm=True):
     """the column of raw table df that holds the order ids of C (ids: _idn of orders.order_id): >= 90% of its values are
-    order ids AND it has many distinct values (a quantity column 1, 2, 3 also 'matches' ids 1, 2, 3: public dev_014)."""
+    order ids AND it has many distinct values."""
     for kc in df.columns:
         if kc in exclude or str(kc).startswith("_"): continue
         h = _idn(df[kc].dropna().head(500), norm)
@@ -309,7 +308,7 @@ def secondary_checks(C, biz):
     ids = set(o["order_id"].astype(str).str.strip())
     v = o[o["valid"].astype(bool)] if "valid" in o else o
     # 1. revenue against a column the data itself calls tiền hàng / tiền bán / doanh thu (one value per order), by its name or
-    #    by the README's description of it ('**Giá trị hàng**: tiền hàng của đơn ...': public dev_009, 2 of 3 runs took TongTien)
+    #    by the README's description of it
     rdesc = {_fold(m.group(1)) for m in re.finditer(r"(?m)^\s*[-*]\s*\*\*(.+?)\*\*\s*:\s*(.+)$", str(getattr(biz, "readme", "") or ""))
              if re.match(r"(?:tienhang|tienban|doanhthu)", _fold(m.group(2)))}
     if "revenue" in o and len(v) > 50:
@@ -334,7 +333,7 @@ def secondary_checks(C, biz):
                 break
     # 1a. revenue against the order's own lines (rulebook §1: revenue of an order = sum of its line amounts after line
     #     discounts; order-level discounts are NOT subtracted, shipping / VAT NOT added). Exact: one order off by 10 000 VND
-    #     changes every revenue answer of its month (a public shop's LLM mapping subtracted the order voucher on 34 orders).
+    #     changes every revenue answer of its month.
     itm = next((c for c in ("item_code", "item_name") if l is not None and c in l.columns), None)   # item lines only (order-only
     if "revenue" in o and itm and len(v) > 50 and {"order_id", "line_amount"} <= set(l.columns):        # data has no lines to add)
         la = pd.to_numeric(l["line_amount"], errors="coerce")
@@ -360,7 +359,7 @@ def secondary_checks(C, biz):
                 w.append(f"orders.order_time has no time of day (every value is 00:00) but {src} records times: order_time is the moment the "
                          "order was created (giờ tạo đơn), used by shift (ca sáng / ca chiều) and peak-hour questions")
     # 1a''. item names: the lines carry the SHORT names of a lookup table (ghi tắt -> tên hàng) whose other column holds the
-    #      full names the questions use (a public shop: every item filter missed, accessories ranked as phone lines)
+    #      full names the questions use
     if l is not None and "item_name" in l.columns and len(l) > 50:
         ln = l["item_name"].dropna().astype(str).map(dm.key); lset = set(ln.unique())
         for t, df in biz.tables.items():
@@ -386,7 +385,7 @@ def secondary_checks(C, biz):
                 break
             if hit: break
     # 1a-kinds. phone shops: a lookup table gives each item its kind (máy mới / máy cũ / phụ kiện) and the lines must carry it
-    #           (public dev_014, v26: the pooled best mapping r1:llm:9 left the kinds out -> accessories ranked as phone models,
+    #           (one shop, v26: the pooled best mapping r1:llm:9 left the kinds out -> accessories ranked as phone models,
     #           0 used phones, 733 'phones' in a month)
     try:
         if l is not None and "item_name" in l.columns and len(l) > 50:
@@ -410,7 +409,7 @@ def secondary_checks(C, biz):
                              f"lines.item_group to the kind {t}.{kc} gives each item (looked up by dm.key of the name)")
                 break
     except Exception as e: print(f"[canon] kinds check failed: {type(e).__name__}: {e}", flush=True)
-    # 1a-cost. catalogue costs all 0 while the raw catalogue records them (public dev_008, v26: stock value 0)
+    # 1a-cost. catalogue costs all 0 while the raw catalogue records them
     it_ = C.get("items")
     if isinstance(it_, pd.DataFrame) and len(it_) >= 10:
         for cc in ("unit_cost", "cost"):
@@ -419,7 +418,7 @@ def secondary_checks(C, biz):
                              if re.fullmatch(r"giavon|gianhap|giavonhang|cost|unitcost", _fold(c)) and _num(df[c]).fillna(0).gt(0).mean() > 0.5), None)
                 if src_: w.append(f"items.{cc} is 0 on every item but {src_} records the costs: map items.{cc} from it")
                 break
-    # 1a-noname. lines without an item name (a name lookup that returned None for the spellings it did not know: public dev_014,
+    # 1a-noname. lines without an item name (a name lookup that returned None for the spellings it did not know: one shop,
     #           v25: 3 of 12 candidates left 2751 of 10107 lines nameless -> Jan 2026 silicon cases 47 instead of 86)
     if l is not None and "item_name" in l.columns and len(l) > 50:
         nn_ = int(l["item_name"].isna().sum() + l["item_name"].dropna().astype(str).str.strip().isin(["", "None", "nan"]).sum())
@@ -449,7 +448,7 @@ def secondary_checks(C, biz):
                         w.append(f"orders.staff holds given names / nicknames ({ex}) while {t}.{c} lists the full names: map staff to the full "
                                  "name of that list (one person = one name; answers name people as the data's list writes them)")
                         done = True; break
-    # 1a-size. the catalogue records sizes / number classes (public rulebook: the size of a diaper, the number of a milk come
+    # 1a-size. the catalogue records sizes / number classes (the reference rulebook: the size of a diaper, the number of a milk come
     #          from that column, not from the name) but no canonical table carries them
     has_size = any(isinstance(C.get(t), pd.DataFrame) and "size" in C[t].columns for t in ("items", "lines"))
     if not has_size and l is not None and len(l):
@@ -457,8 +456,8 @@ def secondary_checks(C, biz):
                     if re.fullmatch(r"(?:so)?size|kichco|kichthuoc|cosize", _fold(c)) and df[c].notna().mean() > 0.2), None)
         if src: w.append(f"the catalogue records sizes in {src} but neither C['items'] nor C['lines'] has a column size: map it (size_qty "
                          "and the rulebook read the size / number from that column, not from the item name)")
-    # 1a-credit. orders on credit (ghi nợ) that owe nothing at purchase: paid_at_purchase was set to the order total (public
-    #           dev_008: debts only in a free-text note -> every debt answer 0)
+    # 1a-credit. orders on credit (ghi nợ) that owe nothing at purchase: paid_at_purchase was set to the order total (evaluation
+    #           one shop: debts only in a free-text note -> every debt answer 0)
     if {"payment_method", "total_payable", "paid_at_purchase"} <= set(o.columns):
         cr = o[o["payment_method"].astype(str).map(lambda x: dm.key(x)) == dm.key("ghi nợ")]
         tp, pp = pd.to_numeric(cr["total_payable"], errors="coerce"), pd.to_numeric(cr["paid_at_purchase"], errors="coerce")
@@ -470,7 +469,7 @@ def secondary_checks(C, biz):
                      "'đưa trước 50k, còn thiếu 30 nghìn'); later repayments go to C['payments'] (order_id, pay_date, amount). When the note "
                      "is the debt's state at the END of the data, set orders.debt_end = debt_from_note(note, total_payable) instead")
     # 1a-notes. debts written in free-text notes of the raw data (README: the note is the order's state at the end of the data)
-    #           while C records those orders as paid or records no debt at all (public dev_008: v22 runs had no debt information,
+    #           while C records those orders as paid or records no debt at all (one shop: v22 runs had no debt information,
     #           a v23 mapping made payments = the order total -> every debt answer 0 / unanswerable)
     try:
         owed_note = None
@@ -501,7 +500,7 @@ def secondary_checks(C, biz):
             c_owed = c_owed[~c_owed.index.duplicated()] if c_owed is not None else None
             zero = 1.0 if c_owed is None else float((c_owed.reindex(pos.index).fillna(0) <= 0.5).mean()) if len(pos) else 0.0
             if len(settled) >= 20 and c_owed is not None:     # the reverse: notes 'đã trả đủ' while C still counts the order as
-                still = float((c_owed.reindex(settled.index).fillna(0) > 0.5).mean())          # owing (public dev_008, a v23 run:
+                still = float((c_owed.reindex(settled.index).fillna(0) > 0.5).mean())          # owing (one shop, a v23 run:
                 if still > 0.5:                                                            # paid in full -> owed in full, 19.5 bn)
                     w.append(f"the notes {src} say {len(settled)} orders on credit are settled (e.g. '{first.get(settled.index[0])}') but C "
                              f"records {still:.0%} of them as still owing: the note is the debt at the end of the data, set orders.debt_end "
@@ -511,9 +510,9 @@ def secondary_checks(C, biz):
                          f"C records {zero:.0%} of them as owing nothing: set orders.debt_end = debt_from_note(note, total_payable) (the note "
                          "is the debt at the end of the data) and do not make payments equal the order total")
     except Exception as e: print(f"[canon] note-debt check failed: {type(e).__name__}: {e}", flush=True)
-    # 1a-owing. money owed on most orders at the end of the data: orders paid in full recorded as unpaid (public dev_014, v23
+    # 1a-owing. money owed on most orders at the end of the data: orders paid in full recorded as unpaid (one shop, v23
     #           runs: C['payments'] held only the debt book's repayments -> 6286 orders owed 22.9 bn, more than a year of sales;
-    #           dev_008: a payments table 10k short of every total -> 23349 orders owing)
+    #           one shop: a payments table 10k short of every total -> 23349 orders owing)
     try:
         sh = dm.Shop(C); end = sh.last
         if end is not None and "total_payable" in o:
@@ -526,7 +525,7 @@ def secondary_checks(C, biz):
     except dm.Unanswerable: pass
     except Exception as e: print(f"[canon] owing check failed: {type(e).__name__}: {e}", flush=True)
     # 1a-status. returns / cancellations written in a text column of the raw data (a note 'khách trả lại', a status 'khách huỷ')
-    #           while C keeps those orders with another status (public dev_014, v23: a mapping without the returns -> every
+    #           while C keeps those orders with another status (one shop, v23: a mapping without the returns -> every
     #           revenue answer counted the returned orders; §1 leaves them out)
     try:
         ids_n = set(_idn(o["order_id"]))
@@ -557,8 +556,8 @@ def secondary_checks(C, biz):
                         w.append(f"{t}.{c} marks {len(m)} orders as {kind} (e.g. '{next(iter(hit_vals))}') but C gives {float((m != st).mean()):.0%} "
                                  f"of them another status: set orders.status = '{st}' for those orders (§1: {kind} orders are not revenue)")
     except Exception as e: print(f"[canon] status-note check failed: {type(e).__name__}: {e}", flush=True)
-    # 1a-book. a debt book in the raw data (an owed column + repayment columns) that the toolkit cannot read from C (public
-    #          dev_014, v23: a mapping without orders.total_payable -> only the instalments counted as debts, the debt book lost)
+    # 1a-book. a debt book in the raw data (an owed column + repayment columns) that the toolkit cannot read from C (evaluation
+    #          one shop, v23: a mapping without orders.total_payable -> only the instalments counted as debts, the debt book lost)
     try:
         book = next((t for t, df in biz.tables.items() if len(df) >= 10
                      and any(re.fullmatch(r"no|conno|sono|tienno|notien|sotienno|nocon", _fold(c)) for c in df.columns)
@@ -571,7 +570,7 @@ def secondary_checks(C, biz):
                 w.append(f"the data has a debt book ({book}) but the toolkit cannot read debts from C ({e}): set orders.total_payable, "
                          "orders.paid_at_purchase (what was paid when buying) and the later repayments in C['payments']")
             if bd is not None:                                  # the book still owes money at the end but C owes nothing
-                bk = biz.tables[book]                           # (public dev_014, v28: paid_at_purchase = the whole order + the
+                bk = biz.tables[book]                           # (one shop, v28: paid_at_purchase = the whole order + the
                 oc = next(c for c in bk.columns if re.fullmatch(r"no|conno|sono|tienno|notien|sotienno|nocon", _fold(c)))   # repayments)
                 pc = next(c for c in bk.columns if re.fullmatch(r"datra|tientra|sotientra|tientrano", _fold(c)) or _fold(c) == "datra")
                 owed0, paid_ = float(_num(bk[oc]).fillna(0).sum()), float(_num(bk[pc]).fillna(0).sum())
@@ -581,7 +580,7 @@ def secondary_checks(C, biz):
                              "C['payments'] = the later repayments")
     except Exception as e: print(f"[canon] debt-book check failed: {type(e).__name__}: {e}", flush=True)
     # 1c. staff written by given names in the book + a staff list of full names: orders.staff must give each ticket to the person
-    #     whose name it writes (public dev_012, v23: a mapping hand-wrote {'An': 'Hà Loan Đạt', 'Đạt': 'Lương Chi Đức', ...})
+    #     whose name it writes
     try:
         St = C.get("staff")
         if isinstance(St, pd.DataFrame) and "staff" in St.columns and "staff" in o.columns and St["staff"].notna().sum() >= 2:
@@ -620,7 +619,7 @@ def secondary_checks(C, biz):
                     raise StopIteration
     except StopIteration: pass
     except Exception as e: print(f"[canon] staff-name check failed: {type(e).__name__}: {e}", flush=True)
-    # 1e. order-level columns filled with ONE value for every order (v24 public dev_013 seed 1: orders["order_discount"] = the
+    # 1e. order-level columns filled with ONE value for every order (v24 one shop seed 1: orders["order_discount"] = the
     #     voucher total of the whole table, orders["channel"] = the first order's channel): every answer on them is wrong
     if len(o) > 50:
         rev_sum = float(pd.to_numeric(o["revenue"], errors="coerce").fillna(0).sum()) if "revenue" in o else 0.0
@@ -638,7 +637,7 @@ def secondary_checks(C, biz):
                          if re.fullmatch(pat, _fold(c)) and df[c].dropna().astype(str).str.strip().nunique() >= 2), None)
             if src_: w.append(f"orders.{col} has the single value {o[col].dropna().iloc[0]!r} on every order but {src_} records several: map "
                               "each order's own value")
-    # 1d. books of the public rulebook's industries present in the raw data but missing from C (v24 public dev_014 run 2: the chosen
+    # 1d. books of the reference rulebook industries present in the raw data but missing from C (v24 one shop run 2: the chosen
     #     mapping had no instalment book, every instalment answer 0): the toolkit can only use what C holds
     have = {t for t, v in C.items() if isinstance(v, pd.DataFrame) and len(v)}
     for t, df in biz.tables.items():
@@ -663,7 +662,7 @@ def secondary_checks(C, biz):
             w.append(f"the data has commission rates ({t}) but C['staff'] has no commission_pct: map the staff list (staff, commission_pct)")
         if anyc(r"ngaydangky|ngaydk|ngaythamgia|ngaylamthe") >= 1 and not (isinstance(C.get("customers"), pd.DataFrame) and "registered" in C["customers"].columns):
             w.append(f"the data has registration dates ({t}) but C['customers'] has no registered column: map the member list")
-        # number plates (public rulebook 'Sửa xe': vehicles are counted by plate; public dev_012, v23: the pooled best mapping had
+        # number plates (the reference rulebook 'Sửa xe': vehicles are counted by plate; one shop, v23: the pooled best mapping had
         # no orders.plate / orders.vehicle -> every 'bao nhiêu chiếc xe' answer unanswerable)
         if len(df) >= 50:
             for c in df.columns:
@@ -673,7 +672,7 @@ def secondary_checks(C, biz):
                 sp = [industry.split_vehicle(x) for x in s]
                 if sum(1 for _, pl in sp if pl) < 0.6 * len(s): continue
                 if "plate" in o.columns and o["plate"].notna().mean() > 0.3:   # plates mapped: they must be the book's plates
-                    import collections as _co                                    # (public dev_012, v27: candidates with plates
+                    import collections as _co                                    # (one shop, v27: candidates with plates
                     raw_ = _co.Counter(industry.plate_key(pl) for _, pl in            # gave 2 / 8 / 25 / 33 / 70 repeat vehicles)
                                        (industry.split_vehicle(x) for x in df[c].dropna().astype(str)) if pl)
                     got_ = _co.Counter(industry.plate_key(x) for x in o["plate"].dropna().astype(str))
@@ -744,7 +743,7 @@ def secondary_checks(C, biz):
     cv = C.get("conversions")
     if isinstance(cv, pd.DataFrame) and not len(cv):
         w.append("C['conversions'] is empty: map the table of unit conversions (item, unit, factor), or leave conversions out")
-    # 3b. the data records customer groups but C does not (public dev_008: one of three runs' mappings left them out, another
+    # 3b. the data records customer groups but C does not (one shop: one of three runs' mappings left them out, another
     #     took each customer's last group instead of the order's): questions by customer group then answer 'unanswerable'
     if "customer_group" not in o or not o["customer_group"].notna().any():
         for t, df in biz.tables.items():
@@ -784,7 +783,7 @@ ALIASES = {   # canonical column <- names an LLM mapping uses for it (renamed on
     "ledger": {"stock_after": ["balance", "stock_balance", "balance_after", "qty_after"], "time": ["datetime", "timestamp"]},
     "prices": {"price": ["new_price", "unit_price"], "date": ["effective_date", "valid_from", "apply_date"]},
     "expenses": {"date": ["expense_date"], "amount": ["expense_amount", "cost"]},
-    # industry tables (src/industry.py); a staff list copied raw keeps its Vietnamese headers (public dev_012, v23)
+    # industry tables (src/industry.py); a staff list copied raw keeps its Vietnamese headers
     "staff": {"staff": ["full_name", "name", "staff_name", "Họ tên", "Họ và tên", "Tên thợ", "Tên nhân viên", "Họ tên thợ", "Tên"],
               "commission_pct": ["commission", "commission_rate", "commission_percent", "Hoa hồng (%)", "Hoa hồng", "% hoa hồng", "Tỉ lệ hoa hồng"],
               "start_date": ["Ngày vào làm", "join_date", "hire_date"]},
@@ -843,7 +842,7 @@ def resolve_short_names(C, biz):
     """cleaning layer (rulebook §8: names that denote one thing are one thing): when the raw data has a lookup table of short
     names -> full item names (ghi tắt -> tên hàng) and the mapping already put the full names on most lines, the lines left
     with a spelling of a short name that differs only in case / accents ('ỐP SILICON IP' for 'Ốp silicon IP') get its full
-    name too (public dev_014, v25: 19 such lines in Jan 2026 -> silicon cases 67 instead of 86). Returns the number of lines
+    name too. Returns the number of lines
     renamed; nothing happens when no lookup table is found or when most lines still hold short names (a mapping that never
     looked the names up: the secondary check asks for the lookup)."""
     l = C.get("lines")

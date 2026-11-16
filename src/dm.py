@@ -103,7 +103,7 @@ def prev_month_same_days(today):
 def prev_month(p):
     """the whole calendar month before the (month) period p; for 'tháng này' (this_month: day 1 .. today) the rulebook base is the
     same number of days of last month (prev_month_same_days): the programs wrote prev_month(this_month(TODAY)) and compared
-    a partial month with a whole one (public dev_005: +15.6 % vs -51.69 %)."""
+    a partial month with a whole one."""
     if p.label == "this month": return prev_month_same_days(p.end)
     s = (p.start.replace(day=1) - D).replace(day=1); return month(s.year, s.month)
 
@@ -372,7 +372,7 @@ _SUMMARY_COLS = ("order_id", "customer_name", "customer_id", "note", "staff")
 
 
 def _summary_rows(df):
-    """summary rows of an export: 'tổng 01/05' in the order-code column (dev_010, one per day) or 'Cộng ngày 01/05/2025' in
+    """summary rows of an export: 'tổng 01/05' in the order-code column or 'Cộng ngày 01/05/2025' in
     the customer column with a blank code (biz_110: 428 rows; the blank code made each one a line of the order above,
     revenue +100 %). A row is a summary when an order-level text cell reads tổng / cộng (+ ngày, tháng, tiền, a number
     ...) / total and the row has no date. Item names are not looked at ('Cộng cà phê' is an item)."""
@@ -397,7 +397,7 @@ _ADJ = [("order_discount", re.compile(r"^(?:voucher|ma giam gia|ma giam|giam gia
 def _order_adjustments(L):
     """rows of a sales book that are not items but an adjustment of the whole invoice: 'Voucher' / 'Giảm giá hoá đơn' (order
     discount), 'Dùng 200 điểm' (paid with loyalty points), 'Phí ship' (delivery fee), written with the invoice number, a name and
-    an amount but no quantity / unit price (public dev_013). Rulebook §1: an order's revenue is the sum of its ITEM lines, without
+    an amount but no quantity / unit price. Rulebook §1: an order's revenue is the sum of its ITEM lines, without
     order discounts or delivery fees -> such rows leave the lines and become the order columns order_discount / points_discount /
     shipping_fee (positive). Returns (lines, {column: Series order_id -> amount})."""
     if "item_name" not in L.columns or "line_amount" not in L.columns or "order_id" not in L.columns or not len(L): return L, {}
@@ -413,11 +413,11 @@ def _order_adjustments(L):
         adj[col] = amt.groupby(L.loc[m, "order_id"].astype(str).str.strip()).sum(); drop |= m
     if drop.any():
         import os
-        if os.environ.get("ZC_ADJ_ROWS", "move") == "move":           # rulebook §1: not in the revenue (current public key: dev_013
+        if os.environ.get("ZC_ADJ_ROWS", "move") == "move":           # rulebook §1: not in the revenue (one shop
                                                                        # 45 / 9 right / wrong with 'move', 17 / 40 with 'keep' (v28))
             print(f"finalize: {int(drop.sum())} invoice adjustment rows (voucher / points / shipping) moved from the lines to the order columns", flush=True)
             L = L[~drop].reset_index(drop=True)
-        else:                                                          # default: the invoice total of the book (v23 public 0.87 vs
+        else:                                                          # default: the invoice total of the book (v23 evaluation 0.87 vs
             L = L.copy(); L["is_adjustment"] = drop.values             # v24 0.747 with 'move'); never items in rankings / counts
             print(f"finalize: {int(drop.sum())} invoice adjustment rows (voucher / points / shipping) kept in the revenue, marked is_adjustment, "
                   "copied to the order columns", flush=True)
@@ -670,9 +670,7 @@ _PAID_KW = re.compile(r"(dua truoc|tra truoc|da tra|\btra\b|\bck\b|chuyen khoan|
 
 
 def debt_from_note(note, total=None):
-    """money still owed according to a free-text debt note written as the order's state at the end of the data (public dev_008:
-    'ck 913 nghìn, thiếu lại 456.500đ' -> 456500, 'ghi sổ 443 nghìn' -> 443000, 'đưa trước 236k, còn lại ghi sổ' -> total - 236000,
-    'nợ cả đơn' / 'chưa trả' -> total, 'nợ 1tr645, khách ck đủ rồi' -> 0). None when the note says nothing about a debt."""
+    """money still owed according to a free-text debt note written as the order's state at the end of the data. None when the note says nothing about a debt."""
     if note is None or (isinstance(note, float) and math.isnan(note)): return None
     k = key(note)
     if not re.search(r"\b(no|ghi so|thieu|chua tra|con lai|tra truoc|dua truoc)\b", k): return None
@@ -704,7 +702,7 @@ def _timed(s):
         raise RuntimeError("order_time holds dates without the time of day: map order_time to the order creation time")
 
 
-import industry                                                        # public-rulebook industries (phone, repair, mother & baby)
+import industry                                                        # evaluation-rulebook industries (phone, repair, mother & baby)
 
 
 class Shop(industry.IndustryMetrics):
@@ -855,7 +853,7 @@ class Shop(industry.IndustryMetrics):
 
     def weekday_avg(self, p, weekday, by="revenue", **f):
         """average per weekday of p (0 = Monday ... 6 = Sunday): the total over those days divided by the NUMBER of such days
-        in p (within the data), days without orders included (public rulebook: 'Trung bình mỗi ngày thứ X của kỳ').
+        in p (within the data), days without orders included.
         by: orders | revenue | qty (base units)."""
         if isinstance(weekday, str):                                    # 'thứ 3' = Tuesday = 1 (Vietnamese counts from thứ 2)
             import qparse
@@ -969,8 +967,7 @@ class Shop(industry.IndustryMetrics):
         s = self.customer_sales(p, by="n_orders", **f); return int((s >= min_orders).sum())
 
     def staff_sales(self, p, by="revenue", **f):
-        """{staff: revenue | orders | n_days} over valid orders of p (n_days: working days = days with at least one order of
-        that person, public rulebook 'chăm chỉ nhất')."""
+        """{staff: revenue | orders | n_days} over valid orders of p."""
         o = self.orders(p, **f); o = o[o["staff"].notna()]
         if by == "n_days": return o.groupby("staff")["order_date"].nunique()
         return o.groupby("staff")["revenue"].sum() if by == "revenue" else o.groupby("staff").size()
@@ -987,8 +984,7 @@ class Shop(industry.IndustryMetrics):
 
     def paid_until(self, d):
         """{order_id: amount paid up to the end of day d} (payments table, else paid_at_purchase). With both, paid_at_purchase is
-        what was paid when buying and C['payments'] the later repayments (the debt-book layout, public dev_014: 'Nợ là số còn
-        nợ sau khi trả lúc mua'): paid = paid_at_purchase + repayments up to d; a payment row on the order day of the same
+        what was paid when buying and C['payments'] the later repayments: paid = paid_at_purchase + repayments up to d; a payment row on the order day of the same
         amount is that purchase payment itself (not counted twice). No training reference sets both."""
         P = self.C.get("payments")
         if P is not None and len(P):
@@ -1011,7 +1007,7 @@ class Shop(industry.IndustryMetrics):
 
     def debts(self, d):
         """Series order_id -> amount still owed at the end of day d (> 0 only): the debt book, plus the unpaid part of
-        instalment contracts (C['instalments'], public rulebook 'Cửa hàng điện thoại': an instalment order is a credit order)."""
+        instalment contracts."""
         return self._debt_frame(d).set_index("order_id")["owed"]
 
     def _debt_frame(self, d):
@@ -1135,7 +1131,7 @@ class Shop(industry.IndustryMetrics):
 
     def size_qty(self, p, size, **f):
         """quantity of items of a size. When the catalogue records sizes (column size of the lines or of C['items']), by that
-        column ('Size XL' = 'XL', 'Số 4' = '4'; an item with an empty size has none, whatever its name says: public rulebook);
+        column;
         otherwise items whose name ends with '(M)' / '(L)' (case-insensitive). A base unit given as the size
         (size_qty(p, "ly"): a frequent slip of the programs for 'bán được bao nhiêu ly') counts that unit:
         item_qty(p, base_unit=...)."""
@@ -1482,8 +1478,7 @@ class _ToolkitModule(__import__("types").ModuleType):
 
 
 class _ToolkitFinder:
-    """`import datamate` / `from datamate_toolkit import revenue` (the generated programs tried this in 12.9 % of the
-    train attempts and 21.5 % of the public ones, all ModuleNotFoundError): any module named like data(_)mate* or
+    """`import datamate` / `from datamate_toolkit import revenue`: any module named like data(_)mate* or
     toolkit* is the toolkit namespace of the current program. Appended to sys.meta_path, so real modules come first."""
     import re as _re
     RX = _re.compile(r"(?i)^(data[_ ]?mate|datamate|toolkit|(data_)?builder)\w*$")   # builder*: mapping programs

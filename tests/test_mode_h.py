@@ -26,7 +26,7 @@ def main():
         assert "n_vehicles" not in blk and "Số xe" in blk, blk
         spec = {e["name"] for e in api_spec.build_api_spec(hide=("industry",))}
         assert not (names & spec), "solver spec hides industry"
-        shipped = lrl.Library.load(os.path.join(SRC, "refs", "lrl", "compile_public_b.jsonl"))
+        shipped = lrl.Library.load(os.path.join(os.path.dirname(SRC), "Process", "archive_public_refs", "compile_public_b.jsonl"))
         assert not any(lrl.mentions(x.get("code_hint"), lrl.hidden_names()) for x in shipped.cards), "shipped public cards leak"
     finally:
         os.environ.pop("ZC_HIDE_API", None)

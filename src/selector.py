@@ -8,7 +8,7 @@ the answers the model's own programs produced.
     group_features(rec, ans, smp, all_groups) -> vector  general features (vote share, support by reasoning samples, distinct
                                                          programs, flags, repairs, hinted answer type, raw pandas vs toolkit …)
     Selector.fit(records, refs) / .decide(rec) / .save / .load
-Training data: logs of the training shops (not held out) and their paraphrases only — never the public or private test."""
+Training data: logs of the training shops (not held out) and their paraphrases only — never the evaluation or private test."""
 import re, json
 from collections import defaultdict
 import numpy as np

@@ -303,6 +303,22 @@ UNIT_EXAMPLES = """## Ví dụ 1 — dòng rulebook: | Khách sộp nhất | kh�
 {"name": null}"""
 
 
+
+UNIT_EXAMPLES_NEUTRAL = """## Ví dụ 1 — dòng rulebook: | Khách mua thường xuyên nhất | khách có nhiều đơn nhất trong kỳ, chỉ xét khách có giá trị trung bình một đơn từ 100.000đ trở lên |
+{"name": "khach_thuong_xuyen", "signature": "khach_thuong_xuyen(p, k=1)", "doc": "k khách có nhiều đơn nhất trong kỳ p, chỉ khách có giá trị TB / đơn >= 100.000đ", "triggers": ["khách thường xuyên", "khach thuong xuyen", "khách mua đều"], "code": "def khach_thuong_xuyen(p, k=1):\n    so_don = customer_sales(p, by=\"n_orders\")\n    tb = customer_sales(p, by=\"aov\")\n    return rank(so_don[tb >= 100000], k)"}
+## Ví dụ 2 — dòng rulebook: | Giờ vắng khách | khung một giờ tròn theo giờ tạo đơn có ít đơn nhất trong kỳ, chỉ xét các giờ có đơn; đáp án là giờ bắt đầu khung |
+{"name": "gio_vang_khach", "signature": "gio_vang_khach(p)", "doc": "giờ bắt đầu của khung một giờ có ít đơn nhất (trong các giờ có đơn) trong kỳ p", "triggers": ["giờ vắng khách", "gio vang khach", "giờ ít khách"], "code": "def gio_vang_khach(p):\n    o = orders(p)\n    gio = pd.to_datetime(o[\"order_time\"]).dt.hour\n    dem = gio.value_counts().sort_index()\n    return int(dem.idxmin())"}
+## Ví dụ 3 — dòng rulebook: | Số đợt giao trong tháng | số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt |
+{"name": "so_dot_giao", "signature": "so_dot_giao(p)", "doc": "số đợt giao có ngày giao trong kỳ p (mỗi đợt của mỗi đơn)", "triggers": ["đợt giao", "chuyến giao", "dot giao"], "code": "def so_dot_giao(p):\n    g = C[\"deliveries\"].copy()\n    g[\"delivery_date\"] = pd.to_datetime(g[\"delivery_date\"]).dt.normalize()\n    g = g[p.mask(g[\"delivery_date\"])]\n    return int(g[[\"order_id\", \"trip_no\"]].drop_duplicates().shape[0])"}
+## Ví dụ 4 — dòng rulebook: | Mặt hàng ít người mua nhất | mặt hàng có mặt trong ít đơn nhất trong kỳ, chỉ xét mặt hàng đã bán trong kỳ |
+{"name": "hang_it_nguoi_mua", "signature": "hang_it_nguoi_mua(p, k=1)", "doc": "k mặt hàng có mặt trong ít đơn nhất trong kỳ p (đã bán)", "triggers": ["ít người mua", "it nguoi mua", "ít được mua"], "code": "def hang_it_nguoi_mua(p, k=1):\n    s = item_sales(p, by=\"n_orders\")\n    return rank(-s[s > 0], k)"}
+## Ví dụ 5 — dòng rulebook: | Độ tập trung hàng bán | phần trăm số lượng bán của k mặt hàng bán nhiều nhất trên tổng số lượng bán trong kỳ |
+{"name": "do_tap_trung_hang", "signature": "do_tap_trung_hang(p, k=3)", "doc": "% số lượng bán của k mặt hàng bán nhiều nhất trong kỳ p (số phần trăm)", "triggers": ["độ tập trung", "tap trung hang"], "code": "def do_tap_trung_hang(p, k=3):\n    sl = item_sales(p, by=\"qty\")\n    return pct(sl.sort_values(ascending=False).head(k).sum(), sl.sum())"}
+## Ví dụ 6 — dòng rulebook: | Làm tròn | tiền làm tròn đến đồng |
+{"name": null}"""
+if os.environ.get("ZC_UNIT_EX", "") == "neutral": UNIT_EXAMPLES = UNIT_EXAMPLES_NEUTRAL
+
+
 def _rows(df, n=2, width=160):
     """n example rows of a table as 'col=value' text (the writer sees real labels, units, codes)."""
     try:
@@ -387,7 +403,7 @@ def unit_prompt(b, card, term, definition, sec):
 
 def unit_items(split, cache):
     """per shop of the split: the rows of its rulebook industry section + the rows its rulebook has that neither the training
-    nor the public rulebook has (shopctx.rule_changes) -> a prompt asking for ONE function over the shop's tables (or null)."""
+    nor the reference rulebook has (shopctx.rule_changes) -> a prompt asking for ONE function over the shop's tables (or null)."""
     import ingest, automap, hints as hintsmod, shopctx
     rb0 = open(os.path.join(split, "rulebook.md"), encoding="utf-8").read()
     items = []
@@ -403,9 +419,9 @@ def unit_items(split, cache):
         rows = []
         ind = shopctx.industry_of(rb, biz)
         if ind: rows += [(t, d, ind[0]) for t, d in hintsmod.rulebook_rows(ind[1]).values()]
-        try:                                                            # rows neither the training nor the public rulebook has
+        try:                                                            # rows neither the training nor the reference rulebook has
             known = set()
-            for f in (shopctx.TRAIN_RULEBOOK, shopctx.PUBLIC_RULEBOOK):
+            for f in shopctx.known_rulebooks():
                 try: known |= set(hintsmod.rulebook_rows(open(f, encoding="utf-8").read()))
                 except OSError: pass
             rows += [(t, d, "mới") for k, (t, d) in hintsmod.rulebook_rows(rb).items() if k not in known]
@@ -487,6 +503,14 @@ UNITQ_EXAMPLES = """## Ví dụ 1 — hàm: khach_sop_nhat(p, k=1) — Khách s�
 ## Ví dụ 2 — hàm: so_dot_giao(p) — Số đợt giao trong tháng: số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt
 {"questions": [{"question": "hom qua giao may dot vay", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(yesterday(TODAY))}"},
                {"question": "Tháng này tính tới giờ có bao nhiêu đợt giao hàng?", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(this_month(TODAY))}"}]}"""
+
+UNITQ_EXAMPLES_NEUTRAL = """## Ví dụ 1 — hàm: khach_thuong_xuyen(p, k=1) — Khách mua thường xuyên nhất: khách có nhiều đơn nhất trong kỳ, chỉ khách có giá trị TB / đơn >= 100.000đ
+{"questions": [{"question": "thang 3/2025 khach nao mua thuong xuyen nhat v shop", "program": "ANSWER = {\\"type\\": \\"list\\", \\"answer\\": khach_thuong_xuyen(month(2025, 3))}"},
+               {"question": "Quý 4 năm ngoái 2 khách mua thường xuyên nhất là ai?", "program": "ANSWER = {\\"type\\": \\"list\\", \\"answer\\": khach_thuong_xuyen(quarter(2024, 4), k=2)}"}]}
+## Ví dụ 2 — hàm: so_dot_giao(p) — Số đợt giao trong tháng: số đợt có ngày giao trong kỳ; mỗi đợt của mỗi đơn tính một đợt
+{"questions": [{"question": "hom qua giao may dot vay", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(yesterday(TODAY))}"},
+               {"question": "Tháng này tính tới giờ có bao nhiêu đợt giao hàng?", "program": "ANSWER = {\\"type\\": \\"number\\", \\"answer\\": so_dot_giao(this_month(TODAY))}"}]}"""
+if os.environ.get("ZC_UNIT_EX", "") == "neutral": UNITQ_EXAMPLES = UNITQ_EXAMPLES_NEUTRAL
 
 UNITQ_SCHEMA = {"type": "object", "properties": {"questions": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"type": "object",
     "properties": {"question": {"type": "string", "maxLength": 240}, "program": {"type": "string", "maxLength": 400}},

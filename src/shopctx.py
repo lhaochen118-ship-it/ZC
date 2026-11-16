@@ -13,10 +13,16 @@ TRAIN_RULEBOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs"
 PUBLIC_RULEBOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "refs", "public_rulebook.md")
 
 
+def known_rulebooks():
+    """rulebooks whose rows count as already known (rows outside them are shown / compiled as this split's own rules):
+    the training rulebook, plus the reference rulebook unless ZC_KNOWN_RB=train (config "known_rb")."""
+    return (TRAIN_RULEBOOK,) if os.environ.get("ZC_KNOWN_RB", "") == "train" else (TRAIN_RULEBOOK, PUBLIC_RULEBOOK)
+
+
 def rule_changes(rulebook):
-    """rows of this split's rulebook whose term is in neither the training nor the public rulebook ('- term: definition')."""
+    """rows of this split's rulebook whose term is in neither the training nor the reference rulebook ('- term: definition')."""
     rows = hintsmod.rulebook_rows(rulebook); known = set()
-    for f in (TRAIN_RULEBOOK, PUBLIC_RULEBOOK):
+    for f in known_rulebooks():
         try: known |= set(hintsmod.rulebook_rows(open(f, encoding="utf-8").read()))
         except OSError: pass
     new = [(k, v) for k, v in rows.items() if k not in known]

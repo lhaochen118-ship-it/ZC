@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Evaluation sets of docs/08_MASTER_PLAN.md §3 run through the hybrid flow (Kaggle job via run_kaggle.py --script eval_flow.py,
 or locally). The ids of tests/splits/<set>.txt (originals, '<id>~p<k>' paraphrases, '<id>~accentfree') become ONE split
-(each shop mapped once): data/<shop> linked from the train or public split, the public rulebook (training shops: their own
+(each shop mapped once): data/<shop> linked from the train or evaluation split, the reference rulebook (training shops: their own
 training rulebook in rulebooks/<shop>.md), the shared calendar; then agent.py --flow hybrid on it. Scoring is offline (tests/score_sets.py: a variant is scored
 against its original question's reference answer).
 
@@ -74,7 +74,7 @@ def build(sets, out_split, split_hint, para_dir):
         dst = os.path.join(out_split, "data", b)
         if not os.path.exists(dst): os.symlink(os.path.abspath(os.path.join(src[b], "data", b)), dst)
     shutil.copy(os.path.join(pub or tr, "calendar.csv"), out_split)
-    shutil.copy(os.path.join(pub or tr, "rulebook.md"), out_split)    # the public rulebook (not a superset of the training one:
+    shutil.copy(os.path.join(pub or tr, "rulebook.md"), out_split)    # the reference rulebook (not a superset of the training one:
     if pub and tr:                                                      # it drops 3 training rows, docs/15 §4.3) -> each training
         os.makedirs(os.path.join(out_split, "rulebooks"), exist_ok=True)  # shop keeps the training rulebook (hybrid.rulebook_for)
         for b in sorted({r["business_id"] for r in rows if src.get(r["business_id"]) == tr}):

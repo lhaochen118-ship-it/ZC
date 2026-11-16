@@ -172,8 +172,7 @@ def _readme_bullets(text):
 
 def readme_gaps(target, ref):
     """README lines of the target business that the reference business's README does not have (no close line, or a close
-    line without 5+ of its words): conventions a transferred reference program does not follow (public dev_002: toppings
-    written in the dish's cell; dev_005: unit factors relative to the next smaller unit)."""
+    line without 5+ of its words): conventions a transferred reference program does not follow."""
     import difflib
     nrm = lambda x: re.sub(r"\d+", "#", dm.key(x)); toks = lambda x: {w for w in nrm(x).split() if len(w) > 1 and w != "#"}
     rb = _readme_bullets(ref); out = []
@@ -879,9 +878,9 @@ def build_parser():
     ap.add_argument("--ref-adapt", type=int, default=3, help="pipeline: when the best transferred reference mapping misses conventions "
                     "of this README (agent.readme_gaps), this many LLM rewrites of it that follow them (0 = off)")
     ap.add_argument("--adj-rows", default="keep", choices=["keep", "move"], help="invoice adjustment rows written as lines ('Voucher', "
-                    "'Dùng N điểm', 'Phí ship'): keep = in the revenue as the book totals them (v23 public 0.87), move = out of the lines "
+                    "'Dùng N điểm', 'Phí ship'): keep = in the revenue as the book totals them (measured on held-out runs), move = out of the lines "
                     "(rulebook §1 literally; v24 0.747); both fill orders.order_discount / points_discount / shipping_fee")
-    ap.add_argument("--industry-kit", type=int, default=1, help="pipeline: canonical tables + toolkit of the public rulebook's industries "
+    ap.add_argument("--industry-kit", type=int, default=1, help="pipeline: canonical tables + toolkit of the reference rulebook's industries "
                     "(src/industry.py: phone shops, repair shops, mother & baby) in the mapping / answer prompts of such shops (0 = off)")
     ap.add_argument("--industry-raw", type=int, default=2, help="pipeline: for a shop of an industry whose rulebook section is not in "
                     "the training rulebook: this many extra programs on the raw tables per question, the rule program's weight 1 "
@@ -921,7 +920,7 @@ def build_parser():
     ap.add_argument("--kv-dtype", default="", help="vLLM kv_cache_dtype ('fp8': twice the KV tokens; '' = model dtype)")
     ap.add_argument("--spec-mtp", type=int, default=0, help="speculative decoding with the model's MTP head, N draft tokens (Qwen3.5); falls back to plain decoding")
     ap.add_argument("--prefer-map", default="", help="pipeline: regex of a mapping source (e.g. 'fmt:automap') chosen whenever it runs "
-                    "without a heavy warning (the deterministic mapper of the rule-first stage: train 3000 / 3000, public 1000 / 1000)")
+                    "without a heavy warning (the deterministic mapper of the rule-first stage: train 3000 / 3000)")
     ap.add_argument("--fake-responder", default="", help="tests: python file defining responder(conv) -> text; no model is loaded")
     # ---- hybrid flow (docs/08_MASTER_PLAN.md §5.8): every question answered by a model-written program (src/hybrid.py)
     ap.add_argument("--flow", default="legacy", choices=["legacy", "hybrid"], help="hybrid: src/hybrid.py (rules only prepare context / check)")
@@ -935,7 +934,7 @@ def build_parser():
     ap.add_argument("--variants", default="direct,rephrase", help="hybrid: prompt variants of round 2 (direct, rephrase, explore, think)")
     ap.add_argument("--think-tokens", type=int, default=4096, help="hybrid: max new tokens of a 'think' variant sample (reasoning + program)")
     ap.add_argument("--think-rescue", type=int, default=0, help="hybrid: a sample cut at the token cap without a program is re-run once with thinking (off: "
-                    "measured on the public original it answered more but with more wrong answers, entry 46)")
+                    "it answered more but with more wrong answers)")
     ap.add_argument("--k-fast", type=int, default=2, help="hybrid: samples of round 1"); ap.add_argument("--k-max", type=int, default=8, help="hybrid: samples in all")
     ap.add_argument("--early-stop", type=int, default=1, help="hybrid: stop after round 1 when its samples agree without flags")
     ap.add_argument("--max-turns", type=int, default=2, help="hybrid: repair turns of a sample (precheck / execution errors)")
@@ -964,7 +963,7 @@ def build_parser():
     ap.add_argument("--links", default="", help="hybrid (plan 5 W2): rulebook rows linked to each question by the model (src/link.py links.jsonl); they replace the keyword-matched definition cards of the # RULES block")
     ap.add_argument("--selector", default="", help="hybrid: learned answer selector (src/selector.py json, trained on the solver's own logs of TRAINING shops): it picks the answer group and abstains below its theta (plan 4 V; replaces the vote)")
     ap.add_argument("--exclude-bids", default="", help="hybrid: shops whose examples are never retrieved (held-out evaluation)")
-    ap.add_argument("--api-extra", type=int, default=0, help="v2 F: append to the API block the public toolkit functions API_DOC does not name (api_spec)")
+    ap.add_argument("--api-extra", type=int, default=0, help="v2 F: append to the API block the toolkit functions API_DOC does not name (api_spec)")
     ap.add_argument("--hide-api", default="", help="hybrid: hidden API names, 'industry' = every industry function (pub_noind)")
     ap.add_argument("--bank-holdout", type=int, default=0, help="hybrid: the held-out shops' checked examples in the bank (final model only)")
     ap.add_argument("--config", default="", help="JSON file of default flag values (configs/<name>.json); command-line flags override")

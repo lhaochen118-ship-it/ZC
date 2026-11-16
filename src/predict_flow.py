@@ -537,7 +537,7 @@ def prepare_lrl(cfg, split, work, model, log, fake=""):
     have = [os.path.join(refs, x) for x in names if os.path.isfile(os.path.join(refs, x))]
     rk = lrl.rb_key(open(os.path.join(split, "rulebook.md"), encoding="utf-8").read())
     keys = {(cd.get("trigger") or {}).get("rulebook") for f in have if "compile" in os.path.basename(f) for cd in map(json.loads, open(f, encoding="utf-8"))}
-    if rk in keys and not int(c.get("lrl_regen", 0) or 0):            # v2 public grid: lrl_regen 1 = W1 rewrites the cards even when
+    if rk in keys and not int(c.get("lrl_regen", 0) or 0):            # v2 evaluation grid: lrl_regen 1 = W1 rewrites the cards even when
         log(f"lrl: compiled cards of this rulebook are shipped ({len(have)} card files)"); return ",".join(have)   # shipped (as on private)
     out = os.path.join(work, "lrl"); os.makedirs(out, exist_ok=True)
     t = time.time()
@@ -592,6 +592,10 @@ def main():
     try:                                                              # mode H (user 14/11): hidden toolkit names for every phase
         hz = json.load(open(cfg, encoding="utf-8")).get("hide_api") if cfg else ""
         if hz: os.environ["ZC_HIDE_API"] = hz; log(f"hide_api: {hz} (exported to every phase)")
+        kr = json.load(open(cfg, encoding="utf-8")).get("known_rb") if cfg else ""
+        if kr: os.environ["ZC_KNOWN_RB"] = kr; log(f"known_rb: {kr} (exported to every phase)")
+        ue = json.load(open(cfg, encoding="utf-8")).get("unit_ex_style") if cfg else ""
+        if ue: os.environ["ZC_UNIT_EX"] = str(ue); log(f"unit_ex_style: {ue} (exported to every phase)")
         # N4-A experimental flag is derived ONLY from the explicit config
         n4_enabled = bool(cfg and int(json.load(open(cfg, encoding="utf-8")).get("n4_graph", 0) or 0))
         if n4_enabled:

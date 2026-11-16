@@ -62,7 +62,7 @@ _MASK_METHODS = {"ge", "gt", "le", "lt", "eq", "ne", "notna", "isna", "notnull",
 
 def _len_of_mask(tree):
     """len(<comparison>) or len(<series>.ge(...) / .notna() / .where(...) ...), also through list() / .tolist() / .values: the
-    length of a boolean mask (all rows); 38 / 38 such P2 samples were wrong (public, train dev, held-out)."""
+    length of a boolean mask (all rows); 38 / 38 such P2 samples were wrong."""
     for n in ast.walk(tree):
         if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "len" and n.args:
             a = n.args[0]

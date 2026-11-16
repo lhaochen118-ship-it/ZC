@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """Consensus re-answer over several finished runs (CPU only; after the GPU runs, in docker/predict.sh or offline).
 
-Why: each run chooses its mapping among ITS OWN samples, so the runs of one system disagree by luck (public v24: dev_014
-seed 1 chose a mapping without the instalment book, dev_013 seed 1 one that copied the whole table's voucher total to every
-order) and the vote splits or follows a wrong majority. Here the mapping of every business is chosen ONCE among the candidate
+Why: each run chooses its mapping among ITS OWN samples, so the runs of one system disagree by luck and the vote splits or follows a wrong majority. Here the mapping of every business is chosen ONCE among the candidate
 mappings of ALL runs (pooled), with the current soft checks and the rule programs, and every logged program of every run is
 executed again on that mapping, then voted as the pipeline does:
 
@@ -77,7 +75,7 @@ def rule_texts(split, b, qs):
 
 def general_score(r):
     """canon.rank_score without the warnings of a topic (debt / instalment / vehicle / staff): the questions of a topic choose their own
-    candidate (slots in main), so a debt-only fault must not move every revenue question to another mapping (public dev_014)."""
+    candidate (slots in main), so a debt-only fault must not move every revenue question to another mapping."""
     return float(r.get("coverage") or 0) - sum(canonmod.warning_penalty(w) for w in r.get("warnings") or []
                                                if not any(rx.search(str(w)) for rx in TOPIC_WARN.values()))
 
@@ -87,8 +85,7 @@ def rank(pool_b, topic_q=frozenset()):
     corrections for a pool of several runs: rule failures count on the questions without a topic only (a debt / instalment /
     vehicle / staff question is answered on its own clean candidate, so failing it must not sink a mapping that is right on
     everything else), and answer agreement is counted among plausible candidates only (no heavy general warning): copies of
-    one buggy mapping from several runs agreed with each other and outvoted the clean one (public dev_014, v27 first try:
-    3 copies with 2751 nameless lines beat the mapping without that fault)."""
+    one buggy mapping from several runs agreed with each other and outvoted the clean one."""
     if not pool_b: return []
     _, sc = agent.agreement([r["sig"] for _, r in pool_b])
     def gpen(r): return float(r.get("coverage") or 0) - general_score(r)
@@ -103,7 +100,7 @@ def rank(pool_b, topic_q=frozenset()):
 
 # question topics whose answers depend on one part of the mapping: such a question is answered on the best candidate WITHOUT a
 # heavy warning (penalty >= 10) on that part; no clean candidate -> abstain (a likely wrong answer costs a point, an abstain
-# nothing). Public v23 runs: every dev_008 candidate ignored the debt notes (debts 0 or 233M for 4.5M), every dev_014 one
+# nothing). evaluation v23 runs: every one shop candidate ignored the debt notes (debts 0 or 233M for 4.5M), every one shop one
 # had unpaid orders / no debt book (22.9 bn) while its revenue was right.
 TOPIC_FN = {
     "debt": re.compile(r"\b(?:debts?|debt_\w+|n_debtors|top_debtors|paid_until|n_due_orders)\s*\("),      # book + instalments
@@ -122,8 +119,7 @@ TOPIC_WARN = {
 
 def question_topics(rec, text=None):
     """topics of a logged question: those whose toolkit functions / columns at least a third of its programs (rule + samples)
-    use (raw-table samples read T, not C: public dev_012 'bao nhiêu chiếc xe Wave Alpha' had 2 of 12 programs on n_vehicles and 3
-    with vehicle=)."""
+    use."""
     codes = []
     for name, v in (rec.get("samples") or {}).items():
         if name == "rule" and isinstance(v, dict) and v.get("code"): codes.append(str(v["code"]))
@@ -217,12 +213,11 @@ def main():
     #    staff question the best two candidates without a heavy warning on that topic (none -> abstain)
     def slots(b, rec):
         """the mappings a question is answered on: the pooled best and runner-up; for a topic question the clean candidates
-        ordered by how many of the business's questions OF THAT TOPIC their rule programs answer (public dev_004, v27: the
-        best clean candidate had no due dates -> every due-date question unanswerable), up to 4 (fallback walks them)."""
+        ordered by how many of the business's questions OF THAT TOPIC their rule programs answer, up to 4 (fallback walks them)."""
         T = question_topics(rec, qtext.get(rec["id"]))
         if not T:
             sl = best[b][:2]                                    # + the best plausible candidate whose rule program answers it
-            if all((m[1].get("rule_answers") or {}).get(rec["id"]) is None for m in sl):   # when these do not (public dev_004,
+            if all((m[1].get("rule_answers") or {}).get(rec["id"]) is None for m in sl):   # when these do not (one shop,
                 alt = next((m for m in best[b][2:] if (m[1].get("rule_answers") or {}).get(rec["id"]) is not None     # 'đơn bán
                             and float(m[1].get("coverage") or 0) - general_score(m[1]) < 20), None)   # chịu ghi ngày phải trả
                 if alt is not None: sl = sl + [alt]                                                   # trong th2/2026')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Rule-first answering on CPU, no model: automap (raw tables -> canonical C, from the README and the values) + qnorm
-(question cleaning) + qparse (rule programs over the dm / industry toolkit). Train 3000 / 3000 and public 1000 / 1000
+(question cleaning) + qparse (rule programs over the dm / industry toolkit). Train 3000 / 3000 and evaluation 1000 / 1000
 (tests/eval_split.py). Questions the rules do not read are left to the model (docker/predict.sh runs agent.py on them only).
 
 Usage: rules_first.py <split> <out_dir> [--cache DIR] [--workers N] [--log-dir DIR] [--timeout S]
@@ -33,14 +33,13 @@ def _rule_rows(text):
 
 def changed_terms(split):
     """terms the split's rulebook defines that the rules were not written for: a row whose term is in neither the train
-    nor the public rulebook (public added 'Khách sộp nhất', 'Giờ cao điểm', industry sections ... this way). A question
-    naming such a term goes to the model, which reads the rulebook. Rows only reworded (train -> public clarified 'Đơn
-    thuộc kỳ nào', 'Đến hết ngày X') keep the rules: their words are in most questions. Each term -> its sets of
+    nor the reference rulebook. A question
+    naming such a term goes to the model, which reads the rulebook. Rows only reworded keep the rules: their words are in most questions. Each term -> its sets of
     content words (one per comma variant: 'Nhân viên, thợ chăm chỉ nhất' -> {nhan vien cham chi nhat}, {tho cham chi nhat})."""
     try: rows = _rule_rows(open(os.path.join(split, "rulebook.md"), encoding="utf-8").read())
     except OSError: return []
     known = set()
-    for f in ("train_rulebook.md", "public_rulebook.md"):
+    for f in (("train_rulebook.md",) if os.environ.get("ZC_KNOWN_RB", "") == "train" else ("train_rulebook.md", "public_rulebook.md")):
         try: known |= set(_rule_rows(open(os.path.join(REFS, f), encoding="utf-8").read()))
         except OSError: pass
     out = []

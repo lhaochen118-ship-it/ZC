@@ -1,4 +1,4 @@
-"""Industry definitions of the public rulebook (§6) that the training rulebook does not have: phone shops (trade-ins,
+"""Industry definitions of the reference rulebook (§6) that the training rulebook does not have: phone shops (trade-ins,
 instalments, warranty visits, model lines), motorbike repair shops (tickets, jobs written in one cell, vehicles by plate,
 mechanics' commission) and mother & baby shops (vouchers / points / shipping, sizes and numbers from the catalogue,
 new members). Mixed into dm.Shop; the canonical tables they read are documented in INDUSTRY_CANON / INDUSTRY_API (shown
@@ -213,7 +213,7 @@ def _is_diaper(group, name=None):
 
 
 class IndustryMetrics:
-    """metrics of the public rulebook's industries; mixed into dm.Shop (self.C, self.O, self.L, orders(), lines(), ...)."""
+    """metrics of the reference rulebook industries; mixed into dm.Shop (self.C, self.O, self.L, orders(), lines(), ...)."""
 
     # -- phone shops: devices, model lines, brands
     def _kinds(self, l):
@@ -313,7 +313,7 @@ class IndustryMetrics:
         num = lambda c: pd.to_numeric(I[c], errors="coerce") if c in I.columns else pd.Series(np.nan, index=I.index)
         n, per, price, pre = num("n_terms"), num("per_term"), num("price"), num("prepaid").fillna(0)
         dm.require(n.notna().any() and (per.notna().any() or price.notna().any()),
-                   "the instalment contracts lack their number of terms / amount per term")   # (v24 dev_014: raw headers -> 906M overdue)
+                   "the instalment contracts lack their number of terms / amount per term")   #
         I["total"] = (n * per).where(n.notna() & per.notna(), price - pre)
         if per.isna().all(): I["per_term"] = I["total"] / n
         P = self.C.get("instalment_payments"); paid = pd.Series(dtype=float)
@@ -667,7 +667,7 @@ _MB = re.compile(r"\b(ta (?:dan|quan)|bim|sua bot|binh sua|an dam|so sinh|nui ti
 
 def detect(biz):
     """the rulebook industry title ('Cửa hàng điện thoại' | 'Sửa xe' | 'Mẹ và bé') a shop's DATA shows, for READMEs that do
-    not name it (public dev_010: 'Dữ liệu bán hàng của tiệm'); None otherwise. Conservative: no training shop is detected.
+    not name it; None otherwise. Conservative: no training shop is detected.
     - phone shop: a column IMEI and device names with a storage size ('128GB');
     - repair shop: a column of jobs ('Làm gì', 'Công việc', 'Nội dung sửa') and number plates in most rows of some column;
     - mother & baby: at least a third of the distinct item names are diapers, formula, baby bottles, weaning food."""

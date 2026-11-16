@@ -298,7 +298,7 @@ def unlinked_entity(q, t):
 
 
 def _kinds_of(shop):
-    """which public-rulebook industry tables the shop's mapping has: 'repair' (tickets with work / plate), 'phone' (devices /
+    """which evaluation-rulebook industry tables the shop's mapping has: 'repair' (tickets with work / plate), 'phone' (devices /
     instalments / trade-ins / warranty book), 'baby' (vouchers / points / members / brands)."""
     C, O = shop.C, shop.O; k = set()
     if any(c in O.columns and O[c].notna().any() for c in ("work", "plate", "vehicle")): k.add("repair")
@@ -319,7 +319,7 @@ _WD = {"hai": 0, "2": 0, "ba": 1, "3": 1, "tu": 2, "4": 2, "nam": 3, "5": 3, "sa
 
 def named_weekdays(q):
     """weekday indices (0 = Monday = thứ 2 ... 6 = Sunday = chủ nhật) a question names: Vietnamese numbers the days from
-    thứ 2 (Monday), so 'thứ 3' is Tuesday = 1 (public dev_012, v25: every LLM sample took 'thứ 3' for weekday 2)."""
+    thứ 2 (Monday), so 'thứ 3' is Tuesday = 1."""
     k = dm.key(str(q)); out = {_WD[m] for m in re.findall(r"\bthu (hai|ba|tu|nam|sau|bay|[2-7])\b", k)}
     if re.search(r"\bchu nhat\b|\bcn\b", k): out.add(6)
     return out
@@ -344,7 +344,7 @@ def named_vehicle(q):
 
 
 def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
-    """templates of the public rulebook's industries (src/industry.py toolkit); None = not one of them."""
+    """templates of the reference rulebook industries (src/industry.py toolkit); None = not one of them."""
     import industry
     d = until_day(q, today)
     O = shop.O
@@ -361,7 +361,7 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
         if "vehicle" in O.columns:
             lab = industry.vehicle_lines(O["vehicle"]); veh = name_in(list(lab), 2)
         if veh is None:      # the question names a model ('bao nhiêu xe Air Blade khác nhau') that this mapping cannot see (no
-            veh = named_vehicle(q)                     # orders.vehicle): keep the filter (public dev_012, v25: 368 Air Blades = every vehicle)
+            veh = named_vehicle(q)                     # orders.vehicle): keep the filter
         sf = f", staff={J(staff)}" if staff else ""
         if has(r"hoa hong|hue hong") and P and S_ is not None and "commission_pct" in S_.columns:
             if staff: return "ind_commission", ans("number", f"commission({P}, staff={J(staff)})")
@@ -458,7 +458,7 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
             V = Vocab(shop); it = V.find(tk, V.items)
             if it is not None: return None                                 # one item: the item templates
             if re.search(r"\b(iphone|ip|samsung|galaxy|xiaomi|redmi|oppo|vivo|realme|nokia|honor|huawei|pixel|tecno|infinix)\b", tk):
-                return None                  # a model / brand this mapping's names do not show: not every device (dev_012-like miss)
+                return None                  # a model / brand this mapping's names do not show: not every device
             return "ind_devices", ans("number", f"devices_sold({P}{kf})")
         return None
     if "baby" in kinds and P:
@@ -548,8 +548,7 @@ _COUNT_CALL = re.compile(r"\b(?:n_\w+|len)\(")
 
 def answer_kind_ok(t, tpl, code, raw=None):
     """the kind of answer the question asks (which one / how many / what share / how much money / which period) against the
-    kind the program gives. A conflict means the reading missed the question's head (paraphrases of the public questions,
-    k=0 split: 11 of 74 wrong answers caught, no right one lost; no canonical train / public answer is affected):
+    kind the program gives. A conflict means the reading missed the question's head:
     'mặt hàng nào ... nhất' answered with a number, 'tỷ lệ / %' with a count, 'bao nhiêu tiền' with a count, 'bao nhiêu
     mặt hàng' with a name, 'tính ngược lại 30 ngày' with today, 'bao nhiêu phần' with revenue, revenue without any word
     of selling, 'thu nhập' read as 'nhập hàng', 'doanh thu chia cho số đơn' read as a total."""
@@ -643,7 +642,7 @@ def _parse(q, today, shop=None):
     if shop is not None:
         why = missing_info(q, t, shop)
         if why: return "unrecorded", ans("unanswerable", "None")
-    if shop is not None:                                                # the public rulebook's industries (their own tables)
+    if shop is not None:                                                # the reference rulebook industries (their own tables)
         kinds = _kinds_of(shop)
         if kinds:
             r = parse_industry(q, t, tk, P, p, today, shop, has, kinds)

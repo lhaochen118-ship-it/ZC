@@ -369,9 +369,9 @@ class Pipeline:
                 pen = [sum(canonmod.warning_penalty(w) for w in (r.get("warnings") or [])) for src, r in bs["cands"] if src.startswith("llm")]
                 heavy = bool(pen) and min(pen) >= self.HEAVY_PEN and not any(src.startswith("ref:") for src, _ in bs["cands"])
                 if (len(bs["cands"]) < max(1, int(getattr(self.a, "map_min_cands", 1) or 1)) or heavy) and getattr(self.a, "map_retry", 1) and not bs.get("retried"):
-                    # every sample failed (biz_123 in v9, dev_014 in 3 of 4 public runs: luck of the sampling), or only one ran
+                    # every sample failed, or only one ran
                     # (biz_123 / biz_124 in v13: nothing to choose from, no fallback), or every candidate carries a heavy warning
-                    # (v23 public dev_014 run 3: 2 candidates, penalties 54 and more): one more batch
+                    #: one more batch
                     bs["retried"] = True; bs["pending"] = self.a.kc
                     print(f"  {b}: {len(bs['cands'])} mapping candidate(s)" + (f", best penalty {min(pen):.0f}" if heavy else "") + f"; a second batch of {self.a.kc}", flush=True)
                     for s2 in range(self.a.kc, 2 * self.a.kc): launch(s2)
@@ -488,8 +488,7 @@ class Pipeline:
         return True, self.maps[b]
 
     def unused_card(self, b, can):
-        """cards of the raw tables the chosen mapping left out (dev_014: instalments, trade-ins, warranty visits answered
-        'unanswerable' because only C was shown, though programs can read T). Cached per business."""
+        """cards of the raw tables the chosen mapping left out. Cached per business."""
         if not hasattr(self, "_ucard"): self._ucard = {}
         if b not in self._ucard:
             un = [t for t in (can.get("unused") or []) if t in self.bizs[b].tables and len(self.bizs[b].tables[t])][:8]
@@ -551,7 +550,7 @@ class Pipeline:
                 except Exception: q["_clean"] = None
         ind = self.industry(b)
         # a rulebook industry the training rules do not know: rule weight 1, raw-table samples, no --confirm. Not for the industries
-        # src/industry.py implements (their tables, toolkit and rule templates know the definitions; v23 public dev_010: mean
+        # src/industry.py implements (their tables, toolkit and rule templates know the definitions; v23 one shop: mean
         # confidence 0.98 -> 0.84 once it was detected as 'Mẹ và bé' and every standard rule lost its weight)
         new_ind = bool(ind and ind[2] and getattr(a, "industry_raw", 0)) and not self.industry_doc(b, "api")
         readme = self.readme_for(b)

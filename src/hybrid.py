@@ -170,7 +170,7 @@ class HybridPipeline(pipeline.Pipeline):
             out = prompting.parse_output(text)
             if out["code"] is None and not think and not smp.get("rescue") and int(getattr(a, "think_rescue", 1) or 0) and ntok >= mt - 8:
                 # the model reasoned in plain text until the token cap without a program (fine-tuned soups: 6-10 % of the
-                # questions on the public set): re-run the sample once in thinking mode (reasoning goes to the think block)
+                # questions on the evaluation set): re-run the sample once in thinking mode (reasoning goes to the think block)
                 smp["rescue"] = True; self.stats["think_rescue"] += 1
                 smp["turns"].append({"text": text[-600:], "ntok": ntok, "code": None, "rescued": True})
                 return launch()

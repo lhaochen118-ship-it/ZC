@@ -184,7 +184,7 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
         if kind == "status" and s in ("hoàn thành", "huỷ", "trả hàng", "đang giao"): return
         k = dm.key(s)
         if k in vals: return
-        if kind == "item" and any(v.startswith(k + " ") for v in vals): return            # a model line / name prefix ('iPhone 16')
+        if kind == "item" and any(v.startswith(k + " ") for v in vals): return            # a model line / name prefix ('Galaxy S21')
         near = [vals[x] for x in difflib.get_close_matches(k, list(vals), n=5, cutoff=0.5)]
         out.append(_issue("error", "entity", f"{where}: {s!r} is not a {kind} of this shop's data",
                           f"closest values: {near}" if near else f"find({kind!r}, {s!r}) lists matching values; if none exists the question may be unanswerable"))
@@ -228,7 +228,7 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
     if mask_check and _len_of_mask(tree):                               # P2: len() of a True / False Series counts every row
         out.append(_issue("error", "len_mask", "len(...) of a comparison / mask (x >= n, .ge(n), .notna(), .where(...)) counts every row, not the matches",
                           "count the matches with (s >= n).sum(), or filter first: len(s[s >= n])"))
-    for th in h.get("thresholds") or []:                                 # P2: a threshold the question sets ('ít nhất 187 đơn')
+    for th in h.get("thresholds") or []:                                 # P2: a threshold the question sets ('ít nhất N đơn')
         v = th.get("value")                                             # should appear in the program
         if isinstance(v, (int, float)) and not _uses_number(code, v):
             out.append(_issue("warn", "threshold", f"the question sets {th.get('op')} {v:g} {th.get('of') or ''}".rstrip() + " but the program does not use that number"))

@@ -1,0 +1,62 @@
+[
+ {
+  "acc": "huyenco",
+  "name": "p5c2h0",
+  "jobs": "automation/jobs/p5/p5c2h0.jobs",
+  "est_h": 1.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "huyenco/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "nguyenhoa99",
+  "name": "p5c2h1",
+  "jobs": "automation/jobs/p5/p5c2h1.jobs",
+  "est_h": 1.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "nguyenhoa99/zc-ad2",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "linhmai24",
+  "name": "p5c3h0",
+  "jobs": "automation/jobs/p5/p5c3h0.jobs",
+  "est_h": 1.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "linhmai24/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "phuongnehe",
+  "name": "p5c3h1",
+  "jobs": "automation/jobs/p5/p5c3h1.jobs",
+  "est_h": 1.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "phuongnehe/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

@@ -73,7 +73,7 @@ def entity_values(C):
     E = {}
     items = col(("lines", "items", "purchases", "lots", "stock", "prices"), "item_name", "item_code")
     lines_extra = set()
-    for nm in col(("lines", "items"), "item_name"):                      # model lines / names before the capacity ('iPhone 16')
+    for nm in col(("lines", "items"), "item_name"):                      # model lines / names before the capacity ('Galaxy S21')
         try:
             ml = industry.model_line(nm)
             if ml and ml != nm: lines_extra.add(str(ml))

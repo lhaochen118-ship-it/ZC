@@ -997,7 +997,7 @@ PLATE = re.compile(r"\b(\d{2}\s?-?\s?[A-Z]{1,2}\d?\s?-?\s?\d{3}\.?\d{2}|\d{2}[A-
 
 
 def split_vehicle(v):
-    """'wave alpha 50K2-994.07' -> ('wave alpha', '50K2-994.07')."""
+    """'future neo 29X1-123.45' -> ('future neo', '29X1-123.45')."""
     if not isinstance(v, str): return (None, None)
     m = PLATE.search(v.upper())
     if not m: return (v.strip(), None)

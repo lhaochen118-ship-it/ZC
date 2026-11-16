@@ -276,12 +276,12 @@ SALE_FILLER = set("""hang ra het tong cong tat ca cac le si duoc dc cho khach cu
 SALE_STOP = set("duoc dc duco dduoc dk duowc bao bnhiu bn may la thang tuan quy nam hom ngay bua tu trong vao het tong luc gio".split())
 CAP_STOP = set("""thang thg th quy tuan nam tet hom ngay bua doanh thu dthu top tong cho shop quan tiem cua hang ad chi anh em minh toi
     ban tu den trong vao dau cuoi bao nhieu binh quan trung so voi va hay la co mot moi cac nhung nay qua truoc sau ca sang chieu""".split()) - {"chi", "anh", "em", "minh", "toi"}
-# (pronouns stay out of the stop list: 'Lương Chí Đức' is a name)
+# (pronouns stay out of the stop list: 'Trần Minh Đức' is a name)
 
 
 def unlinked_entity(q, t):
     """a sold thing / a name the shop vocabulary did not link: 'bán <X> được bao nhiêu', 'tiền bán <X>' with X not filler, or a
-    run of capitalised words inside the question ('Canh chua cá tràu', 'Đoàn Bảo Phúc'). A shop-wide template would then answer
+    run of capitalised words inside the question ('Bún bò Huế', 'Lê Văn An'). A shop-wide template would then answer
     for the whole shop instead of X."""
     for m in re.finditer(r"\b(?:tien ban|ban)\s+((?:\S+\s*){0,8})", t):
         words = []
@@ -336,8 +336,8 @@ def weekday_consistent(q, code):
 
 
 def named_vehicle(q):
-    """the vehicle model a repair-shop question names after 'xe' / 'chiếc' in capitals ('bao nhiêu xe Air Blade khác nhau',
-    'bn chiec SH Mode khac nhau', 'chiếc xe Wave Alpha'), else None."""
+    """the vehicle model a repair-shop question names after 'xe' / 'chiếc' in capitals ('bao nhiêu xe <dòng xe> khác nhau',
+    'chiếc xe <dòng xe>'), else None."""
     mv = re.search(r"\b(?:xe|chi[eế]c)\s+((?:[A-Z][\w\-]*|\d{2,3}\b)(?:\s+(?:[A-Z][\w\-]*|\d{2,3}\b))*)", str(q))
     if mv and not re.match(r"(?:Th|T|Q)\d", mv.group(1)): return mv.group(1).strip()
     return None
@@ -360,7 +360,7 @@ def parse_industry(q, t, tk, P, p, today, shop, has, kinds):
         veh = None
         if "vehicle" in O.columns:
             lab = industry.vehicle_lines(O["vehicle"]); veh = name_in(list(lab), 2)
-        if veh is None:      # the question names a model ('bao nhiêu xe Air Blade khác nhau') that this mapping cannot see (no
+        if veh is None:      # the question names a model ('bao nhiêu xe <dòng xe> khác nhau') that this mapping cannot see (no
             veh = named_vehicle(q)                     # orders.vehicle): keep the filter
         sf = f", staff={J(staff)}" if staff else ""
         if has(r"hoa hong|hue hong") and P and S_ is not None and "commission_pct" in S_.columns:
@@ -574,7 +574,7 @@ def answer_kind_ok(t, tpl, code, raw=None):
 
 def consistent(q, t, tpl, code):
     """precision guard: a rule answer is kept only when it uses what the question states. A money amount written in the
-    question that the program never uses ('đạt từ 40.000.000 đồng chở lên' read as plain revenue), a count of days / customers /
+    question that the program never uses ('đạt từ N đồng chở lên' read as plain revenue), a count of days / customers /
     orders answered with money, are misreadings (typing noise hid the qualifier): no rule answer (the LLM or abstain decides)."""
     if tpl not in ("subjective", "unrecorded") and not answer_kind_ok(t, tpl, code, K(q)): return False
     if tpl in _NO_MONEY_TPL or tpl.startswith("ind_"): return True
@@ -597,7 +597,7 @@ def consistent(q, t, tpl, code):
 
 def names_used(q, code, shop, tpl=""):
     """every person the question names (a staff member's full name or code, a customer of >= 2 words) and the item it names
-    must appear in the program: a shop-wide answer to 'thợ Đoàn Bảo Phúc sửa được bao nhiêu xe' or 'bao nhiêu lượt thay dầu
+    must appear in the program: a shop-wide answer to 'thợ Lê Văn An sửa được bao nhiêu xe' or 'bao nhiêu lượt thay dầu
     láp' answers another question."""
     V = getattr(shop, "_qp_vocab", None)
     if V is None:
@@ -909,7 +909,7 @@ def _parse(q, today, shop=None):
     m = re.search(r"(?:top |liet ke |^|cho minh |cho toi )(\d+) (?:mat hang|hang|san pham|mon|sp|best)", t) or re.search(r"top (\d+)", t) or re.search(r"(\d+) (?:mat hang|mon|san pham|hang|sp) (?:ban )?(?:chay|nhieu|hot|best)", t) \
         or re.search(r"(?<![\d/.,])(?<!thang )(?<!thg )(?<!th )(?<!ngay )(?<!nam )(?<!quy )(?<!tuan )(\d{1,2}|hai|ba|bon|nam|sau|bay|tam|chin|muoi) (?:mat hang|san pham|mon|sp)\b", t) or re.search(r"\btop (hai|ba|bon|nam|sau|bay|tam|chin|muoi)\b", t)
     nN = (int(m.group(1)) if m.group(1).isdigit() else NUMW[m.group(1)]) if m else None
-    if nN is not None and nN > 50: m = nN = None                       # 'Tết 2026 hàng bán nhiều nhất': a year, not top-2026
+    if nN is not None and nN > 50: m = nN = None                       # 'Tết YYYY hàng bán nhiều nhất': a year, not top-2026
     best = has(r"ban chay|chay nhat|ban nhieu nhat|ban dc nhieu nhat|ban duoc nhieu nhat|hot nhat|best seller|ban nhiu nhat|ban dc nhiu nhat|nhieu nhat|nhiu nhat",
                r"doanh thu (?:cao|lon) nhat|nhieu tien nhat|ua chuong nhat|duoc (?:khach )?ua chuong|nhieu " + UNITS + r" nhat")
     if best and P and (has(r"mat hang|hang nao|san pham|mon nao|\bsp\b|mon |hang gi|la gi|la chi|hang chi|best seller|top|nhung") or m):

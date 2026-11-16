@@ -94,7 +94,7 @@ def link_entities(text, vocab, raw=None):
             if not any(x["kind"] == kd and x["data_value"] == v for x in ents): add(s, e, kd, v, "word")
     for s, e, k, v in _spans(dm.regional_key(text), vocab.items_reg, 4):        # regional words ('cá tràu' = 'cá lóc')
         if not any(x["data_value"] == v for x in ents): add(s, e, "item", v, "regional")
-    # model lines / name prefixes: 'iPhone 16' names every 'iPhone 16 ... GB' item
+    # model lines / name prefixes: 'Galaxy S21' names every 'Galaxy S21 ... GB' item
     lines = {}
     for v in vocab.tables["item"].values():
         try: ml = industry.model_line(v)
@@ -152,7 +152,7 @@ def answer_type(t, clean=None):
         n = m.group(1) or m.group(2); n = int(n) if n.isdigit() else qparse.NUMW.get(n, 2)
         if n >= 2: return "table" if each else "list"
     if re.search(r"\b(?:moi|tung|lan luot|theo)\s+(?:thang|ngay|tuan|quy)\b", t) and asks_n: return "list"
-    # several groups asked at once ('chia theo tuổi nợ 0-7, 8-15, trên 15 ngày, mỗi nhóm bao nhiêu'; 'từng loại / mỗi kênh có bao nhiêu')
+    # several groups asked at once ('chia theo tuổi nợ, mỗi nhóm bao nhiêu'; 'từng loại / mỗi kênh có bao nhiêu')
     c = unicodedata.normalize("NFC", str(clean or "")).lower()
     each_rx = r"\b(?:moi|tung)\s+(?:nhom|loai|kenh|hinh thuc|ca|khung|muc|phan|khoang)\b"
     if c and c != dm.strip_accents(c):                                  # accented: 'mọi loại' (all) is not 'mỗi loại' (each)
@@ -261,7 +261,7 @@ def counted(t):
 
 
 def thresholds(t):
-    """comparisons the question sets ('ít nhất 152 đơn', 'từ 10 củ trở lên', 'trên 7 ngày') -> [{"op", "value", "of"}]; money in đồng."""
+    """comparisons the question sets ('ít nhất N đơn', 'từ N củ trở lên', 'trên 7 ngày') -> [{"op", "value", "of"}]; money in đồng."""
     t = qparse.slang(t); out = []
     rx = r"\b(" + "|".join(p for p, _ in _CMP) + r")\s+(\d+(?:[.,]\d+)?)(?![/\d])\s*(?:(trieu|tr|cu|k|nghin|ngan)\b)?\s*(?:(dong|d|vnd)\b)?\s*(\w+(?: xe| hang)?)?"
     for m in re.finditer(rx, t):
@@ -282,7 +282,7 @@ def thresholds(t):
 
 def job_size_entities(t, shop):
     """P2: a repair job the question names, through the toolkit's job table ('thay dầu láp' -> 'thay nhớt láp'; shops whose
-    tickets record the work done), and a product size / number of the catalogue ('sữa bột số 4', 'bỉm size M'; shops with a
+    tickets record the work done), and a product size / number of the catalogue ('sữa bột số N', 'bỉm size M'; shops with a
     size column). t: accent-free key of the cleaned question."""
     out = []
     O = getattr(shop, "O", None)

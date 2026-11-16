@@ -237,7 +237,7 @@ HONORIFIC = re.compile(r"^(?:a|anh|c|chi|e|em|co|chu|bac|thay|tho)\s+(?=\S)")   
 
 
 # Regional words for the same thing (North / Central -> one form): questions name items in another region's words
-# ('Canh chua cá tràu' = 'Canh chua cá lóc', 'Đậu phụ rán giòn' = 'Đậu hũ chiên giòn', 'Cốc sạc' = 'Củ sạc'). Used only when no
+# ('cá tràu' = 'cá lóc', 'đậu phụ rán' = 'đậu hũ chiên', 'cốc sạc' = 'củ sạc'). Used only when no
 # item matches the name itself; longer phrases first.
 REGIONAL = [("pho mát", "phô mai"), ("phó mát", "phô mai"), ("phomat", "phô mai"), ("xây trát", "xây tô"), ("vữa trát", "vữa tô"),
             ("đậu phụ", "đậu hũ"), ("đậu hủ", "đậu hũ"), ("tàu hũ", "đậu hũ"), ("tàu hủ", "đậu hũ"), ("cá tràu", "cá lóc"), ("cá quả", "cá lóc"),
@@ -372,7 +372,7 @@ _SUMMARY_COLS = ("order_id", "customer_name", "customer_id", "note", "staff")
 
 
 def _summary_rows(df):
-    """summary rows of an export: 'tổng 01/05' in the order-code column or 'Cộng ngày 01/05/2025' in
+    """summary rows of an export: 'tổng 15/03' in the order-code column or 'Cộng ngày 15/03/2025' in
     the customer column with a blank code (biz_110: 428 rows; the blank code made each one a line of the order above,
     revenue +100 %). A row is a summary when an order-level text cell reads tổng / cộng (+ ngày, tháng, tiền, a number
     ...) / total and the row has no date. Item names are not looked at ('Cộng cà phê' is an item)."""
@@ -396,7 +396,7 @@ _ADJ = [("order_discount", re.compile(r"^(?:voucher|ma giam gia|ma giam|giam gia
 
 def _order_adjustments(L):
     """rows of a sales book that are not items but an adjustment of the whole invoice: 'Voucher' / 'Giảm giá hoá đơn' (order
-    discount), 'Dùng 200 điểm' (paid with loyalty points), 'Phí ship' (delivery fee), written with the invoice number, a name and
+    discount), 'Dùng N điểm' (paid with loyalty points), 'Phí ship' (delivery fee), written with the invoice number, a name and
     an amount but no quantity / unit price. Rulebook §1: an order's revenue is the sum of its ITEM lines, without
     order discounts or delivery fees -> such rows leave the lines and become the order columns order_discount / points_discount /
     shipping_fee (positive). Returns (lines, {column: Series order_id -> amount})."""
@@ -785,7 +785,7 @@ class Shop(industry.IndustryMetrics):
 
     def _match_person(self, df, cols, v):
         """_match for a person; when no value matches exactly, the ONE value whose name parts fit: the nickname a book
-        writes for a full name ('Lương Chí Đức' ~ 'Đức', or the reverse), or the name with a phone number after it
+        writes for a full name ('Trần Minh Đức' ~ 'Đức', or the reverse), or the name with a phone number after it
         ('Từ Hải Thanh' ~ 'Từ Hải Thanh 0359470831'). Two or more such values: no match (never merges people)."""
         m = self._match(df, cols, v)
         if m.any() or isinstance(v, (list, tuple, set)): return m
@@ -1175,7 +1175,7 @@ class Shop(industry.IndustryMetrics):
                 found |= bool(m.any())
                 ks |= set(df.loc[m, "item_code"].astype(str)) | set(df.loc[m, "item_name"].astype(str))
         if not found and isinstance(item, str):                          # a model line: the name before the storage size
-            k = _ckey(item)                                              # ('Xiaomi Redmi Note 14' = every '… Note 14 128GB Đen')
+            k = _ckey(item)                                              # ('Galaxy A52' = every '… A52 128GB Xanh')
             for df in (self.C.get("items"), self.L):
                 if df is None or "item_name" not in df.columns: continue
                 names = pd.Series(df["item_name"].dropna().astype(str).unique())

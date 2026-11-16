@@ -23,8 +23,8 @@ _GB = re.compile(r"^(.*?)\s*\d+(?:[.,]\d+)?\s*(?:GB|TB)\b", re.I)
 
 
 def model_line(name):
-    """rulebook 'Cửa hàng điện thoại': dòng máy = the part of the item name before the storage size '…GB' ('iPhone 16 Pro Max
-    256GB Đen' -> 'iPhone 16 Pro Max'); a name without '…GB' is a line by itself ('Nokia 105 4G': 4G is the network)."""
+    """rulebook 'Cửa hàng điện thoại': dòng máy = the part of the item name before the storage size '…GB' ('Galaxy S21
+    128GB Xanh' -> 'Galaxy S21'); a name without '…GB' is a line by itself ('Galaxy A52 5G': 5G is the network)."""
     if _isnull(name): return None
     s = re.sub(r"\s+", " ", str(name)).strip(); m = _GB.match(s)
     return m.group(1).strip() if m and m.group(1).strip() else s
@@ -60,7 +60,7 @@ PLATE = re.compile(r"\b(\d{2}\s?[A-ZĐ]{1,2}\d?\s?[-.]?\s?\d{3}(?:[.,]?\d{2})?)\
 
 
 def split_vehicle(text):
-    """'wave alpha 50K2-994.07' -> ('wave alpha', '50K2-994.07'): a cell holding the vehicle model and its plate (the plate is
+    """'future neo 29X1-123.45' -> ('future neo', '29X1-123.45'): a cell holding the vehicle model and its plate (the plate is
     the trailing Vietnamese number plate). No plate found -> (text, None)."""
     if _isnull(text): return None, None
     s = re.sub(r"\s+", " ", str(text)).strip(); m = PLATE.search(s)
@@ -79,8 +79,8 @@ def _vtokens(name):
 
 def _vsame(a, b):
     """two spellings of one vehicle line (rulebook: only case or an abbreviation differs): same letters without spaces
-    ('Air Blade' / 'airblade', 'SH Mode' / 'shmode'), one name contained in the other as whole words ('Alpha' / 'Wave Alpha',
-    'Vision' / 'Vision 110'), initials ('AB' / 'Air Blade') or a prefix of a one-word name ('Ex' / 'Exciter')."""
+    ('Future Neo' / 'futureneo', 'Sirius RC' / 'siriusrc'), one name contained in the other as whole words ('RSX' / 'Wave RSX',
+    'Janus' / 'Janus 125'), initials ('FN' / 'Future Neo') or a prefix of a one-word name ('Gr' / 'Grande')."""
     a, b = split_vehicle(a)[0] or a, split_vehicle(b)[0] or b
     ta, tb = _vtokens(a), _vtokens(b)
     if not ta or not tb: return False
@@ -107,12 +107,12 @@ def vehicle_lines(names):
         while parent[x] != x: parent[x] = parent[parent[x]]; x = parent[x]
         return x
     joined = {x: "".join(_vtokens(x)) for x in u}
-    for i, a in enumerate(u):                                         # 1. same letters ('Air Blade' / 'airblade', 'Wave α')
+    for i, a in enumerate(u):                                         # 1. same letters ('Future Neo' / 'futureneo', 'Wave β')
         for b in u[i + 1:]:
             if joined[a] == joined[b]: parent[find(a)] = find(b)
     for a in sorted(u, key=lambda x: len(joined[x])):                # 2. a shorter spelling joins the ONE line it abbreviates
-        roots = {find(b) for b in u if len(joined[b]) > len(joined[a]) and _vsame(a, b)}     # ('Alpha' would not join both
-        if len(roots) == 1: parent[find(a)] = roots.pop()                                    # 'Wave Alpha' and 'Alpha X')
+        roots = {find(b) for b in u if len(joined[b]) > len(joined[a]) and _vsame(a, b)}     # ('RSX' would not join both
+        if len(roots) == 1: parent[find(a)] = roots.pop()                                    # 'Wave RSX' and 'RSX X')
     groups = {}
     for x in u: groups.setdefault(find(x), []).append(x)
     lab = {}
@@ -158,7 +158,7 @@ def task_key(t):
 
 
 def split_jobs(text):
-    """the jobs of one ticket's 'what was done' cell ('bdtq + vs nồi', 'thay nhớt, vá ruột và rửa xe') -> list of tasks."""
+    """the jobs of one ticket's 'what was done' cell ('bd + thay nhớt', 'thay nhớt, vá ruột và rửa xe') -> list of tasks."""
     if _isnull(text): return []
     return [x.strip() for x in re.split(r"\s*(?:\+|,|;|/|&|\n|\s-\s|\bvà\b|\bva\b(?=\s+(?:thay|rua|ve|vs|lam|sua|bao|chinh|can|tang)\b))\s*",
                                          str(text)) if x and x.strip()]
@@ -184,7 +184,7 @@ def job_query(q):
 
 def _person_groups(written, full_names):
     """{written staff name: person label}: each spelling in a book that writes given names / nicknames ('Đạt', 'a Đạt',
-    'A.Đạt') goes to the ONE full name of the staff list whose last name parts it matches ('Hà Loan Đạt'); without a list,
+    'A.Đạt') goes to the ONE full name of the staff list whose last name parts it matches ('Nguyễn Văn Đạt'); without a list,
     spellings with the same name key are one person (label = most frequent spelling)."""
     dm = _dm()
     w = pd.Series(list(written)).dropna().astype(str)
@@ -246,7 +246,7 @@ class IndustryMetrics:
 
     def devices_sold(self, p, kind=None, brand=None, line=None, **f):
         """number of devices (phones, tablets) sold in p, accessories left out (valid orders). kind='máy mới'|'máy cũ',
-        brand='Samsung' (first word of the name; iPhone = Apple), line='iPhone 13' (dòng máy: the name before '…GB')."""
+        brand='Samsung' (first word of the name; iPhone = Apple), line='Galaxy A52' (dòng máy: the name before '…GB')."""
         return _dm()._num(self._devices(p, kind, brand, line, **f)["qty_base"].sum())
 
     def device_sales(self, p, by="qty", level="line", kind=None, **f):
@@ -419,7 +419,7 @@ class IndustryMetrics:
     # -- repair shops: one order = one ticket (phiếu, lượt xe)
     def n_tickets(self, p, paid=None, warranty=None, job=None, vehicle=None, **f):
         """tickets (lượt xe) dated in p, warranty tickets included (rulebook). paid=True: only tickets with money; warranty=True:
-        only warranty tickets; job='vá ruột': tickets with money doing that job; vehicle='Air Blade': tickets of that line."""
+        only warranty tickets; job='vá ruột': tickets with money doing that job; vehicle='Future Neo': tickets of that line."""
         o = self._tickets(p, vehicle, **f); w = self._is_warranty_ticket(o)
         if job is not None: return int(self._job_mask(o[~w], job).sum())
         if paid: o = o[~w]

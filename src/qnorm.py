@@ -503,7 +503,7 @@ class Normalizer:
             if protect and protect[i]: continue
             if w == "nhiêu" and prv != "bao" and (re.search(r"\b(nhất|nhứt|nhat|nhut|hơn|hay ít)\b", nxt)
                                                   or "nào" in low[max(0, i - 3):i]): out[i] = _case_like(out[i], "nhiều")
-            # ^ 'ncc nào nhiu tiền nhứt' = 'nhiều': a selection ('nào ... nhất'), not 'bao nhiêu'
+            # ^ 'ncc nào nhiu nhứt' = 'nhiều': a selection ('nào ... nhất'), not 'bao nhiêu'
             elif w == "mấy" and typed[i].isascii() and (prv.endswith("nhiêu") or prv in ("chiếc", "cái")
                                                        or i + 1 < n and typed[i + 1].lower() in ("cu", "moi", "cũ", "mới")):
                 out[i] = _case_like(out[i], "máy")    # 'bao nhiêu may Samsung', 'may cu': a phone ('máy'), never 'bao nhiêu mấy'
@@ -517,7 +517,7 @@ class Normalizer:
                                                              or nxt.split()[:1] in (["tín"], ["ngân"], ["atm"], ["visa"])):
                 out[i] = "thẻ"    # 'trả bằng the', 'quẹt the': a card
             elif w == "quân" and restored and typed[i] == "quan" and prv not in _TITLES:
-                out[i] = "quán"   # a lone lowercase 'quan' ('doanh thu của quan', 'năm 2025 quan có') is the shop; a name keeps
+                out[i] = "quán"   # a lone lowercase 'quan' ('doanh thu của quan') is the shop; a name keeps
                                   # its neighbours ('Tạ Sơn Quân' is protected), a title ('khách quân') or 'bình quân'
             elif w in ("hà", "ha") and i == n - 1 and typed[i][:1].islower(): out[i] = "hả"   # final question particle, not a name
             elif w == "lệ" and restored and prv not in ("tỉ", "tỷ") and typed[i].isascii(): out[i] = _case_like(out[i], "lẻ")
@@ -533,7 +533,7 @@ class Normalizer:
             elif i == 0 and typed[i] in ("e", "E") and n > 1: out[i] = _case_like(typed[i], "ê")   # opening 'e' = 'ê' (hey), not 'ế'
             elif w == "chi" and i == n - 1 and prv == "là": out[i] = "gì"            # central 'là chi' = 'là gì'
             elif w == "nên" and prv == "trở" and re.search(r"\d", "".join(seps[max(0, i - 6):i + 1])): out[i] = _case_like(out[i], "lên")
-            # ^ 'từ 15 triệu trở nên' = 'trở lên' (l / n spoken alike): a threshold, never 'become'
+            # ^ 'từ N triệu trở nên' = 'trở lên' (l / n spoken alike): a threshold, never 'become'
             # context words, only on words typed WITHOUT accents (the user's accents are never overridden)
             elif not typed[i].isascii(): continue
             elif w == "mọi" and i + 1 < n and low[i + 1] == "loại" and re.search(r"\bbao nhiêu\b", " ".join(low[i + 2:i + 5])): out[i] = _case_like(out[i], "mỗi")
@@ -543,9 +543,9 @@ class Normalizer:
             elif w == "nhưng" and i + 1 < n and low[i + 1] in ("đơn", "mặt", "sản", "khách", "lô", "món", "nhân", "hàng", "ngày"): out[i] = _case_like(out[i], "những")
             elif w in ("vị", "vỉ", "ví") and i + 1 < n and low[i + 1] in ("giao", "lỗi", "hết", "mua", "khách", "sai", "hỏng", "trễ", "hư", "gói",
                                                                    "món", "nhầm", "đổi", "bị", "không", "chê", "thiếu"):
-                out[i] = _case_like(out[i], "vì")                                  # 'trả lại vi gói nhầm' = because ('ví điện tử' stays)
+                out[i] = _case_like(out[i], "vì")                                  # 'trả lại vi lỗi' = because ('ví điện tử' stays)
             elif w == "đếm" and i + 1 < n and low[i + 1] in ("về", "lại") and re.search(r"\b(doanh thu|tiền|lãi|lời)\b", " ".join(low[i + 2:i + 7])):
-                out[i] = _case_like(out[i], "đem")                                 # 'dem ve bao nhieu doanh thu' = 'đem về'
+                out[i] = _case_like(out[i], "đem")                                 # 'dem ve doanh thu' = 'đem về'
             elif w == "mã" and i + 2 < n and low[i + 1] == "khách" and low[i + 2] in ("chưa", "không", "vẫn", "còn"): out[i] = _case_like(out[i], "mà")
         return out
 
@@ -613,7 +613,7 @@ class Normalizer:
         mixed = flat and 0.15 <= accented < MIXED_MAX
         if flat and accented < 0.15:                                       # typed without accents: restore them
             rest = self.restore(flat)
-        elif mixed:                                                        # half typed with accents ('tien khach kòn nợ'): the
+        elif mixed:                                                        # half typed with accents ('khách kòn nợ'): the
             rest = self.restore(flat)                                      # accented words stay, the plain ones get theirs, but
             def sure(i, w, r):                                             # only when the accented form clearly dominates and
                 if r == w or not w.isascii() or w not in self.forms or self.forms[w].get(r, 0) < 3 * self.forms[w].get(w, 0): return False

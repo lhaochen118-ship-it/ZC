@@ -1,0 +1,17 @@
+[
+ {
+  "acc": "duckzuykobip",
+  "name": "jsj",
+  "jobs": "automation/jobs/p5/jsj.jobs",
+  "est_h": 1.2,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,duckzuykobip/zc-mgj8-1",
+   "--train-data",
+   "jrole",
+   "--env",
+   "ZC_THINK_KW=default",
+   "--no-preflight"
+  ]
+ }
+]

@@ -1,0 +1,21 @@
+[
+ {
+  "acc": "phuongnehe",
+  "name": "jsq",
+  "jobs": "automation/jobs/p5/jsq.jobs",
+  "est_h": 1.0,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "phuongnehe/zc-ad3",
+   "--train-data",
+   "jrole",
+   "--env",
+   "ZC_THINK_KW=default",
+   "--no-preflight"
+  ]
+ }
+]

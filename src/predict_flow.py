@@ -374,6 +374,31 @@ def w_model(adapter, model, work, log, mode="merge"):
     return out, ""
 
 
+def w_base(cfg, work, log):
+    """16/11 role swap (user rule: replace only the component under test): with "w_base": "<base model dir name>:<adapters>:<weights>"
+    (e.g. "qwen3-5-9b:V3A:0.70") the W-phase LoRAs (links_lora / judge_lora) are merged into THAT base (the 0.952 framework's 9B +
+    V3A x 0.70) instead of the solver's weights, so the solver can be swapped (MoE) while the linker / judge stay exactly the 9B ones.
+    Returns the merged base dir (built once under work/), or None when the config has no w_base."""
+    c = json.load(open(cfg, encoding="utf-8")) if cfg else {}
+    spec = str(c.get("w_base") or "")
+    if not spec: return None
+    name, ads, ws = (spec.split(":") + ["", ""])[:3]
+    out = os.path.join(work, "w_base")
+    if os.path.isfile(os.path.join(out, "config.json")): return out
+    import glob
+    base = next((os.path.dirname(f) for f in sorted(glob.glob(f"/kaggle/input/**/{name}/**/config.json", recursive=True)) +
+                 sorted(glob.glob(f"/models/**/{name}/**/config.json", recursive=True)) if "visual" not in f), None)
+    if base is None: raise SystemExit(f"w_base: base model {name} not found (no silent fallback)")
+    stack = [resolve_adapter(x) for x in ads.split(",") if x]
+    if not all(stack): raise SystemExit(f"w_base: adapters {ads} not found")
+    mp = next((p for p in (os.path.join(os.path.dirname(HERE), "training", "merge.py"), os.path.join(HERE, "training", "merge.py"),
+                           os.path.join(HERE, "merge.py")) if os.path.isfile(p)), None)
+    t = time.time(); rc = run([sys.executable, mp, "merge", base, out, ",".join(stack), "--weights", ws or ",".join(["1.0"] * len(stack))], log)
+    if rc != 0: raise SystemExit("w_base merge failed")
+    log(f"w_base: {name} + {ads} x {ws} -> {out} ({time.time() - t:.0f}s)")
+    return out
+
+
 def find_input(name):
     """a file given by path or by name under the code folders or /kaggle/input (v2 grid: reused units / links)."""
     if os.path.isfile(name): return name
@@ -428,7 +453,7 @@ def prepare_link(cfg, split, work, model, log, fake="", cache="", cards=""):
         cards = ",".join(os.path.join(refs, x) for x in str(c.get("lrl") or "").split(",") if x and "compile" in x and os.path.isfile(os.path.join(refs, x)))
     if c.get("links_model") and not fake: model = resolve_model(c["links_model"]); log(f"links: model {model}")
     lora = resolve_adapter(c.get("links_lora") or os.environ.get("LINK_LORA") or "")
-    if lora and not fake: model, lora = w_model(lora, model, work, log, c.get("w_mode", "merge"))
+    if lora and not fake: model, lora = w_model(lora, w_base(cfg, work, log) or model, work, log, c.get("w_mode", "merge"))
     base = [sys.executable, os.path.join(HERE, "link.py"), split, out, "--model", model, "--quant", "fp8", "--k", str(int(c.get("links_k", 3) or 3)), "--max-df", str(c.get("links_max_df", 0.0) or 0.0)] + \
            (["--lora", lora] if lora else []) + \
            (["--cards", cards] if cards else []) + (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
@@ -475,7 +500,7 @@ def judge_phase(cfg, a, dirs, units, log, t0, links=None):
     out = os.path.join(a.work, "judge"); os.makedirs(out, exist_ok=True)
     wm = (resolve_model(c["judge_model"]) if c.get("judge_model") and not a.fake_responder else None) or os.environ.get("W_MODEL") or a.model
     lora = resolve_adapter(c.get("judge_lora") or os.environ.get("W_LORA") or "")
-    if lora and not a.fake_responder: wm, lora = w_model(lora, wm, a.work, log, c.get("w_mode", "merge"))
+    if lora and not a.fake_responder: wm, lora = w_model(lora, (w_base(cfg, a.work, log) if not c.get("judge_model") else None) or wm, a.work, log, c.get("w_mode", "merge"))
     mode = c.get("judge_mode", "list")
     cmd = [sys.executable, os.path.join(HERE, "judge.py"), a.split, out, "--model", wm, "--logs", logs_f, "--variants", mode,
            "--k", str(int(c.get("judge_k", 5))), "--tau", str(c.get("judge_tau", 0.6)), "--denom", str(c.get("judge_denom", "all")),

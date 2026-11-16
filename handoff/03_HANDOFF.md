@@ -22,9 +22,9 @@ tham số ≤ 15B (tính mọi expert), offline, ≤ 6 h trên 2 × RTX 5090, n�
 
 ## 3. Tiến độ
 
-- **Cấu hình nộp: `configs/flow_p5_final.json` (framework 0.952)**; file nộp public `Docker submission/submission.jsonl` (D1, PA 0.952;
-  chạy lại bằng mã hiện tại C0L 0.942). Docker đóng gói trong `Docker submission/` (mặc định cấu hình này; chưa build — cần máy có
-  Docker, hướng dẫn `Docker submission/README.md`). Chế độ H (`flow_p5_final_h`, 0.860) chỉ còn là tham chiếu.
+- **Cấu hình nộp: `configs/flow_p5_final.json` (framework 0.952)**; file nộp public `Docker_submission/submission.jsonl` (D1, PA 0.952;
+  chạy lại bằng mã hiện tại C0L 0.942). Docker đóng gói trong `Docker_submission/` (mặc định cấu hình này; chưa build — cần máy có
+  Docker, hướng dẫn `Docker_submission/README.md`). Chế độ H (`flow_p5_final_h`, 0.860) chỉ còn là tham chiếu.
 - P5 (zero-shot, MoE, ghép component): không tổ hợp nào vượt 0.952 / 0.863; chi tiết PDF 1 §10, bảng `docs/21_COMBO_PLAN.md`.
 - **Đang chạy lúc bàn giao** (tự động, theo dõi `Process/runs/p5/watch.out`):
 
@@ -38,7 +38,7 @@ tham số ≤ 15B (tính mọi expert), offline, ≤ 6 h trên 2 × RTX 5090, n�
 
 | Thứ | Ở đâu |
 |---|---|
-| Luồng nộp + Docker | `src/predict_flow.py`, `configs/flow_p5_final.json`, **`Docker submission/`** (+ `submission.jsonl`) (Dockerfile, predict.sh, fetch / build / run / export, README) |
+| Luồng nộp + Docker | `src/predict_flow.py`, `configs/flow_p5_final.json`, **`Docker_submission/`** (+ `submission.jsonl`) (Dockerfile, predict.sh, fetch / build / run / export, README) |
 | Kế hoạch / nhật ký P5 | `docs/19_PLAN_P5_ZS.md` (nhật ký), `docs/20_NEW7_PLAN_UPDATED.md`, `docs/21_COMBO_PLAN.md` (tổ hợp) |
 | Config thí nghiệm P5 | `configs/flow_p5_zs_*`, `flow_c*`, `flow_e*`, `flow_h_*`, `flow_t02*`, `flow_rs_*`; MoE keep-list `configs/moe/` |
 | Job / plan / sổ chạy | `automation/jobs/p5/`, `automation/plans_p5/`, `Process/runs/p5/` (kernel), `Process/runs/p5_results/` (kết quả gzip) |
@@ -49,10 +49,10 @@ tham số ≤ 15B (tính mọi expert), offline, ≤ 6 h trên 2 × RTX 5090, n�
 
 ## 5. Việc tiếp theo (theo thứ tự)
 
-1. **Build + chạy thử Docker** trên máy có GPU (`Docker submission/README.md` mục 3–4): điểm public phải ~0.94–0.95 (± 0.03); kiểm `run.log`
+1. **Build + chạy thử Docker** trên máy có GPU (`Docker_submission/README.md` mục 3–4): điểm public phải ~0.94–0.95 (± 0.03); kiểm `run.log`
    (`units: rc`, `links: rc`, `judge:`), thời gian.
 2. Khi MS3 xong: chấm 2 nửa (`cat` 2 `submission.jsonl` → `jscore.py`), ghi `docs/19` + `docs/21`. Không đổi bản nộp.
-3. Nộp `Docker submission/submission.jsonl` trên portal (nếu cần); xuất image (`export_image.sh`), upload, nộp form trước 16/11 23:59 GMT+7.
+3. Nộp `Docker_submission/submission.jsonl` trên portal (nếu cần); xuất image (`export_image.sh`), upload, nộp form trước 16/11 23:59 GMT+7.
 4. Sau nộp: xoá routine `trig_013dELF9kwndZnzmL5KAZ6GS` (và `trig_015hi1s1WHshqorFZC7DWY9j`); hướng mở cho vòng sau: PDF 1 §10.3.
 
 **Token Kaggle** chỉ ở `~/.kaggle/tok_<acc>` (mất khi đổi container, xin lại user); quota làm mới 21/11 00:00 UTC.

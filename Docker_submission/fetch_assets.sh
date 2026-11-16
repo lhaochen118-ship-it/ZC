@@ -1,7 +1,7 @@
 #!/bin/bash
 # Download the model weights into ./models/ (run once, from the repo root, needs internet; ~19.3 GB for Qwen3.5-9B) and the
-# fine-tuned LoRA adapter (WP7, ~0.6 GB) into ./models/adapter/ from the project's Kaggle dataset named in "Docker submission/assets.env"
-# (needs the kaggle CLI and a token in ~/.kaggle/kaggle.json); "Docker submission/Dockerfile" merges it into the base weights at build time.
+# fine-tuned LoRA adapter (WP7, ~0.6 GB) into ./models/adapter/ from the project's Kaggle dataset named in Docker_submission/assets.env
+# (needs the kaggle CLI and a token in ~/.kaggle/kaggle.json); Docker_submission/Dockerfile merges it into the base weights at build time.
 set -euo pipefail
 MODEL_ID=${1:-Qwen/Qwen3.5-9B}
 NAME=$(basename "$MODEL_ID")
@@ -28,10 +28,10 @@ print("sha256 check:", "OK" if not bad else f"MISMATCH {bad}"); sys.exit(1 if ba
 PY
 du -sh "models/$NAME"
 
-# --- fine-tuned adapter ("Docker submission/assets.env": ADAPTER_DS=<owner>/<dataset>, empty = base model only)
-ADAPTER_DS=$(sed -n 's/^ADAPTER_DS=//p' "Docker submission/assets.env" 2>/dev/null | head -1)
+# --- fine-tuned adapter (Docker_submission/assets.env: ADAPTER_DS=<owner>/<dataset>, empty = base model only)
+ADAPTER_DS=$(sed -n 's/^ADAPTER_DS=//p' Docker_submission/assets.env 2>/dev/null | head -1)
 rm -rf models/adapter; mkdir -p models/adapter
-if [ -z "$ADAPTER_DS" ]; then echo "no adapter in "Docker submission/assets.env": the image serves the base weights"; touch models/adapter/NONE; exit 0; fi
+if [ -z "$ADAPTER_DS" ]; then echo "no adapter in Docker_submission/assets.env: the image serves the base weights"; touch models/adapter/NONE; exit 0; fi
 python3 -m pip install -q -U kaggle
 kaggle datasets download -d "$ADAPTER_DS" -p models/_adapter_dl --unzip -q
 python3 - <<'PY'
@@ -49,8 +49,8 @@ print("adapter sha256 check:", "OK" if not bad else f"MISMATCH {bad}"); raise Sy
 PY
 du -sh models/adapter
 
-# --- v2: W adapters ("Docker submission/assets.env" W_ADAPTER_DS: one <NAME>/adapter/ folder per W role), checked against src/adapter_hashes_w.json
-W_DS=$(sed -n 's/^W_ADAPTER_DS=//p' "Docker submission/assets.env" 2>/dev/null | head -1)
+# --- v2: W adapters (Docker_submission/assets.env W_ADAPTER_DS: one <NAME>/adapter/ folder per W role), checked against src/adapter_hashes_w.json
+W_DS=$(sed -n 's/^W_ADAPTER_DS=//p' Docker_submission/assets.env 2>/dev/null | head -1)
 rm -rf models/adapters; mkdir -p models/adapters
 if [ -n "$W_DS" ]; then
   kaggle datasets download -d "$W_DS" -p models/_w_dl --unzip -q

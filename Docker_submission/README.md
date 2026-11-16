@@ -1,4 +1,4 @@
-# Docker submission — hướng dẫn build, chạy thử và nộp
+# Docker_submission — hướng dẫn build, chạy thử và nộp
 
 Thư mục này đóng gói **cấu hình nộp cuối = framework mạnh nhất** `configs/flow_p5_final.json` (Qwen3.5-9B + V3A × 0.70, WL1, WJR1,
 toolkit có `industry.py`): public **0.952** (D1, `quynhtran35/zc-d1-1`). **`submission.jsonl`** trong thư mục này là file do chính lượt chạy
@@ -39,14 +39,14 @@ git clone -b claude/datamate-v3-0dny90 https://github.com/lhaochen118-ship-it/ZC
 ```
 
 ```bash
-"Docker submission/fetch_assets.sh" Qwen/Qwen3.5-9B
+Docker_submission/fetch_assets.sh Qwen/Qwen3.5-9B
 ```
 
 Kết quả: `models/Qwen3.5-9B/` (sha256 khớp `src/model_hashes.json`), `models/adapter/` (V3A + `soup.json` trọng số 0.70) và
 `models/adapters/{WL1,WJR1}/adapter/` (sha256 khớp `src/adapter_hashes*.json`; script dừng nếu sai).
 
 ```bash
-"Docker submission/build.sh" datamate:latest
+Docker_submission/build.sh datamate:latest
 ```
 
 Lần đầu tải base image `vllm/vllm-openai:v0.32.0` (~9 GB). Cuối build phải có dòng `agent import OK`.
@@ -56,7 +56,7 @@ Lần đầu tải base image `vllm/vllm-openai:v0.32.0` (~9 GB). Cuối build p
 Giải nén public test sao cho một thư mục chứa `questions.jsonl`, `rulebook.md`, `calendar.csv`, `data/`, rồi:
 
 ```bash
-"Docker submission/run_public_test.sh" ~/zc_data/public_test ./result_public
+Docker_submission/run_public_test.sh ~/zc_data/public_test ./result_public
 ```
 
 - `result_public/submission.jsonl`: một dòng mỗi câu, ghi dần trong lúc chạy (dừng giữa chừng vẫn giữ các dòng đã ghi).
@@ -70,7 +70,7 @@ Giải nén public test sao cho một thư mục chứa `questions.jsonl`, `rule
 ## 5. Xuất file nộp
 
 ```bash
-"Docker submission/export_image.sh" datamate:latest datamate_solution.tar.gz
+Docker_submission/export_image.sh datamate:latest datamate_solution.tar.gz
 ```
 
 Upload `datamate_solution.tar.gz` (chia sẻ "Anyone with the link"), dán link + nội dung `datamate_solution.tar.gz.sha256` vào form

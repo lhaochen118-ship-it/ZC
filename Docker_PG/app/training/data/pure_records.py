@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+import os, sys, json, time, argparse
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import common
+
+
+SELF_KEYS = ("clean", "period", "periods", "entities", "answer_type", "measure_words", "counted", "thresholds", "missing_data")
+
+
+def self_hints(h):
+    k = {}
+    for key in SELF_KEYS:
+        v = (h or {}).get(key)
+        if v in (None, [], {}, ""): continue
+        if key == "period" and isinstance(v, dict): v = v.get("code")
+        if key == "entities": v = [f"{e.get('text')} -> {e.get('data_value')} ({e.get('kind')})" for e in v if e.get("data_value")]
+        if v in (None, [], {}, ""): continue
+        k[key] = v
+    return "<hints>" + json.dumps(k, ensure_ascii=False, separators=(", ", ": "), default=str) + "</hints>\n"
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("split"); ap.add_argument("cache"); ap.add_argument("canon_dir"); ap.add_argument("inputs"); ap.add_argument("out_dir")
+    ap.add_argument("--mode", default="full"); ap.add_argument("--k", type=int, default=3); ap.add_argument("--self-hints", action="store_true")
+    a = ap.parse_args()
+    import retrieval
+    bank = retrieval.Bank.load()
+    os.makedirs(a.out_dir, exist_ok=True)
+    for f in a.inputs.split(","):
+        t0 = time.time(); rows = []
+        for r in common.jl(f):
+            q = {"id": r["id"], "business_id": r["business_id"], "question": r["question"], "as_of_date": r["as_of_date"]}
+            c = common.ctx(a.split, a.cache, a.canon_dir, r["business_id"], a.mode)
+            exs = bank.retrieve(q["question"], {}, k=a.k, exclude_bids={r["business_id"]}, exclude_ids={r["id"].split("~")[0]})
+            s = common.sample(c, q, r["program"], exs, None, r.get("source", "D?") + ("ph" if a.self_hints else "p"), r.get("answer"))
+            if a.self_hints:
+                c.hint_opts = {"counts_hints": True}
+                s["messages"][-1]["content"] = self_hints(c.hints(q["question"], q["as_of_date"])) + s["messages"][-1]["content"]
+            rows.append(s)
+        out = os.path.join(a.out_dir, os.path.basename(f).replace(".jsonl", "ph.jsonl" if a.self_hints else "p.jsonl"))
+        common.write_jl(out, rows)
+        print(f"{f}: {len(rows)} pure records -> {out} ({time.time() - t0:.0f}s)", flush=True)
+
+
+if __name__ == "__main__":
+    main()

@@ -611,7 +611,39 @@ def main():
     jv = judge_phase(cfg, a, dirs, uv, log, t0, kv)
     free_w_models(a.work, log)
     if jv: n = merge_sub.merge(a.split, final, [jv, os.path.join(dirs[0], "submission.jsonl")], quiet=True, first_decides=True); log(f"after the judge: {n}")
+    finalize_logs(a.split, final, logs, log)
     log(f"end: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}  ({time.time() - t0:.0f}s)")
+
+
+def finalize_logs(split, final, logs, log):
+    try:
+        sub = {}
+        if os.path.isfile(final):
+            for l in open(final, encoding="utf-8"):
+                if l.strip():
+                    r = json.loads(l); sub[r["id"]] = r
+        jv = {}
+        vf = os.path.join(logs, "judge_verdicts.jsonl")
+        if os.path.isfile(vf):
+            for l in open(vf, encoding="utf-8"):
+                if l.strip():
+                    r = json.loads(l)
+                    if r.get("id"): jv[r["id"]] = r
+        n = 0
+        for l in open(os.path.join(split, "questions.jsonl"), encoding="utf-8"):
+            if not l.strip(): continue
+            q = json.loads(l); f = os.path.join(logs, f"{q['id']}.json")
+            d = {}
+            if os.path.isfile(f):
+                try: d = json.load(open(f, encoding="utf-8"))
+                except Exception: d = {}
+            d.setdefault("id", q["id"]); d.setdefault("question", q.get("question")); d.setdefault("elapsed_s", None)
+            d["final_answer"] = sub.get(q["id"], {"id": q["id"], "type": "abstain"})
+            if q["id"] in jv: d["judge"] = jv[q["id"]]
+            json.dump(d, open(f, "w", encoding="utf-8"), ensure_ascii=False); n += 1
+        log(f"logs: final answers written to {n} question logs")
+    except Exception as e:
+        log(f"logs: final answers not written ({type(e).__name__}: {e})")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+import os, sys, json, time, glob, shutil, argparse, subprocess
+
+HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
+PY = sys.executable
+SRC = ROOT if os.path.isfile(os.path.join(ROOT, "agent.py")) else os.path.join(ROOT, "src")
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("split"); ap.add_argument("out"); ap.add_argument("--model", required=True)
+    ap.add_argument("--files", required=True); ap.add_argument("--data", default="sft")
+    ap.add_argument("--r", type=int, default=64); ap.add_argument("--alpha", type=int, default=128); ap.add_argument("--lr", type=float, default=1e-4)
+    ap.add_argument("--epochs", type=float, default=1.0); ap.add_argument("--budget", type=float, default=0)
+    ap.add_argument("--mb", type=int, default=8); ap.add_argument("--eff-batch", type=int, default=64); ap.add_argument("--gpus", type=int, default=4)
+    ap.add_argument("--sets", default="quick400,pub_full"); ap.add_argument("--eval-config", default="configs/e0.json")
+    ap.add_argument("--max-len", type=int, default=3072); ap.add_argument("--seed", type=int, default=20261108)
+    ap.add_argument("--group-by-length", type=int, default=0, help="v2: sft.py --group-by-length (similar-length micro-batches)")
+    ap.add_argument("--no-eval", action="store_true"); ap.add_argument("--subset", type=int, default=0, help="evaluation: first N questions per shop")
+    ap.add_argument("--trainer", default="sft", choices=["sft", "dpo"], help="dpo: training/dpo.py on (chosen, rejected) pairs (M4)")
+    ap.add_argument("--beta", type=float, default=0.1); ap.add_argument("--sft-weight", type=float, default=0.0)
+    ap.add_argument("--base-adapters", default="", help="train on top of these adapters merged into --model first (arms_job.merge_base)")
+    ap.add_argument("--base-weights", default=""); ap.add_argument("--search", default="/kaggle/input")
+    ap.add_argument("--resume-from", default="", help="continue a training stopped at the 12 h session deadline: a folder (or "
+                    "'auto' = under --search: an earlier kernel's output mounted with --ks) holding <this run's name>/ckpt/checkpoint-N")
+    a = ap.parse_args()
+    os.chdir(ROOT); os.makedirs(a.out, exist_ok=True); t0 = time.time()
+    D = a.data if os.path.isabs(a.data) else os.path.join(HERE, "data", "out", a.data)
+    data = ",".join(os.path.join(D, f) for f in a.files.split(","))
+    tmp = "/tmp/full_" + os.path.basename(os.path.normpath(a.out)); os.makedirs(tmp, exist_ok=True)
+    cfg = os.path.join(HERE, f"fsdp{a.gpus}.yaml")
+    base = a.model
+    if a.base_adapters:
+        import arms_job
+        base = arms_job.merge_base(a)
+    cmd = [PY, "-m", "accelerate.commands.launch", "--config_file", cfg, "--num_processes", str(a.gpus), "--main_process_port", "29531"]
+    import deadline
+    ck_dir = os.path.join(a.out, "ckpt"); res_args = []
+    if a.resume_from:
+        root = a.search if a.resume_from == "auto" else a.resume_from
+        name = os.path.basename(os.path.normpath(a.out))
+        cands = [deadline.latest_checkpoint(c) for c in glob.glob(os.path.join(root, "**", name, "ckpt"), recursive=True)]
+        cands = [c for c in cands if c]
+        if cands:
+            ck = max(cands, key=lambda p: int(p.rstrip("/").split("-")[-1])); res_args = ["--resume", ck]
+            print(f"[full] resume from {ck}", flush=True)
+        else: print(f"[full] no checkpoint of {name} under {root}: training from the start", flush=True)
+    if a.trainer == "dpo":
+        cmd += [os.path.join(HERE, "dpo.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
+                "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--beta", str(a.beta),
+                "--sft-weight", str(a.sft_weight), "--metrics", os.path.join(a.out, "train_metrics.json"), "--max-len", str(a.max_len), "--seed", str(a.seed),
+                "--ckpt-dir", ck_dir] + res_args
+    else:
+        cmd += [os.path.join(HERE, "sft.py"), "--model", base, "--data", data, "--out", f"{tmp}/adapter", "--mb", str(a.mb), "--eff-batch", str(a.eff_batch),
+                "--r", str(a.r), "--alpha", str(a.alpha), "--lr", str(a.lr), "--epochs", str(a.epochs), "--max-tokens", str(a.budget),
+                "--metrics", os.path.join(a.out, "train_metrics.json"), "--log-every", "10", "--max-len", str(a.max_len), "--seed", str(a.seed),
+                "--ckpt-dir", ck_dir, "--group-by-length", str(a.group_by_length)] + res_args
+    rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "train.log"), "w"), stderr=subprocess.STDOUT).returncode
+    print(f"[full] training rc {rc} in {time.time() - t0:.0f}s", flush=True)
+    if rc != 0 or not os.path.isfile(f"{tmp}/adapter/adapter_config.json"):
+        print("[full] training failed:\n" + open(os.path.join(a.out, "train.log"), errors="ignore").read()[-3000:], flush=True); sys.exit(1)
+    shutil.copytree(f"{tmp}/adapter", os.path.join(a.out, "adapter"), dirs_exist_ok=True)
+    if base != a.model: shutil.rmtree(base, ignore_errors=True)
+    try: tm = json.load(open(os.path.join(a.out, "train_metrics.json")))
+    except Exception: tm = {}
+    if tm.get("stopped_early"):
+        print(f"[full] PARTIAL at {tm['stopped_early']} (session deadline): resume in a new kernel with --resume-from auto and "
+              f"this kernel's output mounted (--ks); no evaluation", flush=True); sys.exit(4)
+    shutil.rmtree(ck_dir, ignore_errors=True)
+    if a.no_eval: return
+    if base != a.model: sys.exit("[full] --base-adapters: evaluate with training/soup_job.py (base adapters + this one)")
+    t1 = time.time()
+    rc = subprocess.run([PY, os.path.join(HERE, "merge.py"), "merge", a.model, f"{tmp}/merged", f"{tmp}/adapter"],
+                        stdout=open(os.path.join(a.out, "merge.log"), "w"), stderr=subprocess.STDOUT).returncode
+    print(f"[full] merge rc {rc} in {time.time() - t1:.0f}s", flush=True)
+    if rc != 0: sys.exit(2)
+    t2 = time.time(); ev = f"{tmp}/eval"
+    cmd = [PY, os.path.join(SRC, "eval_flow.py"), a.split, ev, "--sets", a.sets, "--model", f"{tmp}/merged", "--dp", str(a.gpus),
+           "--config", a.eval_config, "--cache", "/tmp/zc_cache"] + (["--", "--subset", str(a.subset)] if a.subset else [])
+    rc = subprocess.run(cmd, stdout=open(os.path.join(a.out, "eval.log"), "w"), stderr=subprocess.STDOUT).returncode
+    for f in ("submission.jsonl", "logs.jsonl", "compile_logs.jsonl"):
+        p = os.path.join(ev, "run", f)
+        if os.path.isfile(p): shutil.copy(p, a.out)
+    print(f"[full] eval rc {rc} in {time.time() - t2:.0f}s; total {time.time() - t0:.0f}s", flush=True)
+
+
+if __name__ == "__main__":
+    main()

@@ -10,7 +10,8 @@ RUN pip install --no-cache-dir "pandas==2.3.3" "numpy==2.1.3" "openpyxl>=3.1" "p
 WORKDIR /app
 COPY app/src/ /app/src/
 COPY app/configs/ /app/configs/
-COPY app/training/merge.py /app/training/merge.py
+COPY app/training/ /app/training/
+COPY README.md README_SOLUTION.md /app/
 COPY models/adapters/ /models/adapters/
 COPY docker/predict.sh /app/predict.sh
 COPY --from=merge /w/model/ /models/solver/

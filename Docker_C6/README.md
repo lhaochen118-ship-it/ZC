@@ -9,7 +9,7 @@ Lời giải DataMate (Zalo AI Challenge 2026) đóng gói thành Docker image. 
 | `Dockerfile` | 2 stage: gộp LoRA vào Qwen3.5-9B, rồi image chạy (vLLM 0.32.0, CUDA ≥ 12.8) |
 | `app/src/` | mã nguồn: `predict_flow.py` (điểm vào), `ingest.py` / `automap.py` / `canon.py` (đọc dữ liệu), `dm.py` / `industry.py` (bộ hàm), `lrl_gen.py` / `units.py` (thẻ luật, hàm cửa hàng), `hybrid.py` / `pipeline.py` (sinh chương trình), `judge.py` (phán xử), `refs/` (ví dụ, từ điển) |
 | `app/configs/solution.json` | cấu hình chạy |
-| `app/training/merge.py` | gộp LoRA vào trọng số |
+| `app/training/` | mã huấn luyện (`sft.py`, `full_job.py`, dựng dữ liệu `data/`) và `merge.py` (gộp LoRA vào trọng số) |
 | `docker/predict.sh` | entrypoint: đọc `/data`, ghi `/result/submission.jsonl` + `/result/logs/` |
 | `docker/merge_assets.py` | bước gộp lúc build |
 | `scripts/` | `fetch_assets.sh` (tải trọng số), `build.sh`, `run_public_test.sh`, `export_image.sh` |

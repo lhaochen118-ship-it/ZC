@@ -26,8 +26,11 @@ every rule card and shop function of a test split is written at run time from th
 ## Input / output
 
 Input: the test split mounted read-only at `/data` (`questions.jsonl`, `rulebook.md`, `calendar.csv`, `data/<business_id>/`).
-Output: `/result/submission.jsonl` (one line per question, appended while running) and `/result/logs/` (`run.log` and one JSON
-per question with the programs written, execution output, votes and final answer).
+Output: `/result/submission.jsonl` (one line per question, appended while running) and `/result/logs/`: `run.log` and one
+`<id>.json` per question with `id`, `final_answer`, `elapsed_s`, the programs written, their execution output, the votes and
+the judge verdict.
+
+Training code: `/app/training/` (LoRA fine-tuning `sft.py` / `full_job.py`, training-data builders `data/`, `merge.py`).
 
 ## Public test result
 

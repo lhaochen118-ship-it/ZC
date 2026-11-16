@@ -3,3 +3,5 @@ result_*
 *.tar.gz
 *.md5
 **/__pycache__
+public_test_data
+_pt_dl

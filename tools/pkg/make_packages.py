@@ -27,11 +27,15 @@ def build(name, v):
     if os.path.isdir(dst): shutil.rmtree(dst)
     app = os.path.join(dst, "app")
     shutil.copytree(os.path.join(ROOT, "src"), os.path.join(app, "src"), ignore=ign)
-    os.makedirs(os.path.join(app, "training")); shutil.copy(os.path.join(ROOT, "training", "merge.py"), os.path.join(app, "training", "merge.py"))
+    tr = os.path.join(app, "training"); os.makedirs(os.path.join(tr, "data"))
+    for f in os.listdir(os.path.join(ROOT, "training")):
+        if f.endswith(".py"): shutil.copy(os.path.join(ROOT, "training", f), os.path.join(tr, f))
+    for f in os.listdir(os.path.join(ROOT, "training", "data")):
+        if f.endswith(".py") and f not in ("w_link.py", "lrl_collect.py"): shutil.copy(os.path.join(ROOT, "training", "data", f), os.path.join(tr, "data", f))
     os.makedirs(os.path.join(app, "configs"))
     c = json.load(open(os.path.join(ROOT, v["config"]), encoding="utf-8")); c.pop("_doc", None)
     json.dump(c, open(os.path.join(app, "configs", "solution.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
-    pys = [os.path.join(app, "src", f) for f in os.listdir(os.path.join(app, "src")) if f.endswith(".py")] + [os.path.join(app, "training", "merge.py")]
+    pys = [os.path.join(app, "src", f) for f in os.listdir(os.path.join(app, "src")) if f.endswith(".py")] + [os.path.join(tr, f) for f in os.listdir(tr) if f.endswith(".py")] + [os.path.join(tr, "data", f) for f in os.listdir(os.path.join(tr, "data")) if f.endswith(".py")]
     r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pkg", "strip_comments.py")] + pys + ["--keep-doc", KEEP_DOC], capture_output=True, text=True)
     print(name, r.stdout.strip(), r.stderr.strip()[-300:])
     if r.returncode: sys.exit(1)
@@ -44,7 +48,9 @@ def build(name, v):
     if v["judge"]: shutil.copy(os.path.join(ROOT, v["judge"]), os.path.join(dst, "hashes", "judge.json"))
     shutil.copy(os.path.join(ROOT, "src", "model_hashes.json"), os.path.join(dst, "hashes", "model.json"))
     shutil.copy(os.path.join(ROOT, v["sub"]), os.path.join(dst, "submission.jsonl"))
-    for f, body in files(name, v).items():
+    fs = files(name, v); fs["scripts/get_public_test.sh"] = open(os.path.join(ROOT, "tools", "pkg", "get_public_test.sh"), encoding="utf-8").read()
+    fs[".dockerignore"] += "public_test_data\n_pt_dl\n"
+    for f, body in fs.items():
         p = os.path.join(dst, f); os.makedirs(os.path.dirname(p), exist_ok=True)
         open(p, "w", encoding="utf-8").write(body)
         if f.endswith(".sh"): os.chmod(p, 0o755)
@@ -65,7 +71,8 @@ RUN pip install --no-cache-dir "pandas==2.3.3" "numpy==2.1.3" "openpyxl>=3.1" "p
 WORKDIR /app
 COPY app/src/ /app/src/
 COPY app/configs/ /app/configs/
-COPY app/training/merge.py /app/training/merge.py
+COPY app/training/ /app/training/
+COPY README.md README_SOLUTION.md /app/
 """ + ("COPY models/adapters/ /models/adapters/\n" if judge else "") + """COPY docker/predict.sh /app/predict.sh
 COPY --from=merge /w/model/ /models/solver/
 RUN chmod +x /app/predict.sh && python3 -c "import sys; sys.path.insert(0, '/app/src'); import predict_flow, hybrid, judge, lrl_gen, units, pipeline, agent; print('import OK')"
@@ -188,8 +195,11 @@ every rule card and shop function of a test split is written at run time from th
 ## Input / output
 
 Input: the test split mounted read-only at `/data` (`questions.jsonl`, `rulebook.md`, `calendar.csv`, `data/<business_id>/`).
-Output: `/result/submission.jsonl` (one line per question, appended while running) and `/result/logs/` (`run.log` and one JSON
-per question with the programs written, execution output, votes and final answer).
+Output: `/result/submission.jsonl` (one line per question, appended while running) and `/result/logs/`: `run.log` and one
+`<id>.json` per question with `id`, `final_answer`, `elapsed_s`, the programs written, their execution output, the votes and
+the judge verdict.
+
+Training code: `/app/training/` (LoRA fine-tuning `sft.py` / `full_job.py`, training-data builders `data/`, `merge.py`).
 
 ## Public test result
 
@@ -209,7 +219,7 @@ Lời giải DataMate (Zalo AI Challenge 2026) đóng gói thành Docker image. 
 | `Dockerfile` | 2 stage: gộp LoRA vào Qwen3.5-9B, rồi image chạy (vLLM 0.32.0, CUDA ≥ 12.8) |
 | `app/src/` | mã nguồn: `predict_flow.py` (điểm vào), `ingest.py` / `automap.py` / `canon.py` (đọc dữ liệu), `dm.py` / `industry.py` (bộ hàm), `lrl_gen.py` / `units.py` (thẻ luật, hàm cửa hàng), `hybrid.py` / `pipeline.py` (sinh chương trình), `judge.py` (phán xử), `refs/` (ví dụ, từ điển) |
 | `app/configs/solution.json` | cấu hình chạy |
-| `app/training/merge.py` | gộp LoRA vào trọng số |
+| `app/training/` | mã huấn luyện (`sft.py`, `full_job.py`, dựng dữ liệu `data/`) và `merge.py` (gộp LoRA vào trọng số) |
 | `docker/predict.sh` | entrypoint: đọc `/data`, ghi `/result/submission.jsonl` + `/result/logs/` |
 | `docker/merge_assets.py` | bước gộp lúc build |
 | `scripts/` | `fetch_assets.sh` (tải trọng số), `build.sh`, `run_public_test.sh`, `export_image.sh` |

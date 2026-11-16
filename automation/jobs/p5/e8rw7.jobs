@@ -1,0 +1,1 @@
+run_kaggle.py public_test OUT/e8rw7 --script training/soup_job.py --model Qwen/Qwen3.6-35B-A3B-E88-MS2W7-FP8 --adapters NONE --search /kaggle/input --runner predict --eval-configs configs/flow_e8rw7.json

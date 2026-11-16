@@ -1,0 +1,13 @@
+[
+ {
+  "acc": "caohuyen74",
+  "name": "e8r",
+  "jobs": "automation/jobs/p5/e8r.jobs",
+  "est_h": 2.4,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,caohuyen74/zc-mcs10-1,caohuyen74/zc-mcl-1,caohuyen74/zc-mcj-1",
+   "--no-preflight"
+  ]
+ }
+]

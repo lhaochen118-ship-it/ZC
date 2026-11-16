@@ -345,3 +345,10 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 - 4B làm phán xử (V01 / V02 / C5): luôn kém 9B.
 - Gộp ứng viên nhiều lần chạy rồi **bỏ phiếu** (cùng mô hình 2 seed, hoặc 9B + MoE): ≤ +0.005, thường âm; oracle tăng (946 → 959) nhưng bộ chọn là nút cổ chai.
 - N3-A, N6-A, N7-A, N4-A: không cải thiện (z ≤ 0.7).
+
+### 11.5 Nguyên tắc thí nghiệm "chỉ thay đúng thành phần" (user 16/11 05:30, BẮT BUỘC)
+
+- Fine-tune: so `flow_p5_final` (0.952, 9B + V3A × 0.7 / WL1 / WJR1) với **cùng config** chỉ đổi mô hình lõi + LoRA tương ứng; chế độ H: so `flow_p5_final_h` (0.863). Zero-shot: so cùng framework dùng Qwen3.5-9B gốc với mô hình mới gốc (B00-S ↔ P02), không dùng 0.952 làm mốc zero-shot.
+- Config thí nghiệm phải **sinh từ config baseline bằng code** (copy + update đúng các khoá thay đổi) và in ra danh sách khoá khác baseline trước khi đẩy; mọi điều chỉnh tương thích (định dạng LoRA, template / suy nghĩ, loader, TP / KV để vừa GPU) ghi trong `_doc`.
+- Lỗi đã phạm (15/11): E1–E8 dựng trên framework zero-shot nghiêm (bộ thẻ luật khác, `lrl_regen`, trần phán xử 5400 s) → không quy được hiệu quả cho mô hình; P02T / C3T gộp 3–4 thay đổi một lần. Nhiều thay đổi cùng lúc ⇒ thêm lượt ablation riêng từng thay đổi.
+- Mã mới gọi mô hình merged phải đặt `think_kw` tường minh (T02 lượt 1 hỏng vì template tự suy nghĩ).

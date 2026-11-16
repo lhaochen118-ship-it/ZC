@@ -21,13 +21,29 @@ SCHEMA = {"type": "object", "properties": {"questions": {"type": "array", "minIt
 SYS = "Bạn là chuyên gia phân tích dữ liệu bán hàng. Chỉ trả lời bằng một khối JSON hợp lệ."
 
 
-def prompt(b, tables, rules, api, today, n):
-    return (f"# API TOOLKIT (chỉ được dùng các hàm này, pandas `pd` và bảng `C`)\n{api}\n\n# DỮ LIỆU CỦA CỬA HÀNG {b}\n{tables}\n\n"
+def bank_examples(k=6):
+    """a few checked TRAINING-shop examples (question + program) from the solver's example bank: the program style of the toolkit."""
+    try:
+        rows = [json.loads(l) for l in open(os.path.join(HERE, "refs", "bank", "examples.jsonl"), encoding="utf-8") if l.strip()]
+    except Exception: return ""
+    import lrl
+    hid = lrl.hidden_names()
+    rows = [r for r in rows if r.get("code") and r.get("question") and len(r["code"]) < 400 and not (hid and lrl.mentions(r["code"], hid))]
+    step = max(1, len(rows) // k)
+    return "\n".join(f"- {r['question']}\n  {r['code']}" for r in rows[::step][:k])
+
+
+def prompt(b, tables, rules, api, today, n, ex=""):
+    return (f"# API TOOLKIT (chỉ được dùng các hàm này, pandas `pd` và bảng `C`)\n{api}\n\n"
+            + (f"# VÍ DỤ CHƯƠNG TRÌNH (cửa hàng khác)\n{ex}\n\n" if ex else "") + f"# DỮ LIỆU CỦA CỬA HÀNG {b}\n{tables}\n\n"
             f"# RULEBOOK (thuật ngữ | định nghĩa)\n{rules}\n\n# NHIỆM VỤ (hôm nay = {today})\nViết {n} câu hỏi KHÁC NHAU mà chủ cửa hàng này "
             "có thể nhắn, trả lời được từ dữ liệu ở trên: đa dạng đại lượng (doanh thu, số đơn, khách, sản phẩm, tỉ lệ, xếp hạng, so sánh "
             "hai kỳ, thuật ngữ trong rulebook), đa dạng kỳ (ngày, tuần, tháng, quý, năm, hôm qua, tháng này...), có câu thân mật / viết tắt / "
             "không dấu. Với mỗi câu viết chương trình Python ngắn dùng toolkit, kết thúc bằng ANSWER = {\"type\": ..., \"answer\": ...} "
             "(type: number, list, string, date hoặc percent). JSON: {\"questions\": [{\"question\": \"...\", \"program\": \"...\"}, ...]}")
+
+
+ERR = {}
 
 
 def run_program(sh, today, program, hidden, t=20):
@@ -42,9 +58,10 @@ def run_program(sh, today, program, hidden, t=20):
         try: exec(compile(program, "<t02>", "exec"), g)
         finally: signal.alarm(0); signal.signal(signal.SIGALRM, old)
         a = agent.fmt_answer(g["ANSWER"]) if "ANSWER" in g else None
-    except BaseException: return None
+    except BaseException as e:
+        k = type(e).__name__ + ": " + str(e)[:80]; ERR[k] = ERR.get(k, 0) + 1; return None
     v = (a or {}).get("answer")
-    if a is None or v is None or (isinstance(v, (list, dict, str)) and not v): return None
+    if a is None or v is None or (isinstance(v, (list, dict, str)) and not v): ERR["empty answer"] = ERR.get("empty answer", 0) + 1; return None
     return a
 
 
@@ -65,7 +82,7 @@ def main():
         i, n = map(int, a.shard.split("/")); shops = shops[i::n]
     rb = open(os.path.join(a.split, "rulebook.md"), encoding="utf-8").read()
     rules = "\n".join(f"| {t} | {d[:160]} |" for t, d in hintsmod.rulebook_rows(rb).values())[:3500]
-    api = lrl_gen.api_doc()
+    api = lrl_gen.api_doc(); ex = bank_examples()
     items, convs = [], []
     for b in shops:
         sh = lrl_gen._shop_load(a.split, a.cache, b)
@@ -74,12 +91,13 @@ def main():
         ds = sorted(set(days[b]))
         for k in range(max(1, -(-a.n_per_shop // a.per_call))):         # several calls per shop, each on another question day
             today = ds[(k * 7919) % len(ds)]
-            items.append((b, today)); convs.append([{"role": "system", "content": SYS}, {"role": "user", "content": prompt(b, tables, rules, api, today, a.per_call)}])
+            items.append((b, today)); convs.append([{"role": "system", "content": SYS}, {"role": "user", "content": prompt(b, tables, rules, api, today, a.per_call, ex)}])
     if a.fake_responder:
         g = {}; exec(compile(open(a.fake_responder, encoding="utf-8").read(), a.fake_responder, "exec"), g)
         texts = [g["responder"](c) for c in convs]
     elif convs:
-        sys.argv = [sys.argv[0]]; import agent
+        os.environ["ZC_THINK_KW"] = "explicit"                          # 16/11 t02b: a merged dir (no 'qwen3' in its path) made the
+        sys.argv = [sys.argv[0]]; import agent                          # template THINK (legacy rule): 3000 tokens of thought, no JSON
         eng = agent.Engine(argparse.Namespace(model=a.model, tp=1, max_len=a.max_len, think=False, eager=False, lora="", quant=a.quant,
                                               gpu_util=0.92, max_num_seqs=128, max_batched_tokens=16384, spec_mtp=0, prefix_budget=0))
         seeds = [a.seed + i for i in range(len(convs))]
@@ -88,6 +106,8 @@ def main():
             print(f"[t02] constrained JSON unavailable ({type(e).__name__}: {str(e)[:200]}): unconstrained", flush=True)
             texts = eng.gen(convs, [0.7] * len(convs), seeds, 3000, think=False)[0]
     else: texts = []
+    n_parsed = sum(1 for x in texts if isinstance(lrl_gen.first_json(x), dict))
+    for x in texts[:2]: print(f"[t02] sample output: {str(x)[:600]!r}", flush=True)
     keep, n_gen, seen = [], 0, set()
     for (b, today), t in zip(items, texts):
         j = lrl_gen.first_json(t)
@@ -102,7 +122,8 @@ def main():
     tag = "t02" + (("_" + a.shard.replace("/", "of")) if a.shard else "")
     with open(os.path.join(a.out, f"cards_{tag}.jsonl"), "w", encoding="utf-8") as w:
         for r in keep: w.write(json.dumps(r, ensure_ascii=False, default=str) + "\n")
-    print(f"[t02] {len(keep)} / {n_gen} generated pairs run, {len({r['bid'] for r in keep})} / {len(shops)} shops, {time.time() - t0:.0f}s", flush=True)
+    print(f"[t02] {len(keep)} / {n_gen} generated pairs run, {len({r['bid'] for r in keep})} / {len(shops)} shops, {n_parsed} / {len(texts)} outputs parsed, "
+          f"errors {sorted(ERR.items(), key=lambda kv: -kv[1])[:4]}, {time.time() - t0:.0f}s", flush=True)
 
 
 if __name__ == "__main__":

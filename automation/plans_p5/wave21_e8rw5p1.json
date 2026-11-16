@@ -1,0 +1,13 @@
+[
+ {
+  "acc": "yuan1103",
+  "name": "e8rw5p1",
+  "jobs": "automation/jobs/p5/e8rw5p1.jobs",
+  "est_h": 1.3,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,yuan1103/zc-aw5s1-1,yuan1103/zc-aw5l1-1,yuan1103/zc-aw5j1-1",
+   "--no-preflight"
+  ]
+ }
+]

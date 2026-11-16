@@ -1,0 +1,13 @@
+[
+ {
+  "acc": "huuhien95",
+  "name": "e8rw35p1",
+  "jobs": "automation/jobs/p5/e8rw35p1.jobs",
+  "est_h": 1.3,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,huuhien95/zc-aw35s1-1,huuhien95/zc-aw35l1-1,huuhien95/zc-aw35j1-1",
+   "--no-preflight"
+  ]
+ }
+]

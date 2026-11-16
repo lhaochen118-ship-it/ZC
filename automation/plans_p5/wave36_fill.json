@@ -1,0 +1,47 @@
+[
+ {
+  "acc": "duckzuykobip",
+  "name": "pgq3",
+  "jobs": "automation/jobs/p5/pgq3.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "duckzuykobip/zc-pad",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "anderson1202",
+  "name": "c6tq1",
+  "jobs": "automation/jobs/p5/c6tq1.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "anderson1202/zc-ad3",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "mxuanquy",
+  "name": "c6tq3",
+  "jobs": "automation/jobs/p5/c6tq3.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "mxuanquy/zc-ad3",
+   "--no-preflight"
+  ]
+ }
+]

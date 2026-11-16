@@ -1,5 +1,9 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
+**16/11 10:45 UTC (khung chat mới):** pver = **0.987** (P tái lập được). Chuỗi MoE dựng lại (container cũ mất `Process/runs/p5/`): đánh giá
+e8rw5p0/p1, e8rw35p0/p1 chạy; gộp am3l0 / am3j1 và huấn luyện ftc3 đẩy lại (STALE CODE); ftc2 đang huấn luyện → chuỗi `after_cont.sh` tự gộp + đánh giá.
+Bản nộp không đổi (0.952).
+
 **16/11 10:15 UTC — bàn giao:** bản nộp `Docker_submission/` (0.952) và `0.994_Docker_submission/` (P); việc đang chạy + bước tiếp: PDF 3 §3, §5; khởi động lại chuỗi: `Process/kaggle/p5_chains.txt`.
 
 **16/11 09:00 (user): bản nộp = `configs/flow_p5_final.json` (framework 0.952) + `Docker_submission/submission.jsonl` (D1, PA 0.952); Docker `Docker_submission/` mặc định cấu hình này.**

@@ -65,7 +65,7 @@ Giải nén public test sao cho một thư mục chứa `questions.jsonl`, `rule
   `result_public/logs/run.log`: log tổng (các pha: thẻ luật W1 → hàm cửa hàng → link → giải → phán xử).
 - Thời gian tham chiếu: ~40–70 phút trên Kaggle 4 × L4 cho 1000 câu; máy chấm 2 × RTX 5090 dự kiến tương đương hoặc nhanh hơn.
   Ngân sách mặc định 5 h 40 phút (`BUDGET=20400`), tự dừng các pha còn lại khi gần hết giờ.
-- Điểm public kỳ vọng ~0.99 (lượt gốc 0.994; kiểm chứng lại bằng mã hiện tại: xem `docs/19_PLAN_P5_ZS.md`, lượt `pver`). Lệch quá ±0.03 → kiểm `run.log` (dòng `units: rc=[...]`, `links: rc=[...]`,
+- Điểm public kỳ vọng ~0.99 (lượt gốc 0.994; **kiểm chứng lại bằng mã hiện tại, lượt `pver` `duckzuykobip/zc-pver-1` 16/11: 0.987** = 992 đúng / 3 bỏ / 5 sai, đánh giá 1166 s trên 4 × L4 → tái lập được trong ± 0.03). Lệch quá ±0.03 → kiểm `run.log` (dòng `units: rc=[...]`, `links: rc=[...]`,
   `judge: ...`) trước khi nộp.
 
 ## 5. Xuất file nộp

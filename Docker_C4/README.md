@@ -57,4 +57,4 @@ log ở `result_public/logs/`. Thời gian tham chiếu ~70–110 phút cho 1000
 scripts/export_image.sh datamate:latest datamate_solution.tar.gz
 ```
 
-Upload `datamate_solution.tar.gz`, gửi link cùng nội dung file `.sha256` theo hướng dẫn nộp của BTC.
+Upload `datamate_solution.tar.gz`, gửi link cùng **checksum MD5** (nội dung file `datamate_solution.tar.gz.md5`, tạo sẵn bởi script) theo hướng dẫn nộp của BTC. Tự kiểm lại: `md5sum datamate_solution.tar.gz`.

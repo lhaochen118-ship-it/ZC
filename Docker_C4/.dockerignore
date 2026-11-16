@@ -1,0 +1,5 @@
+models/_dl
+result_*
+*.tar.gz
+*.md5
+**/__pycache__

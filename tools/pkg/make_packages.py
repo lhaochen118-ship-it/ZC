@@ -140,9 +140,10 @@ echo "answers: $(wc -l < "$RESULT/submission.jsonl") -> $RESULT/submission.jsonl
 set -euo pipefail
 TAG=${1:-datamate:latest}; OUT=${2:-datamate_solution.tar.gz}
 docker save "$TAG" | gzip -1 > "$OUT"
-sha256sum "$OUT" | tee "$OUT.sha256"
+md5sum "$OUT" | tee "$OUT.md5"
 ls -lh "$OUT"
 """
+    out[".dockerignore"] = "models/_dl\nresult_*\n*.tar.gz\n*.md5\n**/__pycache__\n"
     out["README_SOLUTION.md"] = solution_readme(name, v)
     out["README.md"] = guide(name, v)
     return out
@@ -256,7 +257,7 @@ log ở `result_public/logs/`. Thời gian tham chiếu ~70–110 phút cho 1000
 scripts/export_image.sh datamate:latest datamate_solution.tar.gz
 ```
 
-Upload `datamate_solution.tar.gz`, gửi link cùng nội dung file `.sha256` theo hướng dẫn nộp của BTC.
+Upload `datamate_solution.tar.gz`, gửi link cùng **checksum MD5** (nội dung file `datamate_solution.tar.gz.md5`, tạo sẵn bởi script) theo hướng dẫn nộp của BTC. Tự kiểm lại: `md5sum datamate_solution.tar.gz`.
 """
 
 

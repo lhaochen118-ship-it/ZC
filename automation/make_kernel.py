@@ -40,7 +40,10 @@ if os.path.isdir(os.path.join(ROOT, "training")):
     shutil.copytree(os.path.join(ROOT, "training"), os.path.join(stage, "training"), ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "out"))
     for d in TRAIN_DATA:
         src_d = os.path.join(ROOT, "training", "data", "out", d)
-        if os.path.isdir(src_d): shutil.copytree(src_d, os.path.join(stage, "training", "data", "out", d))
+        def _link(s, t):                                                 # 16/11: hard links (a 3.4 GB adapter dir copied per
+            try: os.link(s, t)                                           # launch filled the disk 3 times); copy across filesystems
+            except OSError: shutil.copy2(s, t)
+        if os.path.isdir(src_d): shutil.copytree(src_d, os.path.join(stage, "training", "data", "out", d), copy_function=_link)
         else: sys.exit(f"--train-data {d}: no directory {src_d}")
 if os.path.isdir(os.path.join(ROOT, "configs")): shutil.copytree(os.path.join(ROOT, "configs"), os.path.join(stage, "configs"))
 if os.path.isdir(os.path.join(ROOT, "tests", "splits")):               # evaluation set ids (src/eval_flow.py reads refs/splits)
@@ -56,6 +59,15 @@ if "--no-upload" not in sys.argv:                                       # prefli
     exists = subprocess.run(["kaggle", "datasets", "status", CODE_DS], capture_output=True, text=True).stdout.strip().lower() == "ready"
     cmd = (["kaggle", "datasets", "version", "-p", stage, "-m", "update"] if exists else ["kaggle", "datasets", "create", "-p", stage]) + ["-r", "zip", "-q"]
     r = subprocess.run(cmd, capture_output=True, text=True); print("code dataset:", (r.stdout + r.stderr).strip().splitlines()[-1:])
+    # 16/11: a kernel pushed while the new version was still being processed mounted the previous one (STALE CODE, 5 merges lost,
+    # worst with a 3 GB --train-data): wait until Kaggle reports the dataset ready again, then a short grace period
+    import time as _t
+    _t0 = _t.time(); _t.sleep(20)
+    while _t.time() - _t0 < 900:
+        st = subprocess.run(["kaggle", "datasets", "status", CODE_DS], capture_output=True, text=True).stdout.strip().lower()
+        if st == "ready": break
+        _t.sleep(15)
+    _t.sleep(45); print(f"code dataset ready after {_t.time() - _t0:.0f}s", flush=True)
 
 # --- 2. kernel
 runner = r'''

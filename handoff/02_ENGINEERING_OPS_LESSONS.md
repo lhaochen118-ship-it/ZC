@@ -355,3 +355,14 @@ bài học thành công / thất bại. Kết quả khoa học ở PDF 1; trạn
 - 16/11 05:27: 2 kernel gộp LoRA MoE (CPU) chạy qua `fanout.py` **không đặt `ZC_OUT_PATTERN`** → tải về 2 × 15 GB trọng số, đĩa container đầy, `launch_many` của e7rw7 hỏng khi đóng gói code (`shutil.Error ... No space left`). Sửa: xoá trọng số đã tải, attach lại các kernel gộp còn lại với `ZC_OUT_PATTERN='.*\.(log|json)$'`, đẩy lại e7rw7. **Quy tắc: mọi kernel sinh trọng số (stage / merge / train) phải đẩy với `ZC_OUT_PATTERN`; sau mỗi đợt kiểm `df -h`.**
 - 16/11 fts3: LoRA trên tham số expert hợp nhất (PEFT `target_parameters` → `ParamWrapper`) **bắt buộc `lora_dropout = 0`**; test CPU dùng mặc định nên lọt, mất 18 phút GPU + 1 lần đẩy. Quy tắc: test CPU phải dựng `LoraConfig` **đúng như mã huấn luyện** (cùng `target_modules`, dropout, r, alpha), không dùng cấu hình rút gọn.
 - 16/11 ~08:00: worker phiên khởi động lại lần nữa → mọi `run_kernel.py`, `watch_loop`, `after_*.sh` chết (kernel trên Kaggle vẫn chạy). Phát hiện muộn vì log `after_*` trống. Sửa: attach lại từng kernel (`run_kernel.py ... --attach`, `ZC_OUT_PATTERN` loại trọng số), bật lại watch loop + chuỗi. Đồng thời `after_merges.sh` coi `DONE:error` là xong → đẩy rsl khi chưa có mô hình ML1 (đã xoá kernel, sửa: chỉ chạy tiếp khi `DONE:complete`). **Quy tắc: mỗi lần kiểm tra định kỳ chạy `pgrep -af "run_kernel|after_|watch_loop"` và so với danh sách kernel đang chạy.**
+
+### 11.6 Kỹ thuật dùng lại (P5)
+
+- **Hoán đổi vai trò rẻ:** đổi riêng bộ phán xử = chạy `soup_job --runner judge` trên log ứng viên có sẵn (~1 h thay vì 2 h); log
+  đặt trong `training/data/out/<dir>` + `--train-data <dir>`. `w_base` (config) gộp LoRA W vào base 9B khi bộ giải là mô hình khác.
+- **Chia đánh giá theo cửa hàng:** `run_kaggle.py public_test@i/n` (cân bằng số câu, symlink dữ liệu) → n kernel trên n acc, ghép 2 file.
+- **MoE trên L4:** cắt bf16 trong kernel (`stage_hf.py --src-dir`), FSDP2 4 GPU, `grouped_mm` mb 4: 1.78–2.2k tok/s (LoRA thường),
+  1.38k tok/s (LoRA cả expert, dropout 0); phục vụ: gộp vào FP8 chính thức (`merge_fp8.py`), mô hình W chép sang `/tmp/models` một lần.
+- **Docker nộp:** `Docker submission/` — thư mục mô hình phục vụ không được chứa "qwen3" (giữ hành vi suy nghĩ của mọi lượt đã chấm).
+- **Chuỗi tự động** (`Process/tools/p5/after_*.sh`): chỉ chạy bước sau khi bước trước `DONE:complete`; tự thử lại STALE CODE (dataset code
+  lớn xử lý chậm: đợi 3 phút rồi đẩy lại); mọi kernel sinh trọng số đẩy với `ZC_OUT_PATTERN`.

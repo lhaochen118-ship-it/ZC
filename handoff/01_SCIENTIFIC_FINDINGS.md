@@ -1,4 +1,4 @@
-# PDF 1 — Scientific Findings (DataMate, đến 15/11/2026)
+# PDF 1 — Scientific Findings (DataMate, đến 16/11/2026)
 
 *Phạm vi: đóng góp, ý nghĩa khoa học, kết quả tích cực và tiêu cực, bằng chứng, điều kiện kiểm chứng. Kinh nghiệm kỹ thuật /
 vận hành ở PDF 2; trạng thái / vị trí / việc tiếp theo ở PDF 3 và `handoff/STATUS.md`. Số liệu: `Process/scores.csv` (kế hoạch 1–2),
@@ -215,3 +215,45 @@ ví dụ I3 (hiện ≤ 23) để thử thật; mô hình viết hàm mạnh hơ
 | Tỉ lệ đúng khi gọi hàm, theo hàm | `Process/tools/v2/unit_use.py`, `unit_use2.py`, `unit_final.py` trên `Process/runs/v2/<run>/` (giải nén) |
 | Lỗi gộp | `Process/runs/v2/h0a/h0a/flow_p5_final_h/submission.jsonl.gz` vs `judge/ensemble/submission.jsonl.gz` |
 | Đóng góp của hàm | phnou vs H0a (ghép cặp, `grid_report.py`) |
+
+## 10. Kế hoạch P5 — zero-shot, thay mô hình lõi, ghép component (15/11 08:00 → 16/11 09:00; `docs/19_PLAN_P5_ZS.md`, `docs/21_COMBO_PLAN.md`)
+
+Giao thức: public 1000 câu, đường container (`predict_flow`), **ghép cặp từng câu** (z) với baseline đúng loại. Zero-shot: B00-S
+(Qwen3.5-9B gốc, chế độ H) 0.753 / 0.755. Tinh chỉnh: F = `flow_p5_final` (D1 0.951, C0L 0.942); F_H = `flow_p5_final_h` (0.863, 0.863,
+0.858, 0.857 — nhiễu giữa lượt ±0.003, nên ngưỡng "tốt hơn" ≈ z ≥ 2).
+
+### 10.1 Đóng góp / kết quả tích cực
+
+| Phát hiện | Bằng chứng |
+|---|---|
+| **Tỉa expert theo saliency trên prompt của chính tác vụ** (REAP tự tính trên DN train) giữ được năng lực khi đưa MoE 35B-A3B xuống ≤ 15B | E88 (13.96B) zero-shot 0.781 / 0.777 (z 2.3 / 2.0 vs B00-S); E92 0.773; REAP-64 cộng đồng (tỉa trên dữ liệu chung) 0.429 — sụp |
+| **Suy nghĩ trước khi viết chương trình** là đòn bẩy zero-shot lớn nhất | B00T 0.805 (+0.051, z 4.7); hành vi này nằm ẩn trong template (không truyền `enable_thinking` ⇒ suy nghĩ) và giải thích C0 0.921 vs 0.952 |
+| **Phán xử không trần thời gian** giúp mô hình gốc | S01 0.776 (+0.023, z 2.8); với mô hình tinh chỉnh không áp dụng (phán xử xong trong trần) |
+| **Gộp LoRA vào checkpoint block-FP8** (khử lượng tử → +ΔW → lượng tử lại 128×128) và **LoRA trên expert hợp nhất của MoE** dùng được | sai số tương đối ≤ 0.011; ΔW gộp khớp PEFT (cos ≥ 0.996); 250 module / adapter |
+| **Bộ phán xử MoE ngang 9B** trên cùng ứng viên | jsj (S/L 9B, J = E88+MJ2) 0.945 vs D1 0.951 (z −0.7), vs C0L +0.003 |
+
+### 10.2 Kết quả tiêu cực và hạn chế
+
+| Kết quả | Bằng chứng | Ý nghĩa |
+|---|---|---|
+| **MoE + LoRA thua 9B + LoRA khi mọi thành phần khác giữ nguyên** | e7rw7 (F, chỉ thay mô hình + 3 LoRA) 0.927 (vs D1 z −2.1); e8rw7 (F_H) 0.836 (vs H0a z −2.8; phán xử MoE bị cắt ở trần 1800 s) | lợi thế zero-shot của E88 (+0.025) không còn sau tinh chỉnh; LoRA chỉ trên attention + shared expert (routed experts đóng băng) |
+| Điểm yếu của MoE nằm ở **bộ giải / link**, không ở phán xử | jsq (S/L MoE, J = 9B+WJR1) 0.929 ≈ e7rw7 0.927 | cải thiện MoE phải nhắm bộ giải (MS3: LoRA cả expert — đang đo) |
+| Các E-series đầu (E1–E8) **không đo được hiệu quả mô hình** | dựng trên framework zero-shot (bộ thẻ luật khác, `lrl_regen`, trần 5400 s) | ~1/3 khoảng cách E7 cũ do framework lệch; bài học phương pháp (PDF 2 §11.5) |
+| Không component nào cải thiện F_H có ý nghĩa | T01 0.857 / 0.860; Q01 BF16 0.867 / 0.854 (×2 thời gian); N4-A 0.848; T02 (ví dụ tự sinh, kiểm vòng) 0.777; gộp ứng viên 2–3 lượt rồi phán xử 0.854–0.863 (oracle 946 → 959 nhưng bộ chọn không khai thác) | nút cổ chai là **chọn ứng viên**, không phải sinh ứng viên |
+| Kiểm tra trung lập trên chương trình (N1-A chạy lại, N7-A chứng chỉ đơn vị, N3-A phản ví dụ, N6-A SQL thứ hai) | 0 câu đổi / 0.722–0.751 (âm) | mô hình gốc đặt đơn vị không nhất quán (60 % chứng chỉ bị cờ); SQL độc lập kém pandas |
+| 4B làm phán xử, Qwen3-14B / 4B làm lõi, I02 (grammar ràng buộc) | 0.715–0.769; 0.709 / 0.717; 0.675 (337 phút) | đổi lõi đặc không giúp; ràng buộc grammar CPU-bound |
+| Tổ hợp lai 9B + MoE (mỗi vai trò một backbone) | ≈ 23B tham số | **vi phạm giới hạn 15B** — chỉ dùng chẩn đoán |
+
+### 10.3 Ý nghĩa khoa học
+
+- Ưu thế zero-shot của một backbone (tỉa MoE theo tác vụ) **không dự báo** ưu thế sau tinh chỉnh LoRA cùng công thức: LoRA trên 9B đặc
+  phủ toàn bộ tham số tuyến tính, còn trên MoE chỉ phủ phần dùng chung; so sánh công bằng phải giữ nguyên framework và chỉ đổi lõi.
+- Hành vi ẩn của template (suy nghĩ mặc định) là một biến số lớn hơn nhiều thay đổi phương pháp (+0.03–0.05); mọi thí nghiệm phải
+  cố định nó tường minh.
+- Với hệ đã có oracle ~95 %, thêm ứng viên (nhiều lượt, nhiều mô hình) không tăng điểm nếu bộ chọn không đổi.
+
+### 10.4 Điều kiện kiểm chứng
+
+Cấu hình, job, log và bảng điểm: `configs/flow_*` (`_doc` ghi điều chỉnh tương thích), `automation/jobs/p5/`, `Process/runs/p5_results/`,
+`Process/scores_p5zs.csv`; ghép cặp bằng `Process/tools/p5/jscore.py` (vs H0a / H0a2) hoặc đoạn mã trong `docs/19`. Kiểm gộp FP8:
+`tests/test_merge_fp8_experts.py`, `Process/tools/p5/test_expert_lora_layout.py`. Đang chờ: MS3 (LoRA cả 88 expert) trên F_H, e8r.

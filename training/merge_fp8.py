@@ -61,15 +61,34 @@ def main():
     scale = a.weight * float(cfg.get("lora_alpha", 16)) / (math.sqrt(r) if cfg.get("use_rslora") else r)
     if cfg.get("use_dora") or cfg.get("modules_to_save"): sys.exit("[merge_fp8] DoRA / modules_to_save adapters are not supported")
     sd = load_file(os.path.join(ad, "adapter_model.safetensors"))
-    pairs = {}
+    pairs, xp = {}, {}
     for k, v in sd.items():
+        if "visual" in k or "mtp" in k: continue
+        m = re.search(r"layers\.(\d+)\.mlp\.experts(\.base_layer)?\.lora_([AB])(?:\.default)?\.weight$", k)
+        if m:                                                           # 16/11 MS3: LoRA on the fused routed experts (PEFT target_parameters)
+            xp.setdefault((int(m.group(1)), m.group(2) or ""), {})[m.group(3)] = v.float(); continue
         m = re.search(r"layers\.(\d+)\.(.+)\.lora_([AB])(?:\.default)?\.weight$", k)
-        if not m or "visual" in k or "mtp" in k: continue
+        if not m: continue
         pairs.setdefault(f"model.language_model.layers.{m.group(1)}.{m.group(2)}.weight", {})[m.group(3)] = v.float()
-    print(f"[merge_fp8] {len(pairs)} LoRA modules from {ad} (scale {scale:.3f})", flush=True)
+    deltas = {n: (lambda p=p: scale * (p["B"] @ p["A"])) for n, p in pairs.items()}
+    if xp:
+        tc = json.load(open(os.path.join(dst, "config.json"))); tc = tc.get("text_config", tc)
+        I, E, r = int(tc["moe_intermediate_size"]), int(tc["num_experts"]), int(cfg.get("r", 8))
+        for (L, _), ab in xp.items():
+            A, B = ab["A"], ab["B"]                                     # A: (E*r, in) expert blocks; B: (out, r*E) expert-strided
+            if A.shape[0] != E * r: sys.exit(f"[merge_fp8] layer {L}: expert LoRA A {tuple(A.shape)} != {E} experts x r {r}")
+            fused = B.shape[0] == 2 * I                                 # gate_up_proj (out 2I: gate rows then up rows) or down_proj
+            for e in range(E):
+                pre = f"model.language_model.layers.{L}.mlp.experts.{e}."
+                d = lambda A=A, B=B, e=e: scale * (B[:, e::E] @ A[e * r:(e + 1) * r])   # = PEFT ParamWrapper.get_delta_weight
+                if fused:
+                    deltas[pre + "gate_proj.weight"] = (lambda d=d: d()[:I]); deltas[pre + "up_proj.weight"] = (lambda d=d: d()[I:])
+                else: deltas[pre + "down_proj.weight"] = d
+        print(f"[merge_fp8] expert LoRA on {len(xp)} fused expert tensors ({E} experts, I {I}, r {r})", flush=True)
+    print(f"[merge_fp8] {len(pairs)} LoRA modules + {len(deltas) - len(pairs)} expert matrices from {ad} (scale {scale:.3f})", flush=True)
     idx = json.load(open(os.path.join(dst, "model.safetensors.index.json")))["weight_map"]
     by_file = {}
-    for name in pairs:
+    for name in deltas:
         if name not in idx: sys.exit(f"[merge_fp8] {name} not in the FP8 checkpoint")
         by_file.setdefault(idx[name], []).append(name)
     done, maxerr = 0, 0.0
@@ -86,8 +105,7 @@ def main():
             q = torch.frombuffer(bytearray(qn[3]), dtype=torch.float8_e4m3fn).reshape(qn[2])
             sdt = {"F32": torch.float32, "BF16": torch.bfloat16, "F16": torch.float16}[sn[1]]
             s = torch.frombuffer(bytearray(sn[3]), dtype=sdt).reshape(sn[2])
-            A, B = pairs[n]["A"], pairs[n]["B"]
-            W = dequant(q, s) + scale * (B @ A)
+            W = dequant(q, s) + deltas[n]()
             q2, s2 = block_quant(W)
             maxerr = max(maxerr, float((dequant(q2, s2) - W).abs().max() / (W.abs().max() + 1e-12)))
             qn[3] = q2.contiguous().view(torch.uint8).numpy().tobytes(); sn[3] = s2.to(sdt).contiguous().view(torch.uint8).numpy().tobytes() \
@@ -97,7 +115,7 @@ def main():
     c = json.load(open(os.path.join(dst, "config.json"))); c["_lora_merged"] = {"adapter": a.adapter, "weight": a.weight, "modules": done}
     json.dump(c, open(os.path.join(dst, "config.json"), "w"), indent=2)
     print(f"[merge_fp8] {done} modules merged into {dst}; max relative requantisation error {maxerr:.4f}; {time.time() - t0:.0f}s", flush=True)
-    if done != len(pairs): sys.exit("[merge_fp8] not every LoRA module was merged")
+    if done != len(deltas): sys.exit("[merge_fp8] not every LoRA module was merged")
 
 
 if __name__ == "__main__":

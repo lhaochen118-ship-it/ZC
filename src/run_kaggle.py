@@ -55,7 +55,32 @@ if TRAIN and not NO_VLLM:
         print("pip (train)", pk, "->", r.returncode, (r.stdout + r.stderr).strip()[-200:], flush=True)
 print(f"setup {time.time() - t:.0f}s", flush=True)
 data = os.environ["ZC_DATA"]
-split = next(d for d in glob.glob(os.path.join(data, "**", sys.argv[1]), recursive=True) if os.path.isfile(os.path.join(d, "questions.jsonl")))
+def split_part(src, part):
+    """16/11: <split>@i/n = the shops of part i of n (greedy balance by question count, most questions first): a split directory in
+    /tmp with the part's questions and every other file / shop linked, so one evaluation runs as n kernels on n accounts."""
+    i, n = map(int, part.split("/"))
+    qs = [l for l in open(os.path.join(src, "questions.jsonl"), encoding="utf-8") if l.strip()]
+    cnt = {}
+    for l in qs: b = json.loads(l)["business_id"]; cnt[b] = cnt.get(b, 0) + 1
+    bins = [[0, set()] for _ in range(n)]
+    for b in sorted(cnt, key=lambda b: (-cnt[b], b)):
+        k = min(range(n), key=lambda j: (bins[j][0], j)); bins[k][0] += cnt[b]; bins[k][1].add(b)
+    keep = bins[i][1]; dst = f"/tmp/split_part_{i}of{n}"; os.makedirs(os.path.join(dst, "data"), exist_ok=True)
+    for x in os.listdir(src):
+        if x in ("questions.jsonl", "data"): continue
+        if not os.path.exists(os.path.join(dst, x)): os.symlink(os.path.join(src, x), os.path.join(dst, x))
+    for b in keep:
+        if not os.path.exists(os.path.join(dst, "data", b)): os.symlink(os.path.join(src, "data", b), os.path.join(dst, "data", b))
+    with open(os.path.join(dst, "questions.jsonl"), "w", encoding="utf-8") as w:
+        for l in qs:
+            if json.loads(l)["business_id"] in keep: w.write(l if l.endswith("\n") else l + "\n")
+    print(f"split part {part}: {len(keep)} shops, {bins[i][0]} questions -> {dst}", flush=True)
+    return dst
+
+
+_sp, _part = (sys.argv[1].split("@", 1) + [""])[:2]
+split = next(d for d in glob.glob(os.path.join(data, "**", _sp), recursive=True) if os.path.isfile(os.path.join(d, "questions.jsonl")))
+if _part: split = split_part(split, _part)
 out = sys.argv[2]
 args = [x for x in sys.argv[3:] if x != "--train"]
 def copy_verified(src, dst, hashes):

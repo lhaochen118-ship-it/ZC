@@ -147,7 +147,10 @@ def main():
     if rank == 0:
         print(f"[sft] {type(model).__name__} loaded in {time.time() - t0:.0f}s; missing {len(info.get('missing_keys', []))} "
               f"{list(info.get('missing_keys', []))[:5]}; unexpected {len(info.get('unexpected_keys', []))}", flush=True)
-    lcfg = LoraConfig(r=a.r, lora_alpha=a.alpha, lora_dropout=a.dropout, target_modules=LM_TARGET, bias="none", task_type="CAUSAL_LM")
+    xt = ["mlp.experts.gate_up_proj", "mlp.experts.down_proj"] if os.environ.get("ZC_LORA_EXPERTS", "0") == "1" else []   # 16/11 MS3: the
+    lcfg = LoraConfig(r=a.r, lora_alpha=a.alpha, lora_dropout=a.dropout, target_modules=LM_TARGET, bias="none", task_type="CAUSAL_LM",   # routed
+                      **({"target_parameters": xt} if xt else {}))      # experts too (PEFT ParamWrapper on the fused 3-D expert tensors)
+    if xt and rank == 0: print(f"[sft] LoRA also on the routed experts: {xt}", flush=True)
     total = a.max_steps if a.max_steps > 0 else math.ceil(math.ceil(len(recs) / (a.mb * world * ga)) * a.epochs)
     want = dict(output_dir=a.ckpt_dir or a.out, per_device_train_batch_size=a.mb, gradient_accumulation_steps=ga, learning_rate=a.lr,
                 num_train_epochs=a.epochs, max_steps=a.max_steps, lr_scheduler_type="cosine", warmup_steps=max(1, int(a.warmup * total)),

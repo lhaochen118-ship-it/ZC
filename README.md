@@ -15,7 +15,7 @@ Agent trả lời câu hỏi tiếng Việt trên dữ liệu bảng bẩn (CSV,
 | Path | Nội dung |
 |---|---|
 | `handoff/` | Bàn giao: `00_READ_ME_FIRST.md` (cách đọc + việc tiếp theo), `01_SCIENTIFIC_FINDINGS`, `02_ENGINEERING_OPS_NOTES`, `03_HANDOFF` (bản md + pdf), `RUNNING_KERNELS.md` |
-| `docs/` | `00_TASK.md` (đề + dữ liệu), `01_PLAN.md` (kế hoạch, tổng quan paper), `02_KAGGLE_OPS.md` (acc, assets, lệnh), `03_WORKFLOW.md` (quy trình + nguyên tắc của user), `RESEARCH_WORKFLOW_original.pdf` (prompt quy trình gốc) |
+| `docs/` | `00_TASK.md` (đề + dữ liệu), `01_PLAN.md` (kế hoạch, tổng quan paper), `02_KAGGLE_OPS.md` (acc, assets, lệnh), `03_WORKFLOW.md` (quy trình + nguyên tắc của user), `04_RELATED_WORK.md` (bài toán tương tự, khó khăn, phương pháp, literature), `RESEARCH_WORKFLOW_original.pdf` (prompt quy trình gốc) |
 | `src/` | Chạy trên Kaggle / Docker. `ingest.py` (làm sạch tổng quát), `agent.py` (pipeline LLM), `score.py` (bộ chấm đúng luật), `analyze.py` (phân tích log), `run_kaggle.py` (job Kaggle), `harvest.py` + `train_sft.py` (fine-tune) |
 | `tests/` | `test_ingest_robust.py` (12 biến thể dữ liệu bẩn tổng hợp), `test_agent_local.py` (pipeline đầu-cuối không GPU) |
 | `automation/` | `fanout.py`, `make_kernel.py`, `run_kernel.py` (chạy Kaggle), `watch_done.py` (báo khi kernel xong), `pull_kernels.py`, `resume.py`, `reattach.py`, `publish_dataset.py`, `md2pdf.py` |

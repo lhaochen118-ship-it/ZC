@@ -1,0 +1,13 @@
+[
+ {
+  "acc": "thnliu",
+  "name": "e8rw35p0",
+  "jobs": "automation/jobs/p5/e8rw35p0.jobs",
+  "est_h": 1.3,
+  "args": [
+   "--ks",
+   "nhatlong1103/zc-assets,thnliu/zc-aw35s0-1,thnliu/zc-aw35l0-1,thnliu/zc-aw35j0-1",
+   "--no-preflight"
+  ]
+ }
+]

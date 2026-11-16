@@ -1,0 +1,800 @@
+Z A L O  A I  C H A L L E N G E  2 0 2 6  /  D A T A M A T E
+UNIFIED
+EXECUTION
+PLAN — P5
+Baseline chính: P5 ZERO-SHOT
+Qwen pretrained tự sinh luật nghiệp vụ
+Không lấy score fine-tuned làm baseline.
+Zero-shot first Expert pruning Kaggle × L4
+CHƯA ĐO
+Baseline score P5 zero-shot
+0.952
+P5 tuned — reference D1
+27
+Biến thể / 14 nhóm
+15 November 2026 • Cấu hình xuất phát: configs/flow_p5_final.json
+V3A × 0.70 + WL1 + WJR1 (tuned reference) • Quy tắc nghiệp vụ do Qwen tự sinh
+Mục lục
+14 phần: baseline zero-shot P5, kiểm toán luật, 27 biến thể, GPU, scheduling, risks và checklist.
+1. Quyết định thiết kế và nguyên tắc không thể thay đổi
+2. Hiện trạng framework và cách đọc các score
+3. Gate 0: kiểm chứng P5 và đo zero-shot trên D1
+4. Thiết kế đánh giá chung và cổng ra quyết định
+5. Tổng danh mục: 14 nhóm / 27 biến thể có chọn lọc
+6. Triển khai chi tiết 14 nhóm thí nghiệm
+7. Công thức dự toán thời gian và cách hiệu chuẩn benchmark
+8. Phân bổ 5 accounts × 2 sessions × 4 L4 — scheduling thực tế
+9. Kaggle CLI, bảo mật credentials, quotas và tự động hóa
+10. Risk register
+11. Artifacts cần thu về từ mỗi thí nghiệm
+12. Thứ tự thực thi được phép và đề xuất kết thúc
+13. Tài liệu tham khảo và độ tin cậy
+14. Kiểm toán triển khai: nguồn gốc luật và tính tổng quát hóa
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 02
+Bản hợp nhất cuối: Phương pháp nghiên cứu (Claude, 18 trang) + execution_plan_0 (14 trang)
+Ngày biên soạn: 15/11/2026 (GMT+7)
+Cấu hình nguồn để tạo baseline: configs/flow_p5_final.json — bản đã fine-tune V3A × 0.70 + WL1 + WJR1, score 0.952 trên
+D1. Baseline CHÍNH của kế hoạch là ZERO_SHOT_P5_STRICT (chưa đo), tức giữ framework P5 nhưng dùng Qwen pretrained 
+không fine-tune, tự sinh luật mới.
+Mục tiêu: Trước tiên tìm/đo ZERO_SHOT_P5_STRICT; dùng score zero-shot đó làm mốc cho mọi so sánh zero-shot thuộc 14 nhóm/
+27 biến thể. Score 0.952 của P5 fine-tuned chỉ là mốc tham khảo thứ cấp, không phải baseline đánh giá hướng zero-shot.
+Tình trạng: Tài liệu hợp nhất và thiết kế kế hoạch; chưa kiểm toán commit P5, chưa xác minh score zero-shot, chưa chạy
+GPU mới trong lượt hợp nhất này.
+Quy tắc ghi đè quan trọng nhất: configs/flow_p5_final.json (V3A × 0.70 + WL1 + WJR1; score 0.952 D1) chỉ xác định 
+kiến trúc, luồng và mốc tuned reference. Phải tạo bản sao zero-shot của chính cấu hình P5, vô hiệu hóa mọi task-fine-
+tuned weights được dùng trong đường suy luận, để Qwen pretrained tự sinh luật từ ngữ cảnh. Score chạy zero-shot thực
+đo — không phải 0.952 — mới là baseline chính thức để xếp hạng tất cả phương án zero-shot. Các mốc O/WG1 lịch
+sử không thay thế baseline.
+1. Quyết định thiết kế và nguyên tắc không thể thay đổi
+1.1. Baseline chính: P5 zero-shot, không phải P5 đã fine-tune hay cấu hình O
+BASELINE_ZS_P5_D1 = score(ZERO_SHOT_P5_STRICT) mới là BASELINE CHÍNH, ban đầu CHƯA ĐO; tìm log tương ứng trước, nếu
+không có thì chạy lại trên D1. Đây là score dùng trực tiếp để tính gain của các hướng zero-shot.
+BEST_P5_TUNED_D1 = 0.952 (V3A × 0.70 + WL1 + WJR1) là TUNED_REFERENCE, không phải baseline chính. Chỉ dùng để đánh
+giá khoảng cách với giải pháp tốt nhất khi cùng tập câu/evaluator/seed. Cần lưu commit/checkpoint/config hashes và per-
+case outputs.
+ZERO_SHOT_P5_STRICT = CHƯA ĐO: phải để Qwen gốc tự sinh mọi luật nghiệp vụ theo đầu vào hiện thời, không tái sử dụng
+luật đã được fine-tuned Qwen tạo sẵn nếu chúng truyền tri thức từ checkpoint tuned sang zero-shot.
+ZERO_SHOT_P5_BACKBONE_ABLATION = CHƯA ĐO: chỉ tắt trọng số fine-tuned cần thiết, giữ cùng những artifact tự sinh (nếu có) để
+tách ảnh hưởng của backbone; không gọi đây là zero-shot end-to-end thuần.
+Nếu P5 có nhiều neural components, kiểm kê từng thành phần V3A, WL1, WJR1: chúng là adapter , model, workflow hay
+artifacts? Không đoán từ tên. Zero-shot nghiêm ngặt phải vô hiệu hóa weights đã fine-tuned/huấn luyện riêng tương ứng
+và bảo đảm rule generation vẫn do Qwen gốc thực hiện.
+Mọi model swap phải dựa trên một bản sao bất biến của P5. Giữ nguyên cấu hình O như tư liệu lịch sử nhưng không sử
+dụng O để chọn model.
+1.2. Nghiêm cấm luật nghiệp vụ viết tay
+Nguyên tắc dự án được người dùng xác nhận: Không sử dụng các luật nghiệp vụ, bộ quyết định chọn hàm hay mapping câu
+hỏi → đáp án được con người viết sẵn. Hệ thống phải có khả năng hiểu và suy luận luật mới, doanh nghiệp mới, schema mới,
+dựa trên nội dung mà model Qwen tự tạo khi nhận ngữ cảnh.
+Được giữ nếu trung lập với nghiệp vụ: tải CSV/Excel, chuẩn hóa định dạng kỹ thuật, kiểm cú pháp Python/SQL/JSON, sandbox
+permissions, schema introspection, thực thi toán học/SQL, kiểm type cơ bản, kiểm lỗi API, trace provenance, so sánh kết quả đã
+thực thi, timeout, scoring và chính sách bảo mật. Một phép tổng hợp sum/ mean là công cụ toán học tổng quát; nhưng quy tắc
+chọn sum hay mean cho một loại câu hỏi/ngành hàng cụ thể phải do Qwen quyết định.
+Không được phép: if question contains X: use aggregation Y, tên doanh nghiệp/nhãn hàng cố định, viết tay business rule
+cho trường hợp lỗi; bảng mapping từ khóa nghiệp vụ sang công thức; thêm “luật tổng quát” dựa trên test cases để ép model
+chọn nhánh; dùng nhãn public/private test để train, prune, calibrate hoặc select alpha.
+Các điểm kiểm toán bắt buộc: (1) static scan các module rule, routing và DSL compiler; (2) truy vết rule_origin (Qwen output /
+tool neutral / human-coded) và source_context_hash; (3) stress test unseen business rules; (4) hủy một experiment nếu phát
+hiện luật viết tay quyết định câu trả lời. Bảo toàn công cụ chỉ khi chúng không mang tính nghiệp vụ được hard-code.
+• 
+• 
+• 
+• 
+• 
+• 
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 03
+1.3. Hợp nhất có chọn lọc, không ghép nối hai bản PDF
+Bản nghiên cứu cung cấp cơ chế kỹ thuật và điều kiện đánh giá cho REAP MoE, C3 probe, C2 GRPO, C1 depth expansion,
+verifier , multi-LoRA, C4 schema adaptation, C5 IR/DSL. Bản thực thi cung cấp 14 nhóm/27 biến thể, GPU-hours, lịch 5 accounts
+× 2 sessions và gates. Tài liệu này dùng một hệ experiment ID B00/M/P/V/S/H/A/T/I/D/R/G/L/Q, rồi gắn các bước kỹ thuật và
+quyết định có/không cho từng nhóm.
+2. Hiện trạng framework và cách đọc các score
+Mốc Nguồn Cấu hình Cách sử dụng
+BASELINE_ZS_P5_D1
+— CHƯA ĐO
+Tìm lại log, nếu
+không có thì chạy
+P5 flow_p5_final.json được chuyển sang
+Qwen pretrained zero-shot; Qwen tự sinh luật
+BASELINE CHÍNH của toàn bộ thí nghiệm zero-
+shot
+0.952 Người dùng xác
+nhận trực tiếp
+P5 flow_p5_final.json, V3A ×0.70 + WL1 +
+WJR1, đo D1
+Mốc tuned reference để thấy khoảng cách với
+giải pháp tốt nhất; không dùng làm baseline
+zero-shot
+0.986/0.985, trung
+bình 0.9855; best
+0.991
+Snapshot lịch sử
+trong bản Claude
+O flow_final.json, WG1 ×0.35 Chỉ là lịch sử, tuyệt đối không thay P5
+Held-out ~0.778
+(pub_ho ~0.64; tr_ho
+~0.88)
+Snapshot lịch sử O Protocol khác P5/D1 chưa đối chiếu Dấu hiệu phải kiểm generalization; không so
+chéo số
+ZERO_SHOT_P5_STRI
+CT
+Chưa có log hợp lệ P5 + Qwen pretrained tự sinh luật Chính là cấu hình chạy để xác định 
+BASELINE_ZS_P5_D1; không phải thí nghiệm
+phụ
+ZERO_SHOT_P5_BACK
+BONE_ABLATION
+Chưa có log hợp lệ P5 chỉ bỏ adapter , giữ artifacts có provenance rõ Ablation bổ trợ, không thay strict zero-shot
+Tài liệu cũ ghi 3 nhóm lỗi quan sát được ở O: chọn sai hàm, phiếu bầu phân tán, paraphrase đổi đại lượng/kỳ. Các lỗi này chỉ
+dùng làm giả thuyết kiểm tra trên P5, không được coi là bằng chứng P5 có cùng lỗi. Tương tự, các số D3 73.6%/69.5%/64.4%/
+51.8% là tỷ lệ chương trình giữ được sau kiểm thực thi trong nhiệm vụ sinh train D3, không phải score DataMate.
+2.1. Kiến trúc P5 mục tiêu và bất biến giao diện
+QUESTION + INPUT TABLES + NEW SCHEMA + NATURAL-LANGUAGE RULES
+                         |
+             P5 (flow_p5_final.json)
+                         |
+      Qwen-generated rule understanding/writing
+           (NO handwritten business rules)
+                         |
+      Candidate Python / SQL / typed program
+                         |
+    Neutral syntax/schema checks + sandbox execution
+                         |
+     Tool result + provenance + optional repair
+                         |
+    P5 selection / abstention / final formatting
+                         |
+                OFFICIAL-COMPATIBLE SCORE
+Đây là sơ đồ mục tiêu; trước triển khai phải đối chiếu trình tự thật của P5, nhất là vai trò của V3A/WL1/WJR1, module sinh luật và
+selector . Chỉ thay model loader , tokenizer/chat template, adapter wiring, inference backend hoặc module experiment-specific.
+Không tự đưa bộ luật đã có của O vào P5.
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 04
+2.2. Chính sách 15B parameters và inference
+Tổng số tham số của mọi neural components được triển khai phải nhỏ hơn 15,000,000,000 theo quy định người dùng xác
+nhận. Tính cả backbone, verifier 4B, LoRA, neural probe/selector , vision/MTP còn đi kèm và mọi bản sao trọng số không chia sẻ.
+Model 35B quantize 4-bit vẫn là model 35B; chỉ structured pruning/xóa experts hoặc thay hẳn kiến trúc có thể giảm parameter
+count thật. MoE active parameters không thay thế total parameters.
+Theo tài liệu lịch sử: inference offline tối đa 6 giờ trên 2×RTX 5090, mỗi GPU 32 GB; điều kiện cuối cùng cần đối chiếu dev kit thực
+tế. Context length chưa được xác minh; tuyệt đối không lấy limit của track khác. Không sử dụng checkpoint chưa được phép về
+license/release cut-off.
+2.3. Các lớp zero-shot cần báo cáo riêng
+Nhãn Bộ trọng số Luật nghiệp vụ Có được so với strict baseline?
+ZS-strict Qwen pretrained, không task-LoRA Qwen pretrained tự sinh từ ngữ cảnh hiện
+tại
+Có, so cùng protocol
+ZS-backbone-
+ablation
+Qwen pretrained Artifacts rule cũ do model từng sinh, có
+provenance
+Chỉ để chẩn đoán, không thay
+strict
+ZS-pruned Checkpoint structurally pruned chưa
+recovery
+Do chính pruned model tạo Có, nêu rõ đã can thiệp weights
+ZS-prompt/module Trọng số pretrained, thêm prompting/
+verification
+Luật vẫn do Qwen tự sinh Có với control khớp prompting
+PROBE Có linear probe/MLP huấn luyện Do Qwen sinh Không phải pure zero-shot
+TRAIN/TUNED SFT/GRPO/LoRA/continued training Do Qwen sinh So tuned-to-tuned, không gọi
+zero-shot
+2.4. Quy tắc không được đánh tráo baseline
+Cấu hình tham chiếu = configs/flow_p5_final.json (P5 tuned, 0.952) → chuyển về phiên bản P5 zero-shot bằng cách giữ
+nguyên flow/module trung lập và vô hiệu hoá toàn bộ fine-tuned components theo vai trò thực được xác minh → chạy và đo
+score zero-shot → score vừa đo là BASELINE_ZS_P5_D1 → mới so các hướng còn lại với baseline này. Không dùng 0.952, không
+dùng cấu hình O/WG1, không dùng rule caches của model tuned làm baseline. Nếu một candidate dùng trained verifier/probe
+thì xếp vào nhánh trained-assisted, không ghi là zero-shot thuần.
+3. Gate 0: kiểm chứng P5 và đo zero-shot trên D1
+G0.1 — Repo/config inventory. Đọc các file hướng dẫn liên quan, mở configs/flow_p5_final.json, xác định commit SHA,
+model revision, vai trò của V3A, WL1, WJR1, source rule generator , evaluator D1, seed, decoding, prompt, datasets và
+dependencies. Lưu hash cả config và tất cả artifacts. Không suy role từ tên adapter .
+G0.2 — Search prior runs. Tra experiment registry và history với flow_p5_final, V3A, WL1, WJR1, D1, zero-shot, 
+disable_adapter, base_only, rule_generated, rule_origin, rule_cache. Một score cũ hợp lệ chỉ nếu cùng commit, D1 cases,
+evaluator, prompt, seed và model weights; riêng strict cần chứng minh rules xuất phát từ base Qwen.
+G0.3 — Immutable copies. Tạo P5_ORIGINAL và P5_ZS_STRICT là hai cấu hình riêng; không ghi đè config P5 đã đạt 0.952. Với
+strict, vô hiệu hóa mọi task-adapter theo code thực tế; rules phải sinh lại bằng base Qwen, không lấy từ bộ handwritten rules
+hoặc cache của Qwen tuned. Với diagnostic, dùng cache rules đã sinh hợp lệ nếu xác minh được provenance.
+G0.4 — Smoke. Chạy 20–40 câu train/dev (không public/private test) để xác nhận rule generation, parse/program, tool API,
+sandbox execution, final format, timeout. Kiểm tra tạo thêm luật mới được hay không khi thay ngành/schema; không hardcode
+operator selection.
+G0.5 — Đo BASELINE ZERO-SHOT trên D1. Trước hết tìm log của P5 dùng Qwen pretrained, không task-fine-tune, luật do
+Qwen pretrained tự sinh; nếu không thấy log đúng commit/cases/evaluator , chạy strict zero-shot với đúng protocol D1 và
+case IDs dùng cho mốc tuned 0.952 (ưu tiên 2 seeds). Tái sử dụng số tuned 0.952 có provenance thay vì bắt buộc chạy lại tuned
+nếu không cần. Chỉ chạy ablation giữ rule artifact nếu cần chẩn đoán. Đo held-out riêng khi split hợp lệ.
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 05
+G0.6 — Chốt BASELINE_ZS_P5_D1. Lưu score_P5_zero_shot_strict_D1 làm baseline xếp hạng, cùng case IDs, seed, rule traces,
+per-case outputs, runtime và provenance. score_P5_tuned_D1 = 0.952 được lưu riêng như tuned reference khi đúng D1; 
+score_P5_zero_shot_backbone_ablation_D1 chỉ là diagnostic nếu chạy. Không điền số zero-shot chưa đo; chưa có baseline strict
+thì chưa kết luận tăng score zero-shot. Nếu không khớp 0.952 vì khác protocol, báo chênh lệch, không so chéo.
+Pseudocode mang tính mô tả, không phải key/schema chắc chắn của repo:
+original = load_config('configs/flow_p5_final.json')
+strict = deepcopy(original)
+strict = disable_task_adapters_by_actual_repo_schema(strict)  # V3A/WL1/WJR1 after audit
+strict = require_qwen_generated_business_rules(strict, model='pretrained')
+strict = forbid_handwritten_domain_rule_paths(strict)
+assert neutral_tools_and_evaluator_unchanged(original, strict)
+score = run_same_D1_protocol(strict, same_case_ids=True, same_seed_policy=True)
+3.1. Cổng tuân thủ “không luật viết tay” ở mỗi thí nghiệm
+Tìm mọi template chọn hàm/cột/kỳ dựa trên từ khóa/case có sẵn; nếu có business semantics định sẵn từ người viết, phải
+loại khỏi đường ra quyết định của experiment.
+Dùng Qwen (đang được thử nghiệm) để sinh hoặc diễn giải các quy tắc mới theo ngữ cảnh; lưu trace đầy đủ. Không chèn
+rules do Qwen tuned tạo sẵn vào baseline strict của model raw.
+Nếu có IR/DSL, compiler chỉ được ánh xạ plan do Qwen quyết định sang các primitive toán học và API; không được tự quyết
+nghiệp vụ từ keyword.
+Rule validation chỉ kiểm logic nội tại/provenance/syntax/grounding với schema, không thay Qwen “nghĩ” ra luật doanh
+nghiệp.
+Thêm generalization stress tests với business rule mới hoàn toàn; mô hình phải sinh được rule/program tương ứng mà
+không có nhánh hardcode.
+Ghi business_rule_origin, generated_by_model_revision, rule_context_hash, manual_rule_detected cho tất cả case để
+audit.
+4. Thiết kế đánh giá chung và cổng ra quyết định
+Vòng Khối lượng dự kiến Mục đích Pass / fail
+S0 smoke 20–40 train/dev cases Load, generate Qwen rules, parse, execute,
+safety, VRAM
+Không lỗi nghiêm trọng; đủ
+throughput
+S1 screen Khoảng 200 case held-out đúng nguồn, 1
+seed
+Lọc nhánh/biến thể; kiểm failure taxonomy Không kém nghiêm trọng và có tín hiệu
+gain
+S2 full D1 exact + held-out đủ điều kiện, 2 seeds Kết luận paired performance Gain bền, generalization và runtime đạt
+S3
+finalists
+1–3 ứng viên, final holdout và regression Final confidence, 15B, 6h offline Promote hoặc rollback P5
+Chú ý: quy mô pub_ho400+tr_ho400 ×2 seeds (~1,600 case-runs) là đề xuất từ O; không tự coi đó là toàn bộ dataset D1 của P5.
+Cần lấy N_D1 thực rồi tính lại số lượt. Nên chia train/dev/held-out theo câu gốc, DN/schema và loại rule; không train/recalibrate
+trên câu đánh giá hay public/private test.
+Các chỉ số bắt buộc: official-compatible score; correct/wrong/abstain (nếu scorer xác nhận +1/0/-1); pass@1, oracle pass@k (chỉ
+chẩn đoán), rule_generated_valid_rate, business_rule_generalization, program valid/correct, tool-execution success, wrong
+aggregation/time/unit, vote entropy, rescued/regressed cases, p50/p95 latency, tokens/case, load time, peak VRAM, wallclock,
+GPU-hours, compliance status.
+Thước đo quyết định chính: ΔZS = score_variant_ZS − BASELINE_ZS_P5_D1 trên cùng D1 cases/seed/evaluator; xếp hạng và
+chọn hướng zero-shot theo ΔZS cộng held-out. Thước đo bổ sung, không dùng để chọn baseline: ΔTUNED_REFERENCE =
+score_variant − 0.952, chỉ tính khi cùng protocol D1; với held-out phải có kết quả P5 tương ứng, không lấy dữ liệu O.
+1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 06
+Gates: Rule compliance & <15B → baseline reproducibility → load/smoke → paired screening → full 2-seed/holdout → ablation →
+final audit. Thí nghiệm chỉ được nâng cấp khi thêm giá trị trên unseen schemas/business rules, không chỉ cải thiện vài case quen
+thuộc. Nếu phần lớn candidate đã đúng nhưng selector chọn sai, ưu tiên probe/verifier; nếu model không thể sinh candidate
+đúng, ưu tiên backbone/pruning/RL chứ không chỉ tăng verifier .
+5. Tổng danh mục: 14 nhóm / 27 biến thể có chọn lọc
+Các ID được giữ thống nhất với Execution Plan 0. B00 có hai phép đo strict và diagnostic bên trong cùng mã thí nghiệm, không
+tăng số biến thể chính thức. Bảng giờ là planning envelope có thể thiếu giờ cho rule-generation mới của P5; cần hiệu chuẩn qua
+30–50 câu. Các P2/P3 chỉ được khởi chạy sau khi P1 qua gates.
+ID Nhóm / biến thể Loại Priority GPU/
+session
+Giờ ước
+lượng
+GPU-
+h
+Slot gợi
+ý
+B00 Baseline: 9B base + P5, strict & ablation ZS P0 4 2–6 8–24 A1-S1
+M0
+1
+Direct models: Qwen3-14B direct ZS P1 2 1–3 2–6 A2-S1
+M0
+2
+Direct models: Qwen3.5-4B direct ZS P1 1 0.5–2 0.5–2 B2-S1
+P01 MoE pruning: REAP-64 10.93B checkpoint ZS P1 2 1–4 2–8 A2-S1
+P02 MoE pruning: Custom REAP ~88 expert ZS-after-
+prune
+P2 4 5–12 20–48 D1-S1
+P03 MoE pruning: Custom REAP ~92 expert ZS-after-
+prune
+P2 4 3–9 12–36 D1-S2
+V01 Dual verifier: 9B generator + 4B strict verifier ZS P1 2 2–4 4–8 B1-S1
+V02 Dual verifier: 9B+4B selective verification ZS P1 2 2–4 4–8 B1-S1
+S01 Shared-backbone: 9B tự kiểm tra không adapter mới ZS P1 1 1–3 1–3 B2-S1
+S02 Shared-backbone: Verifier LoRA chuyên biệt TRAIN P2 4 4–10 16–40 D2-S1
+H01 Hidden state probe: Linear probe + selector hiện hữu (M6 nếu
+P5 thật sự dùng)
+PROBE P1 1 2–5 2–5 C1-S1
+H02 Hidden state probe: MLP nhỏ + selector hiện hữu (M6 nếu P5
+thật sự dùng)
+PROBE P2 1 2–5 2–5 C1-S1
+A01 Adaptive sampling: K=2 vs K=4 cố định ZS P1 1 2–4 2–4 C2-S1
+A02 Adaptive sampling: K theo uncertainty / budget ZS P1 1 2–4 2–4 C2-S1
+T01 Schema adaptation: In-context examples schema-matched ZS-weights P1 1 1–3 1–3 B2-S1
+T02 Schema adaptation: Cycle-consistent synthetic exemplars ZS-weights P2 1 2–5 2–5 C2-S2
+I01 Typed IR/DSL: IR JSON + deterministic compiler ZS-weights P2 1 2–4 2–4 B2-S1
+I02 Typed IR/DSL: Constrained IR + fallback ZS-weights P2 1 2–5 2–5 C2-S2
+D01 Depth expansion: 9B +8 blocks, train only new TRAIN P3 4 6–12 24–48 E1-S1
+D02 Depth expansion: 9B +16 blocks, staged train TRAIN P3 4 6–12 24–48 E1-S2
+R01 Recursive model: Tied blocks + layer-wise LoRA TRAIN P3 4 8–12 32–48 E2-S1
+G01 Execution RL: GRPO pilot, execution rewards TRAIN P2 4 6–12 24–48 D2-S2
+G02 Execution RL: DAPO/GRPO with shaped reward TRAIN P3 4 6–12 24–48 E2-S2
+L01 MoE recovery: QLoRA recover best pruned TRAIN P3 4 6–12 24–48 D1-S1
+L02 Interpolation: LoRA alpha 0/.25/.5/.75/1 TUNED P2 1 1–3 1–3 C1-S2
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 07
+ID Nhóm / biến thể Loại Priority GPU/
+session
+Giờ ước
+lượng
+GPU-
+h
+Slot gợi
+ý
+Q0
+1
+Deploy quantization: FP8 vs BF16 eval ZS-weights P2 2 1–2 2–4 A2-S2
+Q0
+2
+Deploy quantization: AWQ 4-bit quality/runtime ZS-weights P2 2 2–4 4–8 A2-S2
+5.1. Tổng hợp số accounts và ngân sách cho từng hướng
+Mỗi hướng sử dụng tối thiểu 1 account hợp lệ nếu chạy tuần tự; các biến thể có thể chạy song song trên 2 sessions của cùng
+account khi thực tế cho phép. Một job riêng lẻ tối đa 4 GPUs thuộc một session trên một account. Bảng sau là tổng mức tài
+nguyên nếu chạy mọi biến thể của hướng đúng một lần ở quy mô dự toán, không phải chi phí đã đo.
+Hướng Số biến thể Số accounts tối thiểu Sessions đồng thời Peak GPUs/job GPU-hours ước lượng
+Baseline 1 1 1–2* 4 8–24
+Direct models 2 1 1–2* 2 2.5–8
+MoE pruning 3 1 1–2* 4 34–92
+Dual verifier 2 1 1–2* 2 8–16
+Shared-backbone 2 1 1–2* 4 17–43
+Hidden state probe 2 1 1–2* 1 4–10
+Adaptive sampling 2 1 1–2* 1 4–8
+Schema adaptation 2 1 1–2* 1 3–8
+Typed IR/DSL 2 1 1–2* 1 4–9
+Depth expansion 2 1 1–2* 4 48–96
+Recursive model 1 1 1–2* 4 32–48
+Execution RL 2 1 1–2* 4 48–96
+MoE recovery 1 1 1–2* 4 24–48
+Interpolation 1 1 1–2* 1 1–3
+Deploy quantization 2 1 1–2* 2 6–12
+*Hai sessions đồng thời chỉ khi có quota và các biến thể độc lập; khi dùng chung checkpoint/calibration hoặc phụ thuộc gate thì
+nên chạy tuần tự. Tổng kế hoạch giả định 5 accounts để giảm makespan, không phải 14 accounts riêng cho 14 hướng.
+Lưu ý bổ sung P5: Các GPU-hours là số liệu planning của bản execution trước đây (từ O), chưa tính chính xác chi phí Qwen tự
+sinh luật của P5, cost of strict+diagnostic controls, hoặc D1 mới. Vì thế các khoảng chỉ dùng để xếp lịch, không được coi là dự
+toán cuối.
+Tổng envelope nếu chạy mọi biến thể đúng một lần ở mức nêu trong bảng (không khuyến nghị): P0+P1 = 28.5–75 GPU-h
+(11 variants); P2 = 87–206 GPU-h (11 variants); P3 = 128–240 GPU-h (5 variants). Cộng tất cả = 243.5–521 GPU-h, không tính full
+evaluation bổ sung, download và retry. Mô hình chạy thực tế phải cắt bỏ phần lớn P2/P3 bằng gate.
+Cần chú ý: B00 là full eval 2 seeds; phần lớn biến thể còn lại mới ở mức screening. Sau khi chọn 2–4 finalists, dành riêng thêm 8–
+48 GPU-h/ứng viên cho full eval tùy số GPU mô hình cần và tokens/case đo được, không đánh đồng với thời lượng screen trong
+bảng. Chưa có benchmark throughput thực, vì vậy khoảng này phải được hiệu chuẩn từ 50 câu trước khi quyết định full run.
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 08
+6. Triển khai chi tiết 14 nhóm thí nghiệm
+H0. B00 — Zero-shot baseline P5 (P0)
+B00-S: P5 + Qwen pretrained tự sinh luật và chương trình, không dùng task-trained adapters hay caches rule đã được model
+tuned tạo. Score B00-S trên D1 chính là BASELINE_ZS_P5_D1 — baseline bắt buộc trước khi xét mọi thí nghiệm khác. B00-D:
+cùng P5 nhưng chỉ tắt adapter/model fine-tuned và cố định artifact rules đã được Qwen tạo (nếu provenance xác thực), nhằm đo
+ảnh hưởng riêng của weights; không đánh đồng với strict. Chạy đúng D1, tối thiểu hai seed để xác định biến động, giữ matching
+case IDs. Nếu tìm được log cũ đúng P5 thì tái sử dụng, nếu không chạy lại.
+Điều kiện dừng: không xác nhận được config P5, vai trò V3A/WL1/WJR1, rule origin, evaluator D1; phát hiện business rules viết
+tay, hoặc GPU quota không đủ. B00-D chỉ là diagnostic và có thể chạy sampling trước để tránh nhân đôi GPU-h baseline.
+H1. M01–M02: Direct model scaling (2 biến thể ZS)
+M01: Qwen3-14B pretrained, không LoRA, dùng TP2 nếu BF16 không vừa L4; có thể thử FP8/supported quantized weights
+nhưng ghi riêng precision. 14.8B rất sát trần; cần inventory và không gắn thêm neural verifier khi deploy. M02: Qwen3.5-4B
+direct làm đối chứng rẻ và kiểm tra cost/throughput. Giữ prompt/evaluator; chỉ thay tokenizer/chat template và model size
+profile có chứng cứ.
+Đo: program-valid rate, semantic tool correctness và score phân nhóm. Nếu 14B rất chậm mà không hơn 9B raw ở S1, stop. M02
+dùng để xác định lợi ích tham số tăng có thực không, không mặc định 4B cạnh tranh 9B.
+H2. P01–P03: REAP MoE expert pruning (3 biến thể, 1 có sẵn)
+P01: checkpoint community IAmTheRealGumbo/Qwen3.6-35B-A3B-REAP-64-experts; đếm 10.93B gồm vision; verify vLLM support 
+qwen3_5_moe, thinking/template và tool format. HumanEval pass@1 85.4% chỉ là kết quả model card trên benchmark code tiếng
+Anh, không phải DataMate.
+P02: REAP importance trên 2–3k train-only Vietnamese/SQL/toolkit prompts, xuất bản ~88 experts/layer (~13.95B ước lượng). 
+P03: ~92 experts/layer (~14.46B), nếu P02 có tín hiệu; reuse activation/router calibration, chỉ thay pruning budget rồi export. Bản
+gốc 35B dùng chỉ để tạo checkpoint pruned, không được đóng gói vào final <15B.
+Kỹ thuật: prune routed experts và router rows thật, remap expert indices, save/checkpoint, model parameter count on disk +
+after load; giữ token top-k ≤ experts retained, verify per-layer actual counts. TP2/PP2 hoặc 4GPU tùy profiling; trên L4 không
+NVLink, cân nhắc pipeline/expert parallel khi hỗ trợ tốt. Stop nếu output format/tool-use bị hỏng nặng hoặc S1 thua 9B raw
+>0.05 không cải thiện bằng precision/profile.
+Phân tích bổ sung: REAP từ model 35B và budget experts
+Nguồn kỹ thuật bản Claude: Checkpoint community 64 experts/layer được ghi khoảng 10.93B tham số tổng, BF16 ~21.9GB,
+HumanEval 85.4% pass@1 không phải DataMate. Expert pruning có thể giữ coverage pass@k tốt hơn pass@1, phù hợp pipeline
+nhiều candidates nhưng có nguy cơ tăng repetition/latency.
+| Expert/layer | Tổng params B ước tính (gồm vision nếu theo model card) | Buffer tới 15B (chưa adapter) | |---:|---:|---:|---| | 64
+| 10.93 | 4.07 | | 77 | ~12.57 | ~2.43 | | 88 | ~13.95 | ~1.05 | | 90 | ~14.20 | ~0.80 | | 92 | ~14.46 | ~0.54 | | 94 | ~14.71 |
+~0.29 | | 96 | ~14.96 | ~0.04 - rất rủi ro |
+Tuyến P02/P03: (a) đo REAP importance trên ~2–3k train-only prompts tiếng Việt chứa schema/tool programs do Qwen sinh; (b)
+thử 88 → 90 (nếu cần) → 92 experts; (c) thật sự xóa expert tensors/router rows và audit weights độc lập; (d) chạy cùng prompt P5
+để Qwen pruned tự sinh luật, không nạp lại business rules từ tuned 9B; (e) ghi pass@1/pass@k, rule validity, wrong-function
+rate, throughput và 15B compliance. Ưu tiên prune-first → QLoRA recovery; nhánh fine-tune 35B rồi prune chỉ mở khi đạt gate
+R&D, không có giả định nó tốt hơn.
+Rủi ro: model card dùng English code calibration, không xác minh tiếng Việt; model load/router/top-k, tokenizer , thinking/chat
+format cần smoke. Không dùng tên model để suy số tham số; đếm tensor thực tế sau xóa vision/MTP nếu không dùng và đảm
+bảo tổng cuối thấp hơn 15B.
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 09
+H3. V01–V02: 9B Generator + 4B Verifier (2 ZS)
+V01: Qwen3.5-9B sinh K candidates; 4B đọc question+schema+program+execution result, đánh giá answer provenance và tính
+hợp lệ, chọn/rerank. V02: chỉ gọi 4B khi M6 phân vân (vote entropy high), validator conflict, semantic ambiguity, tránh tốn token
+khi câu đơn giản. Hai model cần nằm trong tổng <15B và còn buffer cho adapters/neural selector .
+Đo: rescued vs regressed, tín hiệu độc lập so với selector hiện hữu của P5; không để verifier sửa số liệu trái tool outputs. Dùng
+GPU riêng cho mỗi model (1+1) nếu fit FP8/4-bit; tách batch inference, tránh thắt cổ chai ở verifier . Stop nếu 4B không hơn
+shared 9B verifier ở cùng compute/inference budget.
+Thiết kế verifier không chứa luật viết tay
+4B verifier chỉ được phân tích sự tương thích giữa câu hỏi + schema + luật Qwen đã sinh + chương trình + execution trace,
+rồi đánh giá candidate; không dùng một danh sách điều kiện nghiệp vụ do người lập trình viết sẵn. V01 kiểm mọi candidate; V02
+chỉ gọi khi vote entropy/validator conflict cao, threshold chọn trên train-dev, tuyệt đối không tối ưu dựa vào public/private test.
+So trực tiếp rescued/regressed với selector P5 và 9B self-verification ở cùng candidate pool.
+H4. S01–S02: Shared-backbone self-verification & role-LoRA
+S01 ZS: dùng cùng 9B raw prefill/generation lần 2 để chất vấn candidate theo rubric; không thêm model neural, có thể tận dụng
+prefix cache. S02 TRAIN: verifier LoRA riêng trên cùng backbone, dùng train-only correctness labels, giữ adapter trong
+checkpoint và đếm toàn bộ parameters. Nếu tool runtime không phục vụ hai adapters đồng thời, chạy hai passes tuần tự, không
+copy backbone thành hai model.
+Stop: nếu score không hơn selector hiện hữu (M6 nếu P5 thật sự dùng) hoặc latency vượt 6h inference budget. S02 không được
+báo là thành công zero-shot.
+Role-LoRA thực sự độc lập về nhiệm vụ
+Ba vai trò có thể nghiên cứu là rule-generator, program-generator, verifier; cùng một backbone được chia sẻ vật lý. Với zero-
+shot S01, chỉ thay prompt/rubric do model tự lý giải, không phát sinh task-specific LoRA mới. Với S02, adapters được huấn
+luyện trên train-only về các năng lực chung; không lưu các rule doanh nghiệp viết tay trong adapter prompts. Nếu P5 đã dùng
+WL1/WJR1 cho vai trò tương tự, kiểm tra để tránh lặp chức năng và cân đối tổng số parameters.
+H5. H01–H02: Hidden-state probe, selector P5 (xác minh có M6 hay không) (2 PROBE)
+H01: từ program và tool result, prefill 9B raw để lấy hidden states ở final result/code tokens; train linear/logistic probe bằng
+train-only logs và cross-business fold, sau đó đưa thành một feature cho M6 (giữ ensemble coefficient cố định ở validation). H02:
+MLP nhỏ, có regularization, calibration và tách tập theo schema; chạy khi H01 chứng minh tính chuyển giao.
+Không lấy hidden features từ một distribution V3A/WL1/WJR1 rồi đánh giá raw backbone mà không đo shift. Đối chiếu hai hệ:
+raw 9B + selector P5 và raw 9B + probe + selector P5; nếu target là tuned V3A/WL1/WJR1, phải fit lại probe phân phối tuned. Stop
+nếu chỉ tăng train mà giảm held-out.
+C3: probe trạng thái ẩn chi tiết
+Bản phương pháp gợi ý lấy hidden states cuối đoạn ứng viên/answer và vài lớp cuối, kết hợp đặc trưng execution_success, 
+exception_type, vote_share, lp_mean, provenance; fit logistic regression trước, MLP nhỏ sau. Áp dụng GroupKFold theo 
+source_question_id và DN/schema để chống leakage. Chỉ dùng logs từ đúng P5 nếu target là P5; log cấu hình O/WG1 là dữ liệu
+lịch sử và khác phân phối. So P5-selector-only, selector+confidence và selector+probe trên cùng candidates. Vấn đề cần xác
+minh: backend có cho lấy hidden states và prefix cache hiệu quả không; probe may overfit theo tên DN, nên kiểm generalization
+thật.
+H6. A01–A02: Adaptive K and candidate selection (2 ZS)
+A01: so K=2 và K=4 (các seeds đủ lặp) với token/runtime budget tính chính xác; log oracle pass@k và final selector score. A02: tự
+tăng K khi vote entropy/conflict cao; kết thúc khi confidence tốt hoặc đã chạm token budget. Không dùng ground truth tại
+inference để kích hoạt nhánh.
+Stop: tăng GPU-h và latency nhưng final score không cải thiện, hoặc noise khiến vote majority tệ hơn.
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 10
+H7. T01–T02: Schema-grounded test-time examples (2 ZS-weights)
+T01: ví dụ từ train nhưng match bằng schema/rule skeleton, không nhãn test. T02: sinh cặp question-program có tính nhất
+quán, chạy thực thi, lọc bằng tool/roundtrip và dùng làm contextual examples. Đây là in-context adaptation, không update
+weights trên private/test doanh nghiệp. Phải tránh tự dùng answers của test làm labels.
+Stop: ví dụ thêm làm prompt quá dài, gây đổi nghĩa condition hoặc overfit cross-DN.
+C4: in-context adaptation không được tự học luật test
+Các ví dụ context phải do Qwen tạo từ schema/rule text mới, rồi kiểm tra bằng công cụ trung lập; round-trip consistency không
+chứng minh tính đúng về ý định. Không fine-tune LoRA trực tiếp trên private/public test, kể cả pseudo-label, nếu chưa có quy
+định cho phép. Những templates/skeletons tái sử dụng chỉ là cấu trúc cú pháp tổng quát, không phải bảng quy tắc nghiệp vụ
+viết tay theo DN.
+H8. I01–I02: Typed intermediate representation + deterministic compiler (2 ZS-weights)
+I01: JSON IR {metric, entities, time_filter, group_by, op, aggregation, topk} rồi deterministic compile sang dm functions/
+SQL; câu không diễn đạt được IR thì fallback Python hiện tại. I02: thêm constrained decoding ở grammar IR nhỏ và ranking IR
+before execution; không ép ngữ pháp toàn bộ Python (theo tài liệu trước đây rất chậm).
+Stop: coverage IR <80% ở S0 hoặc lỗi logical mapping tăng; tất cả compiler branches phải unit test trên train schemas mới.
+C5: IR/DSL compiler chỉ thực thi ý định Qwen đã xác định
+IR có thể gồm metric, entity, period, filters, aggregation, unit, group_by, topk. Qwen phải tự lựa chọn cột, kỳ, đơn vị và
+toán tử, tự sinh rule/IR theo ngữ cảnh; compiler chỉ dịch IR hợp kiểu sang primitive dm/SQL, không tự quyết “ngành hàng X dùng
+tổng / ngành hàng Y dùng trung bình”. Nếu IR không diễn đạt được nhiệm vụ, fallback Python tự do. Chạy unit tests compiler
+trên nhiều schema tổng hợp, so equivalent program output và đo tỷ lệ fallback.
+H9. D01–D02: Qwen3.5-9B depth up-scaling (2 TRAIN)
+D01: 9B +8 blocks, init clone+identity residual, freeze old blocks và continued training new blocks; D02: +16 blocks, chỉ sau D01
+thành công. Kiểm hidden-layout DeltaNet/attention pattern và tensor count, giữ số total <15B; không đánh giá bản chưa train
+như là phương pháp đã hoàn thiện. Chạy ablation cùng lượng train tokens với baseline LoRA, để tránh gán công lao do dữ liệu
+nhiều hơn.
+Stop: data ít làm train loss giảm nhưng held-out xuống; throughput kém đáng kể; runtime inference >6h. 4×L4 chủ yếu FSDP/
+ZeRO/adapters, không mặc định DDP là sharding.
+C1: depth up-scaling phải có huấn luyện phục hồi
+Tài liệu Claude đề xuất kiểm mô hình 9B có các nhóm Gated DeltaNet và attention; phải đọc config thực tế trước khi chèn
+groups. Thử +8 blocks (khoảng 11B theo ước tính tài liệu) trước; +16 (khoảng 13B) chỉ khi +8 chứng minh gain. Kiểm logits
+invariance sau identity initialization, freeze old weights rồi train new blocks; không coi random expanded checkpoint chưa huấn
+luyện là zero-shot baseline. Cần đo tác động tăng latency và số training tokens hữu ích.
+H10. R01: Recursive/weight-tied Transformer (1 TRAIN)
+Tái sử dụng blocks để tăng effective depth với shared weights, thêm layer-wise LoRA theo nguồn paper . Bài toán kiến trúc và
+training dài; chỉ thực hiện sau khi nhánh D01 được đánh giá. raw recursive checkpoint không có đối chứng zero-shot có ý
+nghĩa. Nếu chỉ cần score ngắn hạn, defer.
+H11. G01–G02: Execution-reward GRPO/DAPO (2 TRAIN)
+G01: on-policy GRPO với reward +1 khi execution answer đúng theo train-only ground truth, bonus nhỏ cho program hợp lệ;
+phạt chọn sai hàm. G02: shaped reward/length-budget hoặc DAPO sau G01; reward shaping phải tránh loophole xuất đáp án từ
+train snippets và accidental abstain gaming. Tách train/eval theo DN và paraphrase semantics.
+Stop: reward tăng nhưng held-out score giảm; OOM tại rollout generation; GPU resource không đủ train+eval trong quota.
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 11
+C2: execution-grounded reward và kiểm chống reward hacking
+r_exact=1 khi đáp án cuối đúng theo train-only verified ground truth; r_exec≈0.05–0.10 chỉ khuyến khích chương trình chạy
+được, không để chương trình chạy nhưng sai thắng câu trả lời đúng; r_semantic chỉ có khi kiểm chứng độc lập kỳ, entity, unit và
+aggregate từ đầu vào. Phạt syntax, API cấm, giả kết quả rỗng, timeout, format sai và những trường hợp hardcode số đáp án.
+Trước training, audit khoảng 50 false positive/negative; pilot 100–300 train questions ×4–8 completions; chỉ nâng từ G01 sang
+G02 khi held-out tăng cùng sự bền vững rule generalization. DPO trước đây không tốt chỉ là bằng chứng lịch sử, không phải kết
+luận GRPO chắc chắn thắng.
+H12. L01–L02: Recovery + WiSE-FT-style interpolation (2 đã train)
+L01: nếu P01/P02/P03 có tín hiệu, fine-tune LoRA recovery trên pruned checkpoint với với dữ liệu train-only hợp lệ và loss/
+protocol phù hợp P5; dùng parameter-efficient training compatible MoE. L02: alpha sweep [0,.25,.5,.75,1] cho LoRA updates hoặc
+interpolate base/tuned checkpoints có cùng tensor shapes; không blend backbone architectures khác nhau. Đo post-merge/
+post-quantized score và runtime.
+Recovery, alpha và merge
+Ablation cần giữ P5 làm tuned reference. Fine-tune LoRA mới cho pruned model nếu P01/P02 thắng zero-shot; thử alpha {0,
+0.25, 0.50, 0.75, 1.00} rồi refine theo validation. Công thức W(alpha)=W_base+alpha * Delta_W_LoRA chỉ áp dụng cùng
+backbone/tensor basis. Không merge 9B vào MoE 14B, không tính score trước quantization như score triển khai cuối.
+H13. Q01–Q02: Quantization sanity tests (2 ZS-weights)
+Q01: FP8 vs BF16 trên best eligible candidate, nếu backend/hardware hỗ trợ và không thay task logic. Q02: AWQ INT4 quality/
+speed tradeoff, chỉ khi vLLM route supported; kiểm hallucinated SQL, numeric rounding, parse correctness. Quantization
+không phải đường để biến 35B thành model <15B tham số.
+7. Công thức dự toán thời gian và cách hiệu chuẩn benchmark
+Do chưa có số measured tokens/second từ Kaggle/P5, dùng công thức không giả chính xác:
+T_eval ≈ T_load + N_cases × (mean_prefill_tokens / measured_prefill_tok_s + mean_decode_tokens / measured_decode_tok_s +
+mean_tool_s + mean_verify_s) / effective_parallel_replicas + T_IO.
+N_cases_screen ≈ 200; N_cases_full ≈ 1600 (400 + 400, 2 seeds), nếu cả hai split đều đúng 400. K candidates/round và
+repair calls phải tính vào token thống kê.
+Bước 50 câu preflight ghi prefill_tok/s, decode_tok/s, requests/s, peak VRAM, p95 runtime và error rate; dùng p75 or p90
+walltime làm dự toán cẩn trọng.
+GPU-h được tính theo tổng GPU đã chiếm, kể cả thời gian load và idle trong allocated session; wall-clock là độ dài critical
+path. Chạy 4 workers trong 4 GPUs không làm 96GB thành shared memory.
+Với L4, thử BF16, FP8, 4-bit; không mặc định kernel FP8 nhanh hơn mọi cấu hình. Nếu một model BF16 chiếm 19.7GiB
+weights, 24GB có thể thiếu cache; thử quantization hoặc TP2 trước khi đặt gpu_memory_utilization cao.
+7.1. Gating thời gian/ quota
+Trước khi tạo commit, xác thực remaining_gpu_hours(account) >= estimated_gpu_hours(experiment) + buffer, 
+remaining_session_walltime >= estimated_walltime + buffer, và kiểm số sessions đồng thời; nếu quota biểu diễn theo GPU
+compute hours hay session-hours phải đọc đúng convention từ nền tảng, không quy đổi tùy ý. Mức buffer đề nghị 20–30%
+(hoặc lớn hơn nếu model download chưa cache).
+Ví dụ: nếu screening cần 4 L4 trong 3 giờ → 12 GPU-hours danh nghĩa; riêng Kaggle có thể ghi 3 giờ GPU quota/session thay vì
+cộng 12 theo đơn vị bạn tính. Cần duy trì cả hai đại lượng trong registry. Nếu quota không đủ, hạ quy mô S1 nhưng phải giữ
+tập đại diện; nếu vẫn không thể trả lời giả thuyết, không chạy.
+• 
+• 
+• 
+• 
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 12
+8. Phân bổ 5 accounts × 2 sessions × 4 L4 — scheduling thực tế
+Điều kiện: Mọi hàng dưới chỉ là slot kế hoạch, không phải sessions đã được tạo. Mỗi account có 2 sessions độc lập, trong mỗi
+session có tối đa 4 L4. Nếu account/quotas ít hơn giả định, scheduler tự tính lại từ danh sách khả dụng. Không dùng kỹ thuật
+vượt giới hạn Kaggle.
+Account an
+toàn
+Session #1 (4 L4) Session #2 (4 L4) Vai trò
+A B00: 4×1GPU replica, mỗi worker một
+shard cố định
+M01 TP2 + P01 TP2 (nếu hai server cùng node đủ CPU/
+RAM); hoặc chạy nối tiếp
+Baseline và direct scaling
+B V01/V02: 9B GPU0 + 4B GPU1; GPU2–3 chia
+cho replica/khác
+M02, S01, T01, I01 trên từng GPU riêng Verifier và cheap zero-
+shot
+C H01 prefill + A01 sampling trên GPU khác A02, T02, I02, L02 (khi eligible) Probe, dynamic compute,
+in-context
+D P02 4GPU sau khi P01 pass P03 4GPU hoặc S02 4GPU, không đồng thời nếu
+account quota thiếu
+MoE pruning / training
+E D01 training 4GPU sau approval G01 training 4GPU; defer R01/D02/G02 Dài hạn, đòi checkpoint
+Điểm quan trọng: V01 và V02 là hai configurations thường phải chạy tuần tự nếu cùng weights phục vụ; có thể phục vụ chung
+models rồi phát request batching nhưng phải tách kết quả và seeds. Không nhân đôi 9B+4B checkpoint nếu cả hai variants có
+thể share inference servers trong một session. Các P2/P3 chỉ lấy slots sau khi Gate 1 chứng minh đáng thử.
+8.1. Phương án tối ưu hơn so với dồn 4GPU vào một model
+1GPU replication: model 4B, 9B quantized fit <24GB → 4 independent workers làm 4 shards/seeds trong session. Đây thường
+nhanh hơn TP4 với model nhỏ vì không tốn truyền thông. TP2/PP2: 14B BF16 hoặc MoE 10.93B BF16 nếu 1GPU hết KV cache. 
+TP4/FSDP4: calibration/training lớn, chỉ khi profiling chứng minh không bị bottleneck PCIe. Parallel across accounts: độc lập
+chạy checkpoint khác hoặc shard eval riêng; không giả lập multi-node FSDP qua 5 Kaggle accounts.
+8.2. Phase schedule phụ thuộc điều kiện, không giả thời gian tuyệt đối
+Mốc Việc phải hoàn thành Job song song hợp lý Gate
+T0 — 0–2 giờ
+lập lịch
+Access + quota, code hash, evaluator ,
+confirm baseline logs
+CPU: scan configs, audit params,
+generate notebooks
+Nếu thiếu repo/creds → chỉ dừng ở plan,
+không tạo GPU jobs
+T1 — sau
+access
+Smoke 9B, P01, 14B, 9+4, self-check A1 baseline; A2/B1/C1 smoke độc lập Từng arm phải pass load/parse/execute
+T2 — screening B00 hoàn tất + screen 6–10 P1 arms B/C sessions chia 1GPU; P01 dùng TP2 Review S1 per-case, loại loser
+T3 — full eval 2–4 winners, mỗi winner 2 seeds A/B/C sessions theo shards Paired score + CI + held-out
+T4 —
+exploratory
+P02 88 experts hoặc H01 probe/GRPO D/E slots nếu quota và deadline cho
+phép
+Chỉ promote nếu delta hữu ích
+T5 — finalist 1–3 winners: LoRA recovery, alpha,
+quantization, regression
+D/E + eval A/B/C Final checkpoint <15B, infer <6h
+Trước deadline 16/11/2026 23:59 GMT+7: bảo vệ baseline đã nộp và khóa final artifact nếu chưa có 2-seed full evaluation của
+challenger . Những track kéo dài sau thời điểm này chỉ có ý nghĩa nghiên cứu trừ khi BTC cho nộp lại.
+8.3. Ước lượng tổng makespan
+Khối P0+P1: envelope 28.5–75 GPU-h. Với 5 accounts đầy đủ và 40 L4 đồng thời, cận lý thuyết = GPU-h/40 = 0.7–1.9 giờ, 
+không phải lịch thực: bao gồm dependencies, model downloads, 12h max session, locality và eval serialization. Một kế
+hoạch thực dụng cần 4–12 giờ wall-clock cho screening, sau preflight, cộng 4–12 giờ full evaluation của finalists, nếu có
+đầy đủ tài nguyên/throughput thuận lợi; đây là khoảng giả định phải chỉnh sau 50 câu.
+• 
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 13
+P2/P3: chỉ chạy nếu vẫn đủ quota sau khi chốt P1; không có đảm bảo hoàn tất trước hạn nộp. Nếu muốn so full toàn bộ 27
+biến thể, walltime có thể dài hơn nhiều và vi phạm phiên 12h.
+Gating điều chỉnh: chỉ cho phép job mới nếu quota >= p90_runtime*GPU + buffer; dừng bất kỳ experiment nào vượt ngân
+sách đã đặt, lưu intermediate logs và resume nếu phù hợp.
+9. Kaggle CLI, bảo mật credentials, quotas và tự động hóa
+Cài đúng Kaggle CLI trong môi trường do người dùng cấp quyền; sử dụng KAGGLE_API_TOKEN hoặc file ~/.kaggle/
+access_token quyền 0600, hoặc OAuth chính thức. Không ghi plaintext token vào source/notebook/logs/report. kaggle
+competitions list là smoke auth; dùng thêm kaggle quota nếu phiên bản hỗ trợ và kiểm GPU quota hiển thị trong tài
+khoản.
+Đặt account aliases A– E, không đặt tên chứa email/user ID; secrets nằm trong secure environment riêng của mỗi runner .
+Tạo metadata/runner có enable_gpu, gpu_type, internet, datasets, notebook title; lệnh CLI thực tế phải kiểm kaggle
+kernels --help với phiên bản đã cài.
+Tạo session_registry.csv: job_id, acc_alias, kernel_slug, session, model, commit, started_utc, last_log_utc, state,
+retries, checkpoint, gpu_h_est, quota_before, quota_after, errors.
+Lập heartbeats theo từng stage ( queued, provisioning, download, loading, running, saving). Không có log sau 5 phút L4/
+CPU hoặc 10 phút T4 phải kiểm API status và log; không kill job chỉ vì đang tải model lớn/compile kernel.
+Nếu xác nhận treo thực: stop, lấy log, chuyển sang cấu hình sửa lỗi và retry tối đa 4 lần với exponential backoff, không lặp
+job y nguyên. Nếu lệnh stop không thành công, thông báo người dùng để can thiệp thủ công; không xóa artifacts cần bảo
+toàn.
+Khi GPU hết: đưa GPU-heavy jobs vào queue; CPU chỉ chạy manifest, preprocess nhỏ, scoring/analysis không cần model. Mỗi
+account tối đa 5 CPU commit sessions là giả định từ yêu cầu; cần xác minh trước khi lên lịch.
+Checkpoint cross-account bằng dataset/artifact version có hash, không truyền tokens cùng notebook; không khẳng định 2
+accounts có thể cùng training step DDP nếu không có network rendezvous hợp lệ.
+9.1. Commands minh họa an toàn (không chứa credentials)
+# Chạy bên trong máy/runner đã được cấp credential hợp lệ
+umask 077
+chmod 600 ~/.kaggle/access_token   # khi dùng token file
+kaggle competitions list
+kaggle quota                       # nếu CLI hỗ trợ
+kaggle kernels --help
+kaggle kernels list --mine
+# Lệnh push/status/logs phụ thuộc Kaggle CLI version và kernel metadata.
+9.2. Quy tắc tối ưu môi trường
+Đo batch size theo warm-up, dừng khi memory fragmentation/OOM; đừng “ép dùng hết 96GB” nếu 4 GPU độc lập hoàn
+thành nhanh hơn.
+DDP nhân bản model và chia data, không gộp 4×24GB thành 96GB cho một model; FSDP, tensor/pipeline parallelism mới
+sharding weights. Với interconnect PCIe, TP4 có thể chậm hơn PP2 hoặc 4 independent replicas.
+VLLM multi-GPU strategy phải căn cứ model support và profiling; tận dụng batch nhiều requests, prefix cache cho common
+schema, không để người dùng kỳ vọng cấu hình nào cũng nhanh hơn.
+10. Risk register
+Nguy cơ Dấu hiệu Biện pháp / stop
+Repo không thể đọc URL/cache miss, branch private Không bịa command; yêu cầu checkout hoặc GitHub connector; tiếp tục với tài
+liệu nguồn
+• 
+• 
+1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+7. 
+• 
+• 
+• 
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 14
+Nguy cơ Dấu hiệu Biện pháp / stop
+Zero-shot baseline không
+tương đương
+Khác prompt, seed, selector , split
+hoặc rule provenance
+Khóa bản sao P5 zero-shot; diff deterministic hashes; chỉ đổi trọng số/backbone
+đúng phạm vi, Qwen gốc phải tự sinh lại luật
+Thiếu Kaggle credentials Không có token/CLI Không khởi chạy; kiểm connection/permissions; không yêu cầu chèn token vào
+chat
+Quota GPU không đủ remaining < p90 + buffer Thu nhỏ screen, hoãn TRAIN/P3, không chạy job chắc thất bại
+OOM/không tương thích
+model
+Load error , worker crash FP8/AWQ, TP2/PP2, đổi batch/ctx; ghi config cuối
+Pruned MoE hỏng tool-
+use
+JSON/Python invalid, tool misroute P01 smoke trước, chặn P02/P03 nếu không có triển vọng
+Verifier làm sai đáp án
+đúng
+Δregressions lớn Đo rescued/regressed; chỉ gọi khi uncertainty cao
+Probe bị leakage Train score cao, held-out kém GroupKFold theo DN/schema, held-out ngoài dữ liệu fitting
+GRPO reward hacking Reward tăng mà score giảm Phần thưởng kiểm chứng bằng execution; stop trial
+Full eval vượt 6h
+deployment
+P95 latency, tokens/case cao Adaptive-K, caching, fewer retries, quantize hoặc reject
+Mô hình vượt 15B Parameter audit > 15e9 Không deploy, loại neural phụ, prune thật hoặc giảm expert budget
+Overfit public/test Increase public, decrease held-out Không fine-tune test; dùng holdout và paired analysis
+11. Artifacts cần thu về từ mỗi thí nghiệm
+experiments/exec0/
+  baseline/  # B00 manifest, score, per-case outputs
+  registry.csv
+  quota_snapshot.json             # không chứa secrets
+  experiments/<ID>/
+    config.json  model_inventory.json  gpu_profile.json
+    predictions.jsonl  per_case.csv  score.json
+    metrics.json  errors.md  logs_ref.txt
+  comparison/
+    paired_deltas.csv  score_by_category.csv
+    runtime_by_arm.csv  decision_log.md
+  checkpoints/                    # artifact refs/hash, không chèn token
+Mỗi experiment phải có success, stop_reason, git_commit, model_revision, dataset_hash, split, seed, decode_config, 
+input_token_count, output_token_count, gpu_hours, wall_clock, peak_vram, pass_k, wrong_function_cases, 
+regressions_vs_B00.
+12. Thứ tự thực thi được phép và đề xuất kết thúc
+Tức thì, không GPU: đối chiếu source file, kiểm environment/repo reachability; bảo toàn bản P5 tuned 0.952 làm reference,
+tìm log P5 zero-shot strict. Mọi so sánh zero-shot dùng score của P5 zero-shot, không dùng 0.952.
+Khi có repo/auth: Gate 0 (B00) + smoke những model P1 độc lập, xác minh quota, benchmark throughput 50 câu, tính lại
+ngân sách.
+Screen P1: P01 REAP64, V01/V02 9B+4B, S01 shared-self-check, M01 direct14B, H01 probe, A02 adaptive K, T01 schema
+prompts; không nhất thiết chạy M02 nếu cần giảm thời gian.
+Full eval chỉ 2–4 winners: full 1600 case-runs theo 2 seeds và compare paired với B00; chọn 1–3 winners. Dừng nếu tất cả
+đều kém baseline, giữ framework gốc.
+P2/P3 tùy quota: P02/03 custom REAP; H02; S02; G01; D01; alpha/interpolation và quantization. Fine-tune chỉ sau khi thắng
+hợp lý trên held-out, không dùng score từ S1 để tuyên bố thành công.
+1. 
+2. 
+3. 
+4. 
+5. 
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 15
+Final: regression + inference timing trên 2×5090 nếu có môi trường tương ứng; parameter audit <15B; archive config/
+checkpoints; không thay submission trước hạn nếu chưa chứng minh vượt baseline.
+Một nguyên tắc kết luận: “Vượt P5 zero-shot baseline” là tiêu chuẩn so sánh chính trong giai đoạn này; “vượt giải pháp P5 đã
+fine-tune đạt 0.952” là mục tiêu tham khảo độc lập, không đồng nghĩa. Báo cáo ΔZS trước, ΔTUNED_REFERENCE sau, trên đúng
+cùng D1 protocol và không so chéo score.
+13. Tài liệu tham khảo và độ tin cậy
+[U1] User-supplied: proposed_method_merged.md, bản hợp nhất ý tưởng và ghi chú repo, 15/11/2026.
+[U2] User-supplied: proposed_method_1_b.md, các mốc lịch sử WG1/score, held-out, D3 teacher và các hướng C1–C5.
+[U3] User-supplied: proposed_method_1.pdf, Model >15B / MoE pruning / Verifier / Multi-LoRA / scheduling.
+[E1] Qwen3.6-35B-A3B REAP-64 model card: 10.93B total, 21.9GB BF16, only HumanEval tested.
+[E2] Qwen3-14B model card: 14.8B total, 32k native context.
+[E3] Kaggle CLI authentication: KAGGLE_API_TOKEN và ~/.kaggle/access_token.
+[E4] Kaggle CLI commands: kernels, quota, status/logs.
+[E5] vLLM parallelism documentation: TP vs PP / single GPU, cân nhắc interconnect.
+[E6] Rethinking LLM Pruning via Test-Time Scaling: pass@1/pass@k trade-off trên pruned MoE, không benchmark DataMate.
+Các bảng thời gian, GPU-hours và makespan trong tài liệu là estimate, KHÔNG phải measurement. Thực thi GPU/đăng
+nhập Kaggle chưa thực hiện trong phiên tạo tài liệu.
+14. Kiểm toán triển khai: nguồn gốc luật và tính tổng quát hóa
+14.1. Checklist bắt buộc trước khi promote
+Exact config P5 và D1 eval được hash, P5 strict zero-shot đã được đo và chốt BASELINE_ZS_P5_D1; số tuned 0.952 chỉ là
+reference có provenance.
+Zero-shot strict được đo bằng Qwen pretrained tự viết/diễn giải luật, không nạp rule cache từ model tuned.
+Không tồn tại nhánh if/else, dictionary hoặc bảng regex quyết định nghiệp vụ theo tên DN, câu hỏi, ngành, sản phẩm, kỳ
+hoặc case đã thấy.
+Mọi rule_origin là Qwen-generated hoặc neutral-tool (chỉ kiểm cú pháp/thực thi), và manual_business_rule phải bằng 0.
+Compiler IR/DSL không tự chọn aggregate/column/units theo ngành; mọi semantic mapping xuất phát từ plan của Qwen và
+schema.
+Paired report trên D1 + holdout mới, 2 seeds, có rescued, regressed, wrong-rule và wrong-function.
+Mọi neural components + adapters + probe + vision/MTP cộng lại <15B tham số thật; không dựa vào kích thước GB.
+Runtime offline, context, license, external data và checkpoint release date phù hợp với quy định đã xác minh.
+GPU-h/slot/account đã có quota snapshot, không chứa secrets, có rollback artifact.
+14.2. Nhóm stress tests ưu tiên
+Unseen business rules: cùng schema nhưng đổi hẳn cách tính/đơn vị/kỳ; Qwen phải tạo luật mới từ mô tả, không được kế
+thừa mặc định.
+Unseen schemas: đổi tên bảng/cột, quan hệ, loại dữ liệu; vẫn tạo đúng thao tác.
+6. 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 16
+Paraphrase đổi nghĩa: thay một từ khiến kỳ hoặc đơn vị thay đổi; đánh giá xem rule tự sinh có cập nhật đúng.
+Conflict & insufficiency: mô tả mâu thuẫn/thiếu dữ liệu; model hỏi lại/abstain theo contract, không tự sáng tác luật.
+Program/answer consistency: output phải do tool execution hoặc bước tính có provenance, không chèn hằng số đáp án.
+Unseen domain: đánh giá generalization ngoài ngành hàng đã training mà không chỉnh sửa business-specific code.
+14.3. Cách kết luận hai kế hoạch đã hợp nhất
+Nhánh nhanh P1: B00-S → P01 REAP64, V01/V02 9B+4B, S01 self-check, M01 direct14B, A02 adaptive-K, T01 schema examples;
+C3 probe chỉ đánh giá ở nhóm có học probe và phải fit trên logs P5.
+Nhánh R&D có gate: REAP 88/90/92 + recovery, S02 verifier LoRA, GRPO execution reward, depth expansion, IR/DSL, recursive
+(cuối cùng). Chỉ ưu tiên nhánh R&D nào có failure mode và compute budget được chứng minh.
+Tối ưu cuối: 1–3 finalists, alpha interpolation và post-quantization evaluation; không spam trial, không ghép model
+incompatible, không làm mất nguồn gốc luật Qwen.
+Kết luận về trạng thái: BASELINE_ZS_P5_D1 hiện CHƯA ĐO. Mốc 0.952 của cấu hình fine-tuned P5 không được dùng thay cho
+score này. Không có Kaggle sessions mới được khởi chạy và mọi GPU-hours chỉ là sơ bộ. Khi có access repo/Kaggle, ưu tiên audit
+P5, tìm log strict zero-shot, nếu thiếu thì chạy B00-S với Qwen pretrained tự sinh luật.
+• 
+• 
+• 
+• 
+DATAMATE 2026 / P5 UNIFIED EXECUTION PLAN 15.11.2026
+BASELINE: P5 ZERO-SHOT / Qwen-generated rules only 17

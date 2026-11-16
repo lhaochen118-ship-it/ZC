@@ -1,0 +1,9 @@
+nohup Process/tools/p5/after_alpha.sh bichthuy93 0 w5 MS2W5 0.5 0 >> Process/runs/p5/after_alpha_bichthuy93.log 2>&1 &
+nohup Process/tools/p5/after_alpha.sh yuan1103 1 w5 MS2W5 0.5 1 >> Process/runs/p5/after_alpha_yuan1103.log 2>&1 &
+nohup Process/tools/p5/after_alpha.sh thnliu 0 w35 MS2W35 0.35 1 >> Process/runs/p5/after_alpha_thnliu.log 2>&1 &
+nohup Process/tools/p5/after_alpha.sh huuhien95 1 w35 MS2W35 0.35 1 >> Process/runs/p5/after_alpha_huuhien95.log 2>&1 &
+nohup Process/tools/p5/after_alpha.sh loinguyentran 0 m3 MS3 1.0 1 MS3 p5ad_m3 >> Process/runs/p5/after_alpha_loinguyentran.log 2>&1 &
+nohup Process/tools/p5/after_alpha.sh namhunhh 1 m3 MS3 1.0 1 MS3 p5ad_m3 >> Process/runs/p5/after_alpha_namhunhh.log 2>&1 &
+nohup Process/tools/p5/after_cont.sh ftc2 caotienminh1 MS2C p5ad_w 0.7 c2 quynhtran35 phatle1578 >> Process/runs/p5/after_cont_ftc2.log 2>&1 &   # restart only if MS2C adapter not yet in training/data/out/p5ad_w
+nohup Process/tools/p5/after_cont.sh ftc3 mucnokieu MS3C p5ad_m3 1.0 c3 nguyenhoa99 huyenco >> Process/runs/p5/after_cont_ftc3.log 2>&1 &
+nohup bash Process/tools/p5_watch_loop.sh >/dev/null 2>&1 &

@@ -70,3 +70,19 @@ mkdir -p training/data/out/v3a && gunzip -c Process/train_data/p3/v3a_mix.jsonl.
 
 Dựng lại dữ liệu không lưu: `training/data/out/s2` (S′) = `python3 training/data/s2_build.py …` (đầu vào `tg0`, `contrast`); `wj2`, `wj2d`, `wt`, `wt0`
 (nhánh đã loại) không cần.
+
+## P5 (15–16/11) — đã lưu
+
+| Thứ | Ở đâu |
+|---|---|
+| Kết quả mọi lượt (submission, solver_logs, links, units, run.log — gzip) | `Process/runs/p5_results/<run>/`; kernel + log thô `Process/runs/p5/` |
+| Điểm | `Process/scores_p5zs.csv` (`Process/tools/p5/p5_report.py`), ghép cặp `Process/tools/p5/jscore.py <dir>` |
+| Công cụ / chuỗi tự động | `Process/tools/p5/` (archive.sh, after_alpha.sh, after_cont.sh, after_merges.sh, new7_*, replay_k.py…); lệnh khởi động lại `Process/kaggle/p5_chains.txt` |
+| Adapter MoE (LFS) | `Process/adapters/moe_E88/{MS2,ML1,MJ2}/adapter` → chép về `training/data/out/p5ad/<NAME>/adapter` (và `p5ad_w`) |
+| Dữ liệu huấn luyện MoE | `Process/train_data/p5/{v3a_mix,wl,wj_list_r}.jsonl.gz` → giải nén vào `training/data/out/p5ft/` |
+| Log ứng viên cho phán xử offline | `Process/p5_scratch/{jrole,jpool}` (gzip) → `training/data/out/` |
+| Kế hoạch P5 gốc (văn bản), trang portal | `Process/p5_scratch/p5plan.txt`, `portal_text/` |
+| Quota / danh sách lượt đang chạy | `Process/kaggle/quota_2026-11-16.txt`, `p5_active_runs.txt`, `p5_chain_status_0940.txt` |
+
+**Không chuyển giao được (dựng lại):** token Kaggle; MS3 adapter (2.6 GB, chỉ `training/data/out/p5ad/MS3` + output kernel `nguynduylm/zc-fts3b-1`);
+mô hình MoE đã gộp FP8 (output kernel riêng tư, xem `handoff/environment_summary.pdf` §7); tiến trình nền.

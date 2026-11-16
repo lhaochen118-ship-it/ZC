@@ -1,5 +1,7 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
+**16/11 10:15 UTC — bàn giao:** bản nộp `Docker_submission/` (0.952) và `0.994_Docker_submission/` (P); việc đang chạy + bước tiếp: PDF 3 §3, §5; khởi động lại chuỗi: `Process/kaggle/p5_chains.txt`.
+
 **16/11 09:00 (user): bản nộp = `configs/flow_p5_final.json` (framework 0.952) + `Docker_submission/submission.jsonl` (D1, PA 0.952); Docker `Docker_submission/` mặc định cấu hình này.**
 
 ## P5 — trạng thái 16/11 02:30 UTC (khung chat mới đọc phần này trước)

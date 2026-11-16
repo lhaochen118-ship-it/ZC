@@ -1,4 +1,4 @@
-# Environment Summary — DataMate (cập nhật 15/11/2026 04:30 UTC)
+# Environment Summary — DataMate (cập nhật 16/11/2026 10:10 UTC)
 
 *Cấu hình các môi trường dự án dùng. Bài học vận hành ở PDF 2; vận hành Kaggle chi tiết ở `docs/02_KAGGLE_OPS.md`.*
 
@@ -84,3 +84,15 @@ Acc dùng chung với dự án khác: chỉ thao tác kernel `zc-*`. `automation
 | Thời gian (4×L4) | đường container public chế độ H k16: 1.8–2.2 h; k24: +35 phút; huấn luyện FSDP 13M token: ~2.3 h (mb 2, max-len 5120, `expandable_segments`); bộ test CPU `tests/run_all.sh`: 30–40 phút |
 | Watcher | `Process/tools/v2/watch_loop.sh` (vòng `watch_done.py --max 110` → `watch.out`) + Monitor `tail -F watch.out`; `run_kernel.py` poll `ZC_POLL_S` (150–180 s) để tránh 429 |
 | Docker | `predict.sh` mặc định `configs/flow_v2_final.json` (chế độ H); image chép `training/merge.py`, `models/adapters/` (W) và đặt `ZC_ADAPTER_ROOT`; chưa build / chạy trên GPU thật |
+
+## 7. Bổ sung 16/11 (P5: zero-shot, MoE, bản nộp)
+
+| Mục | Giá trị |
+|---|---|
+| Acc có token (29 acc, 16/11) | danh sách tệp `~/.kaggle/tok_*` (xin lại user khi đổi container); quota lúc bàn giao: `Process/kaggle/quota_2026-11-16.txt` (mọi acc ≤ 5.5 h; làm mới 21/11 00:00 UTC). `yeshenhi` chỉ T4, `mxuanquy` chưa accept rules (không L4) |
+| Mô hình Kaggle | 9B `danbth/qwen3-5-9b/transformers/default/1`; MoE bf16 `guohaoli4/qwen3-6-35b-a3b/transformers/bf16/1` (cắt E88 trong kernel); MoE FP8 chính thức tải từ HF trong kernel CPU (`stage_hf.py`, cần `--internet`) |
+| MoE E88 + LoRA đã gộp FP8 | output kernel **riêng tư theo acc**: bichthuy93 (`zc-mgs7w-1` MS2×0.7, `zc-mgs2b-1` MS2, `zc-mgl-1` ML1, `zc-mgj2b-1` MJ2), caohuyen74 (`zc-mcs7/mcs10/mcl/mcj-1`), duckzuykobip (`zc-mgs8/mgl8/mgj8-1`); mount bằng `--ks` |
+| Adapter MoE (nguồn) | `training/data/out/p5ad/{MS1,MS2,MS3,ML1,MJ1,MJ2}` (không commit); bản sao LFS `Process/adapters/moe_E88/{MS2,ML1,MJ2}` |
+| Dataset Docker | 0.952: `nhatlong1103/zc-final-adapter` (V3A×0.70) + `nhatlong1103/zc-w-v2` (WL1, WJR1); 0.994: `nhatlong1103/zc-p-adapter` (WG1 + soup 0.35) |
+| Bẫy môi trường | đĩa container ~30 GB khả dụng (đầy 3 lần: `ZC_OUT_PATTERN` + `--train-data` hard link); worker phiên khởi động lại ~mỗi vài giờ (mọi tiến trình nền chết → `automation/resume.py`, chạy lại `after_*.sh` — resume-safe); dataset 1 thư mục gốc bị Kaggle bỏ lớp ngoài (thêm `info/`) |
+| Watcher | `Process/tools/p5_watch_loop.sh` → `Process/runs/p5/watch.out` (danh sách `active_runs.txt`) |

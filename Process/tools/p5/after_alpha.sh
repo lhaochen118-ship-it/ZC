@@ -17,7 +17,7 @@ launch_merge(){ slug=$1; name=$2; ad=$3; wt=$4
   until grep -qE "RUNNING|STATUS=" Process/runs/p5/$slug/zc-$slug-1.log 2>/dev/null; do sleep 10; done; }
 merges="s:$sname:$sad:$w"; [ "$needw" = 1 ] && merges="$merges l:ML1:ML1:1.0 j:MJ2:MJ2:1.0"
 slugs=""
-for m in $merges; do IFS=: read k name ad wt <<< "$m"; slug="a${tag}${k}$i"; slugs="$slugs $slug"; launch_merge $slug $name $ad $wt; done
+for m in $merges; do IFS=: read k name ad wt <<< "$m"; slug="a${tag}${k}$i"; slugs="$slugs $slug"; [ -f Process/runs/p5/$slug/zc-$slug-1.log ] && continue; launch_merge $slug $name $ad $wt; done   # resume-safe
 for slug in $slugs; do
   for try in 1 2 3; do
     until grep -q "STATUS=" Process/runs/p5/$slug/zc-$slug-1.log 2>/dev/null; do sleep 30; done
@@ -36,6 +36,7 @@ acc, name, ks = sys.argv[1:4]
 json.dump([{"acc": acc, "name": name, "jobs": f"automation/jobs/p5/{name}.jobs", "est_h": 1.3, "args": ["--ks", ks, "--no-preflight"]}],
           open(f"automation/plans_p5/wave21_{name}.json", "w"), indent=1)
 PY
+[ -d Process/runs/p5/e8r${tag}p$i ] && { log "evaluation already launched"; exit 0; }
 python3 automation/launch_many.py Process/runs/p5 automation/plans_p5/wave21_e8r${tag}p$i.json
 grep -qx e8r${tag}p$i Process/runs/p5/active_runs.txt || echo e8r${tag}p$i >> Process/runs/p5/active_runs.txt
 log "evaluation launched"

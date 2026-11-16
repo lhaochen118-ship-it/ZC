@@ -2,7 +2,7 @@
 
 Zalo AI Challenge 2026, track DataMate. Branch làm việc **`claude/datamate-v3-0dny90`** (repo `lhaochen118-ship-it/ZC`).
 **Khung chat mới: đọc `READING_GUIDE.md` trước** (trạng thái sống `handoff/STATUS.md`; PDF 1 / 2 trong `handoff/`; log, dữ liệu huấn luyện,
-sổ kernel ở `Process/` — `Process/README.md`). **Trạng thái 15/11 04:30 UTC: TẠM DỪNG theo user** (cho kernel đang chạy chạy xong, không khởi tạo tiến trình mới cho tới khi khung chat mới nhận việc). Cấu hình nộp `configs/flow_v2_final.json` (chế độ H, public 0.863 ensemble / 0.860 container); mọi biến thể v2 ≤ mốc; việc số 1: sửa lỗi gộp container (PDF 3 §5). Docker chế độ H chưa build (W adapter `nhatlong1103/zc-w-v2` đã đăng). Lỗi + quy tắc tránh: PDF 2 §9–§10. **Lịch sử quyết định (đã thay thế; chi tiết trong PDF 1 / 2 và lịch sử git):** 08/11 hybrid = mô hình sinh code + luật tổng quát hỗ trợ
+sổ kernel ở `Process/` — `Process/README.md`). **Trạng thái 16/11 10:15 UTC:** bản nộp = `Docker_submission/` (framework 0.952, quyết định user 16/11 09:00) + `0.994_Docker_submission/` (P); các lượt MoE (α, MS3, huấn luyện tiếp) đang chạy, chỉ là findings — xem PDF 3 §3 / §5. **Lịch sử quyết định (đã thay thế; chi tiết trong PDF 1 / 2 và lịch sử git):** 08/11 hybrid = mô hình sinh code + luật tổng quát hỗ trợ
 (cấm hard code đáp án) và kế hoạch 1 (WP0–WP12, chạy tự động); 09/11 mục tiêu 100 % public bằng cải tiến tổng quát, kế hoạch 2 (hướng R
 luật tổng quát / M mô hình); 12/11 chốt P (public 0.994) + Docker; 13/11 kế hoạch 3 (luật do mô hình học). Vẫn áp dụng: **cấm hard code
 đáp án** (luật / chương trình sinh thẳng đáp án không qua mô hình); phân tích lỗi chỉ trên public gốc / train, không xem từng câu held-out;

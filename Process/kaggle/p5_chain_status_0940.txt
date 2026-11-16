@@ -1,0 +1,48 @@
+== Process/runs/p5/after_alpha_bichthuy93.log
+09:34:27 bichthuy93 e8rw5p0: launched 1 kernels
+09:34:27 all launched
+09:34 [bichthuy93 w5 p0] evaluation launched
+== Process/runs/p5/after_alpha_caohuyen74.log
+== Process/runs/p5/after_alpha_huuhien95.log
+09:14 [huuhien95 w35 p1] aw35s1: launched 1 kernels
+09:18 [huuhien95 w35 p1] aw35l1: launched 1 kernels
+09:22 [huuhien95 w35 p1] aw35j1: launched 1 kernels
+== Process/runs/p5/after_alpha_loinguyentran.log
+09:26 [loinguyentran m3 p0] am3l0: launched 1 kernels
+09:33 [loinguyentran m3 p0] am3j0: launched 1 kernels
+09:33 [loinguyentran m3 p0] am3s0 try 1 failed: STALE CODE: the mounted code dataset is version f638f90e0ea04baf but t
+== Process/runs/p5/after_alpha_namhunhh.log
+09:25 [namhunhh m3 p1] am3l1: launched 1 kernels
+09:32 [namhunhh m3 p1] am3j1: launched 1 kernels
+09:33 [namhunhh m3 p1] am3s1 try 1 failed: STALE CODE: the mounted code dataset is version ab5a2789b9824f36 but t
+== Process/runs/p5/after_alpha_thnliu.log
+09:14 [thnliu w35 p0] aw35s0: launched 1 kernels
+09:18 [thnliu w35 p0] aw35l0: launched 1 kernels
+09:22 [thnliu w35 p0] aw35j0: launched 1 kernels
+== Process/runs/p5/after_alpha_yuan1103.log
+09:14 [yuan1103 w5 p1] aw5s1: launched 1 kernels
+09:18 [yuan1103 w5 p1] aw5l1: launched 1 kernels
+09:22 [yuan1103 w5 p1] aw5j1: launched 1 kernels
+== Process/runs/p5/after_bt.log
+05:28:31 bichthuy93: 6.7 h GPU left, task ~6.0 h: ok
+05:30:21 bichthuy93 e8rw7: launched 1 kernels
+05:30:21 all launched
+== Process/runs/p5/after_ch.log
+05:39:54 caohuyen74: 7.5 h GPU left, task ~6.0 h: ok
+05:41:39 caohuyen74 e8r: launched 1 kernels
+05:41:39 all launched
+== Process/runs/p5/after_cont_ftc2.log
+== Process/runs/p5/after_cont_ftc3.log
+09:33 [ftc3] training not complete: STATUS=DONE:error
+== Process/runs/p5/after_ms3.log
+08:19 adapter 2.6G; { "name": "MS3", "rc": 0, "lora_experts": 1, "experts_impl": [  "grouped_mm",  4 ], "train_s": 4336, "total_s": 4751, "files": "v3a_mix.jsonl", "keep": "configs/moe/keep_e88.json"}
+08:25 m3s0: launched 1 kernels
+== Process/runs/p5/after_ms3b.log
+08:48 m3s0 try 1 failed: STALE CODE: the mounted code dataset is version 1f694f7fe0bb4425 but this kernel was built for 95ceb00b6c734232; relaunch
+08:58 m3s0: launched 1 kernels
+09:02 m3s0 try 2 failed: STALE CODE: the mounted code dataset is version 95ceb00b6c734232 but this kernel was built for f638f90e0ea04baf; relaunch
+== Process/runs/p5/after_rsl.log
+== Process/runs/p5/after_rss.log
+08:17:43 thnliu: 4.4 h GPU left, task ~4.2 h: ok
+08:19:28 thnliu rss: launched 1 kernels
+08:19:28 all launched

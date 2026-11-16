@@ -196,6 +196,93 @@ def prepare_unit_examples(cfg, split, work, model, log, units_path, fake="", cac
     return f
 
 
+def solve_rows(cfg, a, rows, dp, extra, tag, budget):
+    """the solver (k 4, vote, no judge, no shop examples) on model-written questions rows [{id, business_id, question, as_of_date}]
+    of the split's shops: a mini split linked to the split's data. Returns {id: submission row}."""
+    vs = os.path.join(a.work, tag); sp = os.path.join(vs, "split"); os.makedirs(os.path.join(sp, "data"), exist_ok=True)
+    with open(os.path.join(sp, "questions.jsonl"), "w", encoding="utf-8") as w:
+        for r in rows: w.write(json.dumps({"id": r["id"], "question": r["question"], "business_id": r["business_id"], "as_of_date": r["as_of_date"]}, ensure_ascii=False) + "\n")
+    for b in {r["business_id"] for r in rows}:
+        d = os.path.join(sp, "data", b)
+        if not os.path.exists(d): os.symlink(os.path.abspath(os.path.join(a.split, "data", b)), d)
+    for f in ("calendar.csv", "rulebook.md"):
+        if os.path.isfile(os.path.join(a.split, f)): shutil.copy(os.path.join(a.split, f), sp)
+    if os.path.isdir(os.path.join(a.split, "rulebooks")): shutil.copytree(os.path.join(a.split, "rulebooks"), os.path.join(sp, "rulebooks"), dirs_exist_ok=True)
+    out = os.path.join(vs, "out"); os.makedirs(out, exist_ok=True); os.makedirs(os.path.join(vs, "logs"), exist_ok=True)
+    env_ex = {k: os.environ.pop(k) for k in ("ZC_SHOP_EXAMPLES", "ZC_SHOP_EXAMPLES_K") if k in os.environ}   # no examples in the check
+    try:
+        cmd = [sys.executable, os.path.join(HERE, "agent.py"), sp, out, "--model", a.model, "--dp", str(dp), "--budget", str(int(budget)),
+               "--cache", os.path.join(vs, "cache"), "--log-dir", os.path.join(vs, "logs")] + defaults_for(cfg) + ["--config", cfg] + extra + ["--k-max", "4", "--k-fast", "4"]
+        run(cmd, lambda *m: None)
+    finally: os.environ.update(env_ex)
+    sub = {}
+    f = os.path.join(out, "submission.jsonl")
+    if os.path.isfile(f):
+        for l in open(f, encoding="utf-8"):
+            if l.strip(): x = json.loads(l); sub[x["id"]] = x
+    return sub
+
+
+def prepare_t02(cfg, a, dp, cache, extra, log):
+    """P5 plan T02 (16/11): with "t02_examples": n in the config, the solver model writes question / program pairs for EVERY shop
+    (src/t02_gen.py, one shard of the shops per GPU; inputs only), kept when the program runs with the visible toolkit AND the solver,
+    answering the question without examples, agrees with the program's answer (round-trip / cycle consistency); hybrid then shows up
+    to n of them (most similar, same shop) in place of the least similar training examples. Returns the examples file or None."""
+    if not cfg: return None
+    c = json.load(open(cfg, encoding="utf-8")); n = int(c.get("t02_examples", 0) or 0)
+    if n <= 0: return None
+    out = os.path.join(a.work, "t02"); os.makedirs(out, exist_ok=True); t = time.time()
+    fake = a.lrl_fake or a.fake_responder
+    base = [sys.executable, os.path.join(HERE, "t02_gen.py"), a.split, out, "--model", a.model, "--n-per-shop", str(int(c.get("t02_per_shop", 12) or 12))] + \
+           (["--cache", cache] if cache else []) + (["--fake-responder", fake] if fake else [])
+    devs = visible_gpus(); ng = 1 if fake else max(1, len(devs))
+    procs = [subprocess.Popen(base + (["--shard", f"{i}/{ng}"] if ng > 1 else []), env=dict(os.environ, **({"CUDA_VISIBLE_DEVICES": devs[i]} if ng > 1 else {})),
+                              stdout=open(os.path.join(out, f"shard{i}.log"), "w"), stderr=subprocess.STDOUT, start_new_session=True) for i in range(ng)]
+    lim = float(c.get("t02_max_s", 900) or 900); rcs = []
+    for p in procs:
+        try: rcs.append(p.wait(timeout=max(1.0, t + lim - time.time())))
+        except subprocess.TimeoutExpired:
+            import signal
+            try: os.killpg(p.pid, signal.SIGKILL)
+            except Exception: p.kill()
+            p.wait(); rcs.append("timeout")
+    for i in range(ng):
+        ls = open(os.path.join(out, f"shard{i}.log"), encoding="utf-8", errors="replace").readlines()
+        if rcs[i] not in (0, "timeout"):
+            tb = [k for k, l in enumerate(ls) if l.startswith("Traceback")]; ls = ls[tb[-1]:tb[-1] + 40] if tb else ls[-40:]
+        else: ls = [l for l in ls if l.startswith("[t02]")][-2:]
+        for l in ls: log(f"t02 shard {i}: {l.rstrip()[:400]}")
+    import glob
+    rows = []
+    for f in sorted(glob.glob(os.path.join(out, "cards_t02*.jsonl"))):
+        for l in open(f, encoding="utf-8"):
+            if l.strip():
+                q = json.loads(l)
+                rows.append({"id": f"t02_{len(rows)}", "business_id": q["bid"], "question": q["question"], "as_of_date": q["as_of_date"],
+                             "code": q["program"], "answer": q["answer"]})
+    log(f"t02: rc={rcs}, {len(rows)} executed pairs for {len({r['business_id'] for r in rows})} shops ({time.time() - t:.0f}s)")
+    if not rows: return None
+    if int(c.get("t02_roundtrip", 1) or 0):
+        import score as scoremod
+        t1 = time.time(); sub = solve_rows(cfg, a, rows, dp, extra, "t02check", c.get("t02_verify_max_s", 1200))
+        keep = []
+        for r in rows:
+            x = sub.get(r["id"])
+            try: ok = bool(x) and x.get("type") != "abstain" and scoremod.judge(x, r["answer"]) == "correct"
+            except Exception: ok = False
+            if ok: keep.append(r)
+        log(f"t02: round trip kept {len(keep)} / {len(rows)} ({len(sub)} answered rows, {time.time() - t1:.0f}s)"); rows = keep
+        if not rows: return None
+    f = os.path.join(out, "shop_examples.jsonl")
+    prev = os.environ.get("ZC_SHOP_EXAMPLES", "")                    # I3 examples of the shop functions (if any) stay
+    with open(f, "w", encoding="utf-8") as w:
+        if prev and os.path.isfile(prev): w.write(open(prev, encoding="utf-8").read())
+        for r in rows: w.write(json.dumps(r, ensure_ascii=False, default=str) + "\n")
+    os.environ["ZC_SHOP_EXAMPLES"] = f; os.environ["ZC_SHOP_EXAMPLES_K"] = str(max(n, int(os.environ.get("ZC_SHOP_EXAMPLES_K", "0") or 0)))
+    log(f"t02: {len(rows)} examples for {len({r['business_id'] for r in rows})} shops, {n} per question")
+    return f
+
+
 def verify_units_by_solver(cfg, a, units_path, ux_path, dp, cache, extra, log):
     """v2 I6 (15/11): semantic check of the model-written shop functions by a second model path. The solver answers the model-written
     questions of each function (I3 file, with the function's own answer from execution) WITHOUT the shop functions (k 4, vote, no
@@ -515,6 +602,7 @@ def main():
         base_extra = [x for i, x in enumerate(extra) if x != "--units" and (i == 0 or extra[i - 1] != "--units")]   # solver contradicts
         uv2 = verify_units_by_solver(cfg, a, uv, ux, dp, cache, base_extra, log)
         extra = base_extra + (["--units", uv2] if uv2 else []); uv = uv2
+    prepare_t02(cfg, a, dp, cache, extra, log)                         # P5 T02 (env for hybrid)
     kv = prepare_link(cfg, a.split, a.work, a.model, log, a.lrl_fake or a.fake_responder, cards=",".join(x for x in (lv or "").split(",") if "compile" in os.path.basename(x)))
     free_w_models(a.work, log)
     if kv is not None: extra = extra + ["--links", kv]

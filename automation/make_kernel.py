@@ -50,8 +50,16 @@ if os.path.isdir(os.path.join(ROOT, "tests", "splits")):               # evaluat
     shutil.copytree(os.path.join(ROOT, "tests", "splits"), os.path.join(stage, "refs", "splits"), dirs_exist_ok=True)
 # version token: the runner refuses a mounted code dataset whose marker differs (a kernel pushed before the new dataset version
 # was live ran the previous code once: huyenco/zc-pfwc05thinks1-1 did not find a config added in between)
-import uuid
-CODE_TOKEN = uuid.uuid4().hex[:16]
+import hashlib                                                        # 16/11: token = hash of the staged CONTENT (was a random uuid):
+_h = hashlib.sha1()                                                    # consecutive launches of the same code on one account no longer
+for _root, _dirs, _files in sorted(os.walk(stage)):                    # refuse an older version with identical content (STALE CODE x5)
+    _dirs.sort()
+    for _f in sorted(_files):
+        _p = os.path.join(_root, _f); _s = os.path.getsize(_p); _h.update(f"{os.path.relpath(_p, stage)}\0{_s}\0".encode())
+        with open(_p, "rb") as _fh:
+            _h.update(_fh.read(65536))
+            if _s > 131072: _fh.seek(-65536, 2); _h.update(_fh.read(65536))
+CODE_TOKEN = _h.hexdigest()[:16]
 open(os.path.join(stage, "ZC_CODE_MARKER"), "w").write(CODE_TOKEN + "\n")
 print("code version:", CODE_TOKEN, flush=True)
 json.dump({"title": "zc-code", "id": CODE_DS, "licenses": [{"name": "CC0-1.0"}]}, open(os.path.join(stage, "dataset-metadata.json"), "w"))

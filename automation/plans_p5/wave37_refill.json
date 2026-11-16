@@ -1,0 +1,32 @@
+[
+ {
+  "acc": "synchan5704",
+  "name": "c6rq0",
+  "jobs": "automation/jobs/p5/c6rq0.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "synchan5704/zc-ad2",
+   "--no-preflight"
+  ]
+ },
+ {
+  "acc": "yuan1103",
+  "name": "c6tq3",
+  "jobs": "automation/jobs/p5/c6tq3.jobs",
+  "est_h": 0.55,
+  "args": [
+   "--ms",
+   "danbth/qwen3-5-9b/transformers/default/1",
+   "--ks",
+   "nhatlong1103/zc-assets",
+   "--ds",
+   "yuan1103/zc-ad2",
+   "--no-preflight"
+  ]
+ }
+]

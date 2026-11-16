@@ -144,3 +144,4 @@ tối ưu trước khi chạy; chạy bản zero-shot trước fine-tune để s
 - 21:40 **E3FT** (MoE + MS1 / ML1 / MJ1 + industry + suy nghĩ + sửa lỗi: 15 hàm, bind OK) = **0.871** < E1L (MoE + MS1, suy nghĩ, chưa sửa) 0.891 < C3T (zero-shot + T01 + suy nghĩ) 0.902 → LoRA W (ML1 / MJ1 học trên E88 gốc) chưa giúp; chờ C3FT để tách tác dụng của hàm / thẻ.
 - 15/11 22:52 E7 (MoE E88 + MS2 + ML1 + MJ2, thinking): **0.916** (953/37/10), z +12.6 vs B00-S — best MoE system (> C3T 0.902), below C1L 0.943.
 - 15/11 23:32 C3FT: 0.905 (946/41/13), +0.003 vs C3T 0.902 (within noise); below E7 0.916.
+- 16/11 00:04 E8 (E7 in mode H, MoE 13.96B + MS2/ML1/MJ2): **0.843** (893/50/57) — best mode-H system, level with P02T 0.841 (no hand-written industry functions).

@@ -14,6 +14,7 @@ MoE E88 tốt nhất E7 0.916 (có `industry.py`); **chế độ H: chưa biến
 | zc-jph1e-1 | huyenco | phán xử trên gộp H0a + E8 (MoE) | như trên |
 | zc-jph12e-1 | hai1108 | phán xử trên gộp H0a + H0a2 + E8 | như trên |
 | zc-h0as1-1 / zc-h0as2-1 | thnliu / phatle1578 | thêm 2 lượt cấu hình nộp (`seed_base` 1 / 2) để gộp 3–4 lượt | archive + p5_report; rồi gộp log (`training/data/out/jpool`, script trong `docs/19` 16/11) |
+| zc-t02a-1 / zc-t02as1-1 / zc-t02b-1 | linhmai24 / duylnng / lelynhan | **T02** ví dụ tổng hợp nhất quán vòng (`flow_t02a`, seed 1, `flow_t02b`), đẩy 03:06, ~2.4 h | archive + p5_report; so ghép cặp với H0a / H0a2 (0.863) |
 
 Theo dõi: `bash Process/tools/p5_watch_loop.sh &` → `Process/runs/p5/watch.out`; mất kết nối: `automation/resume.py` / `run_kernel.py --attach`.
 Chấm: `bash Process/tools/p5/archive.sh <run>` + `python3 Process/tools/p5/p5_report.py` (lượt predict); lượt phán xử: chấm

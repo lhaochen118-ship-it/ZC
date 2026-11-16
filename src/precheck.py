@@ -147,6 +147,8 @@ def all_periods(src, today):
 
 def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None, question=None, unit_check=False, mask_check=False,
              count_check=False, size_use_check=False, industry_doc=None):
+    # question / unit_check / count_check / size_use_check / industry_doc: accepted for call compatibility; the domain-specific
+    # checks they enabled were removed (16/11: only general question <-> program consistency checks remain)
     import api_spec
     out = []
     if code is None: return [_issue("error", "format", "no program block (<code> ... </code>) in the output")]
@@ -223,40 +225,9 @@ def precheck(code, spec, hints=None, entity_values=None, escape=None, today=None
             miss = sorted(hp - pp)
             out.append(_issue("warn", "named_periods", "the question names the periods " + ", ".join(h["periods"]) + " but the program does "
                               f"not use {miss[0][0]}..{miss[0][1]}"))
-    if question is not None:                                            # P2: a size filter must be a size the question names
-        qk = " " + " ".join(dm.key(str(question) + " " + str(h.get("clean") or "")).split()) + " "   # ('bao nhiêu lon' is a unit,
-        for size in _size_args(tree):                                   # not size 'L': 28 / 28 such samples were wrong)
-            k = " ".join(dm.key(size).split())
-            if k and f" {k} " not in qk and not re.search(r"\b(?:size|so|co)\s*" + re.escape(k) + r"\b", qk):
-                out.append(_issue("error", "size", f"size {size!r}: the question names no such size",
-                                  "for 'bán được bao nhiêu <đơn vị>' use item_qty(p, base_unit=...); a size only when the question says it"))
-    if question is not None and unit_check:                             # P2: 'bán được bao nhiêu <đơn vị>' counts only the items of
-        qk = " " + " ".join(dm.key(str(question) + " " + str(h.get("clean") or "")).split()) + " "   # that base unit (rulebook)
-        units = [e.get("data_value") for e in h.get("entities") or [] if e.get("kind") == "base_unit" and e.get("data_value")]
-        asked = [u for u in units if re.search(r"\b(?:bao nhieu|bnhiu|bn|may|nhieu|so)\s+" + re.escape(" ".join(dm.key(u).split())) + r"\b", qk)]
-        if asked and _bare_calls(tree, "item_qty"):                     # a bare item_qty(p) adds every unit: 172 / 172 wrong
-            out.append(_issue("error", "unit", f"the question counts {asked[0]!r} but item_qty(...) has no filter: it adds every unit",
-                              f"item_qty(p, base_unit={asked[0]!r}) (rulebook 'Bán được bao nhiêu <đơn vị>'), or an item / group filter"))
     if mask_check and _len_of_mask(tree):                               # P2: len() of a True / False Series counts every row
         out.append(_issue("error", "len_mask", "len(...) of a comparison / mask (x >= n, .ge(n), .notna(), .where(...)) counts every row, not the matches",
                           "count the matches with (s >= n).sum(), or filter first: len(s[s >= n])"))
-    if size_use_check and question is not None:                          # P2: a catalogue size the question names ('sữa bột số 4',
-        for v in [e.get("data_value") for e in h.get("entities") or [] if e.get("kind") == "size" and e.get("data_value")]:   # hints:
-            if not _size_used(tree, v):                                 # size column) must filter the program (84 / 84 dev samples
-                out.append(_issue("error", "size_unused", f"the question names the size {v!r} (size column of the catalogue) but the "   # wrong)
-                                  "program does not filter by it", f"size_qty(p, {v!r}, group=...) counts the items of that size"))
-                break
-    if industry_doc and "avg_ticket" in industry_doc and any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "aov"
-                                                             for n in ast.walk(tree)):   # P2: a shop that counts tickets (lượt xe):
-        out.append(_issue("error", "ticket_avg", "aov(...) divides by every ticket, warranty tickets included; the money of one ticket "   # 140 / 140
-                          "in this shop is avg_ticket(p): revenue / tickets with money (rulebook)", "avg_ticket(p)"))         # dev samples wrong
-    if count_check and question is not None and h.get("counted"):     # P2: a question that counts ('mấy lượt xe', 'bao nhiêu % tổng số
-        qk = " " + " ".join(dm.key(str(question) + " " + str(h.get("clean") or "")).split()) + " "   # máy') and asks no money
-        if not re.search(MONEY_Q, qk):                                  # must not rank / average by money (192 / 192 dev samples wrong)
-            for fn, metric, alts in _money_by(tree, by):
-                out.append(_issue("error", "count_by", f"the question counts {h['counted']!r} but {fn}(...) uses by={metric!r} (money)",
-                                  f"{fn}(..., by={alts[0]!r})" + (f" (count options: {alts})" if len(alts) > 1 else "")))
-                break
     for th in h.get("thresholds") or []:                                 # P2: a threshold the question sets ('ít nhất 187 đơn')
         v = th.get("value")                                             # should appear in the program
         if isinstance(v, (int, float)) and not _uses_number(code, v):

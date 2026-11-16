@@ -105,23 +105,6 @@ check("threshold missing", thr('ANSWER = {"type": "number", "answer": len(item_s
 for lit in ("9100000", "9_100_000", "9.1e6", "9.1 * 1e6", "9100 * 1000"):
     check(f"threshold {lit}", thr('ANSWER = {"type": "number", "answer": n_days_revenue_at_least(month(2025, 10), ' + lit + ')}'), [])
 
-# 10. a size filter must be a size the question names ('bao nhiêu lon' is a unit, not size L)
-sz = lambda code, q: [i["level"] for i in pre.precheck(code, spec, {}, None, None, "2026-04-10", q) if i["rule"] == "size"]
-check("size not named", sz('ANSWER = {"type": "number", "answer": size_qty(yesterday(TODAY), "L")}', "Bữa qua bán ra được nhiêu lon vậy?"), ["error"])
-check("size named", sz('ANSWER = {"type": "number", "answer": size_qty(this_week(TODAY), "M")}', "tuần này bán mấy ly size M"), [])
-check("unit as size", sz('ANSWER = {"type": "number", "answer": size_qty(this_week(TODAY), "đĩa")}', "Tuan nay quan ban dc bnhiu dia?"), [])
-check("size= kw", sz('ANSWER = {"type": "number", "answer": diaper_qty(month(2026, 5), size="XL")}', "bỉm size M bán mấy bịch"), ["error"])
-check("số 4", sz('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY), size="4")}', "bán bao nhiêu lon sữa bột số 4"), [])
-check("no question", [i for i in pre.precheck('ANSWER = {"type": "number", "answer": size_qty(yesterday(TODAY), "L")}', spec, {}, None, None, "2026-04-10") if i["rule"] == "size"], [])
-
-# 11. 'bao nhiêu <đơn vị>' with a bare item_qty(p): error (counts every unit)
-HU = {"entities": [{"kind": "base_unit", "data_value": "gói", "text": "goi"}]}
-un = lambda code, q: [i["level"] for i in pre.precheck(code, spec, HU, None, None, "2026-04-10", q, True) if i["rule"] == "unit"]
-check("bare item_qty", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY))}', "Tuần này bán được tổng cộng bao nhiêu gói rồi ha?"), ["error"])
-check("base_unit given", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY), base_unit="gói")}', "Tuần này bán được bao nhiêu gói?"), [])
-check("item given", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY), item="Mì Hảo Hảo gói")}', "Tuần này bán được bao nhiêu gói Mì Hảo Hảo?"), [])
-check("unit not counted", un('ANSWER = {"type": "number", "answer": item_qty(this_week(TODAY))}', "Tuần này mì gói bán chạy không?"), [])
-
 # 12. review 3 asks like review 2 (missing data only; the flag of a sample still answering is set in the flow)
 check("review 3 missing data", bool(hybrid.review_msg({"missing_data": ["reason"]}, {"type": "number", "answer": 3}, [], 3)), True)
 check("review 3 flags only", hybrid.review_msg({"missing_data": []}, {"type": "number", "answer": 0}, ["zero result"], 3), None)
@@ -147,41 +130,6 @@ check("sum of mask", mk('ANSWER = {"type": "number", "answer": item_sales(month(
 check("len of mask tolist", mk('ANSWER = {"type": "number", "answer": len((item_sales(month(2026, 5), by="n_orders") >= 152).tolist())}'), ["error"])
 check("len of list(mask)", mk('ANSWER = {"type": "number", "answer": len(list(item_sales(month(2026, 5), by="n_orders") >= 152))}'), ["error"])
 check("len of filtered tolist", mk('s = item_sales(month(2026, 5), by="n_orders")\nANSWER = {"type": "number", "answer": len(s[s >= 152].tolist())}'), [])
-
-# 15b. a question that counts (hints 'counted') and names no money must not use a money metric (count_check)
-import hints as _H, dm as _dm
-def cb(code, q):
-    h = {"counted": _H.counted(" ".join(_dm.key(q).split())), "clean": q}
-    return [i["level"] for i in pre.precheck(code, spec, h, None, None, "2026-04-10", q, False, False, True) if i["rule"] == "count_by"]
-check("count weekday default", cb('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), 2)}', "tháng 3 trung bình mỗi thứ Tư có mấy lượt xe"), ["error"])
-check("count weekday revenue kw", cb('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), weekday=2, by="revenue")}', "tháng 3 trung bình thứ Tư bao nhiêu đơn"), ["error"])
-check("count weekday orders", cb('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), weekday=2, by="orders")}', "tháng 3 trung bình mỗi thứ Tư có mấy lượt xe"), [])
-check("count share default", cb('ANSWER = {"type": "percent", "answer": device_share(month(2025, 10), brand="Oppo")}', "tháng 10 Oppo chiếm bao nhiêu % tổng số máy bán ra"), ["error"])
-check("count share qty", cb('ANSWER = {"type": "percent", "answer": device_share(month(2025, 10), brand="Oppo", by="qty")}', "tháng 10 Oppo chiếm bao nhiêu % tổng số máy bán ra"), [])
-check("money word keeps revenue", cb('ANSWER = {"type": "string", "answer": rank(staff_sales(month(2025, 2), by="revenue"), 1)[0]}', "trong số người bán, ai có doanh thu cao nhất tháng 2, bao nhiêu khách"), [])
-check("no count no check", cb('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), 2)}', "tháng 3 trung bình mỗi thứ Tư bán được bao nhiêu tiền"), [])
-check("count check off", [i["rule"] for i in pre.precheck('ANSWER = {"type": "number", "answer": weekday_avg(month(2026, 3), 2)}', spec,
-      {"counted": "đơn"}, None, None, "2026-04-10", "thứ Tư mấy đơn", False, False) if i["rule"] == "count_by"], [])
-
-# 15c. a catalogue size the question names must filter the program (size_use_check)
-def su(code, size):
-    h = {"entities": [{"kind": "size", "data_value": size}]}
-    return [i["level"] for i in pre.precheck(code, spec, h, None, None, "2026-06-30", "bán bao nhiêu lon sữa bột " + size, False, False, False, True) if i["rule"] == "size_unused"]
-check("size ignored", su('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY), group="sữa bột")}', "Số 4"), ["error"])
-check("size digit elsewhere", su('ANSWER = {"type": "number", "answer": item_qty(month(2026, 4), group="sữa bột")}', "Số 4"), ["error"])
-check("size_qty used", su('ANSWER = {"type": "number", "answer": size_qty(this_month(TODAY), "Số 4", group="sữa bột")}', "Số 4"), [])
-check("size in a filter", su('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY), where=lambda x: x["size"] == "Size M")}', "Size M"), [])
-check("size check off", [i["rule"] for i in pre.precheck('ANSWER = {"type": "number", "answer": item_qty(this_month(TODAY))}', spec,
-      {"entities": [{"kind": "size", "data_value": "Số 4"}]}, None, None, "2026-06-30", "số 4", False, False) if i["rule"] == "size_unused"], [])
-
-# 15d. a shop whose industry counts tickets (toolkit avg_ticket): aov() is not the money of one ticket (ticket_avg_check)
-import industry as _ind
-ta = lambda code, doc: [i["rule"] for i in pre.precheck(code, spec, {}, None, None, "2026-04-10", None, False, False, False, False, doc) if i["rule"] == "ticket_avg"]
-check("aov in a ticket shop", ta('ANSWER = {"type": "number", "answer": aov(month(2026, 1))}', _ind.INDUSTRY_API["sửa xe"]), ["ticket_avg"])
-check("aov filtered in a ticket shop", ta('ANSWER = {"type": "number", "answer": aov(month(2026, 1), staff="An")}', _ind.INDUSTRY_API["sửa xe"]), ["ticket_avg"])
-check("avg_ticket in a ticket shop", ta('ANSWER = {"type": "number", "answer": avg_ticket(month(2026, 1))}', _ind.INDUSTRY_API["sửa xe"]), [])
-check("aov in another shop", ta('ANSWER = {"type": "number", "answer": aov(month(2026, 1))}', _ind.INDUSTRY_API["mẹ và bé"]), [])
-check("aov, check off", ta('ANSWER = {"type": "number", "answer": aov(month(2026, 1))}', None), [])
 
 # 16. learned selector (track M, WP-M6): the shares-only feature set saves / loads with its columns and scores any sample count
 import selector as SEL, tempfile

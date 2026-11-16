@@ -16,6 +16,7 @@ import os, re, json, time, pickle
 from collections import Counter
 import pipeline, dm, prompting, api_spec, retrieval, shopctx, lrl
 import precheck as pre
+import consistency
 import tools as toolsmod
 
 agent = pipeline.agent                                                  # rebound by pipeline.bind()
@@ -181,7 +182,13 @@ class HybridPipeline(pipeline.Pipeline):
                 code = sql_program(code, (st["hints"] or {}).get("answer_type"))
             uc = bool(int(getattr(a, "unit_check", 0) or 0)); cc = bool(int(getattr(a, "count_check", 0) or 0))
             su = bool(int(getattr(a, "size_use_check", 0) or 0))
-            iss = pre.precheck(code, getattr(ctx, "spec_u", None) or self.spec, st["hints"], ctx.entity_values, out["escape"], q["as_of_date"],
+            hq = st["hints"]
+            if not hq and int(getattr(a, "consistency", 0) or 0):       # general question <-> program consistency facts (period,
+                hq = st.get("facts")                                      # thresholds, answer form; src/consistency.py): checks only
+                if hq is None:
+                    try: hq = st["facts"] = consistency.facts(q["question"], q["as_of_date"])
+                    except Exception: hq = st["facts"] = {}
+            iss = pre.precheck(code, getattr(ctx, "spec_u", None) or self.spec, hq, ctx.entity_values, out["escape"], q["as_of_date"],
                                q["question"] if (int(getattr(a, "size_check", 0) or 0) or uc or cc or su) else None, uc,
                                bool(int(getattr(a, "mask_check", 0) or 0)), cc, su,
                                getattr(ctx, "industry_doc", None) if int(getattr(a, "ticket_avg_check", 0) or 0) else None)

@@ -62,11 +62,15 @@ for _root, _dirs, _files in sorted(os.walk(stage)):                    # refuse 
 CODE_TOKEN = _h.hexdigest()[:16]
 open(os.path.join(stage, "ZC_CODE_MARKER"), "w").write(CODE_TOKEN + "\n")
 print("code version:", CODE_TOKEN, flush=True)
-json.dump({"title": "zc-code", "id": CODE_DS, "licenses": [{"name": "CC0-1.0"}]}, open(os.path.join(stage, "dataset-metadata.json"), "w"))
+CODE_DS = f"{OWNER}/zc-code-{CODE_TOKEN[:10]}"                          # 16/11: one dataset per code version (a shared dataset
+# mounted its PREVIOUS version when a new one was still processing: STALE CODE x8); same code => same dataset, reused
+json.dump({"title": f"zc-code-{CODE_TOKEN[:10]}", "id": CODE_DS, "licenses": [{"name": "CC0-1.0"}]}, open(os.path.join(stage, "dataset-metadata.json"), "w"))
 if "--no-upload" not in sys.argv:                                       # preflight.py builds the kernel files offline
     exists = subprocess.run(["kaggle", "datasets", "status", CODE_DS], capture_output=True, text=True).stdout.strip().lower() == "ready"
-    cmd = (["kaggle", "datasets", "version", "-p", stage, "-m", "update"] if exists else ["kaggle", "datasets", "create", "-p", stage]) + ["-r", "zip", "-q"]
-    r = subprocess.run(cmd, capture_output=True, text=True); print("code dataset:", (r.stdout + r.stderr).strip().splitlines()[-1:])
+    if exists: print("code dataset:", CODE_DS, "already published (same code)", flush=True)
+    else:
+        r = subprocess.run(["kaggle", "datasets", "create", "-p", stage, "-r", "zip", "-q"], capture_output=True, text=True)
+        print("code dataset:", (r.stdout + r.stderr).strip().splitlines()[-1:])
     # 16/11: a kernel pushed while the new version was still being processed mounted the previous one (STALE CODE, 5 merges lost,
     # worst with a 3 GB --train-data): wait until Kaggle reports the dataset ready again, then a short grace period
     import time as _t

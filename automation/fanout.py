@@ -46,9 +46,7 @@ for k in range(nk):
 time.sleep(30)                                                             # let the code datasets finish versioning
 for acc in sorted({slots[k % len(slots)][0] for k in range(nk)}):
     env = dict(os.environ, KAGGLE_API_TOKEN=open(os.path.expanduser(f"~/.kaggle/tok_{acc}")).read().strip())
-    for _ in range(40):
-        if subprocess.run(["kaggle", "datasets", "status", f"{acc}/zc-code"], capture_output=True, text=True, env=env).stdout.strip().endswith("ready"): break
-        time.sleep(10)
+    pass                                                                # 16/11: make_kernel waits for its own per-version zc-code-<hash> dataset
 def make(kd, slug, part, acc, gpu):
     cmd = [sys.executable, os.path.join(ROOT, "automation", "make_kernel.py"), kd, slug, ";".join(part), "", "--owner", acc] + ((["--l4"] if L4 else ["--gpu"]) if gpu else []) + DSARG
     return subprocess.run(cmd, capture_output=True, text=True)

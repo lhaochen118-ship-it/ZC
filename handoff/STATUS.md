@@ -1,5 +1,7 @@
 # STATUS — trạng thái sống (đọc đầu tiên khi tiếp tục)
 
+**17/11 (user): image `datamate:latest` đã save → `datamate_solution.tar`, MD5 `8b36a4aa7b1913e19e45b255f58bf372`.**
+
 **16/11 16:00 UTC (user): BẢN NỘP = `Final_Docker_Submission/` (= C4)** (public 0.939).
 
 **16/11 15:45 UTC — bản nộp hợp lệ (rà soát quy định BTC):** 3 thư mục Docker tự chứa: `Docker_C4/` (public **0.939**, giữ
